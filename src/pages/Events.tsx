@@ -59,15 +59,15 @@ const Index = () => {
       }
 
       // Check if user has already RSVP'd
-      const { data: existingRSVP, error: fetchError } = await supabase
+      const { data: existingRSVPs, error: fetchError } = await supabase
         .from("event_rsvps")
-        .select("*")
+        .select()
         .eq("event_id", eventId)
         .eq("user_id", user.id);
 
       if (fetchError) throw fetchError;
 
-      if (existingRSVP && existingRSVP.length > 0) {
+      if (existingRSVPs && existingRSVPs.length > 0) {
         toast({
           title: "Error",
           description: "You have already RSVP'd to this event",
