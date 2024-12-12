@@ -13,7 +13,7 @@ export function EventCard({ event, onRSVP }: EventCardProps) {
   const isFullyBooked = event.attendees >= event.maxAttendees;
 
   return (
-    <Card className="w-full transition-all duration-300 hover:shadow-lg animate-fade-in">
+    <Card className="w-full transition-all duration-300 hover:shadow-lg animate-fade-in bg-white">
       <CardHeader className="relative p-0">
         <img
           src={event.imageUrl}
@@ -47,7 +47,7 @@ export function EventCard({ event, onRSVP }: EventCardProps) {
         <Button
           onClick={() => onRSVP(event.id)}
           disabled={isFullyBooked}
-          className="w-full bg-primary hover:bg-primary-600 text-white"
+          className="w-full bg-[#0d97d1] hover:bg-[#0d97d1]/90 text-white"
         >
           {isFullyBooked ? "Fully Booked" : "RSVP Now"}
         </Button>

@@ -80,27 +80,29 @@ const Index = () => {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-4xl">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">Upcoming Events</h1>
-        <CreateEventDialog />
+    <div className="min-h-screen bg-[#222222]">
+      <div className="container mx-auto px-4 py-8 max-w-4xl">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-3xl font-bold text-white">Upcoming Events</h1>
+          <CreateEventDialog />
+        </div>
+
+        <DateFilter selectedDate={selectedDate} onDateSelect={setSelectedDate} />
+
+        {isLoading ? (
+          <div className="text-center py-8 text-white">Loading events...</div>
+        ) : events.length === 0 ? (
+          <div className="text-center py-8 text-gray-400">
+            No events found for the selected date.
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {events.map((event) => (
+              <EventCard key={event.id} event={event} onRSVP={handleRSVP} />
+            ))}
+          </div>
+        )}
       </div>
-
-      <DateFilter selectedDate={selectedDate} onDateSelect={setSelectedDate} />
-
-      {isLoading ? (
-        <div className="text-center py-8">Loading events...</div>
-      ) : events.length === 0 ? (
-        <div className="text-center py-8 text-gray-500">
-          No events found for the selected date.
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {events.map((event) => (
-            <EventCard key={event.id} event={event} onRSVP={handleRSVP} />
-          ))}
-        </div>
-      )}
     </div>
   );
 };

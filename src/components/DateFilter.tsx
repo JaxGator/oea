@@ -20,7 +20,11 @@ export function DateFilter({ selectedDate, onDateSelect }: DateFilterProps) {
         <Button
           key={item.label}
           variant={selectedDate === item.date ? "default" : "outline"}
-          className="whitespace-nowrap"
+          className={`whitespace-nowrap ${
+            selectedDate === item.date
+              ? "bg-[#0d97d1] hover:bg-[#0d97d1]/90 text-white"
+              : "border-white/20 text-white hover:bg-[#0d97d1]/10"
+          }`}
           onClick={() => onDateSelect(item.date)}
         >
           {item.label}
