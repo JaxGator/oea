@@ -12,7 +12,7 @@ export function MobileNavigation() {
           className={`flex flex-col items-center p-2 transition-colors duration-200 ${
             location.pathname === "/" 
               ? "text-primary" 
-              : "text-gray-600 hover:text-primary-400"
+              : "text-gray-600 hover:text-[#0d97d1]"
           }`}
         >
           <div className="relative">
@@ -29,7 +29,7 @@ export function MobileNavigation() {
           className={`flex flex-col items-center p-2 transition-colors duration-200 ${
             location.pathname === "/events"
               ? "text-primary"
-              : "text-gray-600 hover:text-primary-400"
+              : "text-gray-600 hover:text-[#0d97d1]"
           }`}
         >
           <div className="relative">
@@ -46,7 +46,7 @@ export function MobileNavigation() {
           className={`flex flex-col items-center p-2 transition-colors duration-200 ${
             location.pathname === "/about"
               ? "text-primary"
-              : "text-gray-600 hover:text-primary-400"
+              : "text-gray-600 hover:text-[#0d97d1]"
           }`}
         >
           <div className="relative">
