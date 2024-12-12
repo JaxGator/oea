@@ -1,8 +1,43 @@
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import { EventCard } from "@/components/EventCard";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function Home() {
   const navigate = useNavigate();
+
+  const { data: events = [], isLoading } = useQuery({
+    queryKey: ["featured-events"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("events")
+        .select(`
+          *,
+          event_rsvps(count)
+        `)
+        .order('date', { ascending: true })
+        .limit(4);
+
+      if (error) throw error;
+
+      return data.map((event) => ({
+        id: event.id,
+        title: event.title,
+        description: event.description || "",
+        date: event.date,
+        time: event.time,
+        location: event.location,
+        attendees: event.event_rsvps?.[0]?.count || 0,
+        maxAttendees: event.max_guests,
+        imageUrl: event.image_url || "https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&q=80",
+      }));
+    },
+  });
+
+  const handleRSVP = async (eventId: string) => {
+    navigate(`/events?rsvp=${eventId}`);
+  };
 
   return (
     <div>
@@ -28,6 +63,40 @@ export default function Home() {
           </Button>
         </div>
       </div>
+
+      {/* Featured Events Section */}
+      <section className="py-16 bg-[#222222]">
+        <div className="container mx-auto px-4">
+          <div className="flex justify-between items-center mb-8">
+            <h2 className="text-2xl font-bold text-white">Upcoming Events</h2>
+            <Button 
+              onClick={() => navigate("/events")}
+              variant="outline"
+              className="text-white hover:text-[#0d97d1] border-white hover:border-[#0d97d1]"
+            >
+              View All Events
+            </Button>
+          </div>
+          
+          {isLoading ? (
+            <div className="text-center py-8 text-white">Loading events...</div>
+          ) : events.length === 0 ? (
+            <div className="text-center py-8 text-gray-400">
+              No upcoming events found.
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {events.map((event) => (
+                <EventCard 
+                  key={event.id} 
+                  event={event} 
+                  onRSVP={handleRSVP}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
 
       {/* Footer Section */}
       <footer className="bg-[#222222] text-white py-12">
