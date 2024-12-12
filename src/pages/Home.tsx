@@ -22,7 +22,7 @@ export default function Home() {
           <Button
             onClick={() => navigate("/events")}
             size="lg"
-            className="animate-fade-in text-base sm:text-lg px-6 sm:px-8 py-2 sm:py-3 bg-[#33C3F0] hover:bg-[#33C3F0]/90"
+            className="animate-fade-in text-base sm:text-lg px-6 sm:px-8 py-2 sm:py-3 bg-[#0d97d1] hover:bg-[#0d97d1]/90"
           >
             Explore Events
           </Button>
