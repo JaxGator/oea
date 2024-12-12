@@ -5,34 +5,57 @@ export function MobileNavigation() {
   const location = useLocation();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-2 md:hidden">
-      <div className="flex justify-around items-center">
+    <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-2 md:hidden z-50 animate-fade-in">
+      <div className="flex justify-around items-center max-w-md mx-auto">
         <Link
           to="/"
-          className={`flex flex-col items-center p-2 ${
-            location.pathname === "/" ? "text-primary" : "text-gray-600"
+          className={`flex flex-col items-center p-2 transition-colors duration-200 ${
+            location.pathname === "/" 
+              ? "text-primary" 
+              : "text-gray-600 hover:text-primary-400"
           }`}
         >
-          <Home className="w-6 h-6" />
-          <span className="text-xs mt-1">Home</span>
+          <div className="relative">
+            <Home className="w-6 h-6" />
+            {location.pathname === "/" && (
+              <span className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-primary rounded-full" />
+            )}
+          </div>
+          <span className="text-xs mt-1 font-medium">Home</span>
         </Link>
+
         <Link
           to="/events"
-          className={`flex flex-col items-center p-2 ${
-            location.pathname === "/events" ? "text-primary" : "text-gray-600"
+          className={`flex flex-col items-center p-2 transition-colors duration-200 ${
+            location.pathname === "/events"
+              ? "text-primary"
+              : "text-gray-600 hover:text-primary-400"
           }`}
         >
-          <Calendar className="w-6 h-6" />
-          <span className="text-xs mt-1">Events</span>
+          <div className="relative">
+            <Calendar className="w-6 h-6" />
+            {location.pathname === "/events" && (
+              <span className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-primary rounded-full" />
+            )}
+          </div>
+          <span className="text-xs mt-1 font-medium">Events</span>
         </Link>
+
         <Link
           to="/about"
-          className={`flex flex-col items-center p-2 ${
-            location.pathname === "/about" ? "text-primary" : "text-gray-600"
+          className={`flex flex-col items-center p-2 transition-colors duration-200 ${
+            location.pathname === "/about"
+              ? "text-primary"
+              : "text-gray-600 hover:text-primary-400"
           }`}
         >
-          <Info className="w-6 h-6" />
-          <span className="text-xs mt-1">About</span>
+          <div className="relative">
+            <Info className="w-6 h-6" />
+            {location.pathname === "/about" && (
+              <span className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-primary rounded-full" />
+            )}
+          </div>
+          <span className="text-xs mt-1 font-medium">About</span>
         </Link>
       </div>
     </nav>
