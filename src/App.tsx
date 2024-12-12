@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { MobileNavigation } from "./components/MobileNavigation";
+import { DesktopNavigation } from "./components/DesktopNavigation";
 import Home from "./pages/Home";
 import About from "./pages/About";
 import Events from "./pages/Events";
@@ -16,7 +17,8 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <div className="min-h-screen pb-16 md:pb-0"> {/* Added min-h-screen and padding for mobile nav */}
+        <div className="min-h-screen pb-16 md:pb-0">
+          <DesktopNavigation />
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/events" element={<Events />} />
