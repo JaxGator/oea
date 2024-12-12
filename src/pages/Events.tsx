@@ -58,10 +58,27 @@ const Index = () => {
         return;
       }
 
+      // First check if user has already RSVP'd
+      const { data: existingRSVP } = await supabase
+        .from("event_rsvps")
+        .select("*")
+        .eq("event_id", eventId)
+        .eq("user_id", user.id)
+        .single();
+
+      if (existingRSVP) {
+        toast({
+          title: "Error",
+          description: "You have already RSVP'd to this event",
+          variant: "destructive",
+        });
+        return;
+      }
+
       const { error } = await supabase.from("event_rsvps").insert({
         event_id: eventId,
         user_id: user.id,
-        response: "going",
+        response: "GOING", // Using uppercase as it's likely the expected format
       });
 
       if (error) throw error;
@@ -72,11 +89,11 @@ const Index = () => {
       });
       
       refetch();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error RSVPing to event:", error);
       toast({
         title: "Error",
-        description: "Failed to RSVP. Please try again.",
+        description: error.message || "Failed to RSVP. Please try again.",
         variant: "destructive",
       });
     }
