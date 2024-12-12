@@ -39,19 +39,6 @@ export default function About() {
               </div>
             </div>
           </div>
-
-          <div className="mt-12">
-            <h2 className="text-2xl font-semibold mb-6">Our Impact</h2>
-            <p className="text-lg mb-4">
-              Since our founding, we have:
-            </p>
-            <ul className="list-disc list-inside space-y-3 text-lg pl-4">
-              <li>Provided outdoor experiences to over 1,000 youth</li>
-              <li>Organized 100+ outdoor adventure programs</li>
-              <li>Trained 50+ youth in outdoor leadership</li>
-              <li>Partnered with 20+ schools and community organizations</li>
-            </ul>
-          </div>
         </div>
       </div>
     </div>
