@@ -52,12 +52,6 @@ export default function About() {
               <li>Partnered with 20+ schools and community organizations</li>
             </ul>
           </div>
-
-          <div className="mt-12 text-center">
-            <button className="bg-[#0d97d1] hover:bg-[#0d97d1]/90 text-white px-8 py-3 rounded-lg font-semibold transition-colors">
-              Get Involved
-            </button>
-          </div>
         </div>
       </div>
     </div>
