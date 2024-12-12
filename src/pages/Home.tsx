@@ -9,12 +9,11 @@ export default function Home() {
       {/* Hero Section */}
       <div className="relative h-[70vh] bg-gradient-to-r from-primary-100 to-primary-200 flex items-center justify-center">
         <div className="container mx-auto px-4 text-center">
-          <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6 animate-fade-in">
-            Welcome to Evently
-          </h1>
-          <p className="text-xl md:text-2xl text-gray-700 mb-8 max-w-2xl mx-auto animate-fade-in">
-            Discover and join amazing events in your community
-          </p>
+          <img 
+            src="/lovable-uploads/609edf01-3169-439a-80f5-f6f15de7a5a6.png"
+            alt="Outdoor Energy Adventures Logo"
+            className="w-64 md:w-80 mx-auto mb-8 animate-fade-in"
+          />
           <Button
             onClick={() => navigate("/events")}
             size="lg"
