@@ -34,10 +34,11 @@ const Index = () => {
         title: event.title,
         description: event.description || "",
         date: event.date,
+        time: event.time, // Added the time property here
         location: event.location,
         attendees: event.event_rsvps?.[0]?.count || 0,
         maxAttendees: event.max_guests,
-        imageUrl: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&q=80",
+        imageUrl: event.image_url || "https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&q=80",
       }));
     },
   });
