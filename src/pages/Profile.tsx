@@ -4,14 +4,16 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useToast } from "@/components/ui/use-toast";
-import { User, UserCircle, Save } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { User, UserCircle, Save, Mail, Lock } from "lucide-react";
 
 export default function Profile() {
   const [loading, setLoading] = useState(true);
   const [username, setUsername] = useState("");
   const [fullName, setFullName] = useState("");
   const [avatarUrl, setAvatarUrl] = useState("");
+  const [email, setEmail] = useState("");
+  const [newPassword, setNewPassword] = useState("");
   const [userId, setUserId] = useState<string | null>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -31,6 +33,7 @@ export default function Profile() {
       }
 
       setUserId(session.user.id);
+      setEmail(session.user.email || "");
       
       const { data, error } = await supabase
         .from("profiles")
@@ -82,6 +85,47 @@ export default function Profile() {
       toast({
         title: "Error updating profile",
         description: "Please try again later.",
+        variant: "destructive",
+      });
+    }
+  }
+
+  async function updateEmail() {
+    try {
+      const { error } = await supabase.auth.updateUser({ email });
+      
+      if (error) throw error;
+
+      toast({
+        title: "Email update initiated",
+        description: "Please check your new email for confirmation.",
+      });
+    } catch (error) {
+      console.error("Error updating email:", error);
+      toast({
+        title: "Error updating email",
+        description: error instanceof Error ? error.message : "Please try again later.",
+        variant: "destructive",
+      });
+    }
+  }
+
+  async function updatePassword() {
+    try {
+      const { error } = await supabase.auth.updateUser({ password: newPassword });
+      
+      if (error) throw error;
+
+      setNewPassword(""); // Clear password field after successful update
+      toast({
+        title: "Password updated",
+        description: "Your password has been updated successfully.",
+      });
+    } catch (error) {
+      console.error("Error updating password:", error);
+      toast({
+        title: "Error updating password",
+        description: error instanceof Error ? error.message : "Please try again later.",
         variant: "destructive",
       });
     }
@@ -147,8 +191,56 @@ export default function Profile() {
               className="w-full bg-[#0d97d1] hover:bg-[#0b86b8] text-white"
             >
               <Save className="mr-2 h-4 w-4" />
-              Save Changes
+              Save Profile Changes
             </Button>
+
+            <div className="border-t pt-6 mt-6">
+              <h2 className="text-xl font-semibold mb-4">Account Settings</h2>
+              
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email Address</Label>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                    <Input
+                      id="email"
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="pl-10"
+                      placeholder="Enter your email"
+                    />
+                  </div>
+                  <Button
+                    onClick={updateEmail}
+                    className="mt-2 bg-[#0d97d1] hover:bg-[#0b86b8] text-white"
+                  >
+                    Update Email
+                  </Button>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="newPassword">New Password</Label>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                    <Input
+                      id="newPassword"
+                      type="password"
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      className="pl-10"
+                      placeholder="Enter new password"
+                    />
+                  </div>
+                  <Button
+                    onClick={updatePassword}
+                    className="mt-2 bg-[#0d97d1] hover:bg-[#0b86b8] text-white"
+                  >
+                    Update Password
+                  </Button>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
