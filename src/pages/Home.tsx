@@ -65,7 +65,7 @@ export default function Home() {
             <Button 
               onClick={() => navigate("/events")}
               variant="outline"
-              className="text-white hover:text-[#0d97d1] border-white hover:border-[#0d97d1]"
+              className="bg-[#0d97d1] hover:bg-[#0d97d1]/90 text-white border-[#0d97d1] hover:border-[#0d97d1]/90"
             >
               View All Events
             </Button>
