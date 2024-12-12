@@ -66,7 +66,6 @@ export default function Profile() {
         username,
         full_name: fullName,
         avatar_url: avatarUrl,
-        updated_at: new Date().toISOString(),
       };
 
       const { error } = await supabase
