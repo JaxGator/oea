@@ -10,7 +10,7 @@ const Index = () => {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const { toast } = useToast();
 
-  const { data: events = [], isLoading } = useQuery({
+  const { data: events = [], isLoading, refetch } = useQuery({
     queryKey: ["events", selectedDate],
     queryFn: async () => {
       let query = supabase
@@ -34,6 +34,7 @@ const Index = () => {
         title: event.title,
         description: event.description || "",
         date: event.date,
+        time: event.time,
         location: event.location,
         attendees: event.event_rsvps?.[0]?.count || 0,
         maxAttendees: event.max_guests,
@@ -69,6 +70,8 @@ const Index = () => {
         title: "Success",
         description: "You have successfully RSVP'd to this event",
       });
+      
+      refetch();
     } catch (error) {
       console.error("Error RSVPing to event:", error);
       toast({
@@ -98,7 +101,12 @@ const Index = () => {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {events.map((event) => (
-              <EventCard key={event.id} event={event} onRSVP={handleRSVP} />
+              <EventCard 
+                key={event.id} 
+                event={event} 
+                onRSVP={handleRSVP} 
+                onUpdate={refetch}
+              />
             ))}
           </div>
         )}

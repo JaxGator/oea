@@ -27,13 +27,22 @@ type EventFormValues = z.infer<typeof eventSchema>;
 
 interface EventFormProps {
   onSuccess: () => void;
+  initialData?: {
+    id: string;
+    title: string;
+    description: string;
+    date: string;
+    time: string;
+    location: string;
+    max_guests: number;
+  };
 }
 
-export function EventForm({ onSuccess }: EventFormProps) {
+export function EventForm({ onSuccess, initialData }: EventFormProps) {
   const { toast } = useToast();
   const form = useForm<EventFormValues>({
     resolver: zodResolver(eventSchema),
-    defaultValues: {
+    defaultValues: initialData || {
       title: "",
       description: "",
       date: "",
@@ -52,36 +61,59 @@ export function EventForm({ onSuccess }: EventFormProps) {
       if (!user) {
         toast({
           title: "Error",
-          description: "You must be logged in to create an event",
+          description: "You must be logged in to manage events",
           variant: "destructive",
         });
         return;
       }
 
-      const { error } = await supabase.from("events").insert({
-        title: data.title,
-        description: data.description,
-        date: data.date,
-        time: data.time,
-        location: data.location,
-        max_guests: data.max_guests,
-        created_by: user.id,
-      });
+      if (initialData) {
+        // Update existing event
+        const { error } = await supabase
+          .from("events")
+          .update({
+            title: data.title,
+            description: data.description,
+            date: data.date,
+            time: data.time,
+            location: data.location,
+            max_guests: data.max_guests,
+          })
+          .eq("id", initialData.id);
 
-      if (error) throw error;
+        if (error) throw error;
 
-      toast({
-        title: "Success",
-        description: "Event created successfully",
-      });
+        toast({
+          title: "Success",
+          description: "Event updated successfully",
+        });
+      } else {
+        // Create new event
+        const { error } = await supabase.from("events").insert({
+          title: data.title,
+          description: data.description,
+          date: data.date,
+          time: data.time,
+          location: data.location,
+          max_guests: data.max_guests,
+          created_by: user.id,
+        });
+
+        if (error) throw error;
+
+        toast({
+          title: "Success",
+          description: "Event created successfully",
+        });
+      }
       
       onSuccess();
       form.reset();
     } catch (error) {
-      console.error("Error creating event:", error);
+      console.error("Error managing event:", error);
       toast({
         title: "Error",
-        description: "Failed to create event. Please try again.",
+        description: "Failed to manage event. Please try again.",
         variant: "destructive",
       });
     }
@@ -175,7 +207,7 @@ export function EventForm({ onSuccess }: EventFormProps) {
           )}
         />
         <Button type="submit" className="w-full bg-[#0d97d1] hover:bg-[#0d97d1]/90">
-          Create Event
+          {initialData ? "Update Event" : "Create Event"}
         </Button>
       </form>
     </Form>

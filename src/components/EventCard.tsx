@@ -1,16 +1,50 @@
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { CalendarIcon, MapPinIcon, UsersIcon } from "lucide-react";
+import { CalendarIcon, MapPinIcon, UsersIcon, PencilIcon } from "lucide-react";
 import { Event } from "@/types/event";
 import { format } from "date-fns";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { useState } from "react";
+import { EventForm } from "./event/EventForm";
+import { supabase } from "@/integrations/supabase/client";
 
 interface EventCardProps {
   event: Event;
   onRSVP: (eventId: string) => void;
+  onUpdate?: () => void;
 }
 
-export function EventCard({ event, onRSVP }: EventCardProps) {
+export function EventCard({ event, onRSVP, onUpdate }: EventCardProps) {
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const isFullyBooked = event.attendees >= event.maxAttendees;
+
+  // Check if user is admin
+  const checkAdminStatus = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      const { data } = await supabase
+        .from('profiles')
+        .select('is_admin')
+        .eq('id', user.id)
+        .single();
+      setIsAdmin(!!data?.is_admin);
+    }
+  };
+
+  useState(() => {
+    checkAdminStatus();
+  });
+
+  const handleEditSuccess = () => {
+    setShowEditDialog(false);
+    if (onUpdate) onUpdate();
+  };
 
   return (
     <Card className="w-full transition-all duration-300 hover:shadow-lg animate-fade-in bg-white">
@@ -43,15 +77,44 @@ export function EventCard({ event, onRSVP }: EventCardProps) {
         </div>
         <p className="text-gray-600 line-clamp-2">{event.description}</p>
       </CardContent>
-      <CardFooter className="p-4 pt-0">
+      <CardFooter className="p-4 pt-0 flex gap-2">
         <Button
           onClick={() => onRSVP(event.id)}
           disabled={isFullyBooked}
-          className="w-full bg-[#0d97d1] hover:bg-[#0d97d1]/90 text-white"
+          className="flex-1 bg-[#0d97d1] hover:bg-[#0d97d1]/90 text-white"
         >
           {isFullyBooked ? "Fully Booked" : "RSVP Now"}
         </Button>
+        {isAdmin && (
+          <Button
+            onClick={() => setShowEditDialog(true)}
+            variant="outline"
+            className="px-3"
+          >
+            <PencilIcon className="h-4 w-4" />
+          </Button>
+        )}
       </CardFooter>
+
+      <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Event</DialogTitle>
+          </DialogHeader>
+          <EventForm
+            initialData={{
+              id: event.id,
+              title: event.title,
+              description: event.description,
+              date: event.date,
+              time: event.time || "12:00", // Fallback time if not available
+              location: event.location,
+              max_guests: event.maxAttendees,
+            }}
+            onSuccess={handleEditSuccess}
+          />
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 }
