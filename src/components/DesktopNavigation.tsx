@@ -2,7 +2,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
-import { LogOut, LogIn } from "lucide-react";
+import { LogOut, LogIn, UserCircle } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 
 export function DesktopNavigation() {
@@ -63,25 +63,36 @@ export function DesktopNavigation() {
             </>
           )}
         </div>
-        {user ? (
-          <Button
-            onClick={handleLogout}
-            variant="ghost"
-            className="text-white hover:text-[#0d97d1] transition-colors"
-          >
-            <LogOut className="mr-2 h-4 w-4" />
-            Logout
-          </Button>
-        ) : (
-          <Button
-            onClick={() => navigate("/auth")}
-            variant="ghost"
-            className="text-white hover:text-[#0d97d1] transition-colors"
-          >
-            <LogIn className="mr-2 h-4 w-4" />
-            Login
-          </Button>
-        )}
+        <div className="flex items-center space-x-4">
+          {user ? (
+            <>
+              <Link
+                to="/profile"
+                className="flex items-center hover:text-[#0d97d1] transition-colors"
+              >
+                <UserCircle className="mr-2 h-5 w-5" />
+                Profile
+              </Link>
+              <Button
+                onClick={handleLogout}
+                variant="ghost"
+                className="text-white hover:text-[#0d97d1] transition-colors"
+              >
+                <LogOut className="mr-2 h-4 w-4" />
+                Logout
+              </Button>
+            </>
+          ) : (
+            <Button
+              onClick={() => navigate("/auth")}
+              variant="ghost"
+              className="text-white hover:text-[#0d97d1] transition-colors"
+            >
+              <LogIn className="mr-2 h-4 w-4" />
+              Login
+            </Button>
+          )}
+        </div>
       </div>
     </nav>
   );
