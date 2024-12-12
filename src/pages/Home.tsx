@@ -44,8 +44,8 @@ export default function Home() {
             <div>
               <h3 className="text-lg font-semibold mb-4">Quick Links</h3>
               <ul className="space-y-2">
-                <li><button onClick={() => navigate("/events")} className="hover:text-primary-400 transition-colors">Events</button></li>
-                <li><button onClick={() => navigate("/about")} className="hover:text-primary-400 transition-colors">About Us</button></li>
+                <li><button onClick={() => navigate("/events")} className="hover:text-[#0d97d1] transition-colors">Events</button></li>
+                <li><button onClick={() => navigate("/about")} className="hover:text-[#0d97d1] transition-colors">About Us</button></li>
               </ul>
             </div>
 
@@ -53,9 +53,9 @@ export default function Home() {
             <div>
               <h3 className="text-lg font-semibold mb-4">Follow Us</h3>
               <div className="flex space-x-4">
-                <a href="#" className="hover:text-primary-400 transition-colors">Facebook</a>
-                <a href="#" className="hover:text-primary-400 transition-colors">Instagram</a>
-                <a href="#" className="hover:text-primary-400 transition-colors">Twitter</a>
+                <a href="#" className="hover:text-[#0d97d1] transition-colors">Facebook</a>
+                <a href="#" className="hover:text-[#0d97d1] transition-colors">Instagram</a>
+                <a href="#" className="hover:text-[#0d97d1] transition-colors">Twitter</a>
               </div>
             </div>
           </div>
