@@ -38,7 +38,7 @@ const Index = () => {
         location: event.location,
         attendees: event.event_rsvps?.[0]?.count || 0,
         maxAttendees: event.max_guests,
-        imageUrl: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&q=80",
+        imageUrl: event.image_url || "https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&q=80",
       }));
     },
   });
@@ -58,15 +58,16 @@ const Index = () => {
         return;
       }
 
-      // First check if user has already RSVP'd
-      const { data: existingRSVP } = await supabase
+      // Check if user has already RSVP'd
+      const { data: existingRSVP, error: fetchError } = await supabase
         .from("event_rsvps")
         .select("*")
         .eq("event_id", eventId)
-        .eq("user_id", user.id)
-        .single();
+        .eq("user_id", user.id);
 
-      if (existingRSVP) {
+      if (fetchError) throw fetchError;
+
+      if (existingRSVP && existingRSVP.length > 0) {
         toast({
           title: "Error",
           description: "You have already RSVP'd to this event",
@@ -75,13 +76,13 @@ const Index = () => {
         return;
       }
 
-      const { error } = await supabase.from("event_rsvps").insert({
+      const { error: insertError } = await supabase.from("event_rsvps").insert({
         event_id: eventId,
         user_id: user.id,
-        response: "GOING", // Using uppercase as it's likely the expected format
+        response: "GOING",
       });
 
-      if (error) throw error;
+      if (insertError) throw insertError;
 
       toast({
         title: "Success",
