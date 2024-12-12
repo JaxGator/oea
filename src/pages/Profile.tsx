@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { User, UserCircle, Save, Mail, Lock } from "lucide-react";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 export default function Profile() {
   const [loading, setLoading] = useState(true);
@@ -143,8 +144,16 @@ export default function Profile() {
       <div className="max-w-2xl mx-auto space-y-8">
         <div className="bg-white rounded-lg p-6 shadow-lg">
           <div className="flex items-center space-x-4 mb-6">
-            <UserCircle className="h-12 w-12 text-[#0d97d1]" />
-            <h1 className="text-2xl font-bold">Profile Settings</h1>
+            <Avatar className="h-20 w-20">
+              <AvatarImage src={avatarUrl} alt={fullName || username} />
+              <AvatarFallback>
+                <UserCircle className="h-20 w-20 text-[#0d97d1]" />
+              </AvatarFallback>
+            </Avatar>
+            <div>
+              <h1 className="text-2xl font-bold">Profile Settings</h1>
+              <p className="text-gray-600">{fullName || username}</p>
+            </div>
           </div>
 
           <div className="space-y-6">
