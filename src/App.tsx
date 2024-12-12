@@ -16,7 +16,7 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <div className="pb-16 md:pb-0"> {/* Add padding for mobile nav */}
+        <div className="min-h-screen pb-16 md:pb-0"> {/* Added min-h-screen and padding for mobile nav */}
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/events" element={<Events />} />
