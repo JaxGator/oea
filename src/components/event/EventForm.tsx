@@ -1,42 +1,14 @@
 import { Button } from "@/components/ui/button";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+import { Form } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
-
-const eventSchema = z.object({
-  title: z.string().min(1, "Title is required"),
-  description: z.string().min(1, "Description is required"),
-  date: z.string().min(1, "Date is required"),
-  time: z.string().min(1, "Time is required"),
-  location: z.string().min(1, "Location is required"),
-  max_guests: z.number().min(1, "At least one guest is required"),
-});
-
-type EventFormValues = z.infer<typeof eventSchema>;
-
-interface EventFormProps {
-  onSuccess: () => void;
-  initialData?: {
-    id: string;
-    title: string;
-    description: string;
-    date: string;
-    time: string;
-    location: string;
-    max_guests: number;
-  };
-}
+import { EventFormProps, EventFormValues, eventSchema } from "./EventFormTypes";
+import { EventBasicDetails } from "./EventBasicDetails";
+import { EventScheduling } from "./EventScheduling";
+import { EventLocationCapacity } from "./EventLocationCapacity";
+import { EventImageUpload } from "./EventImageUpload";
 
 export function EventForm({ onSuccess, initialData }: EventFormProps) {
   const { toast } = useToast();
@@ -49,6 +21,7 @@ export function EventForm({ onSuccess, initialData }: EventFormProps) {
       time: "",
       location: "",
       max_guests: 50,
+      image_url: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&q=80",
     },
   });
 
@@ -68,7 +41,6 @@ export function EventForm({ onSuccess, initialData }: EventFormProps) {
       }
 
       if (initialData) {
-        // Update existing event
         const { error } = await supabase
           .from("events")
           .update({
@@ -78,6 +50,7 @@ export function EventForm({ onSuccess, initialData }: EventFormProps) {
             time: data.time,
             location: data.location,
             max_guests: data.max_guests,
+            image_url: data.image_url,
           })
           .eq("id", initialData.id);
 
@@ -88,7 +61,6 @@ export function EventForm({ onSuccess, initialData }: EventFormProps) {
           description: "Event updated successfully",
         });
       } else {
-        // Create new event
         const { error } = await supabase.from("events").insert({
           title: data.title,
           description: data.description,
@@ -97,6 +69,7 @@ export function EventForm({ onSuccess, initialData }: EventFormProps) {
           location: data.location,
           max_guests: data.max_guests,
           created_by: user.id,
+          image_url: data.image_url,
         });
 
         if (error) throw error;
@@ -122,90 +95,10 @@ export function EventForm({ onSuccess, initialData }: EventFormProps) {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-        <FormField
-          control={form.control}
-          name="title"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Title</FormLabel>
-              <FormControl>
-                <Input placeholder="Event title" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="description"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Description</FormLabel>
-              <FormControl>
-                <Input placeholder="Event description" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="date"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Date</FormLabel>
-              <FormControl>
-                <Input type="date" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="time"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Time</FormLabel>
-              <FormControl>
-                <Input type="time" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="location"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Location</FormLabel>
-              <FormControl>
-                <Input placeholder="Event location" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="max_guests"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Maximum Guests</FormLabel>
-              <FormControl>
-                <Input 
-                  type="number" 
-                  min="1" 
-                  {...field}
-                  onChange={(e) => field.onChange(parseInt(e.target.value))}
-                  value={field.value}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        <EventBasicDetails form={form} />
+        <EventScheduling form={form} />
+        <EventLocationCapacity form={form} />
+        <EventImageUpload form={form} defaultImage={initialData?.image_url} />
         <Button type="submit" className="w-full bg-[#0d97d1] hover:bg-[#0d97d1]/90">
           {initialData ? "Update Event" : "Create Event"}
         </Button>
