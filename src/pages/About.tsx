@@ -17,28 +17,6 @@ export default function About() {
           <p className="text-lg">
             We believe that everyone should have access to outdoor recreation and the opportunity to develop a connection with nature. Through our programs, we strive to remove barriers and create inclusive spaces where participants can challenge themselves, build confidence, and develop leadership skills.
           </p>
-
-          <div className="bg-white/5 p-8 rounded-lg mt-12">
-            <h2 className="text-2xl font-semibold mb-6">Our Core Values</h2>
-            <div className="grid md:grid-cols-2 gap-6">
-              <div>
-                <h3 className="text-xl font-semibold mb-3 text-[#0d97d1]">Accessibility</h3>
-                <p>Making outdoor recreation accessible to all youth regardless of their background or experience level.</p>
-              </div>
-              <div>
-                <h3 className="text-xl font-semibold mb-3 text-[#0d97d1]">Environmental Stewardship</h3>
-                <p>Teaching responsible outdoor practices and fostering a connection with nature.</p>
-              </div>
-              <div>
-                <h3 className="text-xl font-semibold mb-3 text-[#0d97d1]">Personal Growth</h3>
-                <p>Creating opportunities for participants to challenge themselves and develop new skills.</p>
-              </div>
-              <div>
-                <h3 className="text-xl font-semibold mb-3 text-[#0d97d1]">Community</h3>
-                <p>Building a supportive community that encourages and inspires one another.</p>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
     </div>
