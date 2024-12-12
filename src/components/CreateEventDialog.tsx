@@ -29,7 +29,7 @@ const eventSchema = z.object({
   date: z.string().min(1, "Date is required"),
   time: z.string().min(1, "Time is required"),
   location: z.string().min(1, "Location is required"),
-  max_guests: z.string().transform((val) => parseInt(val, 10)),
+  max_guests: z.number().min(1, "At least one guest is required"),
 });
 
 type EventFormValues = z.infer<typeof eventSchema>;
@@ -45,7 +45,7 @@ export function CreateEventDialog() {
       date: "",
       time: "",
       location: "",
-      max_guests: "50",
+      max_guests: 50,
     },
   });
 
@@ -179,7 +179,13 @@ export function CreateEventDialog() {
                 <FormItem>
                   <FormLabel>Maximum Guests</FormLabel>
                   <FormControl>
-                    <Input type="number" min="1" {...field} />
+                    <Input 
+                      type="number" 
+                      min="1" 
+                      {...field}
+                      onChange={(e) => field.onChange(parseInt(e.target.value))}
+                      value={field.value}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
