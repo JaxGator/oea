@@ -23,31 +23,6 @@ export default function Home() {
           </Button>
         </div>
       </div>
-
-      {/* Featured Section */}
-      <div className="container mx-auto px-4 py-16">
-        <h2 className="text-3xl font-bold text-center mb-12">Why Choose Us?</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div className="text-center p-6">
-            <h3 className="text-xl font-semibold mb-4">Community First</h3>
-            <p className="text-gray-600">
-              Join a vibrant community of like-minded individuals
-            </p>
-          </div>
-          <div className="text-center p-6">
-            <h3 className="text-xl font-semibold mb-4">Diverse Events</h3>
-            <p className="text-gray-600">
-              From workshops to social gatherings, find your perfect event
-            </p>
-          </div>
-          <div className="text-center p-6">
-            <h3 className="text-xl font-semibold mb-4">Easy to Join</h3>
-            <p className="text-gray-600">
-              Simple RSVP process and event management
-            </p>
-          </div>
-        </div>
-      </div>
     </div>
   );
 }
