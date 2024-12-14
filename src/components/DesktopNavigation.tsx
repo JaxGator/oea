@@ -36,7 +36,7 @@ export function DesktopNavigation() {
   };
 
   return (
-    <nav className="hidden md:block bg-[#222222] text-white p-4">
+    <nav className="hidden md:block bg-primary text-white p-4">
       <div className="container mx-auto flex justify-between items-center">
         <div className="flex items-center space-x-8">
           <Link to="/">
@@ -46,21 +46,19 @@ export function DesktopNavigation() {
               className="h-12"
             />
           </Link>
+          <Link
+            to="/events"
+            className="hover:text-primary-100 transition-colors"
+          >
+            Events
+          </Link>
           {user && (
-            <>
-              <Link
-                to="/events"
-                className="hover:text-[#0d97d1] transition-colors"
-              >
-                Events
-              </Link>
-              <Link
-                to="/about"
-                className="hover:text-[#0d97d1] transition-colors"
-              >
-                About
-              </Link>
-            </>
+            <Link
+              to="/about"
+              className="hover:text-primary-100 transition-colors"
+            >
+              About
+            </Link>
           )}
         </div>
         <div className="flex items-center space-x-4">
@@ -68,7 +66,7 @@ export function DesktopNavigation() {
             <>
               <Link
                 to="/profile"
-                className="flex items-center hover:text-[#0d97d1] transition-colors"
+                className="flex items-center hover:text-primary-100 transition-colors"
               >
                 <UserCircle className="mr-2 h-5 w-5" />
                 Profile
@@ -76,7 +74,7 @@ export function DesktopNavigation() {
               <Button
                 onClick={handleLogout}
                 variant="ghost"
-                className="text-white hover:text-[#0d97d1] transition-colors"
+                className="text-white hover:text-primary-100 transition-colors"
               >
                 <LogOut className="mr-2 h-4 w-4" />
                 Logout
@@ -86,7 +84,7 @@ export function DesktopNavigation() {
             <Button
               onClick={() => navigate("/auth")}
               variant="ghost"
-              className="text-white hover:text-[#0d97d1] transition-colors"
+              className="text-white hover:text-primary-100 transition-colors"
             >
               <LogIn className="mr-2 h-4 w-4" />
               Login
