@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { EventCard } from "@/components/EventCard";
 import { DateFilter } from "@/components/DateFilter";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { CreateEventDialog } from "@/components/CreateEventDialog";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 const Index = () => {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const { toast } = useToast();
+  const [userRSVPs, setUserRSVPs] = useState<Record<string, string>>({});
 
   const { data: events = [], isLoading, refetch } = useQuery({
     queryKey: ["events", selectedDate],
@@ -42,6 +43,33 @@ const Index = () => {
       }));
     },
   });
+
+  // Fetch user's RSVPs
+  const fetchUserRSVPs = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { data: rsvps, error } = await supabase
+      .from("event_rsvps")
+      .select("event_id, response")
+      .eq("user_id", user.id);
+
+    if (error) {
+      console.error("Error fetching RSVPs:", error);
+      return;
+    }
+
+    const rsvpMap = rsvps?.reduce((acc, rsvp) => ({
+      ...acc,
+      [rsvp.event_id]: rsvp.response
+    }), {});
+
+    setUserRSVPs(rsvpMap || {});
+  };
+
+  useEffect(() => {
+    fetchUserRSVPs();
+  }, []);
 
   const handleRSVP = async (eventId: string) => {
     try {
@@ -89,12 +117,51 @@ const Index = () => {
         description: "You have successfully RSVP'd to this event",
       });
       
-      refetch();
+      await Promise.all([refetch(), fetchUserRSVPs()]);
     } catch (error: any) {
       console.error("Error RSVPing to event:", error);
       toast({
         title: "Error",
         description: error.message || "Failed to RSVP. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleCancelRSVP = async (eventId: string) => {
+    try {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) {
+        toast({
+          title: "Error",
+          description: "You must be logged in to cancel your RSVP",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const { error } = await supabase
+        .from("event_rsvps")
+        .delete()
+        .eq("event_id", eventId)
+        .eq("user_id", user.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Your RSVP has been cancelled",
+      });
+
+      await Promise.all([refetch(), fetchUserRSVPs()]);
+    } catch (error: any) {
+      console.error("Error cancelling RSVP:", error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to cancel RSVP. Please try again.",
         variant: "destructive",
       });
     }
@@ -122,7 +189,9 @@ const Index = () => {
               <EventCard 
                 key={event.id} 
                 event={event} 
-                onRSVP={handleRSVP} 
+                onRSVP={handleRSVP}
+                onCancelRSVP={handleCancelRSVP}
+                userRSVPStatus={userRSVPs[event.id]}
                 onUpdate={refetch}
               />
             ))}

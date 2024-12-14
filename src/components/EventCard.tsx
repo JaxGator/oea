@@ -9,17 +9,20 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { EventForm } from "./event/EventForm";
 import { supabase } from "@/integrations/supabase/client";
+import { Badge } from "@/components/ui/badge";
 
 interface EventCardProps {
   event: Event;
   onRSVP: (eventId: string) => void;
+  onCancelRSVP: (eventId: string) => void;
+  userRSVPStatus?: string | null;
   onUpdate?: () => void;
 }
 
-export function EventCard({ event, onRSVP, onUpdate }: EventCardProps) {
+export function EventCard({ event, onRSVP, onCancelRSVP, userRSVPStatus, onUpdate }: EventCardProps) {
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const isFullyBooked = event.attendees >= event.maxAttendees;
@@ -37,9 +40,9 @@ export function EventCard({ event, onRSVP, onUpdate }: EventCardProps) {
     }
   };
 
-  useState(() => {
+  useEffect(() => {
     checkAdminStatus();
-  });
+  }, []);
 
   const handleEditSuccess = () => {
     setShowEditDialog(false);
@@ -76,15 +79,30 @@ export function EventCard({ event, onRSVP, onUpdate }: EventCardProps) {
           </span>
         </div>
         <p className="text-gray-600 line-clamp-2">{event.description}</p>
+        {userRSVPStatus && (
+          <Badge variant="secondary" className="mt-2">
+            Your RSVP: {userRSVPStatus}
+          </Badge>
+        )}
       </CardContent>
       <CardFooter className="p-4 pt-0 flex gap-2">
-        <Button
-          onClick={() => onRSVP(event.id)}
-          disabled={isFullyBooked}
-          className="flex-1 bg-[#0d97d1] hover:bg-[#0d97d1]/90 text-white"
-        >
-          {isFullyBooked ? "Fully Booked" : "RSVP Now"}
-        </Button>
+        {userRSVPStatus ? (
+          <Button
+            onClick={() => onCancelRSVP(event.id)}
+            variant="outline"
+            className="flex-1"
+          >
+            Cancel RSVP
+          </Button>
+        ) : (
+          <Button
+            onClick={() => onRSVP(event.id)}
+            disabled={isFullyBooked}
+            className="flex-1 bg-[#0d97d1] hover:bg-[#0d97d1]/90 text-white"
+          >
+            {isFullyBooked ? "Fully Booked" : "RSVP Now"}
+          </Button>
+        )}
         {isAdmin && (
           <Button
             onClick={() => setShowEditDialog(true)}
@@ -107,7 +125,7 @@ export function EventCard({ event, onRSVP, onUpdate }: EventCardProps) {
               title: event.title,
               description: event.description,
               date: event.date,
-              time: event.time || "12:00", // Fallback time if not available
+              time: event.time || "12:00",
               location: event.location,
               max_guests: event.maxAttendees,
             }}
