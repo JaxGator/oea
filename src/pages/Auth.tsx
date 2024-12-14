@@ -30,8 +30,6 @@ const AuthPage = () => {
           title: "Password Recovery",
           description: "Please check your email to reset your password.",
         });
-      } else if (event === 'USER_DELETED') {
-        navigate("/auth");
       } else if (event === 'TOKEN_REFRESHED') {
         // Handle token refresh if needed
       }
@@ -64,13 +62,6 @@ const AuthPage = () => {
             }
           }}
           providers={[]}
-          onError={(error) => {
-            toast({
-              title: "Authentication Error",
-              description: error.message,
-              variant: "destructive",
-            });
-          }}
         />
       </div>
     </div>
