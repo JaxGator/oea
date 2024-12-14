@@ -3,19 +3,44 @@ import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
+import { useToast } from "@/hooks/use-toast";
 
 const AuthPage = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    // Check if user is already logged in
+    supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
         navigate("/");
       }
     });
 
-    return () => subscription.unsubscribe();
-  }, [navigate]);
+    // Listen for auth state changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN' && session) {
+        navigate("/");
+      } else if (event === 'SIGNED_OUT') {
+        navigate("/auth");
+      } else if (event === 'USER_UPDATED') {
+        // Handle user update if needed
+      } else if (event === 'PASSWORD_RECOVERY') {
+        toast({
+          title: "Password Recovery",
+          description: "Please check your email to reset your password.",
+        });
+      } else if (event === 'USER_DELETED') {
+        navigate("/auth");
+      } else if (event === 'TOKEN_REFRESHED') {
+        // Handle token refresh if needed
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [navigate, toast]);
 
   return (
     <div className="min-h-screen bg-[#222222] flex items-center justify-center p-4">
@@ -39,6 +64,13 @@ const AuthPage = () => {
             }
           }}
           providers={[]}
+          onError={(error) => {
+            toast({
+              title: "Authentication Error",
+              description: error.message,
+              variant: "destructive",
+            });
+          }}
         />
       </div>
     </div>
