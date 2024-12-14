@@ -31,6 +31,9 @@ export const Footer = () => {
             <Youtube size={32} />
           </a>
         </div>
+        <div className="mt-6 text-center text-sm">
+          <p>&copy; {new Date().getFullYear()} Outdoor Energy Adventures. All rights reserved.</p>
+        </div>
       </div>
     </footer>
   );
