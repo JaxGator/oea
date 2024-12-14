@@ -52,14 +52,12 @@ export function DesktopNavigation() {
           >
             Events
           </Link>
-          {user && (
-            <Link
-              to="/about"
-              className="hover:text-primary-100 transition-colors"
-            >
-              About
-            </Link>
-          )}
+          <Link
+            to="/about"
+            className="hover:text-primary-100 transition-colors"
+          >
+            About
+          </Link>
         </div>
         <div className="flex items-center space-x-4">
           {user ? (
