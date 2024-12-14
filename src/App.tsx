@@ -55,7 +55,7 @@ const App = () => (
             <Route path="/auth" element={<Auth />} />
             <Route path="/" element={<Home />} />
             <Route path="/events" element={<Events />} />
-            <Route path="/about" element={<ProtectedRoute><About /></ProtectedRoute>} />
+            <Route path="/about" element={<About />} />
             <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
           </Routes>
           <MobileNavigation />
