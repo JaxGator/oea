@@ -31,25 +31,30 @@ export function SignInForm({ setIsLoading }: SignInFormProps) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <Input
-        type="email"
-        name="email"
-        placeholder="Email"
-        value={formState.email}
-        onChange={handleInputChange}
-        required
-      />
-      <Input
-        type="password"
-        name="password"
-        placeholder="Password"
-        value={formState.password}
-        onChange={handleInputChange}
-        required
-      />
+      <div className="space-y-2">
+        <Input
+          type="email"
+          name="email"
+          placeholder="Email"
+          value={formState.email}
+          onChange={handleInputChange}
+          required
+        />
+        <Input
+          type="password"
+          name="password"
+          placeholder="Password"
+          value={formState.password}
+          onChange={handleInputChange}
+          required
+        />
+      </div>
       <Button type="submit" className="w-full">
         Sign In
       </Button>
+      <p className="text-sm text-gray-500 text-center mt-4">
+        Make sure to check your email for verification after signing up.
+      </p>
     </form>
   );
 }
