@@ -20,18 +20,18 @@ const AuthPage = () => {
     // Listen for auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_IN' && session) {
+        toast({
+          title: "Success",
+          description: "Successfully signed in!",
+        });
         navigate("/");
       } else if (event === 'SIGNED_OUT') {
         navigate("/auth");
-      } else if (event === 'USER_UPDATED') {
-        // Handle user update if needed
       } else if (event === 'PASSWORD_RECOVERY') {
         toast({
           title: "Password Recovery",
           description: "Please check your email to reset your password.",
         });
-      } else if (event === 'TOKEN_REFRESHED') {
-        // Handle token refresh if needed
       }
     });
 
@@ -60,14 +60,26 @@ const AuthPage = () => {
                 }
               }
             },
-            // Add custom styles to show error messages clearly
             style: {
               message: {
                 color: 'red',
+                marginBottom: '12px',
+              },
+              anchor: {
+                color: '#0d97d1',
+              },
+              button: {
+                borderRadius: '6px',
+                height: '40px',
+              },
+              input: {
+                borderRadius: '6px',
+                height: '40px',
               },
             },
           }}
           providers={[]}
+          redirectTo={window.location.origin}
           localization={{
             variables: {
               sign_in: {
