@@ -32,6 +32,11 @@ const AuthPage = () => {
           title: "Password Recovery",
           description: "Please check your email to reset your password.",
         });
+      } else if (event === 'USER_UPDATED') {
+        toast({
+          title: "Profile Updated",
+          description: "Your profile has been updated successfully.",
+        });
       }
     });
 
