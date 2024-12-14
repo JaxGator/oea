@@ -2,19 +2,29 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuthForm } from "@/hooks/useAuthForm";
+import { useToast } from "@/components/ui/use-toast";
 
 interface SignInFormProps {
   setIsLoading: (loading: boolean) => void;
 }
 
 export function SignInForm({ setIsLoading }: SignInFormProps) {
+  const { toast } = useToast();
   const { formState, handleInputChange, handleSubmit } = useAuthForm({
     onSubmit: async (email, password) => {
       const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
-      if (error) throw error;
+      
+      if (error) {
+        if (error.message === "Invalid login credentials") {
+          throw new Error(
+            "Invalid email or password. If you just signed up, please check your email for verification."
+          );
+        }
+        throw error;
+      }
     },
     setIsLoading,
   });
