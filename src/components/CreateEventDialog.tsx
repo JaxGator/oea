@@ -7,44 +7,11 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { PlusIcon } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { EventForm } from "./event/EventForm";
-import { supabase } from "@/integrations/supabase/client";
 
 export function CreateEventDialog() {
   const [open, setOpen] = useState(false);
-  const [canCreateEvents, setCanCreateEvents] = useState(false);
-
-  useEffect(() => {
-    const checkUserPermissions = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (!user) {
-        setCanCreateEvents(false);
-        return;
-      }
-
-      // Check if user is admin by querying the profiles table
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('is_admin')
-        .eq('id', user.id)
-        .single();
-
-      setCanCreateEvents(profile?.is_admin || false);
-    };
-
-    checkUserPermissions();
-
-    // Listen for auth state changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
-      checkUserPermissions();
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
-
-  if (!canCreateEvents) return null;
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
