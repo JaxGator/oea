@@ -7,7 +7,7 @@ interface AuthFormState {
 }
 
 interface UseAuthFormProps {
-  onSubmit: (email: string, password: string) => Promise<void>;
+  onSubmit: (email: string, password: string) => Promise<any>;
   setIsLoading: (loading: boolean) => void;
 }
 
@@ -30,11 +30,13 @@ export function useAuthForm({ onSubmit, setIsLoading }: UseAuthFormProps) {
     try {
       await onSubmit(formState.email, formState.password);
     } catch (error: any) {
+      console.error("Auth form error:", error);
       toast({
-        title: "Error",
+        title: "Authentication Error",
         description: error.message || "An error occurred during authentication.",
         variant: "destructive",
       });
+      setFormState(prev => ({ ...prev, password: "" }));
     } finally {
       setIsLoading(false);
     }

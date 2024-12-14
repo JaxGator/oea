@@ -12,19 +12,29 @@ export function SignInForm({ setIsLoading }: SignInFormProps) {
   const { toast } = useToast();
   const { formState, handleInputChange, handleSubmit } = useAuthForm({
     onSubmit: async (email, password) => {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
       
       if (error) {
+        console.error("Sign in error:", error);
+        
         if (error.message === "Invalid login credentials") {
           throw new Error(
-            "Invalid email or password. If you just signed up, please check your email for verification."
+            "Invalid email or password. Please check your credentials and try again. If you haven't verified your email yet, please check your inbox."
+          );
+        } else if (error.message.includes("Email not confirmed")) {
+          throw new Error(
+            "Please verify your email address. Check your inbox for the confirmation link."
           );
         }
-        throw error;
+        throw new Error(
+          "An error occurred during sign in. Please try again later."
+        );
       }
+
+      return data;
     },
     setIsLoading,
   });
@@ -39,6 +49,7 @@ export function SignInForm({ setIsLoading }: SignInFormProps) {
           value={formState.email}
           onChange={handleInputChange}
           required
+          className="w-full"
         />
         <Input
           type="password"
@@ -47,13 +58,14 @@ export function SignInForm({ setIsLoading }: SignInFormProps) {
           value={formState.password}
           onChange={handleInputChange}
           required
+          className="w-full"
         />
       </div>
       <Button type="submit" className="w-full">
         Sign In
       </Button>
       <p className="text-sm text-gray-500 text-center mt-4">
-        Make sure to check your email for verification after signing up.
+        Don't have an account? Switch to the Sign Up tab above.
       </p>
     </form>
   );
