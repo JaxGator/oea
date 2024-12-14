@@ -3,6 +3,8 @@ import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuthForm } from "@/hooks/useAuthForm";
 import { useToast } from "@/components/ui/use-toast";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useState } from "react";
 
 interface SignInFormProps {
   setIsLoading: (loading: boolean) => void;
@@ -10,8 +12,12 @@ interface SignInFormProps {
 
 export function SignInForm({ setIsLoading }: SignInFormProps) {
   const { toast } = useToast();
+  const [error, setError] = useState<string | null>(null);
+  
   const { formState, handleInputChange, handleSubmit } = useAuthForm({
     onSubmit: async (email, password) => {
+      setError(null);
+      
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -22,7 +28,7 @@ export function SignInForm({ setIsLoading }: SignInFormProps) {
         
         if (error.message === "Invalid login credentials") {
           throw new Error(
-            "Invalid email or password. Please check your credentials and try again. If you haven't verified your email yet, please check your inbox."
+            "Invalid email or password. Please check your credentials and try again."
           );
         } else if (error.message.includes("Email not confirmed")) {
           throw new Error(
@@ -41,6 +47,11 @@ export function SignInForm({ setIsLoading }: SignInFormProps) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
+      {error && (
+        <Alert variant="destructive">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
       <div className="space-y-2">
         <Input
           type="email"
@@ -50,6 +61,7 @@ export function SignInForm({ setIsLoading }: SignInFormProps) {
           onChange={handleInputChange}
           required
           className="w-full"
+          autoComplete="email"
         />
         <Input
           type="password"
@@ -59,6 +71,7 @@ export function SignInForm({ setIsLoading }: SignInFormProps) {
           onChange={handleInputChange}
           required
           className="w-full"
+          autoComplete="current-password"
         />
       </div>
       <Button type="submit" className="w-full">
