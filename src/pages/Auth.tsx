@@ -59,9 +59,37 @@ const AuthPage = () => {
                   brandAccent: '#0d97d1',
                 }
               }
-            }
+            },
+            // Add custom styles to show error messages clearly
+            style: {
+              message: {
+                color: 'red',
+              },
+            },
           }}
           providers={[]}
+          localization={{
+            variables: {
+              sign_in: {
+                email_label: 'Email',
+                password_label: 'Password',
+                button_label: 'Sign In',
+                loading_button_label: 'Signing in...',
+                email_input_placeholder: 'Your email address',
+                password_input_placeholder: 'Your password',
+                link_text: "Don't have an account? Sign up",
+              },
+              sign_up: {
+                email_label: 'Email',
+                password_label: 'Password',
+                button_label: 'Sign Up',
+                loading_button_label: 'Signing up...',
+                email_input_placeholder: 'Your email address',
+                password_input_placeholder: 'Create a password',
+                link_text: "Already have an account? Sign in",
+              },
+            },
+          }}
         />
       </div>
     </div>
