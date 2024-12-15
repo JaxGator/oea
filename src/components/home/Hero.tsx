@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { EditableContent } from '../EditableContent';
 
 export const Hero = () => {
-  const [backgroundImage, setBackgroundImage] = useState('https://images.unsplash.com/photo-1472745942893-4b9f730c7668?q=80&w=2069&auto=format&fit=crop');
+  const [backgroundImage, setBackgroundImage] = useState('https://www.adamsvanlines.com/wp-content/uploads/2021/07/12-Things-You-Should-Know-Before-Moving-To-Jacksonville-FL-Adams-Van-Lines.b197b0.webp');
 
   return (
     <div 
