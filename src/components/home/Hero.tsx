@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { EditableContent } from '../EditableContent';
 
 export const Hero = () => {
@@ -16,14 +16,6 @@ export const Hero = () => {
           src="/lovable-uploads/609edf01-3169-439a-80f5-f6f15de7a5a6.png"
           alt="Outdoor Energy Adventures Logo"
           className="w-48 sm:w-56 md:w-64 lg:w-80 mx-auto mb-6 sm:mb-8 animate-fade-in"
-        />
-      </div>
-      <div className="absolute bottom-4 right-4 bg-black/50 p-2 rounded text-white max-w-md">
-        <EditableContent
-          content={backgroundImage}
-          pageId="home"
-          sectionId="hero-background"
-          onUpdate={setBackgroundImage}
         />
       </div>
     </div>
