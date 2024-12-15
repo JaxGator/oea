@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { EditableContent } from "@/components/EditableContent";
 import { supabase } from "@/integrations/supabase/client";
+import { ViewContent } from "@/components/content/ViewContent";
 
 export default function About() {
   const [content, setContent] = useState({
@@ -20,7 +21,17 @@ export default function About() {
     mission: `We believe that everyone should have access to outdoor recreation and the opportunity to develop a connection with nature. Through our programs, we strive to remove barriers and create inclusive spaces where participants can challenge themselves, build confidence, and develop leadership skills.`
   });
 
+  const [user, setUser] = useState<any>(null);
+
   useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setUser(session?.user || null);
+    });
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user || null);
+    });
+
     const fetchContent = async () => {
       const { data, error } = await supabase
         .from('page_content')
@@ -44,6 +55,7 @@ export default function About() {
     };
 
     fetchContent();
+    return () => subscription.unsubscribe();
   }, []);
 
   return (
@@ -60,18 +72,33 @@ export default function About() {
         </div>
 
         <div className="max-w-3xl mx-auto space-y-8">
-          <EditableContent
-            content={content.guidelines}
-            pageId="about"
-            sectionId="guidelines"
-            onUpdate={(newContent) => setContent(prev => ({ ...prev, guidelines: newContent }))}
-          />
-          <EditableContent
-            content={content.mission}
-            pageId="about"
-            sectionId="mission"
-            onUpdate={(newContent) => setContent(prev => ({ ...prev, mission: newContent }))}
-          />
+          {user ? (
+            <>
+              <EditableContent
+                content={content.guidelines}
+                pageId="about"
+                sectionId="guidelines"
+                onUpdate={(newContent) => setContent(prev => ({ ...prev, guidelines: newContent }))}
+              />
+              <EditableContent
+                content={content.mission}
+                pageId="about"
+                sectionId="mission"
+                onUpdate={(newContent) => setContent(prev => ({ ...prev, mission: newContent }))}
+              />
+            </>
+          ) : (
+            <>
+              <div className="prose max-w-none whitespace-pre-wrap bg-white p-6 rounded-lg shadow-sm">
+                <h2 className="text-2xl font-semibold mb-4">Guidelines</h2>
+                {content.guidelines}
+              </div>
+              <div className="prose max-w-none whitespace-pre-wrap bg-white p-6 rounded-lg shadow-sm">
+                <h2 className="text-2xl font-semibold mb-4">Our Mission</h2>
+                {content.mission}
+              </div>
+            </>
+          )}
         </div>
       </div>
     </div>
