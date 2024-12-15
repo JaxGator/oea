@@ -19,16 +19,13 @@ export function EditableContent({ content, pageId, sectionId, onUpdate }: Editab
     handleSave
   } = useContentEditor(content, pageId, sectionId);
 
-  if (!isAdmin) {
-    return null;
-  }
-
   return (
     <div className="relative group">
       {!isEditing ? (
         <ViewContent 
           content={content} 
-          onEdit={() => setIsEditing(true)} 
+          onEdit={() => setIsEditing(true)}
+          showEditButton={isAdmin}
         />
       ) : (
         <EditContent
