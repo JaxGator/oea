@@ -50,6 +50,15 @@ export default function About() {
     <div className="min-h-screen bg-[#F1F0FB]">
       <div className="container mx-auto px-4 py-12">
         <h1 className="text-4xl font-bold text-center mb-8 text-gray-900">About Us</h1>
+        
+        <div className="w-full h-[300px] md:h-[400px] mb-12 rounded-lg overflow-hidden">
+          <img 
+            src="https://images.unsplash.com/photo-1575540203949-54ccd7a66d98?q=80&w=2942&auto=format&fit=crop"
+            alt="Jacksonville, Florida skyline"
+            className="w-full h-full object-cover"
+          />
+        </div>
+
         <div className="max-w-3xl mx-auto space-y-8">
           <EditableContent
             content={content.guidelines}
