@@ -82,4 +82,5 @@ export interface Profile {
   created_at: string;
   is_admin: boolean | null;
   is_approved: boolean | null;
+  is_member: boolean | null;
 }
