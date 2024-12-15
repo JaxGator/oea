@@ -36,7 +36,7 @@ export function DesktopNavigation() {
   };
 
   return (
-    <nav className="hidden md:block bg-primary text-white p-4">
+    <nav className="hidden md:block bg-[#222222] text-white p-4">
       <div className="container mx-auto flex justify-between items-center">
         <div className="flex items-center space-x-8">
           <Link to="/">
