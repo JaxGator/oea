@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Navigate } from "react-router-dom";
 import {
   Table,
   TableBody,
@@ -23,24 +22,11 @@ interface Profile {
 
 export default function Members() {
   const [members, setMembers] = useState<Profile[]>([]);
-  const [session, setSession] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      console.log("Session data:", session);
-      setSession(session);
-      if (session) {
-        fetchMembers();
-      }
-    });
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-    });
-
-    return () => subscription.unsubscribe();
+    fetchMembers();
   }, []);
 
   const fetchMembers = async () => {
@@ -74,10 +60,6 @@ export default function Members() {
       setLoading(false);
     }
   };
-
-  if (!session) {
-    return <Navigate to="/auth" replace />;
-  }
 
   if (loading) {
     return (
