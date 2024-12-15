@@ -1,8 +1,5 @@
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { CalendarIcon, MapPinIcon, UsersIcon, PencilIcon } from "lucide-react";
 import { Event } from "@/types/event";
-import { format } from "date-fns";
 import {
   Dialog,
   DialogContent,
@@ -12,7 +9,8 @@ import {
 import { useState, useEffect } from "react";
 import { EventForm } from "./event/EventForm";
 import { supabase } from "@/integrations/supabase/client";
-import { Badge } from "@/components/ui/badge";
+import { EventDetails } from "./event/EventDetails";
+import { EventActions } from "./event/EventActions";
 
 interface EventCardProps {
   event: Event;
@@ -36,7 +34,6 @@ export function EventCard({ event, onRSVP, onCancelRSVP, userRSVPStatus, onUpdat
   const [rsvpCount, setRsvpCount] = useState(0);
   const [attendees, setAttendees] = useState<Attendee[]>([]);
 
-  // Check if user is admin
   const checkAdminStatus = async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (user) {
@@ -49,17 +46,14 @@ export function EventCard({ event, onRSVP, onCancelRSVP, userRSVPStatus, onUpdat
     }
   };
 
-  // Fetch RSVP count and attendees
   const fetchRSVPDetails = async () => {
     try {
-      // Get count of all RSVPs
       const { count } = await supabase
         .from('event_rsvps')
         .select('*', { count: 'exact', head: true })
         .eq('event_id', event.id);
       setRsvpCount(count || 0);
 
-      // Get attendees who are attending
       const { data: attendeeData } = await supabase
         .from('event_rsvps')
         .select(`
@@ -92,7 +86,6 @@ export function EventCard({ event, onRSVP, onCancelRSVP, userRSVPStatus, onUpdat
 
   const isFullyBooked = rsvpCount >= event.max_guests;
 
-  // Get display names for attendees
   const attendeeNames = attendees.map(attendee => {
     const fullName = attendee.profiles.full_name;
     const firstName = fullName ? fullName.split(' ')[0] : attendee.profiles.username;
@@ -111,63 +104,26 @@ export function EventCard({ event, onRSVP, onCancelRSVP, userRSVPStatus, onUpdat
           <h3 className="text-xl font-bold text-white">{event.title}</h3>
         </div>
       </CardHeader>
-      <CardContent className="p-4 space-y-4">
-        <div className="flex items-center gap-2 text-gray-600">
-          <CalendarIcon className="w-4 h-4" />
-          <span className="text-sm">
-            {format(new Date(event.date), "EEEE, MMMM do, yyyy")}
-          </span>
-        </div>
-        <div className="flex items-center gap-2 text-gray-600">
-          <MapPinIcon className="w-4 h-4" />
-          <span className="text-sm">{event.location}</span>
-        </div>
-        <div className="flex items-center gap-2 text-gray-600">
-          <UsersIcon className="w-4 h-4" />
-          <span className="text-sm">
-            {rsvpCount} / {event.max_guests} attendees
-          </span>
-        </div>
-        {attendeeNames.length > 0 && (
-          <div className="text-sm text-gray-600">
-            <p className="font-medium mb-1">Attending:</p>
-            <p>{attendeeNames.join(', ')}</p>
-          </div>
-        )}
-        <p className="text-gray-600 line-clamp-2">{event.description}</p>
-        {userRSVPStatus && (
-          <Badge variant="secondary" className="mt-2">
-            Your RSVP: {userRSVPStatus}
-          </Badge>
-        )}
+      <CardContent className="p-4">
+        <EventDetails
+          date={event.date}
+          location={event.location}
+          rsvpCount={rsvpCount}
+          maxGuests={event.max_guests}
+          description={event.description || ""}
+          attendeeNames={attendeeNames}
+          userRSVPStatus={userRSVPStatus}
+        />
       </CardContent>
-      <CardFooter className="p-4 pt-0 flex gap-2">
-        {userRSVPStatus ? (
-          <Button
-            onClick={() => onCancelRSVP(event.id)}
-            variant="outline"
-            className="flex-1"
-          >
-            Cancel RSVP
-          </Button>
-        ) : (
-          <Button
-            onClick={() => onRSVP(event.id)}
-            disabled={isFullyBooked}
-            className="flex-1 bg-[#0d97d1] hover:bg-[#0d97d1]/90 text-white"
-          >
-            {isFullyBooked ? "Fully Booked" : "RSVP Now"}
-          </Button>
-        )}
-        {isAdmin && (
-          <Button
-            onClick={() => setShowEditDialog(true)}
-            variant="outline"
-            className="px-3"
-          >
-            <PencilIcon className="h-4 w-4" />
-          </Button>
-        )}
+      <CardFooter className="p-4 pt-0">
+        <EventActions
+          isAdmin={isAdmin}
+          userRSVPStatus={userRSVPStatus || null}
+          isFullyBooked={isFullyBooked}
+          onRSVP={() => onRSVP(event.id)}
+          onCancelRSVP={() => onCancelRSVP(event.id)}
+          onEdit={() => setShowEditDialog(true)}
+        />
       </CardFooter>
 
       <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
