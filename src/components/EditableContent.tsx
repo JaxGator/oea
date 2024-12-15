@@ -75,7 +75,7 @@ export function EditableContent({ content, pageId, sectionId, onUpdate }: Editab
   };
 
   if (!isAdmin) {
-    return <div className="prose max-w-none">{content}</div>;
+    return null;
   }
 
   return (
