@@ -1,4 +1,4 @@
-import { Home, Calendar, Info } from "lucide-react";
+import { Home, Calendar, Info, Users } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 
 export function MobileNavigation() {
@@ -39,6 +39,23 @@ export function MobileNavigation() {
             )}
           </div>
           <span className="text-xs mt-1 font-medium">Events</span>
+        </Link>
+
+        <Link
+          to="/members"
+          className={`flex flex-col items-center p-2 transition-colors duration-200 ${
+            location.pathname === "/members"
+              ? "text-primary"
+              : "text-gray-600 hover:text-[#0d97d1]"
+          }`}
+        >
+          <div className="relative">
+            <Users className="w-6 h-6" />
+            {location.pathname === "/members" && (
+              <span className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-primary rounded-full" />
+            )}
+          </div>
+          <span className="text-xs mt-1 font-medium">Members</span>
         </Link>
 
         <Link

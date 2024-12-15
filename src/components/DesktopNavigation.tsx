@@ -21,6 +21,12 @@ export function DesktopNavigation() {
             Events
           </Link>
           <Link
+            to="/members"
+            className="hover:text-primary-100 transition-colors"
+          >
+            Members
+          </Link>
+          <Link
             to="/about"
             className="hover:text-primary-100 transition-colors"
           >

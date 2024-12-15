@@ -9,6 +9,7 @@ import Home from "./pages/Home";
 import About from "./pages/About";
 import Events from "./pages/Events";
 import Auth from "./pages/Auth";
+import Members from "./pages/Members";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -32,6 +33,7 @@ const App = () => {
               <Route path="/auth" element={<Auth />} />
               <Route path="/events" element={<Events />} />
               <Route path="/about" element={<About />} />
+              <Route path="/members" element={<Members />} />
             </Routes>
             <MobileNavigation />
           </div>
