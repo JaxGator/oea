@@ -7,14 +7,4 @@ const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 if (!SUPABASE_URL) throw new Error('Missing SUPABASE_URL');
 if (!SUPABASE_ANON_KEY) throw new Error('Missing SUPABASE_ANON_KEY');
 
-export const supabase = createClient<Database>(
-  SUPABASE_URL,
-  SUPABASE_ANON_KEY,
-  {
-    auth: {
-      persistSession: true,
-      autoRefreshToken: true,
-      detectSessionInUrl: true
-    }
-  }
-);
+export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY);

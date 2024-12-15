@@ -25,47 +25,25 @@ export function useAuthState(): AuthState {
         
         if (error) {
           console.error('Error fetching profile:', error);
-          toast({
-            title: "Error loading profile",
-            description: "Please try refreshing the page",
-            variant: "destructive",
-          });
           return null;
         }
         
         return data as Profile;
       } catch (error) {
         console.error('Error in fetchProfile:', error);
-        toast({
-          title: "Error loading profile",
-          description: "Please try refreshing the page",
-          variant: "destructive",
-        });
         return null;
       }
     };
 
     const initialize = async () => {
       try {
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        const { data: { session } } = await supabase.auth.getSession();
         
-        if (sessionError) {
-          console.error('Session error:', sessionError);
-          toast({
-            title: "Authentication error",
-            description: "Please try signing in again",
-            variant: "destructive",
-          });
-          return;
-        }
-
         if (mounted) {
           if (session?.user) {
             setUser(session.user);
             const profileData = await fetchProfile(session.user.id);
-            if (profileData) {
-              setProfile(profileData);
-            }
+            setProfile(profileData);
           } else {
             setUser(null);
             setProfile(null);
@@ -76,11 +54,6 @@ export function useAuthState(): AuthState {
         console.error('Error in initialize:', error);
         if (mounted) {
           setIsLoading(false);
-          toast({
-            title: "Error initializing",
-            description: "Please try refreshing the page",
-            variant: "destructive",
-          });
         }
       }
     };
@@ -92,9 +65,7 @@ export function useAuthState(): AuthState {
         if (session?.user) {
           setUser(session.user);
           const profileData = await fetchProfile(session.user.id);
-          if (profileData) {
-            setProfile(profileData);
-          }
+          setProfile(profileData);
         } else {
           setUser(null);
           setProfile(null);

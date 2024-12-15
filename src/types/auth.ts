@@ -5,10 +5,10 @@ export interface Profile {
   username: string;
   full_name: string | null;
   avatar_url: string | null;
-  is_admin: boolean | null;
-  is_approved: boolean | null;
-  is_member: boolean | null;
-  created_at?: string;
+  is_admin: boolean;
+  is_approved: boolean;
+  is_member: boolean;
+  created_at: string;
 }
 
 export interface AuthState {
