@@ -25,7 +25,7 @@ export default function Index() {
         },
         (payload: RealtimePostgresChangesPayload<Profile>) => {
           console.log('Profile update received:', payload);
-          if (payload.new) {
+          if (payload.new && 'id' in payload.new) {
             supabase.auth.getUser().then(({ data: { user } }) => {
               if (user && payload.new && payload.new.id === user.id) {
                 setUsername(payload.new.username || "");
