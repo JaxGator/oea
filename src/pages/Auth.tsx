@@ -3,9 +3,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SignInForm } from "@/components/auth/SignInForm";
 import { SignUpForm } from "@/components/auth/SignUpForm";
 import { useAuthState } from "@/hooks/useAuthState";
+import { useState } from "react";
 
 export default function Auth() {
-  const { isLoading, setIsLoading } = useAuthState();
+  const { isLoading } = useAuthState();
+  const [formLoading, setFormLoading] = useState(false);
 
   return (
     <div className="min-h-screen bg-[#222222] flex items-center justify-center p-4">
@@ -27,10 +29,10 @@ export default function Auth() {
               <TabsTrigger value="signup">Sign Up</TabsTrigger>
             </TabsList>
             <TabsContent value="signin">
-              <SignInForm setIsLoading={setIsLoading} />
+              <SignInForm setIsLoading={setFormLoading} />
             </TabsContent>
             <TabsContent value="signup">
-              <SignUpForm setIsLoading={setIsLoading} />
+              <SignUpForm setIsLoading={setFormLoading} />
             </TabsContent>
           </Tabs>
         </CardContent>
