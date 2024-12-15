@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { User } from "@supabase/supabase-js";
 import { Profile, AuthState } from "@/types/auth";
 import { useAuthEventHandler } from "./useAuthEventHandler";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 
 export function useAuthState(): AuthState {
   const [isLoading, setIsLoading] = useState(true);
@@ -63,7 +63,9 @@ export function useAuthState(): AuthState {
           if (session?.user) {
             setUser(session.user);
             const profileData = await fetchProfile(session.user.id);
-            setProfile(profileData);
+            if (profileData) {
+              setProfile(profileData);
+            }
           } else {
             setUser(null);
             setProfile(null);
@@ -90,7 +92,9 @@ export function useAuthState(): AuthState {
         if (session?.user) {
           setUser(session.user);
           const profileData = await fetchProfile(session.user.id);
-          setProfile(profileData);
+          if (profileData) {
+            setProfile(profileData);
+          }
         } else {
           setUser(null);
           setProfile(null);
