@@ -10,7 +10,7 @@ interface ViewContentProps {
 export function ViewContent({ content, onEdit, showEditButton = true }: ViewContentProps) {
   return (
     <>
-      <div className="prose max-w-none whitespace-pre-wrap">{content}</div>
+      <div className="max-w-none whitespace-pre-wrap">{content}</div>
       {showEditButton && (
         <Button
           variant="outline"
