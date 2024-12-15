@@ -11,9 +11,26 @@ import { useState, useEffect } from "react";
 import { EventForm } from "./event/EventForm";
 import { supabase } from "@/integrations/supabase/client";
 
-export function CreateEventDialog() {
-  const [open, setOpen] = useState(false);
+interface CreateEventDialogProps {
+  isOpen?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  onSuccess?: () => void;
+}
+
+export function CreateEventDialog({ isOpen, onOpenChange, onSuccess }: CreateEventDialogProps) {
+  const [open, setOpen] = useState(isOpen || false);
   const [canCreateEvents, setCanCreateEvents] = useState(false);
+
+  useEffect(() => {
+    if (typeof isOpen !== 'undefined') {
+      setOpen(isOpen);
+    }
+  }, [isOpen]);
+
+  const handleOpenChange = (newOpen: boolean) => {
+    setOpen(newOpen);
+    onOpenChange?.(newOpen);
+  };
 
   useEffect(() => {
     const checkUserPermissions = async () => {
@@ -47,7 +64,7 @@ export function CreateEventDialog() {
   if (!canCreateEvents) return null;
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         <Button className="bg-[#0d97d1] hover:bg-[#0d97d1]/90">
           <PlusIcon className="w-4 h-4 mr-2" />
@@ -58,7 +75,10 @@ export function CreateEventDialog() {
         <DialogHeader>
           <DialogTitle>Create New Event</DialogTitle>
         </DialogHeader>
-        <EventForm onSuccess={() => setOpen(false)} />
+        <EventForm onSuccess={() => {
+          onSuccess?.();
+          handleOpenChange(false);
+        }} />
       </DialogContent>
     </Dialog>
   );
