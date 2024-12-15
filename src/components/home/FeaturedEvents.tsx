@@ -8,6 +8,14 @@ export const FeaturedEvents = () => {
   const navigate = useNavigate();
   const { events, isLoading, userRSVPs, handleRSVP, handleCancelRSVP } = useFeaturedEvents();
 
+  // Filter out past events
+  const upcomingEvents = events.filter(event => {
+    const eventDate = new Date(event.date);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Reset time to start of day for accurate date comparison
+    return eventDate >= today;
+  });
+
   return (
     <section className="py-16 bg-[#F1F0FB]">
       <div className="container mx-auto px-4">
@@ -24,13 +32,13 @@ export const FeaturedEvents = () => {
         
         {isLoading ? (
           <div className="text-center py-8 text-gray-600">Loading events...</div>
-        ) : events.length === 0 ? (
+        ) : upcomingEvents.length === 0 ? (
           <div className="text-center py-8 text-gray-500">
             No upcoming events found.
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {events.map((event) => (
+            {upcomingEvents.map((event) => (
               <EventCard 
                 key={event.id} 
                 event={event} 
