@@ -40,15 +40,14 @@ export function useAuthState(): AuthState {
         const { data: { session } } = await supabase.auth.getSession();
         
         if (mounted) {
-          setUser(session?.user || null);
-          
           if (session?.user) {
+            setUser(session.user);
             const profileData = await fetchProfile(session.user.id);
             setProfile(profileData);
           } else {
+            setUser(null);
             setProfile(null);
           }
-          
           setIsLoading(false);
         }
       } catch (error) {
@@ -63,12 +62,12 @@ export function useAuthState(): AuthState {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (mounted) {
-        setUser(session?.user || null);
-        
         if (session?.user) {
+          setUser(session.user);
           const profileData = await fetchProfile(session.user.id);
           setProfile(profileData);
         } else {
+          setUser(null);
           setProfile(null);
         }
       }

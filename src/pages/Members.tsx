@@ -33,32 +33,24 @@ export default function Members() {
   const { toast } = useToast();
   const { user, profile } = useAuthState();
 
-  const { data: members = [], isLoading, refetch } = useQuery({
+  const { data: members = [], isLoading: isLoadingMembers, error } = useQuery({
     queryKey: ['members'],
     queryFn: async () => {
-      console.log("Fetching members...");
-      console.log("Current user:", user);
-      console.log("Current profile:", profile);
-      
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
         .order('username');
       
       if (error) {
-        console.error('Error in fetchMembers:', error);
-        toast({
-          title: "Error",
-          description: "Failed to load members. Please try again.",
-          variant: "destructive",
-        });
+        console.error('Error fetching members:', error);
         throw error;
       }
 
-      console.log("Fetched members data:", data);
       return data || [];
     },
-    enabled: !!user && !!profile, // Only run query when user and profile are available
+    enabled: !!user, // Only run query when user is available
+    retry: 1,
+    staleTime: 1000 * 60 * 5, // Cache for 5 minutes
   });
 
   useEffect(() => {
@@ -67,7 +59,20 @@ export default function Members() {
     }
   }, [profile]);
 
-  if (isLoading) {
+  if (error) {
+    toast({
+      title: "Error",
+      description: "Failed to load members. Please try again.",
+      variant: "destructive",
+    });
+    return (
+      <div className="min-h-screen bg-[#222222] flex items-center justify-center">
+        <div className="text-white">Error loading members. Please try again.</div>
+      </div>
+    );
+  }
+
+  if (isLoadingMembers) {
     return (
       <div className="min-h-screen bg-[#222222] flex items-center justify-center">
         <div className="text-white">Loading members...</div>
@@ -97,7 +102,7 @@ export default function Members() {
               </TableHeader>
               <TableBody>
                 {members.map((member) => (
-                  <TableRow key={`${member.id}-${member.username}-${member.is_member ? 'member' : 'non-member'}`}>
+                  <TableRow key={member.id}>
                     <TableCell>
                       <Avatar className="h-10 w-10">
                         <AvatarImage src={member.avatar_url || ''} alt={member.username} />
@@ -130,7 +135,13 @@ export default function Members() {
                         <MemberActions
                           memberId={member.id}
                           isCurrentUserAdmin={currentUserIsAdmin}
-                          onDelete={refetch}
+                          onDelete={() => {
+                            // Refetch will happen automatically due to React Query
+                            toast({
+                              title: "Success",
+                              description: "Member has been deleted",
+                            });
+                          }}
                           onEdit={() => setEditingMember(member)}
                         />
                       </TableCell>
@@ -145,11 +156,16 @@ export default function Members() {
 
       {editingMember && (
         <EditMemberDialog
-          key={`edit-dialog-${editingMember.id}-${editingMember.is_member ? 'member' : 'non-member'}`}
           member={editingMember}
           open={!!editingMember}
           onOpenChange={(open) => !open && setEditingMember(null)}
-          onUpdate={refetch}
+          onUpdate={() => {
+            // Refetch will happen automatically due to React Query
+            toast({
+              title: "Success",
+              description: "Member has been updated",
+            });
+          }}
         />
       )}
     </div>
