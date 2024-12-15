@@ -252,6 +252,44 @@ export type Database = {
           },
         ]
       }
+      page_content: {
+        Row: {
+          content: string
+          created_at: string | null
+          id: string
+          page_id: string
+          section_id: string
+          updated_at: string | null
+          updated_by: string | null
+        }
+        Insert: {
+          content: string
+          created_at?: string | null
+          id?: string
+          page_id: string
+          section_id: string
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Update: {
+          content?: string
+          created_at?: string | null
+          id?: string
+          page_id?: string
+          section_id?: string
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "page_content_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null

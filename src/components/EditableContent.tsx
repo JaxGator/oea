@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { PencilIcon, CheckIcon, XIcon } from "lucide-react";
@@ -19,19 +19,19 @@ export function EditableContent({ content, pageId, sectionId, onUpdate }: Editab
   const { toast } = useToast();
 
   // Check if user is admin
-  const checkAdminStatus = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (user) {
-      const { data } = await supabase
-        .from('profiles')
-        .select('is_admin')
-        .eq('id', user.id)
-        .single();
-      setIsAdmin(!!data?.is_admin);
-    }
-  };
-
-  useState(() => {
+  useEffect(() => {
+    const checkAdminStatus = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data } = await supabase
+          .from('profiles')
+          .select('is_admin')
+          .eq('id', user.id)
+          .single();
+        setIsAdmin(!!data?.is_admin);
+      }
+    };
+    
     checkAdminStatus();
   }, []);
 
