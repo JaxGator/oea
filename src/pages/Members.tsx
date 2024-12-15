@@ -15,6 +15,7 @@ import { MemberActions } from "@/components/members/MemberActions";
 import { EditMemberDialog } from "@/components/members/EditMemberDialog";
 import { Badge } from "@/components/ui/badge";
 import { useQuery } from "@tanstack/react-query";
+import { useAuthState } from "@/hooks/useAuthState";
 
 interface Profile {
   id: string;
@@ -30,11 +31,15 @@ export default function Members() {
   const [currentUserIsAdmin, setCurrentUserIsAdmin] = useState(false);
   const [editingMember, setEditingMember] = useState<Profile | null>(null);
   const { toast } = useToast();
+  const { user, profile } = useAuthState();
 
   const { data: members = [], isLoading, refetch } = useQuery({
     queryKey: ['members'],
     queryFn: async () => {
       console.log("Fetching members...");
+      console.log("Current user:", user);
+      console.log("Current profile:", profile);
+      
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
@@ -53,28 +58,14 @@ export default function Members() {
       console.log("Fetched members data:", data);
       return data || [];
     },
+    enabled: !!user && !!profile, // Only run query when user and profile are available
   });
 
   useEffect(() => {
-    checkAdminStatus();
-  }, []);
-
-  const checkAdminStatus = async () => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('is_admin')
-        .eq('id', user.id)
-        .single();
-
-      setCurrentUserIsAdmin(!!profile?.is_admin);
-    } catch (error) {
-      console.error('Error checking admin status:', error);
+    if (profile) {
+      setCurrentUserIsAdmin(profile.is_admin);
     }
-  };
+  }, [profile]);
 
   if (isLoading) {
     return (
