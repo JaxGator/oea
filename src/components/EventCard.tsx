@@ -64,7 +64,7 @@ export function EventCard({ event, onRSVP, onCancelRSVP, userRSVPStatus, onUpdat
         .from('event_rsvps')
         .select(`
           user_id,
-          profiles:user_id (
+          profiles:profiles!event_rsvps_user_id_fkey (
             full_name,
             username
           )
