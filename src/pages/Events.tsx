@@ -20,28 +20,32 @@ export default function Events() {
         .order('date', { ascending: true });
       
       if (error) throw error;
-      return data as Event[];
+      
+      // Transform the data to match our Event type
+      return data.map(event => ({
+        ...event,
+        maxAttendees: event.max_guests,
+        imageUrl: event.image_url
+      })) as Event[];
     }
   });
 
-  const { data: userRole } = useQuery({
-    queryKey: ['userRole'],
+  const { data: isAdmin = false } = useQuery({
+    queryKey: ['userAdmin'],
     queryFn: async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.user) return null;
+      if (!session?.user) return false;
 
       const { data, error } = await supabase
         .from('profiles')
-        .select('role')
+        .select('is_admin')
         .eq('id', session.user.id)
         .single();
 
       if (error) throw error;
-      return data.role;
+      return !!data?.is_admin;
     }
   });
-
-  const isAdmin = userRole === 'admin';
 
   const filteredEvents = selectedDate
     ? events.filter(event => {
@@ -58,11 +62,31 @@ export default function Events() {
     refetch();
   };
 
-  const handleDeleteEvent = async (eventId: string) => {
+  const handleRSVP = async (eventId: string) => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
     const { error } = await supabase
-      .from('events')
+      .from('event_rsvps')
+      .insert({
+        event_id: eventId,
+        user_id: user.id,
+        response: 'attending'
+      });
+
+    if (!error) {
+      refetch();
+    }
+  };
+
+  const handleCancelRSVP = async (eventId: string) => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { error } = await supabase
+      .from('event_rsvps')
       .delete()
-      .eq('id', eventId);
+      .match({ event_id: eventId, user_id: user.id });
 
     if (!error) {
       refetch();
@@ -104,18 +128,21 @@ export default function Events() {
               <EventCard
                 key={event.id}
                 event={event}
-                onDelete={handleDeleteEvent}
-                isAdmin={isAdmin}
+                onRSVP={handleRSVP}
+                onCancelRSVP={handleCancelRSVP}
+                onUpdate={refetch}
               />
             ))}
           </div>
         )}
 
-        <CreateEventDialog
-          open={isCreateEventOpen}
-          onOpenChange={setIsCreateEventOpen}
-          onEventCreated={handleEventCreated}
-        />
+        {isAdmin && (
+          <CreateEventDialog
+            isOpen={isCreateEventOpen}
+            onOpenChange={setIsCreateEventOpen}
+            onSuccess={handleEventCreated}
+          />
+        )}
       </div>
     </div>
   );
