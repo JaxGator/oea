@@ -1,6 +1,4 @@
 import { Link } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { LogIn } from "lucide-react";
 
 export function DesktopNavigation() {
   return (
@@ -32,18 +30,6 @@ export function DesktopNavigation() {
           >
             About
           </Link>
-        </div>
-        <div className="flex items-center space-x-4">
-          <Button
-            variant="ghost"
-            className="text-white hover:text-primary-100 transition-colors"
-            asChild
-          >
-            <Link to="/auth">
-              <LogIn className="mr-2 h-4 w-4" />
-              Login
-            </Link>
-          </Button>
         </div>
       </div>
     </nav>
