@@ -11,8 +11,6 @@ import Events from "./pages/Events";
 import Auth from "./pages/Auth";
 import Members from "./pages/Members";
 import { useAuthState } from "./hooks/useAuthState";
-import { useEffect } from "react";
-import { supabase } from "./integrations/supabase/client";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -28,11 +26,15 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { isLoading, user } = useAuthState();
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-lg">Loading...</div>
+      </div>
+    );
   }
 
   if (!user) {
-    return <Navigate to="/auth" replace />;
+    return <Navigate to="/auth" />;
   }
 
   return <>{children}</>;
@@ -41,14 +43,16 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 const AuthRoute = () => {
   const { isLoading, user } = useAuthState();
 
-  useEffect(() => {
-    if (user) {
-      window.location.href = '/';
-    }
-  }, [user]);
-
   if (isLoading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-lg">Loading...</div>
+      </div>
+    );
+  }
+
+  if (user) {
+    return <Navigate to="/" />;
   }
 
   return <Auth />;
@@ -62,6 +66,8 @@ const App = () => {
           <div>
             <DesktopNavigation />
             <Routes>
+              <Route path="/auth" element={<AuthRoute />} />
+              <Route path="/about" element={<About />} />
               <Route
                 path="/"
                 element={
@@ -70,7 +76,6 @@ const App = () => {
                   </ProtectedRoute>
                 }
               />
-              <Route path="/auth" element={<AuthRoute />} />
               <Route
                 path="/events"
                 element={
@@ -79,7 +84,6 @@ const App = () => {
                   </ProtectedRoute>
                 }
               />
-              <Route path="/about" element={<About />} />
               <Route
                 path="/members"
                 element={

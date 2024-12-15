@@ -44,7 +44,6 @@ export function SignInForm({ setIsLoading }: SignInFormProps) {
 
         if (data.user) {
           handleAuthEvent("SIGNED_IN");
-          navigate("/");
           return data;
         }
 
