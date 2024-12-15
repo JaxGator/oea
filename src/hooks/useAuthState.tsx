@@ -33,7 +33,7 @@ export function useAuthState(): AuthState {
           return null;
         }
         
-        return data;
+        return data as Profile;
       } catch (error) {
         console.error('Error in fetchProfile:', error);
         toast({

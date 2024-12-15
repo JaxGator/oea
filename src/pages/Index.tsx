@@ -18,6 +18,7 @@ export default function Index() {
       
       if (sessionError) throw sessionError;
       if (!session?.user) {
+        setLoading(false);
         return;
       }
 
@@ -29,8 +30,10 @@ export default function Index() {
 
       if (error) throw error;
 
-      setUsername(data.username || "");
-      setAvatarUrl(data.avatar_url || "");
+      if (data) {
+        setUsername(data.username || "");
+        setAvatarUrl(data.avatar_url || "");
+      }
     } catch (error) {
       console.error("Error loading profile:", error);
     } finally {
