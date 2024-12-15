@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { User } from "@supabase/supabase-js";
 import { Profile, AuthState } from "@/types/auth";
@@ -9,7 +8,6 @@ export function useAuthState(): AuthState {
   const [isLoading, setIsLoading] = useState(true);
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
-  const navigate = useNavigate();
   const handleAuthEvent = useAuthEventHandler();
 
   useEffect(() => {
@@ -77,7 +75,7 @@ export function useAuthState(): AuthState {
       mounted = false;
       subscription.unsubscribe();
     };
-  }, [navigate, handleAuthEvent]);
+  }, [handleAuthEvent]);
 
   return { isLoading, user, profile };
 }

@@ -23,7 +23,7 @@ const queryClient = new QueryClient({
   },
 });
 
-const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+const AppContent = () => {
   const { isLoading, user } = useAuthState();
 
   if (isLoading) {
@@ -34,45 +34,39 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     );
   }
 
-  if (!user) {
-    return <Navigate to="/auth" replace />;
-  }
-
-  return children;
+  return (
+    <div>
+      <DesktopNavigation />
+      <Routes>
+        <Route path="/auth" element={<Auth />} />
+        <Route path="/" element={<Home />} />
+        <Route path="/events" element={<Events />} />
+        <Route path="/about" element={<About />} />
+        <Route 
+          path="/members" 
+          element={user ? <Members /> : <Navigate to="/auth" replace />} 
+        />
+        <Route 
+          path="/profile" 
+          element={user ? <Profile /> : <Navigate to="/auth" replace />} 
+        />
+      </Routes>
+      <MobileNavigation />
+    </div>
+  );
 };
 
 const App = () => {
-  const { isLoading: authLoading } = useAuthState();
-
-  if (authLoading) {
-    return (
-      <div className="min-h-screen bg-[#222222] flex items-center justify-center">
-        <div className="text-white animate-pulse">Loading...</div>
-      </div>
-    );
-  }
-
   return (
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <div>
-            <DesktopNavigation />
-            <Routes>
-              <Route path="/auth" element={<Auth />} />
-              <Route path="/" element={<Home />} />
-              <Route path="/events" element={<Events />} />
-              <Route path="/about" element={<About />} />
-              <Route path="/members" element={<ProtectedRoute><Members /></ProtectedRoute>} />
-              <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-            </Routes>
-            <MobileNavigation />
-          </div>
-        </BrowserRouter>
-      </TooltipProvider>
-    </QueryClientProvider>
+    <BrowserRouter>
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <AppContent />
+        </TooltipProvider>
+      </QueryClientProvider>
+    </BrowserRouter>
   );
 };
 
