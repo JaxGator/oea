@@ -9,4 +9,5 @@ export type {
   Message,
   PageContent,
   AdminLog,
+  Json
 } from './tables';

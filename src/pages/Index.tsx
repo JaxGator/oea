@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { UserCircle } from "lucide-react";
 import { RealtimePostgresChangesPayload } from "@supabase/supabase-js";
-import { Profile } from "@/integrations/supabase/types";
+import type { Profile } from "@/integrations/supabase/types";
 
 export default function Index() {
   const [avatarUrl, setAvatarUrl] = useState("");
