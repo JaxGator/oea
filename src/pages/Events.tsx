@@ -4,10 +4,12 @@ import { DateFilter } from "@/components/DateFilter";
 import { useEvents } from "@/hooks/useEvents";
 import { useRSVP } from "@/hooks/useRSVP";
 import { EventList } from "@/components/event/EventList";
+import { useAuthState } from "@/hooks/useAuthState";
 
 export default function Events() {
   const [isCreateEventOpen, setIsCreateEventOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date>();
+  const { user } = useAuthState();
   
   const { data: events = [], isLoading, error } = useEvents(selectedDate);
   const { handleRSVP, cancelRSVP } = useRSVP();
