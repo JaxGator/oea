@@ -110,7 +110,7 @@ export default function Members() {
               </TableHeader>
               <TableBody>
                 {members.map((member) => (
-                  <TableRow key={member.id}>
+                  <TableRow key={`${member.id}-${member.username}`}>
                     <TableCell>
                       <Avatar className="h-10 w-10">
                         <AvatarImage src={member.avatar_url || ''} alt={member.username} />
@@ -158,6 +158,7 @@ export default function Members() {
 
       {editingMember && (
         <EditMemberDialog
+          key={`edit-dialog-${editingMember.id}`}
           member={editingMember}
           open={!!editingMember}
           onOpenChange={(open) => !open && setEditingMember(null)}
