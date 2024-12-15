@@ -2,16 +2,13 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { MobileNavigation } from "./components/MobileNavigation";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { DesktopNavigation } from "./components/DesktopNavigation";
-import { useAuthState } from "./hooks/useAuthState";
+import { MobileNavigation } from "./components/MobileNavigation";
 import Home from "./pages/Home";
 import About from "./pages/About";
 import Events from "./pages/Events";
 import Auth from "./pages/Auth";
-import Profile from "./pages/Profile";
-import Members from "./pages/Members";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -23,47 +20,23 @@ const queryClient = new QueryClient({
   },
 });
 
-const AppContent = () => {
-  const { isLoading, user } = useAuthState();
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-[#222222] flex items-center justify-center">
-        <div className="text-white">Loading...</div>
-      </div>
-    );
-  }
-
-  return (
-    <div>
-      <DesktopNavigation />
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/auth" element={<Auth />} />
-        <Route path="/events" element={<Events />} />
-        <Route path="/about" element={<About />} />
-        <Route 
-          path="/members" 
-          element={user ? <Members /> : <Navigate to="/auth" replace />} 
-        />
-        <Route 
-          path="/profile" 
-          element={user ? <Profile /> : <Navigate to="/auth" replace />} 
-        />
-      </Routes>
-      <MobileNavigation />
-    </div>
-  );
-};
-
 const App = () => {
   return (
     <BrowserRouter>
       <QueryClientProvider client={queryClient}>
         <TooltipProvider>
+          <div>
+            <DesktopNavigation />
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/auth" element={<Auth />} />
+              <Route path="/events" element={<Events />} />
+              <Route path="/about" element={<About />} />
+            </Routes>
+            <MobileNavigation />
+          </div>
           <Toaster />
           <Sonner />
-          <AppContent />
         </TooltipProvider>
       </QueryClientProvider>
     </BrowserRouter>

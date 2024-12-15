@@ -1,23 +1,8 @@
-import { Home, Calendar, Info, UserCircle, Users } from "lucide-react";
+import { Home, Calendar, Info } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
-import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
 
 export function MobileNavigation() {
   const location = useLocation();
-  const [user, setUser] = useState<any>(null);
-
-  useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      setUser(session?.user || null);
-    });
-
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user || null);
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-2 md:hidden z-50 animate-fade-in">
@@ -72,44 +57,6 @@ export function MobileNavigation() {
           </div>
           <span className="text-xs mt-1 font-medium">About</span>
         </Link>
-
-        {user && (
-          <>
-            <Link
-              to="/members"
-              className={`flex flex-col items-center p-2 transition-colors duration-200 ${
-                location.pathname === "/members"
-                  ? "text-primary"
-                  : "text-gray-600 hover:text-[#0d97d1]"
-              }`}
-            >
-              <div className="relative">
-                <Users className="w-6 h-6" />
-                {location.pathname === "/members" && (
-                  <span className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-primary rounded-full" />
-                )}
-              </div>
-              <span className="text-xs mt-1 font-medium">Members</span>
-            </Link>
-
-            <Link
-              to="/profile"
-              className={`flex flex-col items-center p-2 transition-colors duration-200 ${
-                location.pathname === "/profile"
-                  ? "text-primary"
-                  : "text-gray-600 hover:text-[#0d97d1]"
-              }`}
-            >
-              <div className="relative">
-                <UserCircle className="w-6 h-6" />
-                {location.pathname === "/profile" && (
-                  <span className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-primary rounded-full" />
-                )}
-              </div>
-              <span className="text-xs mt-1 font-medium">Profile</span>
-            </Link>
-          </>
-        )}
       </div>
     </nav>
   );

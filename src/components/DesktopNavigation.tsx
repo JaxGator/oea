@@ -1,40 +1,8 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { supabase } from "@/integrations/supabase/client";
-import { useEffect, useState } from "react";
-import { LogOut, LogIn, UserCircle, Users } from "lucide-react";
-import { useToast } from "@/components/ui/use-toast";
+import { LogIn } from "lucide-react";
 
 export function DesktopNavigation() {
-  const [user, setUser] = useState<any>(null);
-  const navigate = useNavigate();
-  const { toast } = useToast();
-
-  useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      setUser(session?.user || null);
-    });
-
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user || null);
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
-
-  const handleLogout = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) {
-      toast({
-        title: "Error",
-        description: "Failed to log out. Please try again.",
-        variant: "destructive",
-      });
-    } else {
-      navigate("/auth");
-    }
-  };
-
   return (
     <nav className="hidden md:block bg-[#222222] text-white p-4">
       <div className="container mx-auto flex justify-between items-center">
@@ -58,45 +26,18 @@ export function DesktopNavigation() {
           >
             About
           </Link>
-          {user && (
-            <Link
-              to="/members"
-              className="hover:text-primary-100 transition-colors flex items-center"
-            >
-              <Users className="mr-2 h-5 w-5" />
-              Members
-            </Link>
-          )}
         </div>
         <div className="flex items-center space-x-4">
-          {user ? (
-            <>
-              <Link
-                to="/profile"
-                className="flex items-center hover:text-primary-100 transition-colors"
-              >
-                <UserCircle className="mr-2 h-5 w-5" />
-                Profile
-              </Link>
-              <Button
-                onClick={handleLogout}
-                variant="ghost"
-                className="text-white hover:text-primary-100 transition-colors"
-              >
-                <LogOut className="mr-2 h-4 w-4" />
-                Logout
-              </Button>
-            </>
-          ) : (
-            <Button
-              onClick={() => navigate("/auth")}
-              variant="ghost"
-              className="text-white hover:text-primary-100 transition-colors"
-            >
+          <Button
+            variant="ghost"
+            className="text-white hover:text-primary-100 transition-colors"
+            asChild
+          >
+            <Link to="/auth">
               <LogIn className="mr-2 h-4 w-4" />
               Login
-            </Button>
-          )}
+            </Link>
+          </Button>
         </div>
       </div>
     </nav>
