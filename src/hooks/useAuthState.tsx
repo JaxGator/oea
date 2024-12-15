@@ -33,22 +33,32 @@ export function useAuthState(): AuthState {
 
     const getInitialSession = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        const { data: { session }, error } = await supabase.auth.getSession();
         
-        if (mounted) {
-          setUser(session?.user ?? null);
-          
-          if (session?.user) {
-            const profileData = await fetchProfile(session.user.id);
-            if (mounted) {
-              setProfile(profileData);
-            }
-          } else {
+        if (error) {
+          console.error("Error getting session:", error);
+          if (mounted) {
+            setUser(null);
             setProfile(null);
+            setIsLoading(false);
           }
+          return;
+        }
+
+        if (!mounted) return;
+
+        setUser(session?.user ?? null);
+        
+        if (session?.user) {
+          const profileData = await fetchProfile(session.user.id);
+          if (mounted) {
+            setProfile(profileData);
+          }
+        } else {
+          setProfile(null);
         }
       } catch (error) {
-        console.error("Error fetching initial session:", error);
+        console.error("Error in getInitialSession:", error);
       } finally {
         if (mounted) {
           setIsLoading(false);
@@ -56,21 +66,23 @@ export function useAuthState(): AuthState {
       }
     };
 
+    // Execute initial session check
     getInitialSession();
 
+    // Set up auth state change listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        if (mounted) {
-          setUser(session?.user ?? null);
-          
-          if (session?.user) {
-            const profileData = await fetchProfile(session.user.id);
-            if (mounted) {
-              setProfile(profileData);
-            }
-          } else {
-            setProfile(null);
+      async (_event, session) => {
+        if (!mounted) return;
+
+        setUser(session?.user ?? null);
+        
+        if (session?.user) {
+          const profileData = await fetchProfile(session.user.id);
+          if (mounted) {
+            setProfile(profileData);
           }
+        } else {
+          setProfile(null);
         }
       }
     );
