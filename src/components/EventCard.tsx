@@ -23,6 +23,7 @@ interface EventCardProps {
 }
 
 interface Attendee {
+  user_id: string;
   profiles: {
     full_name: string | null;
     username: string;
@@ -62,6 +63,7 @@ export function EventCard({ event, onRSVP, onCancelRSVP, userRSVPStatus, onUpdat
       const { data: attendeeData } = await supabase
         .from('event_rsvps')
         .select(`
+          user_id,
           profiles:user_id (
             full_name,
             username
