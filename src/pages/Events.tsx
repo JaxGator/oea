@@ -6,10 +6,12 @@ import { DateFilter } from "@/components/DateFilter";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Event } from "@/types/event";
+import { useToast } from "@/hooks/use-toast";
 
 export default function Events() {
   const [isCreateEventOpen, setIsCreateEventOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date>();
+  const { toast } = useToast();
 
   const { data: events = [], isLoading, error, refetch } = useQuery({
     queryKey: ['events'],
@@ -65,16 +67,50 @@ export default function Events() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
-    const { error } = await supabase
-      .from('event_rsvps')
-      .insert({
-        event_id: eventId,
-        user_id: user.id,
-        response: 'attending'
-      });
+    try {
+      // First check if an RSVP already exists
+      const { data: existingRSVP } = await supabase
+        .from('event_rsvps')
+        .select('*')
+        .eq('event_id', eventId)
+        .eq('user_id', user.id)
+        .single();
 
-    if (!error) {
+      if (existingRSVP) {
+        // Update existing RSVP
+        const { error: updateError } = await supabase
+          .from('event_rsvps')
+          .update({ response: 'attending' })
+          .eq('event_id', eventId)
+          .eq('user_id', user.id);
+
+        if (updateError) throw updateError;
+      } else {
+        // Create new RSVP
+        const { error: insertError } = await supabase
+          .from('event_rsvps')
+          .insert({
+            event_id: eventId,
+            user_id: user.id,
+            response: 'attending'
+          });
+
+        if (insertError) throw insertError;
+      }
+
+      toast({
+        title: "Success",
+        description: "Your RSVP has been recorded",
+      });
+      
       refetch();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: "Failed to RSVP for the event",
+        variant: "destructive",
+      });
+      console.error('RSVP error:', error);
     }
   };
 
@@ -82,13 +118,27 @@ export default function Events() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
-    const { error } = await supabase
-      .from('event_rsvps')
-      .delete()
-      .match({ event_id: eventId, user_id: user.id });
+    try {
+      const { error } = await supabase
+        .from('event_rsvps')
+        .delete()
+        .match({ event_id: eventId, user_id: user.id });
 
-    if (!error) {
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Your RSVP has been cancelled",
+      });
+
       refetch();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: "Failed to cancel RSVP",
+        variant: "destructive",
+      });
+      console.error('Cancel RSVP error:', error);
     }
   };
 
