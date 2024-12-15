@@ -2,8 +2,6 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { UserCircle } from "lucide-react";
-import { RealtimePostgresChangesPayload } from "@supabase/supabase-js";
-import type { Profile } from "@/integrations/supabase/types/tables";
 
 export default function Index() {
   const [avatarUrl, setAvatarUrl] = useState("");
@@ -12,34 +10,6 @@ export default function Index() {
 
   useEffect(() => {
     getProfile();
-
-    // Subscribe to real-time profile updates
-    const channel = supabase
-      .channel('profile-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'profiles'
-        },
-        (payload: RealtimePostgresChangesPayload<Profile>) => {
-          console.log('Profile update received:', payload);
-          if (payload.new && 'id' in payload.new) {
-            supabase.auth.getUser().then(({ data: { user } }) => {
-              if (user && payload.new && payload.new.id === user.id) {
-                setUsername(payload.new.username || "");
-                setAvatarUrl(payload.new.avatar_url || "");
-              }
-            });
-          }
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
   }, []);
 
   async function getProfile() {
