@@ -16,7 +16,7 @@ import Members from "./pages/Members";
 const queryClient = new QueryClient();
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const { isLoading, user, profile } = useAuthState();
+  const { isLoading, user } = useAuthState();
 
   if (isLoading) {
     return <div className="min-h-screen bg-[#222222] flex items-center justify-center">
@@ -24,7 +24,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     </div>;
   }
 
-  if (!user || !profile) {
+  if (!user) {
     return <Navigate to="/auth" replace />;
   }
 
