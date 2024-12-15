@@ -47,9 +47,9 @@ export default function About() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#222222] text-white">
+    <div className="min-h-screen bg-[#F1F0FB]">
       <div className="container mx-auto px-4 py-12">
-        <h1 className="text-4xl font-bold text-center mb-8">About Us</h1>
+        <h1 className="text-4xl font-bold text-center mb-8 text-gray-900">About Us</h1>
         <div className="max-w-3xl mx-auto space-y-8">
           <EditableContent
             content={content.guidelines}
