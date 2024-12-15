@@ -2,7 +2,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
-import { LogOut, LogIn, UserCircle } from "lucide-react";
+import { LogOut, LogIn, UserCircle, Users } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 
 export function DesktopNavigation() {
@@ -58,6 +58,15 @@ export function DesktopNavigation() {
           >
             About
           </Link>
+          {user && (
+            <Link
+              to="/members"
+              className="hover:text-primary-100 transition-colors flex items-center"
+            >
+              <Users className="mr-2 h-5 w-5" />
+              Members
+            </Link>
+          )}
         </div>
         <div className="flex items-center space-x-4">
           {user ? (

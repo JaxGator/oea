@@ -12,6 +12,7 @@ import About from "./pages/About";
 import Events from "./pages/Events";
 import Auth from "./pages/Auth";
 import Profile from "./pages/Profile";
+import Members from "./pages/Members";
 
 const queryClient = new QueryClient();
 
@@ -56,6 +57,7 @@ const App = () => (
             <Route path="/" element={<Home />} />
             <Route path="/events" element={<Events />} />
             <Route path="/about" element={<About />} />
+            <Route path="/members" element={<ProtectedRoute><Members /></ProtectedRoute>} />
             <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
           </Routes>
           <MobileNavigation />
