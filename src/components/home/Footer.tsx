@@ -15,7 +15,15 @@ export const Footer = () => {
             <Facebook size={32} />
           </a>
           <a 
-            href="https://youtube.com" 
+            href="https://www.instagram.com/outdoorenergyadventures" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="hover:text-primary-100 transition-colors"
+          >
+            <Instagram size={32} />
+          </a>
+          <a 
+            href="https://www.youtube.com/@OutdoorEnergyAdventures" 
             target="_blank" 
             rel="noopener noreferrer"
             className="hover:text-primary-100 transition-colors"
