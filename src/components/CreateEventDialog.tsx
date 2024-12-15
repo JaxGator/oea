@@ -12,23 +12,23 @@ import { EventForm } from "./event/EventForm";
 import { supabase } from "@/integrations/supabase/client";
 
 interface CreateEventDialogProps {
-  isOpen?: boolean;
+  open?: boolean;
   onOpenChange?: (open: boolean) => void;
   onSuccess?: () => void;
 }
 
-export function CreateEventDialog({ isOpen, onOpenChange, onSuccess }: CreateEventDialogProps) {
-  const [open, setOpen] = useState(isOpen || false);
+export function CreateEventDialog({ open, onOpenChange, onSuccess }: CreateEventDialogProps) {
+  const [dialogOpen, setDialogOpen] = useState(open || false);
   const [canCreateEvents, setCanCreateEvents] = useState(false);
 
   useEffect(() => {
-    if (typeof isOpen !== 'undefined') {
-      setOpen(isOpen);
+    if (typeof open !== 'undefined') {
+      setDialogOpen(open);
     }
-  }, [isOpen]);
+  }, [open]);
 
   const handleOpenChange = (newOpen: boolean) => {
-    setOpen(newOpen);
+    setDialogOpen(newOpen);
     onOpenChange?.(newOpen);
   };
 
@@ -64,7 +64,7 @@ export function CreateEventDialog({ isOpen, onOpenChange, onSuccess }: CreateEve
   if (!canCreateEvents) return null;
 
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
+    <Dialog open={dialogOpen} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         <Button className="bg-[#0d97d1] hover:bg-[#0d97d1]/90">
           <PlusIcon className="w-4 h-4 mr-2" />
