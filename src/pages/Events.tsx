@@ -38,12 +38,10 @@ export default function Events() {
               selectedDate={selectedDate}
               onDateSelect={setSelectedDate}
             />
-            <button
-              onClick={() => setIsCreateEventOpen(true)}
-              className="bg-[#0d97d1] text-white px-4 py-2 rounded-lg hover:bg-[#0d97d1]/90 transition-colors"
-            >
-              Create Event
-            </button>
+            <CreateEventDialog
+              open={isCreateEventOpen}
+              onOpenChange={setIsCreateEventOpen}
+            />
           </div>
         </div>
 
@@ -55,11 +53,6 @@ export default function Events() {
           />
         </div>
       </div>
-
-      <CreateEventDialog
-        open={isCreateEventOpen}
-        onOpenChange={setIsCreateEventOpen}
-      />
     </div>
   );
 }
