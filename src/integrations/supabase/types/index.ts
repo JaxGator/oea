@@ -1,13 +1,3 @@
 export * from './tables';
 export * from './database';
-export type {
-  Profile,
-  Event,
-  EventRSVP,
-  MediaAlbum,
-  MediaItem,
-  Message,
-  PageContent,
-  AdminLog,
-  Json
-} from './tables';
+export type { Profile } from './tables';
