@@ -82,7 +82,7 @@ export function EditableContent({ content, pageId, sectionId, onUpdate }: Editab
     <div className="relative group">
       {!isEditing ? (
         <>
-          <div className="prose max-w-none">{content}</div>
+          <div className="prose max-w-none whitespace-pre-wrap">{content}</div>
           <Button
             variant="outline"
             size="icon"
