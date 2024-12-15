@@ -4,7 +4,7 @@ export const Hero = () => (
   <div 
     className="relative min-h-[30vh] sm:min-h-[35vh] md:min-h-[40vh] flex items-center justify-center px-4 sm:px-6 lg:px-8 bg-cover bg-center bg-no-repeat"
     style={{
-      backgroundImage: `url('https://images.unsplash.com/photo-1544551763-46a013bb70d5?q=80&w=2070&auto=format&fit=crop')`
+      backgroundImage: `url('https://images.unsplash.com/photo-1472745942893-4b9f730c7668?q=80&w=2069&auto=format&fit=crop')`
     }}
   >
     <div className="container mx-auto text-center">
