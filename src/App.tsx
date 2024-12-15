@@ -66,8 +66,8 @@ const App = () => {
           <div>
             <DesktopNavigation />
             <Routes>
-              <Route path="/auth" element={<AuthRoute />} />
               <Route path="/about" element={<About />} />
+              <Route path="/auth" element={<AuthRoute />} />
               <Route
                 path="/"
                 element={

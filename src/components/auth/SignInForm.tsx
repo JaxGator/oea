@@ -5,7 +5,6 @@ import { useAuthForm } from "@/hooks/useAuthForm";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useState } from "react";
 import { useAuthEventHandler } from "@/hooks/useAuthEventHandler";
-import { useNavigate } from "react-router-dom";
 
 interface SignInFormProps {
   setIsLoading: (loading: boolean) => void;
@@ -14,7 +13,6 @@ interface SignInFormProps {
 export function SignInForm({ setIsLoading }: SignInFormProps) {
   const [error, setError] = useState<string | null>(null);
   const handleAuthEvent = useAuthEventHandler();
-  const navigate = useNavigate();
   
   const { formState, handleInputChange, handleSubmit } = useAuthForm({
     onSubmit: async (email, password) => {
