@@ -22,10 +22,18 @@ interface EventCardProps {
   onUpdate?: () => void;
 }
 
+interface Attendee {
+  profiles: {
+    full_name: string | null;
+    username: string;
+  };
+}
+
 export function EventCard({ event, onRSVP, onCancelRSVP, userRSVPStatus, onUpdate }: EventCardProps) {
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [rsvpCount, setRsvpCount] = useState(0);
+  const [attendees, setAttendees] = useState<Attendee[]>([]);
 
   // Check if user is admin
   const checkAdminStatus = async () => {
@@ -40,18 +48,35 @@ export function EventCard({ event, onRSVP, onCancelRSVP, userRSVPStatus, onUpdat
     }
   };
 
-  // Fetch RSVP count
-  const fetchRSVPCount = async () => {
+  // Fetch RSVP count and attendees
+  const fetchRSVPDetails = async () => {
+    // Get count of all RSVPs
     const { count } = await supabase
       .from('event_rsvps')
       .select('*', { count: 'exact', head: true })
       .eq('event_id', event.id);
     setRsvpCount(count || 0);
+
+    // Get attendees who are attending
+    const { data: attendeeData } = await supabase
+      .from('event_rsvps')
+      .select(`
+        profiles:user_id (
+          full_name,
+          username
+        )
+      `)
+      .eq('event_id', event.id)
+      .eq('response', 'attending');
+
+    if (attendeeData) {
+      setAttendees(attendeeData);
+    }
   };
 
   useEffect(() => {
     checkAdminStatus();
-    fetchRSVPCount();
+    fetchRSVPDetails();
   }, [event.id]);
 
   const handleEditSuccess = () => {
@@ -60,6 +85,13 @@ export function EventCard({ event, onRSVP, onCancelRSVP, userRSVPStatus, onUpdat
   };
 
   const isFullyBooked = rsvpCount >= event.max_guests;
+
+  // Get display names for attendees
+  const attendeeNames = attendees.map(attendee => {
+    const fullName = attendee.profiles.full_name;
+    const firstName = fullName ? fullName.split(' ')[0] : attendee.profiles.username;
+    return firstName;
+  });
 
   return (
     <Card className="w-full transition-all duration-300 hover:shadow-lg animate-fade-in bg-white">
@@ -90,6 +122,12 @@ export function EventCard({ event, onRSVP, onCancelRSVP, userRSVPStatus, onUpdat
             {rsvpCount} / {event.max_guests} attendees
           </span>
         </div>
+        {attendeeNames.length > 0 && (
+          <div className="text-sm text-gray-600">
+            <p className="font-medium mb-1">Attending:</p>
+            <p>{attendeeNames.join(', ')}</p>
+          </div>
+        )}
         <p className="text-gray-600 line-clamp-2">{event.description}</p>
         {userRSVPStatus && (
           <Badge variant="secondary" className="mt-2">
