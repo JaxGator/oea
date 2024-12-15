@@ -53,8 +53,8 @@ export default function About() {
         
         <div className="w-full h-[300px] md:h-[400px] mb-12 rounded-lg overflow-hidden">
           <img 
-            src="https://images.unsplash.com/photo-1575540203949-54ccd7a66d98?q=80&w=2942&auto=format&fit=crop"
-            alt="Jacksonville, Florida skyline"
+            src="https://images.unsplash.com/photo-1490642914619-7955a3fd483c?q=80&w=2970&auto=format&fit=crop"
+            alt="Jacksonville, Florida skyline at sunset"
             className="w-full h-full object-cover"
           />
         </div>
