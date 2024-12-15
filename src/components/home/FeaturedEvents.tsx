@@ -2,9 +2,6 @@ import React from 'react';
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { EventCard } from "@/components/EventCard";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
 import { useFeaturedEvents } from "@/hooks/useFeaturedEvents";
 
 export const FeaturedEvents = () => {
