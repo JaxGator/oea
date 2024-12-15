@@ -31,53 +31,59 @@ export function useAuthState(): AuthState {
   useEffect(() => {
     let mounted = true;
 
-    const getInitialSession = async () => {
+    async function initialize() {
       try {
-        const { data: { session }, error } = await supabase.auth.getSession();
+        // Get initial session
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         
-        if (error) {
-          console.error("Error getting session:", error);
+        if (sessionError) {
+          console.error("Session error:", sessionError);
           if (mounted) {
             setUser(null);
             setProfile(null);
-            setIsLoading(false);
           }
           return;
         }
 
         if (!mounted) return;
 
-        setUser(session?.user ?? null);
-        
-        if (session?.user) {
-          const profileData = await fetchProfile(session.user.id);
+        // Update user state
+        const currentUser = session?.user ?? null;
+        setUser(currentUser);
+
+        // Fetch profile if we have a user
+        if (currentUser) {
+          const profileData = await fetchProfile(currentUser.id);
           if (mounted) {
             setProfile(profileData);
           }
-        } else {
-          setProfile(null);
         }
       } catch (error) {
-        console.error("Error in getInitialSession:", error);
+        console.error("Initialization error:", error);
+        if (mounted) {
+          setUser(null);
+          setProfile(null);
+        }
       } finally {
         if (mounted) {
           setIsLoading(false);
         }
       }
-    };
+    }
 
-    // Execute initial session check
-    getInitialSession();
+    // Initialize auth state
+    initialize();
 
-    // Set up auth state change listener
+    // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (_event, session) => {
         if (!mounted) return;
 
-        setUser(session?.user ?? null);
-        
-        if (session?.user) {
-          const profileData = await fetchProfile(session.user.id);
+        const currentUser = session?.user ?? null;
+        setUser(currentUser);
+
+        if (currentUser) {
+          const profileData = await fetchProfile(currentUser.id);
           if (mounted) {
             setProfile(profileData);
           }
@@ -87,6 +93,7 @@ export function useAuthState(): AuthState {
       }
     );
 
+    // Cleanup
     return () => {
       mounted = false;
       subscription.unsubscribe();
