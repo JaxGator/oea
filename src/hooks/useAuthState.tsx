@@ -2,11 +2,61 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
+import { User } from "@supabase/supabase-js";
+
+interface Profile {
+  id: string;
+  username: string;
+  full_name: string | null;
+  avatar_url: string | null;
+  is_admin: boolean;
+  is_approved: boolean;
+  is_member: boolean;
+}
 
 export function useAuthState() {
   const [isLoading, setIsLoading] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+  const [profile, setProfile] = useState<Profile | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      setUser(session?.user || null);
+      
+      if (session?.user) {
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', session.user.id)
+          .single();
+        
+        setProfile(profileData);
+      } else {
+        setProfile(null);
+      }
+      
+      handleAuthEvent(event);
+    });
+
+    // Initial session check
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      setUser(session?.user || null);
+      
+      if (session?.user) {
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', session.user.id)
+          .single();
+        
+        setProfile(profileData);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [navigate]);
 
   const handleAuthEvent = (event: string) => {
     switch (event) {
@@ -41,13 +91,5 @@ export function useAuthState() {
     }
   };
 
-  useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-      handleAuthEvent(event);
-    });
-
-    return () => subscription.unsubscribe();
-  }, [navigate]);
-
-  return { isLoading, setIsLoading };
+  return { isLoading, setIsLoading, user, profile };
 }
