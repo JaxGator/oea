@@ -22,24 +22,26 @@ const queryClient = new QueryClient({
 
 const App = () => {
   return (
-    <BrowserRouter>
-      <QueryClientProvider client={queryClient}>
-        <TooltipProvider>
-          <div>
-            <DesktopNavigation />
-            <Routes>
-              <Route path="/about" element={<About />} />
-              <Route path="/" element={<Home />} />
-              <Route path="/events" element={<Events />} />
-              <Route path="/members" element={<Members />} />
-            </Routes>
-            <MobileNavigation />
-          </div>
+    <QueryClientProvider client={queryClient}>
+      <BrowserRouter>
+        <div>
+          <TooltipProvider>
+            <div>
+              <DesktopNavigation />
+              <Routes>
+                <Route path="/about" element={<About />} />
+                <Route path="/" element={<Home />} />
+                <Route path="/events" element={<Events />} />
+                <Route path="/members" element={<Members />} />
+              </Routes>
+              <MobileNavigation />
+            </div>
+          </TooltipProvider>
           <Toaster />
           <Sonner />
-        </TooltipProvider>
-      </QueryClientProvider>
-    </BrowserRouter>
+        </div>
+      </BrowserRouter>
+    </QueryClientProvider>
   );
 };
 
