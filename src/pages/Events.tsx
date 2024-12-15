@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { CreateEventDialog } from "@/components/CreateEventDialog";
 import { EventCard } from "@/components/EventCard";
 import { DateFilter } from "@/components/DateFilter";
 import { useQuery } from "@tanstack/react-query";
@@ -6,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Event } from "@/types/event";
 
 export default function Events() {
+  const [isCreateEventOpen, setIsCreateEventOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date>();
 
   const { data: events = [], isLoading, error, refetch } = useQuery({
@@ -55,6 +58,10 @@ export default function Events() {
       })
     : events;
 
+  const handleEventCreated = () => {
+    refetch();
+  };
+
   const handleRSVP = async (eventId: string) => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
@@ -91,6 +98,11 @@ export default function Events() {
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold text-gray-900">Upcoming Events</h1>
+          {isAdmin && (
+            <Button onClick={() => setIsCreateEventOpen(true)} className="bg-[#0d97d1] hover:bg-[#0d97d1]/90">
+              Create Event
+            </Button>
+          )}
         </div>
 
         <div className="mb-6">
@@ -122,6 +134,14 @@ export default function Events() {
               />
             ))}
           </div>
+        )}
+
+        {isAdmin && (
+          <CreateEventDialog
+            open={isCreateEventOpen}
+            onOpenChange={setIsCreateEventOpen}
+            onSuccess={handleEventCreated}
+          />
         )}
       </div>
     </div>
