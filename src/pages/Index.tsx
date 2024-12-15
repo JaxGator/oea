@@ -23,12 +23,15 @@ export default function Index() {
           schema: 'public',
           table: 'profiles'
         },
-        async (payload: RealtimePostgresChangesPayload<Profile>) => {
+        (payload: RealtimePostgresChangesPayload<Profile>) => {
           console.log('Profile update received:', payload);
-          const { data: { user } } = await supabase.auth.getUser();
-          if (payload.new && user && payload.new.id === user.id) {
-            setUsername(payload.new.username || "");
-            setAvatarUrl(payload.new.avatar_url || "");
+          if (payload.new) {
+            supabase.auth.getUser().then(({ data: { user } }) => {
+              if (user && payload.new && payload.new.id === user.id) {
+                setUsername(payload.new.username || "");
+                setAvatarUrl(payload.new.avatar_url || "");
+              }
+            });
           }
         }
       )
