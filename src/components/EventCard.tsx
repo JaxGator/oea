@@ -25,7 +25,7 @@ interface EventCardProps {
 export function EventCard({ event, onRSVP, onCancelRSVP, userRSVPStatus, onUpdate }: EventCardProps) {
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
-  const isFullyBooked = event.attendees >= event.maxAttendees;
+  const [rsvpCount, setRsvpCount] = useState(0);
 
   // Check if user is admin
   const checkAdminStatus = async () => {
@@ -40,14 +40,26 @@ export function EventCard({ event, onRSVP, onCancelRSVP, userRSVPStatus, onUpdat
     }
   };
 
+  // Fetch RSVP count
+  const fetchRSVPCount = async () => {
+    const { count } = await supabase
+      .from('event_rsvps')
+      .select('*', { count: 'exact', head: true })
+      .eq('event_id', event.id);
+    setRsvpCount(count || 0);
+  };
+
   useEffect(() => {
     checkAdminStatus();
-  }, []);
+    fetchRSVPCount();
+  }, [event.id]);
 
   const handleEditSuccess = () => {
     setShowEditDialog(false);
     if (onUpdate) onUpdate();
   };
+
+  const isFullyBooked = rsvpCount >= event.maxAttendees;
 
   return (
     <Card className="w-full transition-all duration-300 hover:shadow-lg animate-fade-in bg-white">
@@ -75,7 +87,7 @@ export function EventCard({ event, onRSVP, onCancelRSVP, userRSVPStatus, onUpdat
         <div className="flex items-center gap-2 text-gray-600">
           <UsersIcon className="w-4 h-4" />
           <span className="text-sm">
-            {event.attendees} / {event.maxAttendees} attendees
+            {rsvpCount} / {event.maxAttendees} attendees
           </span>
         </div>
         <p className="text-gray-600 line-clamp-2">{event.description}</p>
@@ -123,11 +135,12 @@ export function EventCard({ event, onRSVP, onCancelRSVP, userRSVPStatus, onUpdat
             initialData={{
               id: event.id,
               title: event.title,
-              description: event.description,
+              description: event.description || "",
               date: event.date,
-              time: event.time || "12:00",
+              time: event.time,
               location: event.location,
               max_guests: event.maxAttendees,
+              image_url: event.imageUrl,
             }}
             onSuccess={handleEditSuccess}
           />
