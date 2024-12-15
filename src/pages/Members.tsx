@@ -14,6 +14,7 @@ import { useToast } from "@/hooks/use-toast";
 import { MemberActions } from "@/components/members/MemberActions";
 import { EditMemberDialog } from "@/components/members/EditMemberDialog";
 import { Badge } from "@/components/ui/badge";
+import { useQuery } from "@tanstack/react-query";
 
 interface Profile {
   id: string;
@@ -26,15 +27,36 @@ interface Profile {
 }
 
 export default function Members() {
-  const [members, setMembers] = useState<Profile[]>([]);
-  const [loading, setLoading] = useState(true);
   const [currentUserIsAdmin, setCurrentUserIsAdmin] = useState(false);
   const [editingMember, setEditingMember] = useState<Profile | null>(null);
   const { toast } = useToast();
 
+  const { data: members = [], isLoading, refetch } = useQuery({
+    queryKey: ['members'],
+    queryFn: async () => {
+      console.log("Fetching members...");
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .order('username');
+      
+      if (error) {
+        console.error('Error in fetchMembers:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load members. Please try again.",
+          variant: "destructive",
+        });
+        throw error;
+      }
+
+      console.log("Fetched members data:", data);
+      return data || [];
+    },
+  });
+
   useEffect(() => {
     checkAdminStatus();
-    fetchMembers();
   }, []);
 
   const checkAdminStatus = async () => {
@@ -54,33 +76,7 @@ export default function Members() {
     }
   };
 
-  const fetchMembers = async () => {
-    try {
-      console.log("Fetching members...");
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .order('username');
-      
-      if (error) {
-        throw error;
-      }
-
-      console.log("Fetched members data:", data);
-      setMembers(data || []);
-    } catch (error) {
-      console.error('Error in fetchMembers:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load members. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-[#222222] flex items-center justify-center">
         <div className="text-white">Loading members...</div>
@@ -110,7 +106,7 @@ export default function Members() {
               </TableHeader>
               <TableBody>
                 {members.map((member) => (
-                  <TableRow key={`${member.id}-${member.username}`}>
+                  <TableRow key={`${member.id}-${member.username}-${member.is_member ? 'member' : 'non-member'}`}>
                     <TableCell>
                       <Avatar className="h-10 w-10">
                         <AvatarImage src={member.avatar_url || ''} alt={member.username} />
@@ -143,7 +139,7 @@ export default function Members() {
                         <MemberActions
                           memberId={member.id}
                           isCurrentUserAdmin={currentUserIsAdmin}
-                          onDelete={fetchMembers}
+                          onDelete={refetch}
                           onEdit={() => setEditingMember(member)}
                         />
                       </TableCell>
@@ -158,11 +154,11 @@ export default function Members() {
 
       {editingMember && (
         <EditMemberDialog
-          key={`edit-dialog-${editingMember.id}`}
+          key={`edit-dialog-${editingMember.id}-${editingMember.is_member ? 'member' : 'non-member'}`}
           member={editingMember}
           open={!!editingMember}
           onOpenChange={(open) => !open && setEditingMember(null)}
-          onUpdate={fetchMembers}
+          onUpdate={refetch}
         />
       )}
     </div>
