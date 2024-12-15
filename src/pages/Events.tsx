@@ -5,10 +5,14 @@ import { useEvents } from "@/hooks/useEvents";
 import { EventList } from "@/components/event/EventList";
 import { useRSVP } from "@/hooks/useRSVP";
 import { toast } from "sonner";
+import { ViewToggle } from "@/components/event/ViewToggle";
+import { CalendarView } from "@/components/event/CalendarView";
+import { Separator } from "@/components/ui/separator";
 
 export default function Events() {
   const [isCreateEventOpen, setIsCreateEventOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date>();
+  const [isCalendarView, setIsCalendarView] = useState(false);
   
   const { data: events = [], isLoading, error } = useEvents(selectedDate);
   const { handleRSVP, cancelRSVP } = useRSVP();
@@ -30,12 +34,26 @@ export default function Events() {
     );
   }
 
+  // Separate past and upcoming events
+  const now = new Date();
+  const upcomingEvents = events
+    .filter(event => new Date(event.date) >= now)
+    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+  const pastEvents = events
+    .filter(event => new Date(event.date) < now)
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
   return (
     <div className="min-h-screen bg-[#222222] py-12 px-4">
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 space-y-4 md:space-y-0">
           <h1 className="text-3xl font-bold text-white">Events</h1>
           <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
+            <ViewToggle 
+              isCalendarView={isCalendarView} 
+              onViewChange={setIsCalendarView}
+            />
             <DateFilter
               selectedDate={selectedDate}
               onDateSelect={setSelectedDate}
@@ -48,11 +66,37 @@ export default function Events() {
         </div>
 
         <div className="bg-white rounded-lg p-6 shadow-lg">
-          <EventList 
-            events={events}
-            onRSVP={handleRSVP}
-            onCancelRSVP={cancelRSVP}
-          />
+          {isCalendarView ? (
+            <CalendarView 
+              events={events}
+              onDateSelect={setSelectedDate}
+            />
+          ) : (
+            <div className="space-y-8">
+              <div>
+                <h2 className="text-2xl font-semibold mb-4">Upcoming Events</h2>
+                <EventList 
+                  events={upcomingEvents}
+                  onRSVP={handleRSVP}
+                  onCancelRSVP={cancelRSVP}
+                />
+              </div>
+
+              {pastEvents.length > 0 && (
+                <>
+                  <Separator className="my-8" />
+                  <div>
+                    <h2 className="text-2xl font-semibold mb-4">Past Events</h2>
+                    <EventList 
+                      events={pastEvents}
+                      onRSVP={handleRSVP}
+                      onCancelRSVP={cancelRSVP}
+                    />
+                  </div>
+                </>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </div>
