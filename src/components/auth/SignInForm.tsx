@@ -26,18 +26,15 @@ export function SignInForm({ setIsLoading }: SignInFormProps) {
       if (error) {
         console.error("Sign in error:", error);
         
-        if (error.message === "Invalid login credentials") {
-          throw new Error(
-            "Invalid email or password. Please check your credentials and try again."
-          );
+        if (error.message.includes("Invalid login credentials")) {
+          setError("Invalid email or password. Please check your credentials and try again.");
+          return;
         } else if (error.message.includes("Email not confirmed")) {
-          throw new Error(
-            "Please verify your email address. Check your inbox for the confirmation link."
-          );
+          setError("Please verify your email address. Check your inbox for the confirmation link.");
+          return;
         }
-        throw new Error(
-          "An error occurred during sign in. Please try again later."
-        );
+        setError("An error occurred during sign in. Please try again later.");
+        return;
       }
 
       return data;

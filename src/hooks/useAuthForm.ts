@@ -31,11 +31,7 @@ export function useAuthForm({ onSubmit, setIsLoading }: UseAuthFormProps) {
       await onSubmit(formState.email, formState.password);
     } catch (error: any) {
       console.error("Auth form error:", error);
-      toast({
-        title: "Authentication Error",
-        description: error.message || "An error occurred during authentication.",
-        variant: "destructive",
-      });
+      // Don't show a toast since we're now handling errors in the form itself
       setFormState(prev => ({ ...prev, password: "" }));
     } finally {
       setIsLoading(false);
