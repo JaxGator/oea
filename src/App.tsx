@@ -18,7 +18,7 @@ const queryClient = new QueryClient({
     queries: {
       retry: 1,
       refetchOnWindowFocus: false,
-      staleTime: 1000 * 60 * 5, // Cache for 5 minutes
+      staleTime: 1000 * 60 * 5,
     },
   },
 });
@@ -29,7 +29,7 @@ const AppContent = () => {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-[#222222] flex items-center justify-center">
-        <div className="text-white animate-pulse">Loading...</div>
+        <div className="text-white">Loading...</div>
       </div>
     );
   }
@@ -38,8 +38,8 @@ const AppContent = () => {
     <div>
       <DesktopNavigation />
       <Routes>
-        <Route path="/auth" element={<Auth />} />
         <Route path="/" element={<Home />} />
+        <Route path="/auth" element={<Auth />} />
         <Route path="/events" element={<Events />} />
         <Route path="/about" element={<About />} />
         <Route 

@@ -2,15 +2,11 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { User } from "@supabase/supabase-js";
 import { Profile, AuthState } from "@/types/auth";
-import { useAuthEventHandler } from "./useAuthEventHandler";
-import { useToast } from "@/hooks/use-toast";
 
 export function useAuthState(): AuthState {
   const [isLoading, setIsLoading] = useState(true);
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
-  const handleAuthEvent = useAuthEventHandler();
-  const { toast } = useToast();
 
   useEffect(() => {
     let mounted = true;
@@ -18,9 +14,9 @@ export function useAuthState(): AuthState {
     const fetchProfile = async (userId: string) => {
       try {
         const { data, error } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', userId)
+          .from("profiles")
+          .select("*")
+          .eq("id", userId)
           .single();
         
         if (error) {
@@ -44,9 +40,6 @@ export function useAuthState(): AuthState {
             setUser(session.user);
             const profileData = await fetchProfile(session.user.id);
             setProfile(profileData);
-          } else {
-            setUser(null);
-            setProfile(null);
           }
           setIsLoading(false);
         }
@@ -77,7 +70,7 @@ export function useAuthState(): AuthState {
       mounted = false;
       subscription.unsubscribe();
     };
-  }, [handleAuthEvent, toast]);
+  }, []);
 
   return { isLoading, user, profile };
 }
