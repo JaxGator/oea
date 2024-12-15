@@ -3,9 +3,11 @@ import { EventCard } from "@/components/EventCard";
 
 interface EventListProps {
   events: Event[];
+  onRSVP: (eventId: string) => Promise<void>;
+  onCancelRSVP: (eventId: string) => Promise<void>;
 }
 
-export function EventList({ events }: EventListProps) {
+export function EventList({ events, onRSVP, onCancelRSVP }: EventListProps) {
   if (events.length === 0) {
     return (
       <div className="text-center py-8">
@@ -20,8 +22,8 @@ export function EventList({ events }: EventListProps) {
         <EventCard
           key={event.id}
           event={event}
-          onRSVP={() => {}}
-          onCancelRSVP={() => {}}
+          onRSVP={() => onRSVP(event.id)}
+          onCancelRSVP={() => onCancelRSVP(event.id)}
         />
       ))}
     </div>
