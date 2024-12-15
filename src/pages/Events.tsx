@@ -21,7 +21,6 @@ export default function Events() {
       
       if (error) throw error;
       
-      // Transform the data to match our Event type
       return data.map(event => ({
         ...event,
         maxAttendees: event.max_guests,

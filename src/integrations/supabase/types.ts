@@ -107,21 +107,21 @@ export type Database = {
           created_at: string
           event_id: string
           id: string
-          response: string
+          response: Database["public"]["Enums"]["rsvp_response"]
           user_id: string
         }
         Insert: {
           created_at?: string
           event_id: string
           id?: string
-          response: string
+          response: Database["public"]["Enums"]["rsvp_response"]
           user_id: string
         }
         Update: {
           created_at?: string
           event_id?: string
           id?: string
-          response?: string
+          response?: Database["public"]["Enums"]["rsvp_response"]
           user_id?: string
         }
         Relationships: [
@@ -392,7 +392,7 @@ export type Database = {
       }
     }
     Enums: {
-      [_ in never]: never
+      rsvp_response: "attending" | "not_attending" | "maybe"
     }
     CompositeTypes: {
       [_ in never]: never
