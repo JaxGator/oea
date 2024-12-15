@@ -16,15 +16,33 @@ export const useFeaturedEvents = () => {
       const { data, error } = await supabase
         .from("events")
         .select(`
-          *,
-          created_by(username),
-          rsvps:event_rsvps(*)
+          id,
+          title,
+          description,
+          date,
+          time,
+          location,
+          max_guests,
+          image_url,
+          created_at,
+          created_by (
+            username
+          ),
+          rsvps:event_rsvps (*)
         `)
         .order('date', { ascending: true })
         .limit(4);
 
       if (error) throw error;
-      return data as Event[];
+      
+      // Transform the data to match the Event type
+      const transformedData = data.map(event => ({
+        ...event,
+        created_by: event.created_by as { username: string },
+        rsvps: event.rsvps || []
+      }));
+
+      return transformedData as Event[];
     },
   });
 
