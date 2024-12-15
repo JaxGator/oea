@@ -10,7 +10,10 @@ import {
 } from "@/components/ui/table";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { UserCircle } from "lucide-react";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
+import { MemberActions } from "@/components/members/MemberActions";
+import { EditMemberDialog } from "@/components/members/EditMemberDialog";
+import { Badge } from "@/components/ui/badge";
 
 interface Profile {
   id: string;
@@ -18,16 +21,37 @@ interface Profile {
   full_name: string | null;
   avatar_url: string | null;
   is_admin: boolean;
+  is_approved: boolean;
 }
 
 export default function Members() {
   const [members, setMembers] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(true);
+  const [currentUserIsAdmin, setCurrentUserIsAdmin] = useState(false);
+  const [editingMember, setEditingMember] = useState<Profile | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
+    checkAdminStatus();
     fetchMembers();
   }, []);
+
+  const checkAdminStatus = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('is_admin')
+        .eq('id', user.id)
+        .single();
+
+      setCurrentUserIsAdmin(!!profile?.is_admin);
+    } catch (error) {
+      console.error('Error checking admin status:', error);
+    }
+  };
 
   const fetchMembers = async () => {
     try {
@@ -38,12 +62,6 @@ export default function Members() {
         .order('username');
       
       if (error) {
-        console.error('Error fetching members:', error);
-        toast({
-          title: "Error",
-          description: "Failed to load members. Please try again.",
-          variant: "destructive",
-        });
         throw error;
       }
 
@@ -85,7 +103,8 @@ export default function Members() {
                   <TableHead>Profile</TableHead>
                   <TableHead>Username</TableHead>
                   <TableHead>Full Name</TableHead>
-                  <TableHead>Role</TableHead>
+                  <TableHead>Status</TableHead>
+                  {currentUserIsAdmin && <TableHead>Actions</TableHead>}
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -101,7 +120,28 @@ export default function Members() {
                     </TableCell>
                     <TableCell>{member.username}</TableCell>
                     <TableCell>{member.full_name || '-'}</TableCell>
-                    <TableCell>{member.is_admin ? 'Admin' : 'Member'}</TableCell>
+                    <TableCell>
+                      <div className="flex gap-2">
+                        {member.is_admin && (
+                          <Badge variant="default">Admin</Badge>
+                        )}
+                        {member.is_approved ? (
+                          <Badge variant="secondary">Approved</Badge>
+                        ) : (
+                          <Badge variant="outline">Pending</Badge>
+                        )}
+                      </div>
+                    </TableCell>
+                    {currentUserIsAdmin && (
+                      <TableCell>
+                        <MemberActions
+                          memberId={member.id}
+                          isCurrentUserAdmin={currentUserIsAdmin}
+                          onDelete={fetchMembers}
+                          onEdit={() => setEditingMember(member)}
+                        />
+                      </TableCell>
+                    )}
                   </TableRow>
                 ))}
               </TableBody>
@@ -109,6 +149,15 @@ export default function Members() {
           )}
         </div>
       </div>
+
+      {editingMember && (
+        <EditMemberDialog
+          member={editingMember}
+          open={!!editingMember}
+          onOpenChange={(open) => !open && setEditingMember(null)}
+          onUpdate={fetchMembers}
+        />
+      )}
     </div>
   );
 }
