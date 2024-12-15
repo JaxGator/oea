@@ -25,7 +25,7 @@ export const useFeaturedEvents = () => {
           max_guests,
           image_url,
           created_at,
-          created_by (
+          created_by:profiles!events_created_by_fkey (
             username
           ),
           rsvps:event_rsvps (*)
@@ -38,7 +38,9 @@ export const useFeaturedEvents = () => {
       // Transform the data to match the Event type
       const transformedData = data.map(event => ({
         ...event,
-        created_by: event.created_by as { username: string },
+        created_by: {
+          username: event.created_by?.[0]?.username || 'Unknown'
+        },
         rsvps: event.rsvps || []
       }));
 
