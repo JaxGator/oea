@@ -50,27 +50,31 @@ export function EventCard({ event, onRSVP, onCancelRSVP, userRSVPStatus, onUpdat
 
   // Fetch RSVP count and attendees
   const fetchRSVPDetails = async () => {
-    // Get count of all RSVPs
-    const { count } = await supabase
-      .from('event_rsvps')
-      .select('*', { count: 'exact', head: true })
-      .eq('event_id', event.id);
-    setRsvpCount(count || 0);
+    try {
+      // Get count of all RSVPs
+      const { count } = await supabase
+        .from('event_rsvps')
+        .select('*', { count: 'exact', head: true })
+        .eq('event_id', event.id);
+      setRsvpCount(count || 0);
 
-    // Get attendees who are attending
-    const { data: attendeeData } = await supabase
-      .from('event_rsvps')
-      .select(`
-        profiles:user_id (
-          full_name,
-          username
-        )
-      `)
-      .eq('event_id', event.id)
-      .eq('response', 'attending');
+      // Get attendees who are attending
+      const { data: attendeeData } = await supabase
+        .from('event_rsvps')
+        .select(`
+          profiles:user_id (
+            full_name,
+            username
+          )
+        `)
+        .eq('event_id', event.id)
+        .eq('response', 'attending');
 
-    if (attendeeData) {
-      setAttendees(attendeeData);
+      if (attendeeData) {
+        setAttendees(attendeeData as Attendee[]);
+      }
+    } catch (error) {
+      console.error('Error fetching RSVP details:', error);
     }
   };
 
