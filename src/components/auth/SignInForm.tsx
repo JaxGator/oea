@@ -40,9 +40,13 @@ export function SignInForm({ setIsLoading }: SignInFormProps) {
           return null;
         }
 
-        // Trigger the SIGNED_IN event handler
-        handleAuthEvent("SIGNED_IN");
-        return data;
+        if (data.user) {
+          handleAuthEvent("SIGNED_IN");
+          return data;
+        }
+
+        setError("An unexpected error occurred. Please try again.");
+        return null;
       } catch (error: any) {
         console.error("Unexpected error during sign in:", error);
         setError("An unexpected error occurred. Please try again later.");
