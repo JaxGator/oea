@@ -90,6 +90,9 @@ export function EventCard({ event, onRSVP, onCancelRSVP, userRSVPStatus, onUpdat
 
   const isFullyBooked = rsvpCount >= event.max_guests;
 
+  // Check if event is in the past
+  const isPastEvent = new Date(event.date) < new Date(new Date().setHours(0, 0, 0, 0));
+
   const attendeeNames = attendees.map(attendee => {
     const fullName = attendee.profiles.full_name;
     const firstName = fullName ? fullName.split(' ')[0] : attendee.profiles.username;
@@ -121,12 +124,13 @@ export function EventCard({ event, onRSVP, onCancelRSVP, userRSVPStatus, onUpdat
       </CardContent>
       <CardFooter className="p-4 pt-0">
         <EventActions
-          isAdmin={isAdmin}
+          isAdmin={isAdmin && !isPastEvent} // Only allow editing if admin AND not a past event
           userRSVPStatus={userRSVPStatus || null}
           isFullyBooked={isFullyBooked}
           onRSVP={(guests) => onRSVP(event.id, guests)}
           onCancelRSVP={() => onCancelRSVP(event.id)}
           onEdit={() => setShowEditDialog(true)}
+          isPastEvent={isPastEvent}
         />
       </CardFooter>
 
