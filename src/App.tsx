@@ -5,8 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { MobileNavigation } from "./components/MobileNavigation";
 import { DesktopNavigation } from "./components/DesktopNavigation";
-import { useEffect, useState } from "react";
-import { supabase } from "./integrations/supabase/client";
+import { useAuthState } from "./hooks/useAuthState";
 import Home from "./pages/Home";
 import About from "./pages/About";
 import Events from "./pages/Events";
@@ -17,27 +16,15 @@ import Members from "./pages/Members";
 const queryClient = new QueryClient();
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  const { isLoading, user, profile } = useAuthState();
 
-  useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      setIsAuthenticated(!!session);
-    });
-
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setIsAuthenticated(!!session);
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
-
-  if (isAuthenticated === null) {
+  if (isLoading) {
     return <div className="min-h-screen bg-[#222222] flex items-center justify-center">
       <div className="text-white">Loading...</div>
     </div>;
   }
 
-  if (!isAuthenticated) {
+  if (!user || !profile) {
     return <Navigate to="/auth" replace />;
   }
 
