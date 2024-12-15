@@ -2,11 +2,15 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 
+interface Guest {
+  firstName: string;
+}
+
 export const useRSVP = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const handleRSVP = async (eventId: string) => {
+  const handleRSVP = async (eventId: string, guests: Guest[] = []) => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
@@ -18,6 +22,8 @@ export const useRSVP = () => {
         .eq('user_id', user.id)
         .single();
 
+      let rsvpId;
+
       if (existingRSVP) {
         const { error: updateError } = await supabase
           .from('event_rsvps')
@@ -26,16 +32,34 @@ export const useRSVP = () => {
           .eq('user_id', user.id);
 
         if (updateError) throw updateError;
+        rsvpId = existingRSVP.id;
       } else {
-        const { error: insertError } = await supabase
+        const { data: newRSVP, error: insertError } = await supabase
           .from('event_rsvps')
           .insert({
             event_id: eventId,
             user_id: user.id,
             response: 'attending'
-          });
+          })
+          .select()
+          .single();
 
         if (insertError) throw insertError;
+        rsvpId = newRSVP.id;
+      }
+
+      // Add guests
+      if (guests.length > 0) {
+        const { error: guestError } = await supabase
+          .from('event_guests')
+          .insert(
+            guests.map(guest => ({
+              rsvp_id: rsvpId,
+              first_name: guest.firstName || null
+            }))
+          );
+
+        if (guestError) throw guestError;
       }
 
       toast({

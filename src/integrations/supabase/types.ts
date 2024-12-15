@@ -102,6 +102,35 @@ export type Database = {
           },
         ]
       }
+      event_guests: {
+        Row: {
+          created_at: string
+          first_name: string | null
+          id: string
+          rsvp_id: string
+        }
+        Insert: {
+          created_at?: string
+          first_name?: string | null
+          id?: string
+          rsvp_id: string
+        }
+        Update: {
+          created_at?: string
+          first_name?: string | null
+          id?: string
+          rsvp_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_guests_rsvp_id_fkey"
+            columns: ["rsvp_id"]
+            isOneToOne: false
+            referencedRelation: "event_rsvps"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       event_rsvps: {
         Row: {
           created_at: string

@@ -12,9 +12,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { EventDetails } from "./event/EventDetails";
 import { EventActions } from "./event/EventActions";
 
+interface Guest {
+  firstName: string;
+}
+
 interface EventCardProps {
   event: Event;
-  onRSVP: (eventId: string) => void;
+  onRSVP: (eventId: string, guests?: Guest[]) => void;
   onCancelRSVP: (eventId: string) => void;
   userRSVPStatus?: string | null;
   onUpdate?: () => void;
@@ -120,7 +124,7 @@ export function EventCard({ event, onRSVP, onCancelRSVP, userRSVPStatus, onUpdat
           isAdmin={isAdmin}
           userRSVPStatus={userRSVPStatus || null}
           isFullyBooked={isFullyBooked}
-          onRSVP={() => onRSVP(event.id)}
+          onRSVP={(guests) => onRSVP(event.id, guests)}
           onCancelRSVP={() => onCancelRSVP(event.id)}
           onEdit={() => setShowEditDialog(true)}
         />
