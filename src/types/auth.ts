@@ -12,7 +12,6 @@ export interface Profile {
 
 export interface AuthState {
   isLoading: boolean;
-  setIsLoading: (loading: boolean) => void;
   user: User | null;
   profile: Profile | null;
 }
