@@ -5,20 +5,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { Event } from "@/types/event";
 import { useToast } from "@/hooks/use-toast";
 
-interface EventWithRSVPs extends Omit<Event, 'created_by' | 'rsvps'> {
-  created_by: {
-    username: string;
-  };
-  rsvps: Array<{
-    id: string;
-    event_id: string;
-    user_id: string;
-    response: "attending" | "not_attending" | "maybe";
-    created_at: string;
-  }>;
-}
-
 const fetchFeaturedEvents = async (): Promise<Event[]> => {
+  const today = new Date().toISOString().split('T')[0];
+  
   const { data, error } = await supabase
     .from('events')
     .select(`
@@ -42,6 +31,7 @@ const fetchFeaturedEvents = async (): Promise<Event[]> => {
         created_at
       )
     `)
+    .gte('date', today)
     .order('date', { ascending: true })
     .limit(3);
 
