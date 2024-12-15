@@ -2,25 +2,13 @@ import { useState } from "react";
 import { CreateEventDialog } from "@/components/CreateEventDialog";
 import { DateFilter } from "@/components/DateFilter";
 import { useEvents } from "@/hooks/useEvents";
-import { useRSVP } from "@/hooks/useRSVP";
 import { EventList } from "@/components/event/EventList";
-import { useAuthState } from "@/hooks/useAuthState";
 
 export default function Events() {
   const [isCreateEventOpen, setIsCreateEventOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date>();
-  const { user } = useAuthState();
   
-  const { data: events = [], isLoading, error } = useEvents(selectedDate);
-  const { handleRSVP, cancelRSVP } = useRSVP();
-
-  if (error) {
-    return (
-      <div className="min-h-screen bg-[#222222] flex items-center justify-center">
-        <div className="text-white">Error loading events. Please try again.</div>
-      </div>
-    );
-  }
+  const { data: events = [], isLoading } = useEvents(selectedDate);
 
   if (isLoading) {
     return (
@@ -48,11 +36,7 @@ export default function Events() {
         </div>
 
         <div className="bg-white rounded-lg p-6 shadow-lg">
-          <EventList
-            events={events}
-            onRSVP={handleRSVP}
-            onCancelRSVP={cancelRSVP}
-          />
+          <EventList events={events} />
         </div>
       </div>
     </div>

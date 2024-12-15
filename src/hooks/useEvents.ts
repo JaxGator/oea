@@ -8,11 +8,7 @@ export const useEvents = (selectedDate?: Date) => {
     queryFn: async () => {
       let query = supabase
         .from('events')
-        .select(`
-          *,
-          created_by:profiles!events_created_by_fkey(username),
-          rsvps:event_rsvps(*)
-        `)
+        .select('*')
         .order('date');
 
       if (selectedDate) {
@@ -21,7 +17,11 @@ export const useEvents = (selectedDate?: Date) => {
 
       const { data, error } = await query;
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching events:', error);
+        return [];
+      }
+      
       return data as Event[];
     },
   });
