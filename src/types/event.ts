@@ -5,8 +5,17 @@ export interface Event {
   date: string;
   time: string;
   location: string;
-  maxAttendees: number;
-  imageUrl: string;
-  created_by: string;
+  max_guests: number;
+  image_url: string;
+  created_by: {
+    username: string;
+  };
   created_at: string;
+  rsvps: {
+    id: string;
+    event_id: string;
+    user_id: string;
+    response: 'attending' | 'not_attending' | 'maybe';
+    created_at: string;
+  }[];
 }
