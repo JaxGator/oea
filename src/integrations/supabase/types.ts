@@ -353,6 +353,7 @@ export type Database = {
           id: string
           is_admin: boolean | null
           is_approved: boolean | null
+          is_member: boolean | null
           username: string
         }
         Insert: {
@@ -362,6 +363,7 @@ export type Database = {
           id: string
           is_admin?: boolean | null
           is_approved?: boolean | null
+          is_member?: boolean | null
           username: string
         }
         Update: {
@@ -371,6 +373,7 @@ export type Database = {
           id?: string
           is_admin?: boolean | null
           is_approved?: boolean | null
+          is_member?: boolean | null
           username?: string
         }
         Relationships: []

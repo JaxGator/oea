@@ -22,6 +22,7 @@ interface Profile {
   avatar_url: string | null;
   is_admin: boolean;
   is_approved: boolean;
+  is_member: boolean;
 }
 
 export default function Members() {
@@ -129,6 +130,11 @@ export default function Members() {
                           <Badge variant="secondary">Approved</Badge>
                         ) : (
                           <Badge variant="outline">Pending</Badge>
+                        )}
+                        {member.is_member && (
+                          <Badge variant="default" className="bg-green-500 hover:bg-green-600">
+                            Member
+                          </Badge>
                         )}
                       </div>
                     </TableCell>

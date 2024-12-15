@@ -8,6 +8,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -18,6 +19,7 @@ interface EditMemberDialogProps {
     full_name: string | null;
     is_admin: boolean;
     is_approved: boolean;
+    is_member: boolean;
   };
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -29,6 +31,7 @@ export function EditMemberDialog({ member, open, onOpenChange, onUpdate }: EditM
   const [fullName, setFullName] = useState(member.full_name || "");
   const [isAdmin, setIsAdmin] = useState(member.is_admin);
   const [isApproved, setIsApproved] = useState(member.is_approved);
+  const [isMember, setIsMember] = useState(member.is_member);
   const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -41,6 +44,7 @@ export function EditMemberDialog({ member, open, onOpenChange, onUpdate }: EditM
           full_name: fullName,
           is_admin: isAdmin,
           is_approved: isApproved,
+          is_member: isMember,
         })
         .eq('id', member.id);
 
@@ -87,24 +91,28 @@ export function EditMemberDialog({ member, open, onOpenChange, onUpdate }: EditM
             />
           </div>
           <div className="flex items-center space-x-2">
-            <input
-              type="checkbox"
+            <Checkbox
               id="isAdmin"
               checked={isAdmin}
-              onChange={(e) => setIsAdmin(e.target.checked)}
-              className="h-4 w-4 rounded border-gray-300"
+              onCheckedChange={(checked) => setIsAdmin(checked as boolean)}
             />
             <Label htmlFor="isAdmin">Admin</Label>
           </div>
           <div className="flex items-center space-x-2">
-            <input
-              type="checkbox"
+            <Checkbox
               id="isApproved"
               checked={isApproved}
-              onChange={(e) => setIsApproved(e.target.checked)}
-              className="h-4 w-4 rounded border-gray-300"
+              onCheckedChange={(checked) => setIsApproved(checked as boolean)}
             />
             <Label htmlFor="isApproved">Approved</Label>
+          </div>
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="isMember"
+              checked={isMember}
+              onCheckedChange={(checked) => setIsMember(checked as boolean)}
+            />
+            <Label htmlFor="isMember">Member</Label>
           </div>
           <div className="flex justify-end space-x-2">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
