@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { Event } from "@/types/event";
 
 export const useFeaturedEvents = () => {
   const navigate = useNavigate();
@@ -16,25 +17,14 @@ export const useFeaturedEvents = () => {
         .from("events")
         .select(`
           *,
-          event_rsvps(count)
+          created_by(username),
+          rsvps:event_rsvps(*)
         `)
         .order('date', { ascending: true })
         .limit(4);
 
       if (error) throw error;
-
-      return data.map((event) => ({
-        id: event.id,
-        title: event.title,
-        description: event.description || "",
-        date: event.date,
-        time: event.time,
-        location: event.location,
-        maxAttendees: event.max_guests,
-        imageUrl: event.image_url || "https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&q=80",
-        created_by: event.created_by,
-        created_at: event.created_at
-      }));
+      return data as Event[];
     },
   });
 

@@ -59,13 +59,13 @@ export function EventCard({ event, onRSVP, onCancelRSVP, userRSVPStatus, onUpdat
     if (onUpdate) onUpdate();
   };
 
-  const isFullyBooked = rsvpCount >= event.maxAttendees;
+  const isFullyBooked = rsvpCount >= event.max_guests;
 
   return (
     <Card className="w-full transition-all duration-300 hover:shadow-lg animate-fade-in bg-white">
       <CardHeader className="relative p-0">
         <img
-          src={event.imageUrl}
+          src={event.image_url}
           alt={event.title}
           className="w-full h-48 object-cover rounded-t-lg"
         />
@@ -87,7 +87,7 @@ export function EventCard({ event, onRSVP, onCancelRSVP, userRSVPStatus, onUpdat
         <div className="flex items-center gap-2 text-gray-600">
           <UsersIcon className="w-4 h-4" />
           <span className="text-sm">
-            {rsvpCount} / {event.maxAttendees} attendees
+            {rsvpCount} / {event.max_guests} attendees
           </span>
         </div>
         <p className="text-gray-600 line-clamp-2">{event.description}</p>
@@ -139,8 +139,8 @@ export function EventCard({ event, onRSVP, onCancelRSVP, userRSVPStatus, onUpdat
               date: event.date,
               time: event.time,
               location: event.location,
-              max_guests: event.maxAttendees,
-              image_url: event.imageUrl,
+              max_guests: event.max_guests,
+              image_url: event.image_url,
             }}
             onSuccess={handleEditSuccess}
           />
