@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuthForm } from "@/hooks/useAuthForm";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useState } from "react";
+import { useAuthEventHandler } from "@/hooks/useAuthEventHandler";
 
 interface SignInFormProps {
   setIsLoading: (loading: boolean) => void;
@@ -11,6 +12,7 @@ interface SignInFormProps {
 
 export function SignInForm({ setIsLoading }: SignInFormProps) {
   const [error, setError] = useState<string | null>(null);
+  const handleAuthEvent = useAuthEventHandler();
   
   const { formState, handleInputChange, handleSubmit } = useAuthForm({
     onSubmit: async (email, password) => {
@@ -38,6 +40,8 @@ export function SignInForm({ setIsLoading }: SignInFormProps) {
           return null;
         }
 
+        // Trigger the SIGNED_IN event handler
+        handleAuthEvent("SIGNED_IN");
         return data;
       } catch (error: any) {
         console.error("Unexpected error during sign in:", error);
