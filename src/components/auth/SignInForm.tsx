@@ -2,7 +2,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuthForm } from "@/hooks/useAuthForm";
-import { useToast } from "@/components/ui/use-toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useState } from "react";
 
@@ -11,33 +10,40 @@ interface SignInFormProps {
 }
 
 export function SignInForm({ setIsLoading }: SignInFormProps) {
-  const { toast } = useToast();
   const [error, setError] = useState<string | null>(null);
   
   const { formState, handleInputChange, handleSubmit } = useAuthForm({
     onSubmit: async (email, password) => {
       setError(null);
       
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-      
-      if (error) {
-        console.error("Sign in error:", error);
+      try {
+        const { data, error: signInError } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
         
-        if (error.message.includes("Invalid login credentials")) {
-          setError("Invalid email or password. Please check your credentials and try again.");
-          return;
-        } else if (error.message.includes("Email not confirmed")) {
-          setError("Please verify your email address. Check your inbox for the confirmation link.");
-          return;
+        if (signInError) {
+          if (signInError.message.includes("Invalid login credentials")) {
+            setError("Invalid email or password. Please check your credentials and try again.");
+            return null;
+          }
+          
+          if (signInError.message.includes("Email not confirmed")) {
+            setError("Please verify your email address before signing in.");
+            return null;
+          }
+          
+          setError("An error occurred during sign in. Please try again later.");
+          console.error("Sign in error:", signInError);
+          return null;
         }
-        setError("An error occurred during sign in. Please try again later.");
-        return;
-      }
 
-      return data;
+        return data;
+      } catch (error: any) {
+        console.error("Unexpected error during sign in:", error);
+        setError("An unexpected error occurred. Please try again later.");
+        return null;
+      }
     },
     setIsLoading,
   });

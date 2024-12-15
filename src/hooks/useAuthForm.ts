@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { useToast } from "@/components/ui/use-toast";
 
 interface AuthFormState {
   email: string;
@@ -16,7 +15,6 @@ export function useAuthForm({ onSubmit, setIsLoading }: UseAuthFormProps) {
     email: "",
     password: "",
   });
-  const { toast } = useToast();
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -28,10 +26,13 @@ export function useAuthForm({ onSubmit, setIsLoading }: UseAuthFormProps) {
     setIsLoading(true);
 
     try {
-      await onSubmit(formState.email, formState.password);
-    } catch (error: any) {
+      const result = await onSubmit(formState.email, formState.password);
+      if (!result) {
+        // If result is null, error was already handled in onSubmit
+        setFormState(prev => ({ ...prev, password: "" }));
+      }
+    } catch (error) {
       console.error("Auth form error:", error);
-      // Don't show a toast since we're now handling errors in the form itself
       setFormState(prev => ({ ...prev, password: "" }));
     } finally {
       setIsLoading(false);
