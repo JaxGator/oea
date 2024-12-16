@@ -15,9 +15,9 @@ export default function Store() {
         <h1 className="text-2xl font-bold mb-6">OEA Store</h1>
         <div className="w-full aspect-[4/3]">
           <iframe
-            src="YOUR_PRINTIFY_STORE_URL"
+            src="YOUR_PRINTFUL_STORE_URL"
             className="w-full h-full border-0"
-            title="Printify Store"
+            title="Printful Store"
             allow="accelerometer; ambient-light-sensor; camera; encrypted-media; geolocation; gyroscope; hid; microphone; midi; payment; usb; vr; xr-spatial-tracking"
             sandbox="allow-forms allow-modals allow-popups allow-presentation allow-same-origin allow-scripts"
           />
