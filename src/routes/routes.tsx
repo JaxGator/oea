@@ -3,6 +3,7 @@ import { AppLayout } from "@/components/layout/AppLayout";
 import Home from "@/pages/Home";
 import Auth from "@/pages/Auth";
 import Events from "@/pages/Events";
+import EventDetails from "@/pages/EventDetails";
 import About from "@/pages/About";
 import Members from "@/pages/Members";
 import Store from "@/pages/Store";
@@ -27,6 +28,10 @@ export const router = createBrowserRouter([
       {
         path: "/events",
         element: <Events />,
+      },
+      {
+        path: "/events/:eventId",
+        element: <EventDetails />,
       },
       {
         path: "/about",

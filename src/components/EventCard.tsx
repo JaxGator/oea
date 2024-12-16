@@ -7,6 +7,7 @@ import { EventActions } from "./event/EventActions";
 import { AddToCalendar } from "./event/AddToCalendar";
 import { EventCardHeader } from "./event/EventCardHeader";
 import { EventEditDialog } from "./event/EventEditDialog";
+import { useNavigate } from "react-router-dom";
 
 interface Guest {
   firstName: string;
@@ -33,6 +34,7 @@ export function EventCard({ event, onRSVP, onCancelRSVP, userRSVPStatus, onUpdat
   const [isAdmin, setIsAdmin] = useState(false);
   const [rsvpCount, setRsvpCount] = useState(0);
   const [attendees, setAttendees] = useState<Attendee[]>([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     checkAdminStatus();
@@ -84,6 +86,19 @@ export function EventCard({ event, onRSVP, onCancelRSVP, userRSVPStatus, onUpdat
     if (onUpdate) onUpdate();
   };
 
+  const handleCardClick = (e: React.MouseEvent) => {
+    // Don't navigate if clicking on buttons or links
+    if (
+      (e.target as HTMLElement).tagName === 'BUTTON' ||
+      (e.target as HTMLElement).tagName === 'A' ||
+      (e.target as HTMLElement).closest('button') ||
+      (e.target as HTMLElement).closest('a')
+    ) {
+      return;
+    }
+    navigate(`/events/${event.id}`);
+  };
+
   const isFullyBooked = rsvpCount >= event.max_guests;
   const isPastEvent = new Date(event.date) < new Date(new Date().setHours(0, 0, 0, 0));
 
@@ -94,7 +109,10 @@ export function EventCard({ event, onRSVP, onCancelRSVP, userRSVPStatus, onUpdat
   });
 
   return (
-    <Card className="w-full transition-all duration-300 hover:shadow-lg animate-fade-in bg-white">
+    <Card 
+      className="w-full transition-all duration-300 hover:shadow-lg animate-fade-in bg-white cursor-pointer"
+      onClick={handleCardClick}
+    >
       <EventCardHeader imageUrl={event.image_url} title={event.title} />
       
       <CardContent className="p-4">
