@@ -25,6 +25,8 @@ export default function Auth() {
           title: "Signed out",
           description: "You have been successfully signed out.",
         });
+      } else if (event === 'USER_UPDATED') {
+        console.log('User updated:', session);
       }
     });
 
@@ -85,6 +87,14 @@ export default function Auth() {
             }}
             providers={['google', 'facebook']}
             redirectTo={window.location.origin}
+            onError={(error) => {
+              console.error('Auth error:', error);
+              toast({
+                title: "Error",
+                description: "There was a problem with authentication. Please try again.",
+                variant: "destructive",
+              });
+            }}
           />
         </CardContent>
       </Card>
