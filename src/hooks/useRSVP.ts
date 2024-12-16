@@ -15,12 +15,15 @@ export const useRSVP = () => {
     if (!user) return;
 
     try {
-      const { data: existingRSVP } = await supabase
+      // Use maybeSingle() instead of single() to handle the case where no RSVP exists
+      const { data: existingRSVP, error: rsvpError } = await supabase
         .from('event_rsvps')
         .select('*')
         .eq('event_id', eventId)
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle();
+
+      if (rsvpError) throw rsvpError;
 
       let rsvpId;
 

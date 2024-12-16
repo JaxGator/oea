@@ -137,7 +137,7 @@ export function EventCard({ event, onRSVP, onCancelRSVP, userRSVPStatus, onUpdat
       </CardContent>
       <CardFooter className="p-4 pt-0">
         <EventActions
-          isAdmin={isAdmin && !isPastEvent} // Only allow editing if admin AND not a past event
+          isAdmin={isAdmin && !isPastEvent}
           userRSVPStatus={userRSVPStatus || null}
           isFullyBooked={isFullyBooked}
           onRSVP={(guests) => onRSVP(event.id, guests)}
