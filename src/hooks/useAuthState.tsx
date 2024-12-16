@@ -28,33 +28,26 @@ export function useAuthState(): AuthState {
     }
   };
 
-  const updateAuthState = async (session: any) => {
-    try {
-      const currentUser = session?.user ?? null;
-      setUser(currentUser);
-
-      if (currentUser) {
-        const profileData = await fetchProfile(currentUser.id);
-        setProfile(profileData);
-      } else {
-        setProfile(null);
-      }
-    } catch (error) {
-      console.error("Error updating auth state:", error);
-      setUser(null);
-      setProfile(null);
-    }
-  };
-
   useEffect(() => {
     let mounted = true;
 
+    // Initialize auth state and set up listener
     const initialize = async () => {
       try {
         // Get initial session
         const { data: { session } } = await supabase.auth.getSession();
-        if (mounted) {
-          await updateAuthState(session);
+        
+        if (!mounted) return;
+
+        if (session?.user) {
+          setUser(session.user);
+          const profileData = await fetchProfile(session.user.id);
+          if (mounted) {
+            setProfile(profileData);
+          }
+        } else {
+          setUser(null);
+          setProfile(null);
         }
       } catch (error) {
         console.error("Error in initialization:", error);
@@ -69,16 +62,33 @@ export function useAuthState(): AuthState {
       }
     };
 
-    initialize();
-
     // Set up auth listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (!mounted) return;
+
+      try {
+        if (session?.user) {
+          setUser(session.user);
+          const profileData = await fetchProfile(session.user.id);
+          if (mounted) {
+            setProfile(profileData);
+          }
+        } else {
+          setUser(null);
+          setProfile(null);
+        }
+      } catch (error) {
+        console.error("Error in auth state change:", error);
         if (mounted) {
-          await updateAuthState(session);
+          setUser(null);
+          setProfile(null);
         }
       }
-    );
+    });
+
+    initialize();
 
     return () => {
       mounted = false;
