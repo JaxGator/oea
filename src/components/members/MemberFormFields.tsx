@@ -7,6 +7,10 @@ interface MemberFormFieldsProps {
   setUsername: (value: string) => void;
   fullName: string;
   setFullName: (value: string) => void;
+  email: string;
+  setEmail: (value: string) => void;
+  password: string;
+  setPassword: (value: string) => void;
   isAdmin: boolean;
   setIsAdmin: (value: boolean) => void;
   isApproved: boolean;
@@ -20,6 +24,10 @@ export function MemberFormFields({
   setUsername,
   fullName,
   setFullName,
+  email,
+  setEmail,
+  password,
+  setPassword,
   isAdmin,
   setIsAdmin,
   isApproved,
@@ -29,6 +37,25 @@ export function MemberFormFields({
 }: MemberFormFieldsProps) {
   return (
     <div className="space-y-4">
+      <div className="space-y-2">
+        <Label htmlFor="email">Email</Label>
+        <Input
+          id="email"
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="password">New Password (leave empty to keep current)</Label>
+        <Input
+          id="password"
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          placeholder="Enter new password"
+        />
+      </div>
       <div className="space-y-2">
         <Label htmlFor="username">Username</Label>
         <Input

@@ -9,11 +9,14 @@ interface Member {
   is_admin: boolean;
   is_approved: boolean;
   is_member: boolean;
+  email?: string;
 }
 
 export function useMemberForm(member: Member, onUpdate: () => void, onClose: () => void) {
   const [username, setUsername] = useState(member.username);
   const [fullName, setFullName] = useState(member.full_name || "");
+  const [email, setEmail] = useState(member.email || "");
+  const [password, setPassword] = useState("");
   const [isAdmin, setIsAdmin] = useState(member.is_admin);
   const [isApproved, setIsApproved] = useState(member.is_approved);
   const [isMember, setIsMember] = useState(member.is_member);
@@ -22,18 +25,35 @@ export function useMemberForm(member: Member, onUpdate: () => void, onClose: () 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const { error } = await supabase
-        .from('profiles')
-        .update({
-          username,
-          full_name: fullName,
-          is_admin: isAdmin,
-          is_approved: isApproved,
-          is_member: isMember,
-        })
-        .eq('id', member.id);
+      // Call the admin-user-management function
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) throw new Error('No access token');
 
-      if (error) throw error;
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-user-management`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`,
+          },
+          body: JSON.stringify({
+            userId: member.id,
+            email: email || undefined,
+            password: password || undefined,
+            username,
+            fullName,
+            isAdmin,
+            isApproved,
+            isMember,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to update user');
+      }
 
       toast({
         title: "Success",
@@ -46,7 +66,7 @@ export function useMemberForm(member: Member, onUpdate: () => void, onClose: () 
       console.error('Error updating member:', error);
       toast({
         title: "Error",
-        description: "Failed to update member",
+        description: error instanceof Error ? error.message : "Failed to update member",
         variant: "destructive",
       });
     }
@@ -57,6 +77,10 @@ export function useMemberForm(member: Member, onUpdate: () => void, onClose: () 
     setUsername,
     fullName,
     setFullName,
+    email,
+    setEmail,
+    password,
+    setPassword,
     isAdmin,
     setIsAdmin,
     isApproved,

@@ -16,6 +16,7 @@ interface EditMemberDialogProps {
     is_admin: boolean;
     is_approved: boolean;
     is_member: boolean;
+    email?: string;
   };
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -28,6 +29,10 @@ export function EditMemberDialog({ member, open, onOpenChange, onUpdate }: EditM
     setUsername,
     fullName,
     setFullName,
+    email,
+    setEmail,
+    password,
+    setPassword,
     isAdmin,
     setIsAdmin,
     isApproved,
@@ -49,6 +54,10 @@ export function EditMemberDialog({ member, open, onOpenChange, onUpdate }: EditM
             setUsername={setUsername}
             fullName={fullName}
             setFullName={setFullName}
+            email={email}
+            setEmail={setEmail}
+            password={password}
+            setPassword={setPassword}
             isAdmin={isAdmin}
             setIsAdmin={setIsAdmin}
             isApproved={isApproved}
