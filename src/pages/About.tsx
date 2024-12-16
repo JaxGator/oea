@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
-import { EditableContent } from "@/components/EditableContent";
 import { supabase } from "@/integrations/supabase/client";
-import { ViewContent } from "@/components/content/ViewContent";
+import { AboutHero } from "@/components/about/AboutHero";
+import { AboutContent } from "@/components/about/AboutContent";
 
 export default function About() {
   const [content, setContent] = useState({
@@ -58,48 +58,27 @@ export default function About() {
     return () => subscription.unsubscribe();
   }, []);
 
+  const handleContentUpdate = (section: 'guidelines' | 'mission', newContent: string) => {
+    setContent(prev => ({ ...prev, [section]: newContent }));
+  };
+
   return (
     <div className="min-h-screen bg-[#F1F0FB]">
       <div className="container mx-auto px-4 py-12">
         <h1 className="text-4xl font-bold text-center mb-8 text-gray-900">About Us</h1>
         
         <div className="max-w-3xl mx-auto">
-          <div className="w-full h-[300px] md:h-[400px] mb-12 rounded-lg overflow-hidden">
-            <img 
-              src="https://images.unsplash.com/photo-1490642914619-7955a3fd483c?q=80&w=2970&auto=format&fit=crop"
-              alt="Jacksonville, Florida skyline at sunset"
-              className="w-full h-full object-cover"
-            />
-          </div>
-
+          <AboutHero 
+            imageUrl="https://images.unsplash.com/photo-1490642914619-7955a3fd483c?q=80&w=2970&auto=format&fit=crop"
+            imageAlt="Jacksonville, Florida skyline at sunset"
+          />
+          
           <div className="space-y-8">
-            {user ? (
-              <>
-                <EditableContent
-                  content={content.guidelines}
-                  pageId="about"
-                  sectionId="guidelines"
-                  onUpdate={(newContent) => setContent(prev => ({ ...prev, guidelines: newContent }))}
-                />
-                <EditableContent
-                  content={content.mission}
-                  pageId="about"
-                  sectionId="mission"
-                  onUpdate={(newContent) => setContent(prev => ({ ...prev, mission: newContent }))}
-                />
-              </>
-            ) : (
-              <>
-                <div className="prose max-w-none whitespace-pre-wrap bg-white p-6 rounded-lg shadow-sm">
-                  <h2 className="text-2xl font-semibold mb-4">Guidelines</h2>
-                  {content.guidelines}
-                </div>
-                <div className="prose max-w-none whitespace-pre-wrap bg-white p-6 rounded-lg shadow-sm">
-                  <h2 className="text-2xl font-semibold mb-4">Our Mission</h2>
-                  {content.mission}
-                </div>
-              </>
-            )}
+            <AboutContent 
+              content={content}
+              isAuthenticated={!!user}
+              onUpdate={handleContentUpdate}
+            />
           </div>
         </div>
       </div>
