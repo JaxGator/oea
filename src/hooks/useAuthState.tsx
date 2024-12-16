@@ -11,6 +11,7 @@ export function useAuthState(): AuthState {
   useEffect(() => {
     let mounted = true;
 
+    // Fetch profile helper function
     const fetchProfile = async (userId: string) => {
       try {
         const { data, error } = await supabase
@@ -27,47 +28,53 @@ export function useAuthState(): AuthState {
       }
     };
 
+    // Handle auth state updates
+    const handleAuthStateChange = async (currentUser: User | null) => {
+      if (!mounted) return;
+
+      try {
+        setUser(currentUser);
+        
+        if (currentUser) {
+          const profileData = await fetchProfile(currentUser.id);
+          if (mounted) {
+            setProfile(profileData);
+          }
+        } else {
+          setProfile(null);
+        }
+      } catch (error) {
+        console.error("Error updating auth state:", error);
+        if (mounted) {
+          setUser(null);
+          setProfile(null);
+        }
+      }
+    };
+
+    // Initialize auth state
+    const initializeAuth = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        await handleAuthStateChange(session?.user ?? null);
+      } finally {
+        if (mounted) {
+          setIsLoading(false);
+        }
+      }
+    };
+
     // Set up auth state change listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (_event, session) => {
-        if (!mounted) return;
-
-        try {
-          const currentUser = session?.user ?? null;
-          setUser(currentUser);
-
-          if (currentUser) {
-            const profileData = await fetchProfile(currentUser.id);
-            if (mounted) setProfile(profileData);
-          } else {
-            setProfile(null);
-          }
-        } catch (error) {
-          console.error("Error in auth state change:", error);
-          if (mounted) {
-            setUser(null);
-            setProfile(null);
-          }
-        }
+        await handleAuthStateChange(session?.user ?? null);
       }
     );
 
-    // Initial session check
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!mounted) return;
+    // Initialize
+    initializeAuth();
 
-      const currentUser = session?.user ?? null;
-      setUser(currentUser);
-
-      if (currentUser) {
-        fetchProfile(currentUser.id).then((profileData) => {
-          if (mounted) setProfile(profileData);
-        });
-      }
-      
-      setIsLoading(false);
-    });
-
+    // Cleanup
     return () => {
       mounted = false;
       subscription.unsubscribe();
