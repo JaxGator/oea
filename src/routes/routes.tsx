@@ -1,60 +1,45 @@
-import { RouteObject } from "react-router-dom";
-import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
-import { AuthRoute } from "@/components/auth/AuthRoute";
+import { createBrowserRouter } from "react-router-dom";
+import { AppLayout } from "@/components/layout/AppLayout";
 import Home from "@/pages/Home";
-import About from "@/pages/About";
+import Auth from "@/pages/Auth";
 import Events from "@/pages/Events";
+import About from "@/pages/About";
 import Members from "@/pages/Members";
 import Store from "@/pages/Store";
-import Auth from "@/pages/Auth";
+import Profile from "@/pages/Profile";
 
-export const routes: RouteObject[] = [
+export const router = createBrowserRouter([
   {
-    path: "/auth",
-    element: (
-      <AuthRoute>
-        <Auth />
-      </AuthRoute>
-    ),
+    element: <AppLayout />,
+    children: [
+      {
+        path: "/",
+        element: <Home />,
+      },
+      {
+        path: "/auth",
+        element: <Auth />,
+      },
+      {
+        path: "/events",
+        element: <Events />,
+      },
+      {
+        path: "/about",
+        element: <About />,
+      },
+      {
+        path: "/members",
+        element: <Members />,
+      },
+      {
+        path: "/store",
+        element: <Store />,
+      },
+      {
+        path: "/profile",
+        element: <Profile />,
+      },
+    ],
   },
-  {
-    path: "/",
-    element: (
-      <ProtectedRoute>
-        <Home />
-      </ProtectedRoute>
-    ),
-  },
-  {
-    path: "/about",
-    element: (
-      <ProtectedRoute>
-        <About />
-      </ProtectedRoute>
-    ),
-  },
-  {
-    path: "/events",
-    element: (
-      <ProtectedRoute>
-        <Events />
-      </ProtectedRoute>
-    ),
-  },
-  {
-    path: "/members",
-    element: (
-      <ProtectedRoute>
-        <Members />
-      </ProtectedRoute>
-    ),
-  },
-  {
-    path: "/store",
-    element: (
-      <ProtectedRoute>
-        <Store />
-      </ProtectedRoute>
-    ),
-  },
-];
+]);
