@@ -5,6 +5,7 @@ import { AddToCalendar } from "./AddToCalendar";
 
 interface EventDetailsProps {
   date: string;
+  time: string;  // Added this line to fix the TypeScript error
   location: string;
   rsvpCount: number;
   maxGuests: number;
@@ -15,6 +16,7 @@ interface EventDetailsProps {
 
 export function EventDetails({
   date,
+  time,  // Added this parameter
   location,
   rsvpCount,
   maxGuests,
@@ -27,7 +29,7 @@ export function EventDetails({
       <div className="flex items-center gap-2 text-gray-600">
         <CalendarIcon className="w-4 h-4" />
         <span className="text-sm">
-          {format(new Date(date), "EEEE, MMMM do, yyyy")}
+          {format(new Date(date), "EEEE, MMMM do, yyyy")} at {time}
         </span>
       </div>
       <div className="flex items-center gap-2 text-gray-600">
@@ -58,7 +60,7 @@ export function EventDetails({
                 title: description,
                 description,
                 date,
-                time: "00:00", // We should pass the actual time from the event
+                time,
                 location,
               }}
             />
