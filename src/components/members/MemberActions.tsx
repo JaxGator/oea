@@ -27,12 +27,24 @@ export function MemberActions({ memberId, isCurrentUserAdmin, onDelete, onEdit }
 
   const handleDelete = async () => {
     try {
-      const { error } = await supabase
+      // First delete related admin logs
+      const { error: logsError } = await supabase
+        .from('admin_logs')
+        .delete()
+        .eq('admin_id', memberId);
+
+      if (logsError) {
+        console.error('Error deleting admin logs:', logsError);
+        throw logsError;
+      }
+
+      // Then delete the profile
+      const { error: profileError } = await supabase
         .from('profiles')
         .delete()
         .eq('id', memberId);
 
-      if (error) throw error;
+      if (profileError) throw profileError;
 
       toast({
         title: "Success",
@@ -77,7 +89,7 @@ export function MemberActions({ memberId, isCurrentUserAdmin, onDelete, onEdit }
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the member's account.
+              This action cannot be undone. This will permanently delete the member's account and all associated admin logs.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
