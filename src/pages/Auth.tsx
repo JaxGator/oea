@@ -33,11 +33,6 @@ export default function Auth() {
         }
       } else if (event === 'USER_UPDATED') {
         console.log('User updated:', session);
-      } else if (event === 'SIGNED_UP') {
-        toast({
-          title: "Account created",
-          description: "Your account has been created successfully.",
-        });
       }
     });
 
