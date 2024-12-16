@@ -7,24 +7,28 @@ import { useAuthState } from "@/hooks/useAuthState";
 
 export function MobileNavigation() {
   const location = useLocation();
-  const { profile } = useAuthState();
+  const { profile, user } = useAuthState();
 
   const navigationItems = [
     { icon: Home, label: "Home", path: "/", external: false },
     { icon: Calendar, label: "Events", path: "/events", external: false },
-    { icon: Users, label: "Members", path: "/members", external: false },
     { icon: Info, label: "About", path: "/about", external: false },
-    { icon: UserCircle, label: "Profile", path: "/profile", external: false },
-    ...(profile?.is_admin || profile?.is_member
-      ? [
-          {
-            icon: ShoppingBag,
-            label: "Store",
-            path: "https://outdoorenergyadventures.printful.me/",
-            external: true,
-          },
-        ]
-      : []),
+    ...(user ? [
+      { icon: Users, label: "Members", path: "/members", external: false },
+      { icon: UserCircle, label: "Profile", path: "/profile", external: false },
+      ...(profile?.is_admin || profile?.is_member
+        ? [
+            {
+              icon: ShoppingBag,
+              label: "Store",
+              path: "https://outdoorenergyadventures.printful.me/",
+              external: true,
+            },
+          ]
+        : []),
+    ] : [
+      { icon: UserCircle, label: "Sign In", path: "/auth", external: false },
+    ]),
   ];
 
   return (

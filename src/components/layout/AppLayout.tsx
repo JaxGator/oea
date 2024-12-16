@@ -6,10 +6,12 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   const { user } = useAuthState();
 
   return (
-    <>
+    <div className="min-h-screen flex flex-col">
       <DesktopNavigation />
-      {children}
-      {user && <MobileNavigation />}
-    </>
+      <main className="flex-1">
+        {children}
+      </main>
+      <MobileNavigation />
+    </div>
   );
 }
