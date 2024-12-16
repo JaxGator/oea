@@ -63,42 +63,44 @@ export default function About() {
       <div className="container mx-auto px-4 py-12">
         <h1 className="text-4xl font-bold text-center mb-8 text-gray-900">About Us</h1>
         
-        <div className="w-full h-[300px] md:h-[400px] mb-12 rounded-lg overflow-hidden">
-          <img 
-            src="https://images.unsplash.com/photo-1490642914619-7955a3fd483c?q=80&w=2970&auto=format&fit=crop"
-            alt="Jacksonville, Florida skyline at sunset"
-            className="w-full h-full object-cover"
-          />
-        </div>
+        <div className="max-w-3xl mx-auto">
+          <div className="w-full h-[300px] md:h-[400px] mb-12 rounded-lg overflow-hidden">
+            <img 
+              src="https://images.unsplash.com/photo-1490642914619-7955a3fd483c?q=80&w=2970&auto=format&fit=crop"
+              alt="Jacksonville, Florida skyline at sunset"
+              className="w-full h-full object-cover"
+            />
+          </div>
 
-        <div className="max-w-3xl mx-auto space-y-8">
-          {user ? (
-            <>
-              <EditableContent
-                content={content.guidelines}
-                pageId="about"
-                sectionId="guidelines"
-                onUpdate={(newContent) => setContent(prev => ({ ...prev, guidelines: newContent }))}
-              />
-              <EditableContent
-                content={content.mission}
-                pageId="about"
-                sectionId="mission"
-                onUpdate={(newContent) => setContent(prev => ({ ...prev, mission: newContent }))}
-              />
-            </>
-          ) : (
-            <>
-              <div className="prose max-w-none whitespace-pre-wrap bg-white p-6 rounded-lg shadow-sm">
-                <h2 className="text-2xl font-semibold mb-4">Guidelines</h2>
-                {content.guidelines}
-              </div>
-              <div className="prose max-w-none whitespace-pre-wrap bg-white p-6 rounded-lg shadow-sm">
-                <h2 className="text-2xl font-semibold mb-4">Our Mission</h2>
-                {content.mission}
-              </div>
-            </>
-          )}
+          <div className="space-y-8">
+            {user ? (
+              <>
+                <EditableContent
+                  content={content.guidelines}
+                  pageId="about"
+                  sectionId="guidelines"
+                  onUpdate={(newContent) => setContent(prev => ({ ...prev, guidelines: newContent }))}
+                />
+                <EditableContent
+                  content={content.mission}
+                  pageId="about"
+                  sectionId="mission"
+                  onUpdate={(newContent) => setContent(prev => ({ ...prev, mission: newContent }))}
+                />
+              </>
+            ) : (
+              <>
+                <div className="prose max-w-none whitespace-pre-wrap bg-white p-6 rounded-lg shadow-sm">
+                  <h2 className="text-2xl font-semibold mb-4">Guidelines</h2>
+                  {content.guidelines}
+                </div>
+                <div className="prose max-w-none whitespace-pre-wrap bg-white p-6 rounded-lg shadow-sm">
+                  <h2 className="text-2xl font-semibold mb-4">Our Mission</h2>
+                  {content.mission}
+                </div>
+              </>
+            )}
+          </div>
         </div>
       </div>
     </div>
