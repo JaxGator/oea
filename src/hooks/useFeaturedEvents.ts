@@ -20,9 +20,7 @@ const fetchFeaturedEvents = async (): Promise<Event[]> => {
       max_guests,
       image_url,
       created_at,
-      created_by:profiles!events_created_by_fkey (
-        username
-      ),
+      created_by,
       rsvps:event_rsvps (
         id,
         event_id,
@@ -43,9 +41,6 @@ const fetchFeaturedEvents = async (): Promise<Event[]> => {
   // Transform and type-check the data
   const transformedData = (data || []).map((event: any): Event => ({
     ...event,
-    created_by: {
-      username: event.created_by?.[0]?.username || 'Unknown'
-    },
     rsvps: event.rsvps || []
   }));
 
@@ -99,6 +94,24 @@ export function useFeaturedEvents() {
       navigate("/auth");
       return;
     }
+
+    // First, ensure the user has a profile
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('id', user.id)
+      .single();
+
+    if (profileError || !profile) {
+      toast({
+        title: "Error",
+        description: "Please complete your profile before RSVPing",
+        variant: "destructive",
+      });
+      navigate("/profile");
+      return;
+    }
+
     navigate(`/events?rsvp=${eventId}`);
   };
 

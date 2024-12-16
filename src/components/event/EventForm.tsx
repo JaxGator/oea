@@ -9,9 +9,12 @@ import { EventBasicDetails } from "./EventBasicDetails";
 import { EventScheduling } from "./EventScheduling";
 import { EventLocationCapacity } from "./EventLocationCapacity";
 import { EventImageUpload } from "./EventImageUpload";
+import { useNavigate } from "react-router-dom";
 
 export function EventForm({ onSuccess, initialData }: EventFormProps) {
   const { toast } = useToast();
+  const navigate = useNavigate();
+  
   const form = useForm<EventFormValues>({
     resolver: zodResolver(eventSchema),
     defaultValues: initialData || {
@@ -37,6 +40,24 @@ export function EventForm({ onSuccess, initialData }: EventFormProps) {
           description: "You must be logged in to manage events",
           variant: "destructive",
         });
+        navigate("/auth");
+        return;
+      }
+
+      // Check if user has a profile
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('id', user.id)
+        .single();
+
+      if (profileError || !profile) {
+        toast({
+          title: "Error",
+          description: "Please complete your profile before creating events",
+          variant: "destructive",
+        });
+        navigate("/profile");
         return;
       }
 
