@@ -1,80 +1,50 @@
-import { Home, Calendar, Info, Users } from "lucide-react";
+import { Menu } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Home, Calendar, Info, Users } from "lucide-react";
 
 export function MobileNavigation() {
   const location = useLocation();
 
+  const navigationItems = [
+    { icon: Home, label: "Home", path: "/" },
+    { icon: Calendar, label: "Events", path: "/events" },
+    { icon: Users, label: "Members", path: "/members" },
+    { icon: Info, label: "About", path: "/about" },
+  ];
+
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-2 md:hidden z-50 animate-fade-in">
-      <div className="flex justify-around items-center max-w-md mx-auto">
-        <Link
-          to="/"
-          className={`flex flex-col items-center p-2 transition-colors duration-200 ${
-            location.pathname === "/" 
-              ? "text-primary" 
-              : "text-gray-600 hover:text-[#0d97d1]"
-          }`}
-        >
-          <div className="relative">
-            <Home className="w-6 h-6" />
-            {location.pathname === "/" && (
-              <span className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-primary rounded-full" />
-            )}
-          </div>
-          <span className="text-xs mt-1 font-medium">Home</span>
-        </Link>
-
-        <Link
-          to="/events"
-          className={`flex flex-col items-center p-2 transition-colors duration-200 ${
-            location.pathname === "/events"
-              ? "text-primary"
-              : "text-gray-600 hover:text-[#0d97d1]"
-          }`}
-        >
-          <div className="relative">
-            <Calendar className="w-6 h-6" />
-            {location.pathname === "/events" && (
-              <span className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-primary rounded-full" />
-            )}
-          </div>
-          <span className="text-xs mt-1 font-medium">Events</span>
-        </Link>
-
-        <Link
-          to="/members"
-          className={`flex flex-col items-center p-2 transition-colors duration-200 ${
-            location.pathname === "/members"
-              ? "text-primary"
-              : "text-gray-600 hover:text-[#0d97d1]"
-          }`}
-        >
-          <div className="relative">
-            <Users className="w-6 h-6" />
-            {location.pathname === "/members" && (
-              <span className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-primary rounded-full" />
-            )}
-          </div>
-          <span className="text-xs mt-1 font-medium">Members</span>
-        </Link>
-
-        <Link
-          to="/about"
-          className={`flex flex-col items-center p-2 transition-colors duration-200 ${
-            location.pathname === "/about"
-              ? "text-primary"
-              : "text-gray-600 hover:text-[#0d97d1]"
-          }`}
-        >
-          <div className="relative">
-            <Info className="w-6 h-6" />
-            {location.pathname === "/about" && (
-              <span className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-primary rounded-full" />
-            )}
-          </div>
-          <span className="text-xs mt-1 font-medium">About</span>
-        </Link>
-      </div>
-    </nav>
+    <div className="fixed bottom-4 right-4 md:hidden z-50">
+      <Sheet>
+        <SheetTrigger asChild>
+          <Button
+            variant="default"
+            size="icon"
+            className="h-12 w-12 rounded-full shadow-lg bg-primary hover:bg-primary/90"
+          >
+            <Menu className="h-6 w-6" />
+          </Button>
+        </SheetTrigger>
+        <SheetContent side="right" className="w-[250px] p-0">
+          <nav className="flex flex-col p-4">
+            {navigationItems.map(({ icon: Icon, label, path }) => (
+              <Link
+                key={path}
+                to={path}
+                className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-colors ${
+                  location.pathname === path
+                    ? "bg-primary text-primary-foreground"
+                    : "hover:bg-primary/10"
+                }`}
+              >
+                <Icon className="h-5 w-5" />
+                <span className="font-medium">{label}</span>
+              </Link>
+            ))}
+          </nav>
+        </SheetContent>
+      </Sheet>
+    </div>
   );
 }
