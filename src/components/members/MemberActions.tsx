@@ -38,13 +38,15 @@ export function MemberActions({ memberId, isCurrentUserAdmin, onDelete, onEdit }
         throw logsError;
       }
 
-      // Then delete the profile
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .delete()
-        .eq('id', memberId);
+      // Call the delete-user edge function
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) throw new Error('No access token');
 
-      if (profileError) throw profileError;
+      const { error: deleteError } = await supabase.functions.invoke('delete-user', {
+        body: { email: 'jason.ponder7975@gmail.com' }
+      });
+
+      if (deleteError) throw deleteError;
 
       toast({
         title: "Success",
