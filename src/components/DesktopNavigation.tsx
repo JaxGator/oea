@@ -42,12 +42,14 @@ export function DesktopNavigation() {
                 About
               </Link>
               {profile?.is_admin && (
-                <Link
-                  to="/store"
+                <a
+                  href="https://outdoorenergyadventures.printful.me/"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="hover:text-primary-100 transition-colors"
                 >
                   Store
-                </Link>
+                </a>
               )}
             </>
           )}

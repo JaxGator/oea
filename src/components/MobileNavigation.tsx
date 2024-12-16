@@ -43,7 +43,7 @@ export function MobileNavigation() {
               >
                 <Icon className="h-5 w-5" />
                 <span className="font-medium">{label}</span>
-              </Link>
+              {item.external ? </a> : </Link>}
             ))}
           </nav>
         </SheetContent>
