@@ -18,12 +18,14 @@ interface UpdateUserRequest {
 }
 
 serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
 
   try {
-    const supabase = createClient(
+    // Initialize Supabase client with admin privileges
+    const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
@@ -37,7 +39,7 @@ serve(async (req) => {
       )
     }
 
-    const { data: { user }, error: authError } = await supabase.auth.getUser(authHeader)
+    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(authHeader)
     if (authError || !user) {
       return new Response(
         JSON.stringify({ error: 'Invalid token' }),
@@ -46,7 +48,7 @@ serve(async (req) => {
     }
 
     // Verify admin status
-    const { data: adminCheck } = await supabase
+    const { data: adminCheck } = await supabaseAdmin
       .from('profiles')
       .select('is_admin')
       .eq('id', user.id)
@@ -62,14 +64,17 @@ serve(async (req) => {
     // Get request data
     const { userId, email, password, username, fullName, isAdmin, isApproved, isMember }: UpdateUserRequest = await req.json()
 
+    console.log('Updating user:', { userId, email, username, fullName, isAdmin, isApproved, isMember })
+
     // Update auth user if email or password is provided
     if (email || password) {
-      const { error: updateAuthError } = await supabase.auth.admin.updateUserById(
+      const { error: updateAuthError } = await supabaseAdmin.auth.admin.updateUserById(
         userId,
         { email, password }
       )
 
       if (updateAuthError) {
+        console.error('Error updating auth user:', updateAuthError)
         return new Response(
           JSON.stringify({ error: updateAuthError.message }),
           { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -77,26 +82,25 @@ serve(async (req) => {
       }
     }
 
-    // Update profile if any profile fields are provided
-    if (username || fullName !== undefined || isAdmin !== undefined || isApproved !== undefined || isMember !== undefined) {
-      const updates: any = {}
-      if (username) updates.username = username
-      if (fullName !== undefined) updates.full_name = fullName
-      if (isAdmin !== undefined) updates.is_admin = isAdmin
-      if (isApproved !== undefined) updates.is_approved = isApproved
-      if (isMember !== undefined) updates.is_member = isMember
+    // Update profile
+    const updates: any = {}
+    if (username) updates.username = username
+    if (fullName !== undefined) updates.full_name = fullName
+    if (isAdmin !== undefined) updates.is_admin = isAdmin
+    if (isApproved !== undefined) updates.is_approved = isApproved
+    if (isMember !== undefined) updates.is_member = isMember
 
-      const { error: updateProfileError } = await supabase
-        .from('profiles')
-        .update(updates)
-        .eq('id', userId)
+    const { error: updateProfileError } = await supabaseAdmin
+      .from('profiles')
+      .update(updates)
+      .eq('id', userId)
 
-      if (updateProfileError) {
-        return new Response(
-          JSON.stringify({ error: updateProfileError.message }),
-          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        )
-      }
+    if (updateProfileError) {
+      console.error('Error updating profile:', updateProfileError)
+      return new Response(
+        JSON.stringify({ error: updateProfileError.message }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
     }
 
     return new Response(
@@ -105,6 +109,7 @@ serve(async (req) => {
     )
 
   } catch (error) {
+    console.error('Error in admin-user-management function:', error)
     return new Response(
       JSON.stringify({ error: error.message }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
