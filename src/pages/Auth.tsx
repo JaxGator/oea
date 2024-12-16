@@ -60,7 +60,7 @@ export default function Auth() {
         </CardHeader>
         <CardContent>
           <div className="mb-4 text-sm text-muted-foreground text-center">
-            Password must be at least 6 characters long
+            Sign in with your social account or email
           </div>
           <SupabaseAuth 
             supabaseClient={supabase}
@@ -83,7 +83,7 @@ export default function Auth() {
                 },
               },
             }}
-            providers={[]}
+            providers={['google', 'facebook']}
             redirectTo={window.location.origin}
           />
         </CardContent>
