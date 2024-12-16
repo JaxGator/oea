@@ -13,24 +13,31 @@ export function useAuthState(): AuthState {
   useEffect(() => {
     let mounted = true;
 
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!mounted) return;
-      
-      if (session?.user) {
-        setUser(session.user);
-      } else {
-        setUser(null);
-        setProfile(null);
+    async function getInitialSession() {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (!mounted) return;
+        
+        if (session?.user) {
+          setUser(session.user);
+        } else {
+          setUser(null);
+          setProfile(null);
+        }
+      } catch (error) {
+        console.error("Error getting session:", error);
+      } finally {
+        if (mounted) setIsLoading(false);
       }
-      setIsLoading(false);
-    });
+    }
 
-    // Listen for auth changes
+    getInitialSession();
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (!mounted) return;
 
-      if (event === 'SIGNED_OUT') {
+      if (event === 'SIGNED_OUT' || !session) {
         setUser(null);
         setProfile(null);
         setIsLoading(false);
@@ -39,9 +46,6 @@ export function useAuthState(): AuthState {
 
       if (session?.user) {
         setUser(session.user);
-      } else {
-        setUser(null);
-        setProfile(null);
       }
       setIsLoading(false);
     });
@@ -52,7 +56,6 @@ export function useAuthState(): AuthState {
     };
   }, []);
 
-  // Fetch profile whenever user changes
   useEffect(() => {
     let mounted = true;
 

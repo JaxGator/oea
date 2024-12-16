@@ -68,6 +68,14 @@ const App = () => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setInitialSession(session);
     });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setInitialSession(session);
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
   return (
