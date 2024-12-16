@@ -29,31 +29,20 @@ export function useMemberForm(member: Member, onUpdate: () => void, onClose: () 
       const { data: { session } } = await supabase.auth.getSession();
       if (!session?.access_token) throw new Error('No access token');
 
-      const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-user-management`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${session.access_token}`,
-          },
-          body: JSON.stringify({
-            userId: member.id,
-            email: email || undefined,
-            password: password || undefined,
-            username,
-            fullName,
-            isAdmin,
-            isApproved,
-            isMember,
-          }),
+      const { data, error } = await supabase.functions.invoke('admin-user-management', {
+        body: {
+          userId: member.id,
+          email: email || undefined,
+          password: password || undefined,
+          username,
+          fullName,
+          isAdmin,
+          isApproved,
+          isMember,
         }
-      );
+      });
 
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Failed to update user');
-      }
+      if (error) throw error;
 
       toast({
         title: "Success",
