@@ -15,7 +15,7 @@ export default function Store() {
         <h1 className="text-2xl font-bold mb-6">OEA Store</h1>
         <div className="w-full aspect-[4/3]">
           <iframe
-            src="YOUR_PRINTFUL_STORE_URL"
+            src="https://outdoorenergyadventures.printful.me/"
             className="w-full h-full border-0"
             title="Printful Store"
             allow="accelerometer; ambient-light-sensor; camera; encrypted-media; geolocation; gyroscope; hid; microphone; midi; payment; usb; vr; xr-spatial-tracking"
