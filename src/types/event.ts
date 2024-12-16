@@ -15,6 +15,10 @@ export interface Event {
     user_id: string;
     response: 'attending' | 'not_attending' | 'maybe';
     created_at: string;
+    profiles: {
+      full_name: string | null;
+      username: string;
+    };
   }[];
 }
 
