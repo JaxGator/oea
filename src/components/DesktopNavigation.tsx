@@ -2,6 +2,8 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuthState } from "@/hooks/useAuthState";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { UserCircle } from "lucide-react";
 
 export function DesktopNavigation() {
   const { user, profile } = useAuthState();
@@ -55,13 +57,24 @@ export function DesktopNavigation() {
           )}
         </div>
         {user && (
-          <Button
-            variant="ghost"
-            className="text-white hover:text-primary-100"
-            onClick={handleSignOut}
-          >
-            Sign Out
-          </Button>
+          <div className="flex items-center space-x-4">
+            <Link to="/profile" className="flex items-center space-x-2 hover:opacity-80">
+              <Avatar className="h-8 w-8">
+                <AvatarImage src={profile?.avatar_url} alt={profile?.full_name || profile?.username} />
+                <AvatarFallback>
+                  <UserCircle className="h-8 w-8 text-[#0d97d1]" />
+                </AvatarFallback>
+              </Avatar>
+              <span className="text-sm">{profile?.full_name || profile?.username}</span>
+            </Link>
+            <Button
+              variant="ghost"
+              className="text-white hover:text-primary-100"
+              onClick={handleSignOut}
+            >
+              Sign Out
+            </Button>
+          </div>
         )}
       </div>
     </nav>

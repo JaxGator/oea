@@ -2,7 +2,7 @@ import { Menu } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Home, Calendar, Info, Users, ShoppingBag } from "lucide-react";
+import { Home, Calendar, Info, Users, ShoppingBag, UserCircle } from "lucide-react";
 import { useAuthState } from "@/hooks/useAuthState";
 
 export function MobileNavigation() {
@@ -14,6 +14,7 @@ export function MobileNavigation() {
     { icon: Calendar, label: "Events", path: "/events", external: false },
     { icon: Users, label: "Members", path: "/members", external: false },
     { icon: Info, label: "About", path: "/about", external: false },
+    { icon: UserCircle, label: "Profile", path: "/profile", external: false },
     ...(profile?.is_admin
       ? [
           {
