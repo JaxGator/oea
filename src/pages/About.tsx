@@ -12,7 +12,7 @@ export default function About() {
         
         <div className="max-w-3xl mx-auto">
           <AboutHero 
-            imageUrl="https://images.unsplash.com/photo-1490642914619-7955a3fd483c?q=80&w=2970&auto=format&fit=crop"
+            imageUrl="https://images.unsplash.com/photo-1605723517503-3cadb5818a0c?q=80&w=2970&auto=format&fit=crop"
             imageAlt="Jacksonville, Florida skyline at sunset"
           />
           
