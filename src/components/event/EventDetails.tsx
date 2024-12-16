@@ -47,7 +47,10 @@ export function EventDetails({
           <p>{attendeeNames.join(', ')}</p>
         </div>
       )}
-      <p className="text-gray-600 line-clamp-2">{description}</p>
+      <div 
+        className="text-gray-600 prose prose-sm max-w-none"
+        dangerouslySetInnerHTML={{ __html: description }}
+      />
       {userRSVPStatus && (
         <Badge variant="secondary" className="mt-2">
           Your RSVP: {userRSVPStatus}

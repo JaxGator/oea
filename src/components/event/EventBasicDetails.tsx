@@ -2,10 +2,29 @@ import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/comp
 import { Input } from "@/components/ui/input";
 import { UseFormReturn } from "react-hook-form";
 import { EventFormValues } from "./EventFormTypes";
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
 
 interface EventBasicDetailsProps {
   form: UseFormReturn<EventFormValues>;
 }
+
+const modules = {
+  toolbar: [
+    [{ 'header': [1, 2, false] }],
+    ['bold', 'italic', 'underline', 'strike'],
+    ['link', 'image'],
+    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+    ['clean']
+  ],
+};
+
+const formats = [
+  'header',
+  'bold', 'italic', 'underline', 'strike',
+  'list', 'bullet',
+  'link', 'image'
+];
 
 export function EventBasicDetails({ form }: EventBasicDetailsProps) {
   return (
@@ -30,7 +49,14 @@ export function EventBasicDetails({ form }: EventBasicDetailsProps) {
           <FormItem>
             <FormLabel>Description</FormLabel>
             <FormControl>
-              <Input placeholder="Event description" {...field} />
+              <ReactQuill 
+                theme="snow"
+                modules={modules}
+                formats={formats}
+                value={field.value || ''}
+                onChange={field.onChange}
+                className="bg-white"
+              />
             </FormControl>
             <FormMessage />
           </FormItem>
