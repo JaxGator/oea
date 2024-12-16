@@ -1,6 +1,7 @@
 import { CalendarIcon, MapPinIcon, UsersIcon } from "lucide-react";
 import { format } from "date-fns";
 import { Badge } from "@/components/ui/badge";
+import { AddToCalendar } from "./AddToCalendar";
 
 interface EventDetailsProps {
   date: string;
@@ -47,9 +48,22 @@ export function EventDetails({
       )}
       <p className="text-gray-600 line-clamp-2">{description}</p>
       {userRSVPStatus && (
-        <Badge variant="secondary" className="mt-2">
-          Your RSVP: {userRSVPStatus}
-        </Badge>
+        <>
+          <Badge variant="secondary" className="mt-2">
+            Your RSVP: {userRSVPStatus}
+          </Badge>
+          {userRSVPStatus === 'attending' && (
+            <AddToCalendar
+              event={{
+                title: description,
+                description,
+                date,
+                time: "00:00", // We should pass the actual time from the event
+                location,
+              }}
+            />
+          )}
+        </>
       )}
     </div>
   );

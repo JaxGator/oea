@@ -11,6 +11,7 @@ import { EventForm } from "./event/EventForm";
 import { supabase } from "@/integrations/supabase/client";
 import { EventDetails } from "./event/EventDetails";
 import { EventActions } from "./event/EventActions";
+import { AddToCalendar } from "./event/AddToCalendar";
 
 interface Guest {
   firstName: string;
@@ -114,6 +115,7 @@ export function EventCard({ event, onRSVP, onCancelRSVP, userRSVPStatus, onUpdat
       <CardContent className="p-4">
         <EventDetails
           date={event.date}
+          time={event.time}
           location={event.location}
           rsvpCount={rsvpCount}
           maxGuests={event.max_guests}
@@ -121,6 +123,17 @@ export function EventCard({ event, onRSVP, onCancelRSVP, userRSVPStatus, onUpdat
           attendeeNames={attendeeNames}
           userRSVPStatus={userRSVPStatus}
         />
+        {userRSVPStatus === 'attending' && (
+          <AddToCalendar
+            event={{
+              title: event.title,
+              description: event.description,
+              date: event.date,
+              time: event.time,
+              location: event.location,
+            }}
+          />
+        )}
       </CardContent>
       <CardFooter className="p-4 pt-0">
         <EventActions
