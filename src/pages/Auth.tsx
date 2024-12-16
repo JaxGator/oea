@@ -87,13 +87,17 @@ export default function Auth() {
             }}
             providers={['google', 'facebook']}
             redirectTo={window.location.origin}
-            onError={(error) => {
-              console.error('Auth error:', error);
-              toast({
-                title: "Error",
-                description: "There was a problem with authentication. Please try again.",
-                variant: "destructive",
-              });
+            localization={{
+              variables: {
+                sign_up: {
+                  email_label: 'Email',
+                  password_label: 'Password',
+                  email_input_placeholder: 'Your email',
+                  password_input_placeholder: 'Your password',
+                  button_label: 'Sign up',
+                  loading_button_label: 'Signing up ...',
+                },
+              },
             }}
           />
         </CardContent>
