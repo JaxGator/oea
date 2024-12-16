@@ -4,9 +4,48 @@ import { supabase } from "@/integrations/supabase/client";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { useAuthState } from "@/hooks/useAuthState";
 import { Navigate } from "react-router-dom";
+import { useToast } from "@/hooks/use-toast";
+import { useEffect } from "react";
 
 export default function Auth() {
   const { isLoading, user } = useAuthState();
+  const { toast } = useToast();
+
+  useEffect(() => {
+    // Listen for auth state changes to catch errors
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'USER_DELETED') {
+        toast({
+          title: "Account deleted",
+          description: "Your account has been successfully deleted.",
+        });
+      }
+    });
+
+    // Listen for auth errors
+    const authListener = supabase.auth.onError((error) => {
+      let errorMessage = "An error occurred during authentication.";
+      
+      if (error.message.includes("Invalid login credentials")) {
+        errorMessage = "Invalid email or password. Please try again.";
+      } else if (error.message.includes("Email not confirmed")) {
+        errorMessage = "Please confirm your email address before logging in.";
+      } else if (error.message.includes("Email rate limit exceeded")) {
+        errorMessage = "Too many attempts. Please try again later.";
+      }
+
+      toast({
+        title: "Authentication Error",
+        description: errorMessage,
+        variant: "destructive",
+      });
+    });
+
+    return () => {
+      subscription.unsubscribe();
+      authListener.data.subscription.unsubscribe();
+    };
+  }, [toast]);
 
   if (isLoading) {
     return (
@@ -48,6 +87,7 @@ export default function Auth() {
               },
             }}
             providers={[]}
+            redirectTo={window.location.origin}
           />
         </CardContent>
       </Card>
