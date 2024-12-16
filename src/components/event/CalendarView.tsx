@@ -19,17 +19,19 @@ export function CalendarView({ events, onDateSelect }: CalendarViewProps) {
   const eventDates = events.map(event => new Date(event.date));
 
   return (
-    <div className="p-4 bg-white rounded-lg shadow">
-      <Calendar
-        mode="single"
-        selected={date}
-        onSelect={handleSelect}
-        className="rounded-md border"
-        modifiers={{ event: eventDates }}
-        modifiersStyles={{
-          event: { fontWeight: 'bold', backgroundColor: '#E0F2FE' }
-        }}
-      />
+    <div className="w-full p-4 bg-white rounded-lg shadow">
+      <div className="max-w-full mx-auto">
+        <Calendar
+          mode="single"
+          selected={date}
+          onSelect={handleSelect}
+          className="w-full rounded-md border"
+          modifiers={{ event: eventDates }}
+          modifiersStyles={{
+            event: { fontWeight: 'bold', backgroundColor: '#E0F2FE' }
+          }}
+        />
+      </div>
     </div>
   );
 }

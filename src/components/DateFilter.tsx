@@ -9,8 +9,6 @@ interface DateFilterProps {
 export function DateFilter({ selectedDate, onDateSelect }: DateFilterProps) {
   const dates = [
     { label: "All", date: null },
-    { label: "Today", date: new Date() },
-    { label: "Tomorrow", date: new Date(new Date().setDate(new Date().getDate() + 1)) },
     { label: "This Weekend", date: new Date(new Date().setDate(new Date().getDate() + (6 - new Date().getDay()))) },
   ];
 
