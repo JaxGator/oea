@@ -40,6 +40,24 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+function AuthRoute({ children }: { children: React.ReactNode }) {
+  const { isLoading, user } = useAuthState();
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-[#222222] flex items-center justify-center">
+        <div className="text-white">Loading...</div>
+      </div>
+    );
+  }
+
+  if (user) {
+    return <Navigate to="/" replace />;
+  }
+
+  return <>{children}</>;
+}
+
 const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
@@ -49,7 +67,14 @@ const App = () => {
             <div>
               <DesktopNavigation />
               <Routes>
-                <Route path="/auth" element={<Auth />} />
+                <Route
+                  path="/auth"
+                  element={
+                    <AuthRoute>
+                      <Auth />
+                    </AuthRoute>
+                  }
+                />
                 <Route path="/about" element={<About />} />
                 <Route
                   path="/"
