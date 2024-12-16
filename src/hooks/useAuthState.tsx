@@ -28,54 +28,60 @@ export function useAuthState(): AuthState {
     }
   };
 
-  useEffect(() => {
-    // Initialize auth state
-    const initializeAuth = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        const currentUser = session?.user ?? null;
-        setUser(currentUser);
+  const updateAuthState = async (session: any) => {
+    try {
+      const currentUser = session?.user ?? null;
+      setUser(currentUser);
 
-        if (currentUser) {
-          const profileData = await fetchProfile(currentUser.id);
-          setProfile(profileData);
-        } else {
-          setProfile(null);
+      if (currentUser) {
+        const profileData = await fetchProfile(currentUser.id);
+        setProfile(profileData);
+      } else {
+        setProfile(null);
+      }
+    } catch (error) {
+      console.error("Error updating auth state:", error);
+      setUser(null);
+      setProfile(null);
+    }
+  };
+
+  useEffect(() => {
+    let mounted = true;
+
+    const initialize = async () => {
+      try {
+        // Get initial session
+        const { data: { session } } = await supabase.auth.getSession();
+        if (mounted) {
+          await updateAuthState(session);
         }
       } catch (error) {
-        console.error("Error initializing auth:", error);
-        setUser(null);
-        setProfile(null);
+        console.error("Error in initialization:", error);
+        if (mounted) {
+          setUser(null);
+          setProfile(null);
+        }
       } finally {
-        setIsLoading(false);
+        if (mounted) {
+          setIsLoading(false);
+        }
       }
     };
 
-    // Start initialization
-    initializeAuth();
+    initialize();
 
-    // Listen for auth changes
+    // Set up auth listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (_event, session) => {
-        try {
-          const currentUser = session?.user ?? null;
-          setUser(currentUser);
-
-          if (currentUser) {
-            const profileData = await fetchProfile(currentUser.id);
-            setProfile(profileData);
-          } else {
-            setProfile(null);
-          }
-        } catch (error) {
-          console.error("Error in auth state change:", error);
-          setUser(null);
-          setProfile(null);
+        if (mounted) {
+          await updateAuthState(session);
         }
       }
     );
 
     return () => {
+      mounted = false;
       subscription.unsubscribe();
     };
   }, []);
