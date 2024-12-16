@@ -8,29 +8,25 @@ const corsHeaders = {
 
 interface UpdateUserRequest {
   userId: string;
-  email?: string;
-  password?: string;
   username?: string;
   fullName?: string;
   isAdmin?: boolean;
   isApproved?: boolean;
   isMember?: boolean;
+  avatarUrl?: string;
 }
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
 
   try {
-    // Initialize Supabase client with admin privileges
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
-    // Verify the request is from an admin
     const authHeader = req.headers.get('Authorization')?.split(' ')[1]
     if (!authHeader) {
       return new Response(
@@ -41,13 +37,13 @@ serve(async (req) => {
 
     const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(authHeader)
     if (authError || !user) {
+      console.error('Auth error:', authError)
       return new Response(
         JSON.stringify({ error: 'Invalid token' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
-    // Verify admin status
     const { data: adminCheck } = await supabaseAdmin
       .from('profiles')
       .select('is_admin')
@@ -61,34 +57,17 @@ serve(async (req) => {
       )
     }
 
-    // Get request data
-    const { userId, email, password, username, fullName, isAdmin, isApproved, isMember }: UpdateUserRequest = await req.json()
+    const { userId, username, fullName, isAdmin, isApproved, isMember, avatarUrl }: UpdateUserRequest = await req.json()
 
-    console.log('Updating user:', { userId, email, username, fullName, isAdmin, isApproved, isMember })
+    console.log('Updating user:', { userId, username, fullName, isAdmin, isApproved, isMember, avatarUrl })
 
-    // Update auth user if email or password is provided
-    if (email || password) {
-      const { error: updateAuthError } = await supabaseAdmin.auth.admin.updateUserById(
-        userId,
-        { email, password }
-      )
-
-      if (updateAuthError) {
-        console.error('Error updating auth user:', updateAuthError)
-        return new Response(
-          JSON.stringify({ error: updateAuthError.message }),
-          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        )
-      }
-    }
-
-    // Update profile
     const updates: any = {}
     if (username) updates.username = username
     if (fullName !== undefined) updates.full_name = fullName
     if (isAdmin !== undefined) updates.is_admin = isAdmin
     if (isApproved !== undefined) updates.is_approved = isApproved
     if (isMember !== undefined) updates.is_member = isMember
+    if (avatarUrl !== undefined) updates.avatar_url = avatarUrl
 
     const { error: updateProfileError } = await supabaseAdmin
       .from('profiles')
@@ -103,6 +82,20 @@ serve(async (req) => {
       )
     }
 
+    const { error: logError } = await supabaseAdmin
+      .from('admin_logs')
+      .insert({
+        admin_id: user.id,
+        action_type: 'update_user',
+        target_type: 'user',
+        target_id: userId,
+        details: updates
+      })
+
+    if (logError) {
+      console.error('Error creating admin log:', logError)
+    }
+
     return new Response(
       JSON.stringify({ message: 'User updated successfully' }),
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -111,7 +104,7 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error in admin-user-management function:', error)
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: 'An unexpected error occurred' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   }
