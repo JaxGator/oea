@@ -59,6 +59,9 @@ export default function Auth() {
           <CardTitle className="text-center">Welcome</CardTitle>
         </CardHeader>
         <CardContent>
+          <div className="mb-4 text-sm text-muted-foreground text-center">
+            Password must be at least 6 characters long
+          </div>
           <SupabaseAuth 
             supabaseClient={supabase}
             appearance={{ 
@@ -74,7 +77,10 @@ export default function Auth() {
               style: {
                 button: { width: '100%' },
                 anchor: { color: '#0d97d1' },
-                message: { color: 'red' },
+                message: { 
+                  color: 'red',
+                  marginBottom: '12px',
+                },
               },
             }}
             providers={[]}
