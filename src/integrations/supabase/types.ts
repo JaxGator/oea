@@ -37,15 +37,7 @@ export type Database = {
           target_id?: string
           target_type?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "admin_logs_admin_id_fkey"
-            columns: ["admin_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       event_comments: {
         Row: {
@@ -80,24 +72,10 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "event_comments_edited_by_fkey"
-            columns: ["edited_by"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "event_comments_event_id_fkey"
             columns: ["event_id"]
             isOneToOne: false
             referencedRelation: "events"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "event_comments_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -161,13 +139,6 @@ export type Database = {
             referencedRelation: "events"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "event_rsvps_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
         ]
       }
       events: {
@@ -207,15 +178,7 @@ export type Database = {
           time?: string
           title?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "events_created_by_fkey"
-            columns: ["created_by"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       media_albums: {
         Row: {
@@ -239,15 +202,7 @@ export type Database = {
           id?: string
           title?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "media_albums_created_by_fkey"
-            columns: ["created_by"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       media_items: {
         Row: {
@@ -288,13 +243,6 @@ export type Database = {
             referencedRelation: "media_albums"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "media_items_created_by_fkey"
-            columns: ["created_by"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
         ]
       }
       messages: {
@@ -319,22 +267,7 @@ export type Database = {
           receiver_id?: string
           sender_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "messages_receiver_id_fkey"
-            columns: ["receiver_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "messages_sender_id_fkey"
-            columns: ["sender_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       page_content: {
         Row: {
@@ -364,15 +297,7 @@ export type Database = {
           updated_at?: string | null
           updated_by?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "page_content_updated_by_fkey"
-            columns: ["updated_by"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       profiles: {
         Row: {
