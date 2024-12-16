@@ -23,7 +23,7 @@ export function DesktopNavigation() {
               className="h-12"
             />
           </Link>
-          {user && (
+          {user ? (
             <>
               <Link
                 to="/events"
@@ -54,28 +54,43 @@ export function DesktopNavigation() {
                 </a>
               )}
             </>
+          ) : (
+            <Link
+              to="/about"
+              className="hover:text-primary-100 transition-colors"
+            >
+              About
+            </Link>
           )}
         </div>
-        {user && (
-          <div className="flex items-center space-x-4">
-            <Link to="/profile" className="flex items-center space-x-2 hover:opacity-80">
-              <Avatar className="h-8 w-8">
-                <AvatarImage src={profile?.avatar_url} alt={profile?.full_name || profile?.username} />
-                <AvatarFallback>
-                  <UserCircle className="h-8 w-8 text-[#0d97d1]" />
-                </AvatarFallback>
-              </Avatar>
-              <span className="text-sm">{profile?.full_name || profile?.username}</span>
+        <div className="flex items-center space-x-4">
+          {user ? (
+            <>
+              <Link to="/profile" className="flex items-center space-x-2 hover:opacity-80">
+                <Avatar className="h-8 w-8">
+                  <AvatarImage src={profile?.avatar_url} alt={profile?.full_name || profile?.username} />
+                  <AvatarFallback>
+                    <UserCircle className="h-8 w-8 text-[#0d97d1]" />
+                  </AvatarFallback>
+                </Avatar>
+                <span className="text-sm">{profile?.full_name || profile?.username}</span>
+              </Link>
+              <Button
+                variant="ghost"
+                className="text-white hover:text-primary-100"
+                onClick={handleSignOut}
+              >
+                Sign Out
+              </Button>
+            </>
+          ) : (
+            <Link to="/auth">
+              <Button variant="ghost" className="text-white hover:text-primary-100">
+                Sign In
+              </Button>
             </Link>
-            <Button
-              variant="ghost"
-              className="text-white hover:text-primary-100"
-              onClick={handleSignOut}
-            >
-              Sign Out
-            </Button>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </nav>
   );

@@ -7,7 +7,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <>
-      {user && <DesktopNavigation />}
+      <DesktopNavigation />
       {children}
       {user && <MobileNavigation />}
     </>
