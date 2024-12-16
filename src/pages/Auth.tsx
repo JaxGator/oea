@@ -6,6 +6,7 @@ import { useAuthState } from "@/hooks/useAuthState";
 import { Navigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { useEffect } from "react";
+import { AuthError } from "@supabase/supabase-js";
 
 export default function Auth() {
   const { isLoading, user } = useAuthState();
@@ -13,39 +14,45 @@ export default function Auth() {
 
   useEffect(() => {
     // Listen for auth state changes to catch errors
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'USER_DELETED') {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'SIGNED_OUT') {
         toast({
-          title: "Account deleted",
-          description: "Your account has been successfully deleted.",
+          title: "Signed out",
+          description: "You have been successfully signed out.",
         });
       }
     });
 
-    // Listen for auth errors
-    const authListener = supabase.auth.onError((error) => {
-      let errorMessage = "An error occurred during authentication.";
-      
-      if (error.message.includes("Invalid login credentials")) {
-        errorMessage = "Invalid email or password. Please try again.";
-      } else if (error.message.includes("Email not confirmed")) {
-        errorMessage = "Please confirm your email address before logging in.";
-      } else if (error.message.includes("Email rate limit exceeded")) {
-        errorMessage = "Too many attempts. Please try again later.";
+    // Listen for auth state changes with error handling
+    const authStateSubscription = supabase.auth.onAuthStateChange((event, session) => {
+      if (session?.error) {
+        handleAuthError(session.error);
       }
-
-      toast({
-        title: "Authentication Error",
-        description: errorMessage,
-        variant: "destructive",
-      });
     });
 
     return () => {
       subscription.unsubscribe();
-      authListener.data.subscription.unsubscribe();
+      authStateSubscription.data.subscription.unsubscribe();
     };
   }, [toast]);
+
+  const handleAuthError = (error: AuthError) => {
+    let errorMessage = "An error occurred during authentication.";
+    
+    if (error.message.includes("Invalid login credentials")) {
+      errorMessage = "Invalid email or password. Please try again.";
+    } else if (error.message.includes("Email not confirmed")) {
+      errorMessage = "Please confirm your email address before logging in.";
+    } else if (error.message.includes("Email rate limit exceeded")) {
+      errorMessage = "Too many attempts. Please try again later.";
+    }
+
+    toast({
+      title: "Authentication Error",
+      description: errorMessage,
+      variant: "destructive",
+    });
+  };
 
   if (isLoading) {
     return (
