@@ -14,7 +14,7 @@ export default function Auth() {
 
   useEffect(() => {
     // Listen for auth state changes to catch errors
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_OUT') {
         toast({
           title: "Signed out",
@@ -23,16 +23,16 @@ export default function Auth() {
       }
     });
 
-    // Listen for auth state changes with error handling
-    const authStateSubscription = supabase.auth.onAuthStateChange((event, session) => {
-      if (session?.error) {
-        handleAuthError(session.error);
+    // Listen for auth errors
+    const authListener = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'USER_ERROR') {
+        handleAuthError(new AuthError('Authentication error occurred'));
       }
     });
 
     return () => {
       subscription.unsubscribe();
-      authStateSubscription.data.subscription.unsubscribe();
+      authListener.data.subscription.unsubscribe();
     };
   }, [toast]);
 
