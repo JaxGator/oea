@@ -17,23 +17,25 @@ interface EventEditDialogProps {
 export function EventEditDialog({ event, open, onOpenChange, onSuccess }: EventEditDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className="max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Edit Event</DialogTitle>
         </DialogHeader>
-        <EventForm
-          initialData={{
-            id: event.id,
-            title: event.title,
-            description: event.description || "",
-            date: event.date,
-            time: event.time,
-            location: event.location,
-            max_guests: event.max_guests,
-            image_url: event.image_url,
-          }}
-          onSuccess={onSuccess}
-        />
+        <div className="py-4">
+          <EventForm
+            initialData={{
+              id: event.id,
+              title: event.title,
+              description: event.description || "",
+              date: event.date,
+              time: event.time,
+              location: event.location,
+              max_guests: event.max_guests,
+              image_url: event.image_url,
+            }}
+            onSuccess={onSuccess}
+          />
+        </div>
       </DialogContent>
     </Dialog>
   );

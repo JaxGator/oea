@@ -56,6 +56,7 @@ export function EventBasicDetails({ form }: EventBasicDetailsProps) {
                 value={field.value || ''}
                 onChange={field.onChange}
                 className="bg-white"
+                style={{ minHeight: '200px', maxHeight: '300px' }}
               />
             </FormControl>
             <FormMessage />
