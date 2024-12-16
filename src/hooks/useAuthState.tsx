@@ -31,24 +31,25 @@ export function useAuthState(): AuthState {
   useEffect(() => {
     let mounted = true;
 
-    // Initialize auth state and set up listener
+    const updateAuthState = async (currentUser: User | null) => {
+      if (!mounted) return;
+
+      setUser(currentUser);
+      
+      if (currentUser) {
+        const profileData = await fetchProfile(currentUser.id);
+        if (mounted) {
+          setProfile(profileData);
+        }
+      } else {
+        setProfile(null);
+      }
+    };
+
     const initialize = async () => {
       try {
-        // Get initial session
         const { data: { session } } = await supabase.auth.getSession();
-        
-        if (!mounted) return;
-
-        if (session?.user) {
-          setUser(session.user);
-          const profileData = await fetchProfile(session.user.id);
-          if (mounted) {
-            setProfile(profileData);
-          }
-        } else {
-          setUser(null);
-          setProfile(null);
-        }
+        await updateAuthState(session?.user ?? null);
       } catch (error) {
         console.error("Error in initialization:", error);
         if (mounted) {
@@ -62,31 +63,11 @@ export function useAuthState(): AuthState {
       }
     };
 
-    // Set up auth listener
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (!mounted) return;
-
-      try {
-        if (session?.user) {
-          setUser(session.user);
-          const profileData = await fetchProfile(session.user.id);
-          if (mounted) {
-            setProfile(profileData);
-          }
-        } else {
-          setUser(null);
-          setProfile(null);
-        }
-      } catch (error) {
-        console.error("Error in auth state change:", error);
-        if (mounted) {
-          setUser(null);
-          setProfile(null);
-        }
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (_event, session) => {
+        await updateAuthState(session?.user ?? null);
       }
-    });
+    );
 
     initialize();
 
