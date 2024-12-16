@@ -13,7 +13,6 @@ export default function Auth() {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Listen for auth state changes to catch errors
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_OUT') {
         toast({
@@ -22,9 +21,20 @@ export default function Auth() {
         });
       }
 
-      // Handle authentication errors
+      if (event === 'USER_DELETED') {
+        toast({
+          title: "Account Deleted",
+          description: "Your account has been successfully deleted.",
+        });
+      }
+
+      // Handle specific authentication errors
       if (!session && event === 'SIGNED_IN') {
-        handleAuthError(new AuthError('Authentication failed'));
+        toast({
+          title: "Authentication Error",
+          description: "There was a problem signing you in. Please try again.",
+          variant: "destructive",
+        });
       }
     });
 
@@ -32,24 +42,6 @@ export default function Auth() {
       subscription.unsubscribe();
     };
   }, [toast]);
-
-  const handleAuthError = (error: AuthError) => {
-    let errorMessage = "An error occurred during authentication.";
-    
-    if (error.message.includes("Invalid login credentials")) {
-      errorMessage = "Invalid email or password. Please try again.";
-    } else if (error.message.includes("Email not confirmed")) {
-      errorMessage = "Please confirm your email address before logging in.";
-    } else if (error.message.includes("Email rate limit exceeded")) {
-      errorMessage = "Too many attempts. Please try again later.";
-    }
-
-    toast({
-      title: "Authentication Error",
-      description: errorMessage,
-      variant: "destructive",
-    });
-  };
 
   if (isLoading) {
     return (
@@ -89,9 +81,22 @@ export default function Auth() {
                   },
                 },
               },
+              style: {
+                button: { width: '100%' },
+                anchor: { color: '#0d97d1' },
+                message: { color: 'red' },
+              },
             }}
             providers={[]}
             redirectTo={window.location.origin}
+            onError={(error) => {
+              console.error('Auth error:', error);
+              toast({
+                title: "Authentication Error",
+                description: error.message || "An error occurred during authentication",
+                variant: "destructive",
+              });
+            }}
           />
         </CardContent>
       </Card>
