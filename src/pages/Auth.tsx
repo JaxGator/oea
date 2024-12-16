@@ -21,18 +21,15 @@ export default function Auth() {
           description: "You have been successfully signed out.",
         });
       }
-    });
 
-    // Listen for auth errors
-    const authListener = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'USER_ERROR') {
-        handleAuthError(new AuthError('Authentication error occurred'));
+      // Handle authentication errors
+      if (!session && event === 'SIGNED_IN') {
+        handleAuthError(new AuthError('Authentication failed'));
       }
     });
 
     return () => {
       subscription.unsubscribe();
-      authListener.data.subscription.unsubscribe();
     };
   }, [toast]);
 
