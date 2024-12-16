@@ -6,47 +6,44 @@ interface Member {
   id: string;
   username: string;
   full_name: string | null;
+  avatar_url: string | null;
   is_admin: boolean;
   is_approved: boolean;
   is_member: boolean;
-  email?: string;
 }
 
 export function useMemberForm(member: Member, onUpdate: () => void, onClose: () => void) {
   const [username, setUsername] = useState(member.username);
   const [fullName, setFullName] = useState(member.full_name || "");
-  const [email, setEmail] = useState(member.email || "");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isAdmin, setIsAdmin] = useState(member.is_admin);
   const [isApproved, setIsApproved] = useState(member.is_approved);
   const [isMember, setIsMember] = useState(member.is_member);
+  const [avatarUrl, setAvatarUrl] = useState(member.avatar_url || "");
   const { toast } = useToast();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async () => {
     try {
-      // Call the admin-user-management function
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.access_token) throw new Error('No access token');
-
-      const { data, error } = await supabase.functions.invoke('admin-user-management', {
+      const { error } = await supabase.functions.invoke('admin-user-management', {
         body: {
           userId: member.id,
-          email: email || undefined,
-          password: password || undefined,
           username,
           fullName,
+          email,
+          password,
           isAdmin,
           isApproved,
           isMember,
-        }
+          avatarUrl,
+        },
       });
 
       if (error) throw error;
 
       toast({
         title: "Success",
-        description: "Member has been updated",
+        description: "Member updated successfully",
       });
       
       onUpdate();
@@ -55,7 +52,7 @@ export function useMemberForm(member: Member, onUpdate: () => void, onClose: () 
       console.error('Error updating member:', error);
       toast({
         title: "Error",
-        description: error instanceof Error ? error.message : "Failed to update member",
+        description: "Failed to update member",
         variant: "destructive",
       });
     }
@@ -76,6 +73,8 @@ export function useMemberForm(member: Member, onUpdate: () => void, onClose: () 
     setIsApproved,
     isMember,
     setIsMember,
+    avatarUrl,
+    setAvatarUrl,
     handleSubmit,
   };
 }
