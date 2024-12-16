@@ -37,10 +37,16 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   }
 
   if (!user) {
-    return <Navigate to="/auth" replace />;
+    return <Navigate to="/auth" />;
   }
 
-  return <>{children}</>;
+  return (
+    <>
+      <DesktopNavigation />
+      {children}
+      <MobileNavigation />
+    </>
+  );
 }
 
 function AuthRoute({ children }: { children: React.ReactNode }) {
@@ -55,7 +61,7 @@ function AuthRoute({ children }: { children: React.ReactNode }) {
   }
 
   if (user) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/" />;
   }
 
   return <>{children}</>;
@@ -84,60 +90,54 @@ const App = () => {
         supabaseClient={supabase}
         initialSession={initialSession}
       >
-        <BrowserRouter>
-          <div>
-            <TooltipProvider>
-              <div>
-                <DesktopNavigation />
-                <Routes>
-                  <Route
-                    path="/auth"
-                    element={
-                      <AuthRoute>
-                        <Auth />
-                      </AuthRoute>
-                    }
-                  />
-                  <Route
-                    path="/about"
-                    element={
-                      <ProtectedRoute>
-                        <About />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/"
-                    element={
-                      <ProtectedRoute>
-                        <Home />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/events"
-                    element={
-                      <ProtectedRoute>
-                        <Events />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/members"
-                    element={
-                      <ProtectedRoute>
-                        <Members />
-                      </ProtectedRoute>
-                    }
-                  />
-                </Routes>
-                <MobileNavigation />
-              </div>
-            </TooltipProvider>
+        <TooltipProvider>
+          <BrowserRouter>
+            <Routes>
+              <Route
+                path="/auth"
+                element={
+                  <AuthRoute>
+                    <Auth />
+                  </AuthRoute>
+                }
+              />
+              <Route
+                path="/about"
+                element={
+                  <ProtectedRoute>
+                    <About />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/"
+                element={
+                  <ProtectedRoute>
+                    <Home />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/events"
+                element={
+                  <ProtectedRoute>
+                    <Events />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/members"
+                element={
+                  <ProtectedRoute>
+                    <Members />
+                  </ProtectedRoute>
+                }
+              />
+            </Routes>
             <Toaster />
             <Sonner />
-          </div>
-        </BrowserRouter>
+          </BrowserRouter>
+        </TooltipProvider>
       </SessionContextProvider>
     </QueryClientProvider>
   );
