@@ -23,7 +23,7 @@ interface EventCardProps {
 
 interface Attendee {
   user_id: string;
-  profiles: {
+  profile: {
     full_name: string | null;
     username: string;
   };
@@ -55,26 +55,41 @@ export function EventCard({ event, onRSVP, onCancelRSVP, userRSVPStatus, onUpdat
 
   const fetchRSVPDetails = async () => {
     try {
+      // Get RSVP count
       const { count } = await supabase
         .from('event_rsvps')
         .select('*', { count: 'exact', head: true })
         .eq('event_id', event.id);
       setRsvpCount(count || 0);
 
-      const { data: attendeeData } = await supabase
+      // Get attendees with their profile information
+      const { data: rsvpData } = await supabase
         .from('event_rsvps')
-        .select(`
-          user_id,
-          profiles:profiles!event_rsvps_user_id_fkey (
-            full_name,
-            username
-          )
-        `)
+        .select('user_id')
         .eq('event_id', event.id)
         .eq('response', 'attending');
 
-      if (attendeeData) {
-        setAttendees(attendeeData as Attendee[]);
+      if (rsvpData) {
+        // Fetch profile information for each RSVP
+        const userIds = rsvpData.map(rsvp => rsvp.user_id);
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('id, full_name, username')
+          .in('id', userIds);
+
+        if (profileData) {
+          const attendeeData = rsvpData.map(rsvp => {
+            const profile = profileData.find(p => p.id === rsvp.user_id);
+            return {
+              user_id: rsvp.user_id,
+              profile: {
+                full_name: profile?.full_name || null,
+                username: profile?.username || ''
+              }
+            };
+          });
+          setAttendees(attendeeData);
+        }
       }
     } catch (error) {
       console.error('Error fetching RSVP details:', error);
@@ -87,7 +102,6 @@ export function EventCard({ event, onRSVP, onCancelRSVP, userRSVPStatus, onUpdat
   };
 
   const handleCardClick = (e: React.MouseEvent) => {
-    // Don't navigate if clicking on buttons or links
     if (
       (e.target as HTMLElement).tagName === 'BUTTON' ||
       (e.target as HTMLElement).tagName === 'A' ||
@@ -103,8 +117,8 @@ export function EventCard({ event, onRSVP, onCancelRSVP, userRSVPStatus, onUpdat
   const isPastEvent = new Date(event.date) < new Date(new Date().setHours(0, 0, 0, 0));
 
   const attendeeNames = attendees.map(attendee => {
-    const fullName = attendee.profiles.full_name;
-    const firstName = fullName ? fullName.split(' ')[0] : attendee.profiles.username;
+    const fullName = attendee.profile.full_name;
+    const firstName = fullName ? fullName.split(' ')[0] : attendee.profile.username;
     return firstName;
   });
 
