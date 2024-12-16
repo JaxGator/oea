@@ -1,6 +1,7 @@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Button } from "@/components/ui/button";
 
 interface MemberFormFieldsProps {
   username: string;
@@ -17,6 +18,7 @@ interface MemberFormFieldsProps {
   setIsApproved: (value: boolean) => void;
   isMember: boolean;
   setIsMember: (value: boolean) => void;
+  onSubmit: () => void;
 }
 
 export function MemberFormFields({
@@ -34,6 +36,7 @@ export function MemberFormFields({
   setIsApproved,
   isMember,
   setIsMember,
+  onSubmit,
 }: MemberFormFieldsProps) {
   return (
     <div className="space-y-4">
@@ -96,6 +99,9 @@ export function MemberFormFields({
         />
         <Label htmlFor="isMember">Member</Label>
       </div>
+      <Button onClick={onSubmit} className="w-full">
+        Save Changes
+      </Button>
     </div>
   );
 }

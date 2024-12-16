@@ -34,6 +34,8 @@ interface EditMemberDialogProps {
 export function EditMemberDialog({ member, open, onOpenChange, onUpdate }: EditMemberDialogProps) {
   const [username, setUsername] = useState(member.username);
   const [fullName, setFullName] = useState(member.full_name || "");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [isAdmin, setIsAdmin] = useState(member.is_admin);
   const [isApproved, setIsApproved] = useState(member.is_approved);
   const [isMember, setIsMember] = useState(member.is_member);
@@ -89,6 +91,8 @@ export function EditMemberDialog({ member, open, onOpenChange, onUpdate }: EditM
           userId: member.id,
           username,
           fullName,
+          email,
+          password,
           isAdmin,
           isApproved,
           isMember,
@@ -155,6 +159,10 @@ export function EditMemberDialog({ member, open, onOpenChange, onUpdate }: EditM
             setUsername={setUsername}
             fullName={fullName}
             setFullName={setFullName}
+            email={email}
+            setEmail={setEmail}
+            password={password}
+            setPassword={setPassword}
             isAdmin={isAdmin}
             setIsAdmin={setIsAdmin}
             isApproved={isApproved}
