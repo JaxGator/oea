@@ -1,14 +1,8 @@
-import { BrowserRouter, Routes, Route, useRoutes } from "react-router-dom";
+import { RouterProvider } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { AppLayout } from "./components/layout/AppLayout";
 import { AppProviders } from "./components/providers/AppProviders";
-import { routes } from "./routes/routes";
-
-function AppRoutes() {
-  const routeElements = useRoutes(routes);
-  return <AppLayout>{routeElements}</AppLayout>;
-}
+import { router } from "./routes/routes";
 
 const App = () => {
   const [session, setSession] = useState(null);
@@ -29,9 +23,7 @@ const App = () => {
 
   return (
     <AppProviders session={session}>
-      <BrowserRouter>
-        <AppRoutes />
-      </BrowserRouter>
+      <RouterProvider router={router} />
     </AppProviders>
   );
 };
