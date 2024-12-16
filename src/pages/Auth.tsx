@@ -13,26 +13,18 @@ export default function Auth() {
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_OUT') {
+      if (event === 'SIGNED_IN') {
+        if (session) {
+          toast({
+            title: "Welcome!",
+            description: "You have been successfully signed in.",
+          });
+        }
+      } else if (event === 'SIGNED_OUT') {
         toast({
           title: "Signed out",
           description: "You have been successfully signed out.",
         });
-      } else if (event === 'SIGNED_IN') {
-        if (session) {
-          toast({
-            title: "Signed in",
-            description: "You have been successfully signed in.",
-          });
-        } else {
-          toast({
-            title: "Authentication Error",
-            description: "There was a problem signing you in. Please try again.",
-            variant: "destructive",
-          });
-        }
-      } else if (event === 'USER_UPDATED') {
-        console.log('User updated:', session);
       }
     });
 
@@ -87,6 +79,13 @@ export default function Auth() {
             }}
             providers={[]}
             redirectTo={window.location.origin}
+            onError={(error) => {
+              toast({
+                title: "Error",
+                description: error.message,
+                variant: "destructive",
+              });
+            }}
           />
         </CardContent>
       </Card>
