@@ -33,6 +33,11 @@ export default function Auth() {
         }
       } else if (event === 'USER_UPDATED') {
         console.log('User updated:', session);
+      } else if (event === 'SIGNED_UP') {
+        toast({
+          title: "Account created",
+          description: "Your account has been created successfully.",
+        });
       }
     });
 
@@ -87,14 +92,6 @@ export default function Auth() {
             }}
             providers={[]}
             redirectTo={window.location.origin}
-            onError={(error) => {
-              console.error('Auth error:', error);
-              toast({
-                title: "Error",
-                description: error.message,
-                variant: "destructive",
-              });
-            }}
           />
         </CardContent>
       </Card>
