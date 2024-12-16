@@ -14,25 +14,52 @@ export default function EventDetails() {
   const { data: event, isLoading } = useQuery({
     queryKey: ['event', eventId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // First, fetch the event details
+      const { data: eventData, error: eventError } = await supabase
         .from('events')
-        .select(`
-          *,
-          event_rsvps (
-            id,
-            response,
-            user_id,
-            profiles:profiles!event_rsvps_user_id_fkey (
-              full_name,
-              username
-            )
-          )
-        `)
+        .select('*')
         .eq('id', eventId)
         .single();
 
-      if (error) throw error;
-      return data as Event;
+      if (eventError) throw eventError;
+
+      // Then, fetch the RSVPs and associated profiles
+      const { data: rsvpData, error: rsvpError } = await supabase
+        .from('event_rsvps')
+        .select('id, response, user_id')
+        .eq('event_id', eventId);
+
+      if (rsvpError) throw rsvpError;
+
+      // If there are RSVPs, fetch the associated profiles
+      if (rsvpData && rsvpData.length > 0) {
+        const userIds = rsvpData.map(rsvp => rsvp.user_id);
+        const { data: profilesData, error: profilesError } = await supabase
+          .from('profiles')
+          .select('id, full_name, username')
+          .in('id', userIds);
+
+        if (profilesError) throw profilesError;
+
+        // Combine the RSVP data with profile information
+        const rsvpsWithProfiles = rsvpData.map(rsvp => ({
+          ...rsvp,
+          profiles: profilesData?.find(profile => profile.id === rsvp.user_id) || {
+            full_name: null,
+            username: 'Unknown User'
+          }
+        }));
+
+        return {
+          ...eventData,
+          rsvps: rsvpsWithProfiles
+        } as Event;
+      }
+
+      return {
+        ...eventData,
+        rsvps: []
+      } as Event;
     },
   });
 
