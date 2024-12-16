@@ -5,14 +5,11 @@ import { useEvents } from "@/hooks/useEvents";
 import { EventList } from "@/components/event/EventList";
 import { useRSVP } from "@/hooks/useRSVP";
 import { toast } from "sonner";
-import { ViewToggle } from "@/components/event/ViewToggle";
-import { CalendarView } from "@/components/event/CalendarView";
 import { Separator } from "@/components/ui/separator";
 
 export default function Events() {
   const [isCreateEventOpen, setIsCreateEventOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date>();
-  const [isCalendarView, setIsCalendarView] = useState(false);
   
   const { data: events = [], isLoading, error } = useEvents(selectedDate);
   const { handleRSVP, cancelRSVP } = useRSVP();
@@ -50,10 +47,6 @@ export default function Events() {
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 space-y-4 md:space-y-0">
           <h1 className="text-3xl font-bold text-white">Events</h1>
           <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
-            <ViewToggle 
-              isCalendarView={isCalendarView} 
-              onViewChange={setIsCalendarView}
-            />
             <DateFilter
               selectedDate={selectedDate}
               onDateSelect={setSelectedDate}
@@ -66,37 +59,30 @@ export default function Events() {
         </div>
 
         <div className="bg-white rounded-lg p-6 shadow-lg">
-          {isCalendarView ? (
-            <CalendarView 
-              events={events}
-              onDateSelect={setSelectedDate}
-            />
-          ) : (
-            <div className="space-y-8">
-              <div>
-                <h2 className="text-2xl font-semibold mb-4">Upcoming Events</h2>
-                <EventList 
-                  events={upcomingEvents}
-                  onRSVP={handleRSVP}
-                  onCancelRSVP={cancelRSVP}
-                />
-              </div>
-
-              {pastEvents.length > 0 && (
-                <>
-                  <Separator className="my-8" />
-                  <div>
-                    <h2 className="text-2xl font-semibold mb-4">Past Events</h2>
-                    <EventList 
-                      events={pastEvents}
-                      onRSVP={handleRSVP}
-                      onCancelRSVP={cancelRSVP}
-                    />
-                  </div>
-                </>
-              )}
+          <div className="space-y-8">
+            <div>
+              <h2 className="text-2xl font-semibold mb-4">Upcoming Events</h2>
+              <EventList 
+                events={upcomingEvents}
+                onRSVP={handleRSVP}
+                onCancelRSVP={cancelRSVP}
+              />
             </div>
-          )}
+
+            {pastEvents.length > 0 && (
+              <>
+                <Separator className="my-8" />
+                <div>
+                  <h2 className="text-2xl font-semibold mb-4">Past Events</h2>
+                  <EventList 
+                    events={pastEvents}
+                    onRSVP={handleRSVP}
+                    onCancelRSVP={cancelRSVP}
+                  />
+                </div>
+              </>
+            )}
+          </div>
         </div>
       </div>
     </div>
