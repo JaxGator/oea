@@ -6,7 +6,6 @@ import { useAuthState } from "@/hooks/useAuthState";
 import { Navigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { useEffect } from "react";
-import { AuthError } from "@supabase/supabase-js";
 
 export default function Auth() {
   const { isLoading, user } = useAuthState();
@@ -21,14 +20,6 @@ export default function Auth() {
         });
       }
 
-      if (event === 'USER_DELETED') {
-        toast({
-          title: "Account Deleted",
-          description: "Your account has been successfully deleted.",
-        });
-      }
-
-      // Handle specific authentication errors
       if (!session && event === 'SIGNED_IN') {
         toast({
           title: "Authentication Error",
@@ -89,14 +80,6 @@ export default function Auth() {
             }}
             providers={[]}
             redirectTo={window.location.origin}
-            onError={(error) => {
-              console.error('Auth error:', error);
-              toast({
-                title: "Authentication Error",
-                description: error.message || "An error occurred during authentication",
-                variant: "destructive",
-              });
-            }}
           />
         </CardContent>
       </Card>
