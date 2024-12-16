@@ -29,24 +29,10 @@ export function useAuthState(): AuthState {
   };
 
   useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      const currentUser = session?.user ?? null;
-      setUser(currentUser);
-      
-      if (currentUser) {
-        fetchProfile(currentUser.id).then(profileData => {
-          setProfile(profileData);
-          setIsLoading(false);
-        });
-      } else {
-        setIsLoading(false);
-      }
-    });
-
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
+    // Initialize auth state
+    const initializeAuth = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
         const currentUser = session?.user ?? null;
         setUser(currentUser);
 
@@ -56,12 +42,39 @@ export function useAuthState(): AuthState {
         } else {
           setProfile(null);
         }
-        
+      } catch (error) {
+        console.error("Error initializing auth:", error);
+        setUser(null);
+        setProfile(null);
+      } finally {
         setIsLoading(false);
+      }
+    };
+
+    // Start initialization
+    initializeAuth();
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (_event, session) => {
+        try {
+          const currentUser = session?.user ?? null;
+          setUser(currentUser);
+
+          if (currentUser) {
+            const profileData = await fetchProfile(currentUser.id);
+            setProfile(profileData);
+          } else {
+            setProfile(null);
+          }
+        } catch (error) {
+          console.error("Error in auth state change:", error);
+          setUser(null);
+          setProfile(null);
+        }
       }
     );
 
-    // Cleanup
     return () => {
       subscription.unsubscribe();
     };
