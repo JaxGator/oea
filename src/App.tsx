@@ -90,7 +90,14 @@ const App = () => {
                       </AuthRoute>
                     }
                   />
-                  <Route path="/about" element={<About />} />
+                  <Route
+                    path="/about"
+                    element={
+                      <ProtectedRoute>
+                        <About />
+                      </ProtectedRoute>
+                    }
+                  />
                   <Route
                     path="/"
                     element={
