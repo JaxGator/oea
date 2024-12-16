@@ -1,14 +1,12 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { SignInForm } from "@/components/auth/SignInForm";
-import { SignUpForm } from "@/components/auth/SignUpForm";
+import { Auth as SupabaseAuth } from "@supabase/auth-ui-react";
+import { supabase } from "@/integrations/supabase/client";
+import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { useAuthState } from "@/hooks/useAuthState";
-import { useState } from "react";
 import { Navigate } from "react-router-dom";
 
 export default function Auth() {
   const { isLoading, user } = useAuthState();
-  const [formLoading, setFormLoading] = useState(false);
 
   if (isLoading) {
     return (
@@ -36,18 +34,21 @@ export default function Auth() {
           <CardTitle className="text-center">Welcome</CardTitle>
         </CardHeader>
         <CardContent>
-          <Tabs defaultValue="signin" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="signin">Sign In</TabsTrigger>
-              <TabsTrigger value="signup">Sign Up</TabsTrigger>
-            </TabsList>
-            <TabsContent value="signin">
-              <SignInForm setIsLoading={setFormLoading} />
-            </TabsContent>
-            <TabsContent value="signup">
-              <SignUpForm setIsLoading={setFormLoading} />
-            </TabsContent>
-          </Tabs>
+          <SupabaseAuth 
+            supabaseClient={supabase}
+            appearance={{ 
+              theme: ThemeSupa,
+              variables: {
+                default: {
+                  colors: {
+                    brand: '#0d97d1',
+                    brandAccent: '#0d97d1',
+                  },
+                },
+              },
+            }}
+            providers={[]}
+          />
         </CardContent>
       </Card>
     </div>

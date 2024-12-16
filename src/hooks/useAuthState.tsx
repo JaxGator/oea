@@ -9,77 +9,44 @@ export function useAuthState(): AuthState {
   const [profile, setProfile] = useState<Profile | null>(null);
 
   useEffect(() => {
-    let mounted = true;
+    // Get initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+      setIsLoading(false);
+    });
 
-    // Fetch profile helper function
-    const fetchProfile = async (userId: string) => {
-      try {
-        const { data, error } = await supabase
-          .from("profiles")
-          .select("*")
-          .eq("id", userId)
-          .single();
-
-        if (error) throw error;
-        return data;
-      } catch (error) {
-        console.error("Error fetching profile:", error);
-        return null;
-      }
-    };
-
-    // Handle auth state updates
-    const handleAuthStateChange = async (currentUser: User | null) => {
-      if (!mounted) return;
-
-      try {
-        setUser(currentUser);
-        
-        if (currentUser) {
-          const profileData = await fetchProfile(currentUser.id);
-          if (mounted) {
-            setProfile(profileData);
-          }
-        } else {
-          setProfile(null);
-        }
-      } catch (error) {
-        console.error("Error updating auth state:", error);
-        if (mounted) {
-          setUser(null);
-          setProfile(null);
-        }
-      }
-    };
-
-    // Initialize auth state
-    const initializeAuth = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        await handleAuthStateChange(session?.user ?? null);
-      } finally {
-        if (mounted) {
-          setIsLoading(false);
-        }
-      }
-    };
-
-    // Set up auth state change listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
-        await handleAuthStateChange(session?.user ?? null);
-      }
-    );
-
-    // Initialize
-    initializeAuth();
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
 
     // Cleanup
     return () => {
-      mounted = false;
       subscription.unsubscribe();
     };
   }, []);
+
+  // Fetch profile whenever user changes
+  useEffect(() => {
+    if (!user) {
+      setProfile(null);
+      return;
+    }
+
+    supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", user.id)
+      .single()
+      .then(({ data, error }) => {
+        if (error) {
+          console.error("Error fetching profile:", error);
+          setProfile(null);
+          return;
+        }
+        setProfile(data);
+      });
+  }, [user]);
 
   return { isLoading, user, profile };
 }
