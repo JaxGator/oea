@@ -15,7 +15,7 @@ export function MobileNavigation() {
     { icon: Users, label: "Members", path: "/members", external: false },
     { icon: Info, label: "About", path: "/about", external: false },
     { icon: UserCircle, label: "Profile", path: "/profile", external: false },
-    ...(profile?.is_admin
+    ...(profile?.is_admin || profile?.is_member
       ? [
           {
             icon: ShoppingBag,

@@ -43,7 +43,7 @@ export function DesktopNavigation() {
               >
                 About
               </Link>
-              {profile?.is_admin && (
+              {(profile?.is_admin || profile?.is_member) && (
                 <a
                   href="https://outdoorenergyadventures.printful.me/"
                   target="_blank"
