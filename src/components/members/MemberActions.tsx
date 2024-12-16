@@ -39,11 +39,8 @@ export function MemberActions({ memberId, isCurrentUserAdmin, onDelete, onEdit }
       }
 
       // Call the delete-user edge function
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.access_token) throw new Error('No access token');
-
       const { error: deleteError } = await supabase.functions.invoke('delete-user', {
-        body: { email: 'jason.ponder7975@gmail.com' }
+        body: { userId: memberId }
       });
 
       if (deleteError) throw deleteError;

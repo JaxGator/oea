@@ -30,6 +30,7 @@ serve(async (req) => {
 
     const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(authHeader)
     if (authError || !user) {
+      console.error('Auth error:', authError)
       return new Response(
         JSON.stringify({ error: 'Invalid token' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -50,27 +51,33 @@ serve(async (req) => {
       )
     }
 
-    // Get the email from request body
-    const { email } = await req.json()
-
-    // Get the user ID for the email
-    const { data: userData, error: userError } = await supabaseAdmin.auth.admin.listUsers()
-    if (userError) throw userError
-
-    const targetUser = userData.users.find(u => u.email === email)
-    if (!targetUser) {
+    // Get the user ID from request body
+    const { userId } = await req.json()
+    if (!userId) {
       return new Response(
-        JSON.stringify({ error: 'User not found' }),
-        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        JSON.stringify({ error: 'User ID is required' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
-    // Delete the user
-    const { error: deleteError } = await supabaseAdmin.auth.admin.deleteUser(
-      targetUser.id
-    )
+    console.log('Attempting to delete user with ID:', userId)
+
+    // Delete the user's profile first (this will cascade to related records)
+    const { error: profileError } = await supabaseAdmin
+      .from('profiles')
+      .delete()
+      .eq('id', userId)
+
+    if (profileError) {
+      console.error('Error deleting profile:', profileError)
+      throw profileError
+    }
+
+    // Delete the user from auth.users
+    const { error: deleteError } = await supabaseAdmin.auth.admin.deleteUser(userId)
 
     if (deleteError) {
+      console.error('Error deleting auth user:', deleteError)
       throw deleteError
     }
 
@@ -79,8 +86,8 @@ serve(async (req) => {
       admin_id: user.id,
       action_type: 'delete_user',
       target_type: 'user',
-      target_id: targetUser.id,
-      details: { email }
+      target_id: userId,
+      details: { deleted_user_id: userId }
     })
 
     return new Response(
@@ -91,7 +98,7 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error in delete-user function:', error)
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: 'Database error deleting user' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   }
