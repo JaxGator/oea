@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuthState } from "@/hooks/useAuthState";
 
 export function DesktopNavigation() {
-  const { user } = useAuthState();
+  const { user, profile } = useAuthState();
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
@@ -41,6 +41,14 @@ export function DesktopNavigation() {
               >
                 About
               </Link>
+              {profile?.is_admin && (
+                <Link
+                  to="/store"
+                  className="hover:text-primary-100 transition-colors"
+                >
+                  Store
+                </Link>
+              )}
             </>
           )}
         </div>

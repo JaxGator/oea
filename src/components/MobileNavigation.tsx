@@ -2,16 +2,19 @@ import { Menu } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Home, Calendar, Info, Users } from "lucide-react";
+import { Home, Calendar, Info, Users, ShoppingBag } from "lucide-react";
+import { useAuthState } from "@/hooks/useAuthState";
 
 export function MobileNavigation() {
   const location = useLocation();
+  const { profile } = useAuthState();
 
   const navigationItems = [
     { icon: Home, label: "Home", path: "/" },
     { icon: Calendar, label: "Events", path: "/events" },
     { icon: Users, label: "Members", path: "/members" },
     { icon: Info, label: "About", path: "/about" },
+    ...(profile?.is_admin ? [{ icon: ShoppingBag, label: "Store", path: "/store" }] : []),
   ];
 
   return (

@@ -13,6 +13,7 @@ import Home from "./pages/Home";
 import About from "./pages/About";
 import Events from "./pages/Events";
 import Members from "./pages/Members";
+import Store from "./pages/Store";
 import Auth from "./pages/Auth";
 
 const queryClient = new QueryClient({
@@ -89,6 +90,14 @@ const App = () => {
                   element={
                     <ProtectedRoute>
                       <Members />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/store"
+                  element={
+                    <ProtectedRoute>
+                      <Store />
                     </ProtectedRoute>
                   }
                 />

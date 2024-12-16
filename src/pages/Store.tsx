@@ -1,0 +1,28 @@
+import { useAuthState } from "@/hooks/useAuthState";
+import { Navigate } from "react-router-dom";
+import { Card } from "@/components/ui/card";
+
+export default function Store() {
+  const { profile } = useAuthState();
+
+  if (!profile?.is_admin) {
+    return <Navigate to="/" replace />;
+  }
+
+  return (
+    <div className="container mx-auto px-4 py-8">
+      <Card className="p-6">
+        <h1 className="text-2xl font-bold mb-6">OEA Store</h1>
+        <div className="w-full aspect-[4/3]">
+          <iframe
+            src="YOUR_PRINTIFY_STORE_URL"
+            className="w-full h-full border-0"
+            title="Printify Store"
+            allow="accelerometer; ambient-light-sensor; camera; encrypted-media; geolocation; gyroscope; hid; microphone; midi; payment; usb; vr; xr-spatial-tracking"
+            sandbox="allow-forms allow-modals allow-popups allow-presentation allow-same-origin allow-scripts"
+          />
+        </div>
+      </Card>
+    </div>
+  );
+}
