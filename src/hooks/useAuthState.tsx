@@ -8,68 +8,65 @@ export function useAuthState(): AuthState {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
 
-  const fetchProfile = async (userId: string) => {
-    try {
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", userId)
-        .single();
-
-      if (error) {
-        console.error("Error fetching profile:", error);
-        return null;
-      }
-
-      return data;
-    } catch (error) {
-      console.error("Error in fetchProfile:", error);
-      return null;
-    }
-  };
-
   useEffect(() => {
     let mounted = true;
 
-    const updateAuthState = async (currentUser: User | null) => {
-      if (!mounted) return;
-
-      setUser(currentUser);
-      
-      if (currentUser) {
-        const profileData = await fetchProfile(currentUser.id);
-        if (mounted) {
-          setProfile(profileData);
-        }
-      } else {
-        setProfile(null);
-      }
-    };
-
-    const initialize = async () => {
+    const fetchProfile = async (userId: string) => {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
-        await updateAuthState(session?.user ?? null);
+        const { data, error } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", userId)
+          .single();
+
+        if (error) throw error;
+        return data;
       } catch (error) {
-        console.error("Error in initialization:", error);
-        if (mounted) {
-          setUser(null);
-          setProfile(null);
-        }
-      } finally {
-        if (mounted) {
-          setIsLoading(false);
-        }
+        console.error("Error fetching profile:", error);
+        return null;
       }
     };
 
+    // Set up auth state change listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (_event, session) => {
-        await updateAuthState(session?.user ?? null);
+        if (!mounted) return;
+
+        try {
+          const currentUser = session?.user ?? null;
+          setUser(currentUser);
+
+          if (currentUser) {
+            const profileData = await fetchProfile(currentUser.id);
+            if (mounted) setProfile(profileData);
+          } else {
+            setProfile(null);
+          }
+        } catch (error) {
+          console.error("Error in auth state change:", error);
+          if (mounted) {
+            setUser(null);
+            setProfile(null);
+          }
+        }
       }
     );
 
-    initialize();
+    // Initial session check
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!mounted) return;
+
+      const currentUser = session?.user ?? null;
+      setUser(currentUser);
+
+      if (currentUser) {
+        fetchProfile(currentUser.id).then((profileData) => {
+          if (mounted) setProfile(profileData);
+        });
+      }
+      
+      setIsLoading(false);
+    });
 
     return () => {
       mounted = false;
