@@ -29,73 +29,40 @@ export function useAuthState(): AuthState {
   };
 
   useEffect(() => {
-    let mounted = true;
-
-    async function initialize() {
-      try {
-        // Get initial session
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-        
-        if (sessionError) {
-          console.error("Session error:", sessionError);
-          if (mounted) {
-            setUser(null);
-            setProfile(null);
-          }
-          return;
-        }
-
-        if (!mounted) return;
-
-        // Update user state
-        const currentUser = session?.user ?? null;
-        setUser(currentUser);
-
-        // Fetch profile if we have a user
-        if (currentUser) {
-          const profileData = await fetchProfile(currentUser.id);
-          if (mounted) {
-            setProfile(profileData);
-          }
-        }
-      } catch (error) {
-        console.error("Initialization error:", error);
-        if (mounted) {
-          setUser(null);
-          setProfile(null);
-        }
-      } finally {
-        if (mounted) {
+    // Get initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      const currentUser = session?.user ?? null;
+      setUser(currentUser);
+      
+      if (currentUser) {
+        fetchProfile(currentUser.id).then(profileData => {
+          setProfile(profileData);
           setIsLoading(false);
-        }
+        });
+      } else {
+        setIsLoading(false);
       }
-    }
-
-    // Initialize auth state
-    initialize();
+    });
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (_event, session) => {
-        if (!mounted) return;
-
         const currentUser = session?.user ?? null;
         setUser(currentUser);
 
         if (currentUser) {
           const profileData = await fetchProfile(currentUser.id);
-          if (mounted) {
-            setProfile(profileData);
-          }
+          setProfile(profileData);
         } else {
           setProfile(null);
         }
+        
+        setIsLoading(false);
       }
     );
 
     // Cleanup
     return () => {
-      mounted = false;
       subscription.unsubscribe();
     };
   }, []);
