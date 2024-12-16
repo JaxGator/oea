@@ -18,14 +18,21 @@ export default function Auth() {
           title: "Signed out",
           description: "You have been successfully signed out.",
         });
-      }
-
-      if (!session && event === 'SIGNED_IN') {
-        toast({
-          title: "Authentication Error",
-          description: "There was a problem signing you in. Please try again.",
-          variant: "destructive",
-        });
+      } else if (event === 'SIGNED_IN') {
+        if (session) {
+          toast({
+            title: "Signed in",
+            description: "You have been successfully signed in.",
+          });
+        } else {
+          toast({
+            title: "Authentication Error",
+            description: "There was a problem signing you in. Please try again.",
+            variant: "destructive",
+          });
+        }
+      } else if (event === 'USER_UPDATED') {
+        console.log('User updated:', session);
       }
     });
 
@@ -80,6 +87,14 @@ export default function Auth() {
             }}
             providers={[]}
             redirectTo={window.location.origin}
+            onError={(error) => {
+              console.error('Auth error:', error);
+              toast({
+                title: "Error",
+                description: error.message,
+                variant: "destructive",
+              });
+            }}
           />
         </CardContent>
       </Card>
