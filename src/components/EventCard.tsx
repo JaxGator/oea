@@ -1,17 +1,12 @@
-import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Event } from "@/types/event";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { useState, useEffect } from "react";
-import { EventForm } from "./event/EventForm";
 import { supabase } from "@/integrations/supabase/client";
 import { EventDetails } from "./event/EventDetails";
 import { EventActions } from "./event/EventActions";
 import { AddToCalendar } from "./event/AddToCalendar";
+import { EventCardHeader } from "./event/EventCardHeader";
+import { EventEditDialog } from "./event/EventEditDialog";
 
 interface Guest {
   firstName: string;
@@ -38,6 +33,11 @@ export function EventCard({ event, onRSVP, onCancelRSVP, userRSVPStatus, onUpdat
   const [isAdmin, setIsAdmin] = useState(false);
   const [rsvpCount, setRsvpCount] = useState(0);
   const [attendees, setAttendees] = useState<Attendee[]>([]);
+
+  useEffect(() => {
+    checkAdminStatus();
+    fetchRSVPDetails();
+  }, [event.id]);
 
   const checkAdminStatus = async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -79,19 +79,12 @@ export function EventCard({ event, onRSVP, onCancelRSVP, userRSVPStatus, onUpdat
     }
   };
 
-  useEffect(() => {
-    checkAdminStatus();
-    fetchRSVPDetails();
-  }, [event.id]);
-
   const handleEditSuccess = () => {
     setShowEditDialog(false);
     if (onUpdate) onUpdate();
   };
 
   const isFullyBooked = rsvpCount >= event.max_guests;
-
-  // Check if event is in the past
   const isPastEvent = new Date(event.date) < new Date(new Date().setHours(0, 0, 0, 0));
 
   const attendeeNames = attendees.map(attendee => {
@@ -102,16 +95,8 @@ export function EventCard({ event, onRSVP, onCancelRSVP, userRSVPStatus, onUpdat
 
   return (
     <Card className="w-full transition-all duration-300 hover:shadow-lg animate-fade-in bg-white">
-      <CardHeader className="relative p-0">
-        <img
-          src={event.image_url}
-          alt={event.title}
-          className="w-full h-48 object-cover rounded-t-lg"
-        />
-        <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/60 to-transparent">
-          <h3 className="text-xl font-bold text-white">{event.title}</h3>
-        </div>
-      </CardHeader>
+      <EventCardHeader imageUrl={event.image_url} title={event.title} />
+      
       <CardContent className="p-4">
         <EventDetails
           date={event.date}
@@ -135,6 +120,7 @@ export function EventCard({ event, onRSVP, onCancelRSVP, userRSVPStatus, onUpdat
           />
         )}
       </CardContent>
+
       <CardFooter className="p-4 pt-0">
         <EventActions
           isAdmin={isAdmin && !isPastEvent}
@@ -147,26 +133,12 @@ export function EventCard({ event, onRSVP, onCancelRSVP, userRSVPStatus, onUpdat
         />
       </CardFooter>
 
-      <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Edit Event</DialogTitle>
-          </DialogHeader>
-          <EventForm
-            initialData={{
-              id: event.id,
-              title: event.title,
-              description: event.description || "",
-              date: event.date,
-              time: event.time,
-              location: event.location,
-              max_guests: event.max_guests,
-              image_url: event.image_url,
-            }}
-            onSuccess={handleEditSuccess}
-          />
-        </DialogContent>
-      </Dialog>
+      <EventEditDialog
+        event={event}
+        open={showEditDialog}
+        onOpenChange={setShowEditDialog}
+        onSuccess={handleEditSuccess}
+      />
     </Card>
   );
 }
