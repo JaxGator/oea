@@ -1,11 +1,10 @@
 import { CalendarIcon, MapPinIcon, UsersIcon } from "lucide-react";
 import { format } from "date-fns";
 import { Badge } from "@/components/ui/badge";
-import { AddToCalendar } from "./AddToCalendar";
 
 interface EventDetailsProps {
   date: string;
-  time: string;  // Added this line to fix the TypeScript error
+  time: string;
   location: string;
   rsvpCount: number;
   maxGuests: number;
@@ -16,7 +15,7 @@ interface EventDetailsProps {
 
 export function EventDetails({
   date,
-  time,  // Added this parameter
+  time,
   location,
   rsvpCount,
   maxGuests,
@@ -50,22 +49,9 @@ export function EventDetails({
       )}
       <p className="text-gray-600 line-clamp-2">{description}</p>
       {userRSVPStatus && (
-        <>
-          <Badge variant="secondary" className="mt-2">
-            Your RSVP: {userRSVPStatus}
-          </Badge>
-          {userRSVPStatus === 'attending' && (
-            <AddToCalendar
-              event={{
-                title: description,
-                description,
-                date,
-                time,
-                location,
-              }}
-            />
-          )}
-        </>
+        <Badge variant="secondary" className="mt-2">
+          Your RSVP: {userRSVPStatus}
+        </Badge>
       )}
     </div>
   );
