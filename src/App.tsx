@@ -2,13 +2,15 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { DesktopNavigation } from "./components/DesktopNavigation";
 import { MobileNavigation } from "./components/MobileNavigation";
+import { useAuthState } from "@/hooks/useAuthState";
 import Home from "./pages/Home";
 import About from "./pages/About";
 import Events from "./pages/Events";
 import Members from "./pages/Members";
+import Auth from "./pages/Auth";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -20,6 +22,24 @@ const queryClient = new QueryClient({
   },
 });
 
+function ProtectedRoute({ children }: { children: React.ReactNode }) {
+  const { isLoading, user } = useAuthState();
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-[#222222] flex items-center justify-center">
+        <div className="text-white">Loading...</div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <Navigate to="/auth" replace />;
+  }
+
+  return <>{children}</>;
+}
+
 const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
@@ -29,10 +49,32 @@ const App = () => {
             <div>
               <DesktopNavigation />
               <Routes>
+                <Route path="/auth" element={<Auth />} />
                 <Route path="/about" element={<About />} />
-                <Route path="/" element={<Home />} />
-                <Route path="/events" element={<Events />} />
-                <Route path="/members" element={<Members />} />
+                <Route
+                  path="/"
+                  element={
+                    <ProtectedRoute>
+                      <Home />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/events"
+                  element={
+                    <ProtectedRoute>
+                      <Events />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/members"
+                  element={
+                    <ProtectedRoute>
+                      <Members />
+                    </ProtectedRoute>
+                  }
+                />
               </Routes>
               <MobileNavigation />
             </div>

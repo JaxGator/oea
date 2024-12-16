@@ -4,10 +4,23 @@ import { SignInForm } from "@/components/auth/SignInForm";
 import { SignUpForm } from "@/components/auth/SignUpForm";
 import { useAuthState } from "@/hooks/useAuthState";
 import { useState } from "react";
+import { Navigate } from "react-router-dom";
 
 export default function Auth() {
-  const { isLoading } = useAuthState();
+  const { isLoading, user } = useAuthState();
   const [formLoading, setFormLoading] = useState(false);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-[#222222] flex items-center justify-center">
+        <div className="text-white">Loading...</div>
+      </div>
+    );
+  }
+
+  if (user) {
+    return <Navigate to="/" replace />;
+  }
 
   return (
     <div className="min-h-screen bg-[#222222] flex items-center justify-center p-4">

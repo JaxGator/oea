@@ -1,6 +1,20 @@
 import { Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuthEventHandler } from "@/hooks/useAuthEventHandler";
+import { useAuthState } from "@/hooks/useAuthState";
 
 export function DesktopNavigation() {
+  const handleAuthEvent = useAuthEventHandler();
+  const { user } = useAuthState();
+
+  const handleSignOut = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (!error) {
+      handleAuthEvent("SIGNED_OUT");
+    }
+  };
+
   return (
     <nav className="hidden md:block bg-[#222222] text-white p-4">
       <div className="container mx-auto flex justify-between items-center">
@@ -12,25 +26,38 @@ export function DesktopNavigation() {
               className="h-12"
             />
           </Link>
-          <Link
-            to="/events"
-            className="hover:text-primary-100 transition-colors"
-          >
-            Events
-          </Link>
-          <Link
-            to="/members"
-            className="hover:text-primary-100 transition-colors"
-          >
-            Members
-          </Link>
-          <Link
-            to="/about"
-            className="hover:text-primary-100 transition-colors"
-          >
-            About
-          </Link>
+          {user && (
+            <>
+              <Link
+                to="/events"
+                className="hover:text-primary-100 transition-colors"
+              >
+                Events
+              </Link>
+              <Link
+                to="/members"
+                className="hover:text-primary-100 transition-colors"
+              >
+                Members
+              </Link>
+              <Link
+                to="/about"
+                className="hover:text-primary-100 transition-colors"
+              >
+                About
+              </Link>
+            </>
+          )}
         </div>
+        {user && (
+          <Button
+            variant="ghost"
+            className="text-white hover:text-primary-100"
+            onClick={handleSignOut}
+          >
+            Sign Out
+          </Button>
+        )}
       </div>
     </nav>
   );
