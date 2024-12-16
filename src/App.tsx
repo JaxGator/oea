@@ -37,16 +37,10 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   }
 
   if (!user) {
-    return <Navigate to="/auth" />;
+    return <Navigate to="/auth" replace />;
   }
 
-  return (
-    <>
-      <DesktopNavigation />
-      {children}
-      <MobileNavigation />
-    </>
-  );
+  return children;
 }
 
 function AuthRoute({ children }: { children: React.ReactNode }) {
@@ -61,11 +55,25 @@ function AuthRoute({ children }: { children: React.ReactNode }) {
   }
 
   if (user) {
-    return <Navigate to="/" />;
+    return <Navigate to="/" replace />;
   }
 
-  return <>{children}</>;
+  return children;
 }
+
+const AppLayout = ({ children }: { children: React.ReactNode }) => {
+  const { user } = useAuthState();
+
+  if (!user) return children;
+
+  return (
+    <>
+      <DesktopNavigation />
+      {children}
+      <MobileNavigation />
+    </>
+  );
+};
 
 const App = () => {
   const [initialSession, setInitialSession] = useState<Session | null>(null);
@@ -92,48 +100,50 @@ const App = () => {
       >
         <TooltipProvider>
           <BrowserRouter>
-            <Routes>
-              <Route
-                path="/auth"
-                element={
-                  <AuthRoute>
-                    <Auth />
-                  </AuthRoute>
-                }
-              />
-              <Route
-                path="/about"
-                element={
-                  <ProtectedRoute>
-                    <About />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/"
-                element={
-                  <ProtectedRoute>
-                    <Home />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/events"
-                element={
-                  <ProtectedRoute>
-                    <Events />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/members"
-                element={
-                  <ProtectedRoute>
-                    <Members />
-                  </ProtectedRoute>
-                }
-              />
-            </Routes>
+            <AppLayout>
+              <Routes>
+                <Route
+                  path="/auth"
+                  element={
+                    <AuthRoute>
+                      <Auth />
+                    </AuthRoute>
+                  }
+                />
+                <Route
+                  path="/about"
+                  element={
+                    <ProtectedRoute>
+                      <About />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/"
+                  element={
+                    <ProtectedRoute>
+                      <Home />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/events"
+                  element={
+                    <ProtectedRoute>
+                      <Events />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/members"
+                  element={
+                    <ProtectedRoute>
+                      <Members />
+                    </ProtectedRoute>
+                  }
+                />
+              </Routes>
+            </AppLayout>
             <Toaster />
             <Sonner />
           </BrowserRouter>
