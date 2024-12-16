@@ -3,7 +3,8 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { SessionContextProvider } from "@supabase/auth-helpers-react";
+import { SessionContextProvider, Session } from "@supabase/auth-helpers-react";
+import { useState, useEffect } from "react";
 import { DesktopNavigation } from "./components/DesktopNavigation";
 import { MobileNavigation } from "./components/MobileNavigation";
 import { useAuthState } from "@/hooks/useAuthState";
@@ -61,9 +62,20 @@ function AuthRoute({ children }: { children: React.ReactNode }) {
 }
 
 const App = () => {
+  const [initialSession, setInitialSession] = useState<Session | null>(null);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setInitialSession(session);
+    });
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
-      <SessionContextProvider supabaseClient={supabase}>
+      <SessionContextProvider 
+        supabaseClient={supabase}
+        initialSession={initialSession}
+      >
         <BrowserRouter>
           <div>
             <TooltipProvider>

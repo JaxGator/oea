@@ -11,8 +11,12 @@ export function useAuthState(): AuthState {
   const { toast } = useToast();
 
   useEffect(() => {
+    let mounted = true;
+
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!mounted) return;
+      
       if (session?.user) {
         setUser(session.user);
       } else {
@@ -24,6 +28,15 @@ export function useAuthState(): AuthState {
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (!mounted) return;
+
+      if (event === 'SIGNED_OUT') {
+        setUser(null);
+        setProfile(null);
+        setIsLoading(false);
+        return;
+      }
+
       if (session?.user) {
         setUser(session.user);
       } else {
@@ -34,12 +47,15 @@ export function useAuthState(): AuthState {
     });
 
     return () => {
+      mounted = false;
       subscription.unsubscribe();
     };
   }, []);
 
   // Fetch profile whenever user changes
   useEffect(() => {
+    let mounted = true;
+
     async function fetchProfile() {
       if (!user) {
         setProfile(null);
@@ -53,6 +69,8 @@ export function useAuthState(): AuthState {
           .eq("id", user.id)
           .single();
 
+        if (!mounted) return;
+
         if (error) {
           console.error("Error fetching profile:", error);
           toast({
@@ -65,6 +83,7 @@ export function useAuthState(): AuthState {
 
         setProfile(data);
       } catch (error) {
+        if (!mounted) return;
         console.error("Error in profile fetch:", error);
         toast({
           title: "Error",
@@ -75,6 +94,10 @@ export function useAuthState(): AuthState {
     }
 
     fetchProfile();
+
+    return () => {
+      mounted = false;
+    };
   }, [user, toast]);
 
   return { isLoading, user, profile };
