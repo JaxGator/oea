@@ -33,6 +33,23 @@ export default function Members() {
   const { toast } = useToast();
   const { user, profile } = useAuthState();
 
+  // If user is not approved, show a message
+  if (profile && !profile.is_approved) {
+    return (
+      <div className="min-h-screen bg-[#222222] py-12 px-4">
+        <div className="max-w-6xl mx-auto">
+          <div className="bg-white rounded-lg p-6 shadow-lg text-center">
+            <h1 className="text-2xl font-bold mb-4">Access Restricted</h1>
+            <p className="text-gray-600">
+              You need to be approved by an admin to view the members directory.
+              Please wait for admin approval or contact an administrator for assistance.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   const { data: members = [], isLoading: isLoadingMembers, error } = useQuery({
     queryKey: ['members'],
     queryFn: async () => {
@@ -48,7 +65,7 @@ export default function Members() {
 
       return data || [];
     },
-    enabled: !!user, // Only run query when user is available
+    enabled: !!user && !!profile?.is_approved, // Only fetch if user is approved
     retry: 1,
     staleTime: 1000 * 60 * 5, // Cache for 5 minutes
   });
