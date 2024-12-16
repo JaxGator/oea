@@ -42,46 +42,54 @@ export default function Events() {
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
   return (
-    <div className="min-h-screen bg-[#222222] py-12 px-4">
-      <div className="max-w-7xl mx-auto">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 space-y-4 md:space-y-0">
-          <h1 className="text-3xl font-bold text-white">Events</h1>
-          <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
-            <DateFilter
-              selectedDate={selectedDate}
-              onDateSelect={setSelectedDate}
-            />
-            <CreateEventDialog
-              open={isCreateEventOpen}
-              onOpenChange={setIsCreateEventOpen}
-            />
-          </div>
+    <div className="min-h-screen bg-[#222222]">
+      {/* Header section with responsive padding */}
+      <div className="sticky top-0 z-10 bg-[#222222] border-b border-gray-700 mb-6">
+        <div className="max-w-7xl mx-auto px-4 py-4 md:py-6">
+          <h1 className="text-2xl md:text-3xl font-bold text-white">Events</h1>
         </div>
+      </div>
 
-        <div className="bg-white rounded-lg p-6 shadow-lg">
-          <div className="space-y-8">
-            <div>
-              <h2 className="text-2xl font-semibold mb-4">Upcoming Events</h2>
-              <EventList 
-                events={upcomingEvents}
-                onRSVP={handleRSVP}
-                onCancelRSVP={cancelRSVP}
+      <div className="px-4 pb-20 md:pb-12"> {/* Added bottom padding for mobile nav */}
+        <div className="max-w-7xl mx-auto">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 space-y-4 md:space-y-0">
+            <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 w-full md:w-auto">
+              <DateFilter
+                selectedDate={selectedDate}
+                onDateSelect={setSelectedDate}
+              />
+              <CreateEventDialog
+                open={isCreateEventOpen}
+                onOpenChange={setIsCreateEventOpen}
               />
             </div>
+          </div>
 
-            {pastEvents.length > 0 && (
-              <>
-                <Separator className="my-8" />
-                <div>
-                  <h2 className="text-2xl font-semibold mb-4">Past Events</h2>
-                  <EventList 
-                    events={pastEvents}
-                    onRSVP={handleRSVP}
-                    onCancelRSVP={cancelRSVP}
-                  />
-                </div>
-              </>
-            )}
+          <div className="bg-white rounded-lg p-4 md:p-6 shadow-lg">
+            <div className="space-y-8">
+              <div>
+                <h2 className="text-xl md:text-2xl font-semibold mb-4">Upcoming Events</h2>
+                <EventList 
+                  events={upcomingEvents}
+                  onRSVP={handleRSVP}
+                  onCancelRSVP={cancelRSVP}
+                />
+              </div>
+
+              {pastEvents.length > 0 && (
+                <>
+                  <Separator className="my-8" />
+                  <div>
+                    <h2 className="text-xl md:text-2xl font-semibold mb-4">Past Events</h2>
+                    <EventList 
+                      events={pastEvents}
+                      onRSVP={handleRSVP}
+                      onCancelRSVP={cancelRSVP}
+                    />
+                  </div>
+                </>
+              )}
+            </div>
           </div>
         </div>
       </div>
