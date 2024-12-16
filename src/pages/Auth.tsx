@@ -79,13 +79,6 @@ export default function Auth() {
             }}
             providers={[]}
             redirectTo={window.location.origin}
-            onError={(error) => {
-              toast({
-                title: "Error",
-                description: error.message,
-                variant: "destructive",
-              });
-            }}
           />
         </CardContent>
       </Card>
