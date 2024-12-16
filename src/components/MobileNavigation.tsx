@@ -10,11 +10,20 @@ export function MobileNavigation() {
   const { profile } = useAuthState();
 
   const navigationItems = [
-    { icon: Home, label: "Home", path: "/" },
-    { icon: Calendar, label: "Events", path: "/events" },
-    { icon: Users, label: "Members", path: "/members" },
-    { icon: Info, label: "About", path: "/about" },
-    ...(profile?.is_admin ? [{ icon: ShoppingBag, label: "Store", path: "/store" }] : []),
+    { icon: Home, label: "Home", path: "/", external: false },
+    { icon: Calendar, label: "Events", path: "/events", external: false },
+    { icon: Users, label: "Members", path: "/members", external: false },
+    { icon: Info, label: "About", path: "/about", external: false },
+    ...(profile?.is_admin
+      ? [
+          {
+            icon: ShoppingBag,
+            label: "Store",
+            path: "https://outdoorenergyadventures.printful.me/",
+            external: true,
+          },
+        ]
+      : []),
   ];
 
   return (
@@ -31,20 +40,33 @@ export function MobileNavigation() {
         </SheetTrigger>
         <SheetContent side="right" className="w-[250px] p-0">
           <nav className="flex flex-col p-4">
-            {navigationItems.map(({ icon: Icon, label, path }) => (
-              <Link
-                key={path}
-                to={path}
-                className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-colors ${
-                  location.pathname === path
-                    ? "bg-primary text-primary-foreground"
-                    : "hover:bg-primary/10"
-                }`}
-              >
-                <Icon className="h-5 w-5" />
-                <span className="font-medium">{label}</span>
-              {item.external ? </a> : </Link>}
-            ))}
+            {navigationItems.map(({ icon: Icon, label, path, external }) => 
+              external ? (
+                <a
+                  key={path}
+                  href={path}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-3 rounded-lg px-3 py-2 transition-colors hover:bg-primary/10"
+                >
+                  <Icon className="h-5 w-5" />
+                  <span className="font-medium">{label}</span>
+                </a>
+              ) : (
+                <Link
+                  key={path}
+                  to={path}
+                  className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-colors ${
+                    location.pathname === path
+                      ? "bg-primary text-primary-foreground"
+                      : "hover:bg-primary/10"
+                  }`}
+                >
+                  <Icon className="h-5 w-5" />
+                  <span className="font-medium">{label}</span>
+                </Link>
+              )
+            )}
           </nav>
         </SheetContent>
       </Sheet>
