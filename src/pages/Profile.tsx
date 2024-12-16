@@ -1,12 +1,9 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { User, UserCircle, Save, Mail, Lock } from "lucide-react";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { ProfileHeader } from "@/components/profile/ProfileHeader";
+import { ProfileForm } from "@/components/profile/ProfileForm";
 
 export default function Profile() {
   const [loading, setLoading] = useState(true);
@@ -16,6 +13,7 @@ export default function Profile() {
   const [email, setEmail] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [userId, setUserId] = useState<string | null>(null);
+  const [isApproved, setIsApproved] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -38,7 +36,7 @@ export default function Profile() {
       
       const { data, error } = await supabase
         .from("profiles")
-        .select("username, full_name, avatar_url")
+        .select("username, full_name, avatar_url, is_approved")
         .eq("id", session.user.id)
         .single();
 
@@ -47,6 +45,7 @@ export default function Profile() {
       setUsername(data.username || "");
       setFullName(data.full_name || "");
       setAvatarUrl(data.avatar_url || "");
+      setIsApproved(data.is_approved || false);
     } catch (error) {
       console.error("Error loading profile:", error);
       toast({
@@ -139,117 +138,45 @@ export default function Profile() {
     );
   }
 
+  if (!isApproved) {
+    return (
+      <div className="min-h-screen bg-[#222222] py-12 px-4">
+        <div className="max-w-2xl mx-auto">
+          <div className="bg-white rounded-lg p-6 shadow-lg text-center">
+            <h1 className="text-2xl font-bold mb-4">Profile Not Available</h1>
+            <p className="text-gray-600">
+              Your account is pending approval. Please wait for an administrator to approve your account.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-[#222222] py-12 px-4">
-      <div className="max-w-2xl mx-auto space-y-8">
+      <div className="max-w-2xl mx-auto">
         <div className="bg-white rounded-lg p-6 shadow-lg">
-          <div className="flex items-center space-x-4 mb-6">
-            <Avatar className="h-20 w-20">
-              <AvatarImage src={avatarUrl} alt={fullName || username} />
-              <AvatarFallback>
-                <UserCircle className="h-20 w-20 text-[#0d97d1]" />
-              </AvatarFallback>
-            </Avatar>
-            <div>
-              <h1 className="text-2xl font-bold">Profile Settings</h1>
-              <p className="text-gray-600">{fullName || username}</p>
-            </div>
-          </div>
-
-          <div className="space-y-6">
-            <div className="space-y-2">
-              <Label htmlFor="username">Username</Label>
-              <div className="relative">
-                <User className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                <Input
-                  id="username"
-                  type="text"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  className="pl-10"
-                  placeholder="Enter your username"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="fullName">Full Name</Label>
-              <Input
-                id="fullName"
-                type="text"
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
-                placeholder="Enter your full name"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="avatarUrl">Avatar URL</Label>
-              <Input
-                id="avatarUrl"
-                type="text"
-                value={avatarUrl}
-                onChange={(e) => setAvatarUrl(e.target.value)}
-                placeholder="Enter your avatar URL"
-              />
-            </div>
-
-            <Button
-              onClick={updateProfile}
-              className="w-full bg-[#0d97d1] hover:bg-[#0b86b8] text-white"
-            >
-              <Save className="mr-2 h-4 w-4" />
-              Save Profile Changes
-            </Button>
-
-            <div className="border-t pt-6 mt-6">
-              <h2 className="text-xl font-semibold mb-4">Account Settings</h2>
-              
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email Address</Label>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                    <Input
-                      id="email"
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className="pl-10"
-                      placeholder="Enter your email"
-                    />
-                  </div>
-                  <Button
-                    onClick={updateEmail}
-                    className="mt-2 bg-[#0d97d1] hover:bg-[#0b86b8] text-white"
-                  >
-                    Update Email
-                  </Button>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="newPassword">New Password</Label>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                    <Input
-                      id="newPassword"
-                      type="password"
-                      value={newPassword}
-                      onChange={(e) => setNewPassword(e.target.value)}
-                      className="pl-10"
-                      placeholder="Enter new password"
-                    />
-                  </div>
-                  <Button
-                    onClick={updatePassword}
-                    className="mt-2 bg-[#0d97d1] hover:bg-[#0b86b8] text-white"
-                  >
-                    Update Password
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </div>
+          <ProfileHeader
+            avatarUrl={avatarUrl}
+            fullName={fullName}
+            username={username}
+          />
+          <ProfileForm
+            username={username}
+            setUsername={setUsername}
+            fullName={fullName}
+            setFullName={setFullName}
+            avatarUrl={avatarUrl}
+            setAvatarUrl={setAvatarUrl}
+            email={email}
+            setEmail={setEmail}
+            newPassword={newPassword}
+            setNewPassword={setNewPassword}
+            onUpdateProfile={updateProfile}
+            onUpdateEmail={updateEmail}
+            onUpdatePassword={updatePassword}
+          />
         </div>
       </div>
     </div>
