@@ -1,4 +1,7 @@
+import { Auth as SupabaseAuth } from "@supabase/auth-ui-react";
+import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function Auth() {
   return (
@@ -12,12 +15,25 @@ export default function Auth() {
               className="h-16 w-auto mb-2"
             />
           </div>
-          <CardTitle className="text-center">Authentication</CardTitle>
+          <CardTitle className="text-center">Welcome</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-center text-muted-foreground">
-            Authentication has been reset and is ready to be configured.
-          </div>
+          <SupabaseAuth
+            supabaseClient={supabase}
+            appearance={{
+              theme: ThemeSupa,
+              variables: {
+                default: {
+                  colors: {
+                    brand: '#0d97d1',
+                    brandAccent: '#0d97d1',
+                  },
+                },
+              },
+            }}
+            providers={[]}
+            redirectTo={window.location.origin}
+          />
         </CardContent>
       </Card>
     </div>
