@@ -14,13 +14,15 @@ export function MobileNavigation() {
     { icon: Calendar, label: "Events", path: "/events", external: false },
     ...(user ? [{ icon: Users, label: "Members", path: "/members", external: false }] : []),
     { icon: Info, label: "About", path: "/about", external: false },
-    {
-      icon: ShoppingBag,
-      label: "Store",
-      path: "https://outdoorenergyadventures.printful.me/",
-      external: true,
-    },
-    ...(profile?.is_admin ? [{ icon: LayoutDashboard, label: "Admin", path: "/admin", external: false }] : []),
+    ...(profile?.is_admin ? [
+      {
+        icon: ShoppingBag,
+        label: "Store",
+        path: "https://outdoorenergyadventures.printful.me/",
+        external: true,
+      },
+      { icon: LayoutDashboard, label: "Admin", path: "/admin", external: false }
+    ] : []),
   ];
 
   return (

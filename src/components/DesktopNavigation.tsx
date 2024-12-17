@@ -84,14 +84,16 @@ export function DesktopNavigation() {
           {/* Conditional Links */}
           {user && (
             <>
-              {(profile?.is_admin || profile?.is_member) && <StoreLink />}
               {profile?.is_admin && (
-                <Link
-                  to="/admin"
-                  className="hover:text-primary-100 transition-colors"
-                >
-                  Admin
-                </Link>
+                <>
+                  <StoreLink />
+                  <Link
+                    to="/admin"
+                    className="hover:text-primary-100 transition-colors"
+                  >
+                    Admin
+                  </Link>
+                </>
               )}
             </>
           )}
