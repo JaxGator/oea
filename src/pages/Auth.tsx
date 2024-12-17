@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { AuthError, AuthChangeEvent } from "@supabase/supabase-js";
 
 export default function Auth() {
   const { toast } = useToast();
@@ -14,18 +15,34 @@ export default function Auth() {
     // Listen for auth state changes to catch any errors
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((event, session) => {
+    } = supabase.auth.onAuthStateChange((event: AuthChangeEvent, session) => {
       console.log("Auth event:", event);
-      if (event === "SIGNED_UP") {
-        console.log("Sign up session:", session);
+      if (event === "SIGNED_IN") {
+        console.log("Sign in session:", session);
       }
+      if (event === "SIGNED_OUT") {
+        console.log("Sign out session:", session);
+      }
+    });
+
+    // Handle auth errors
+    const handleAuthError = (error: AuthError) => {
+      console.error("Auth error:", error);
+      toast({
+        title: "Authentication Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    };
+
+    supabase.auth.onAuthStateChange((event, session) => {
       if (event === "USER_DELETED") {
-        console.log("User deleted:", session);
+        handleAuthError({ message: "User account was deleted", name: "AuthError" });
       }
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [toast]);
 
   return (
     <div className="min-h-screen bg-[#222222] flex items-center justify-center p-4">
@@ -56,14 +73,6 @@ export default function Auth() {
             }}
             providers={[]}
             redirectTo={redirectTo}
-            onError={(error) => {
-              console.error("Auth error:", error);
-              toast({
-                title: "Authentication Error",
-                description: error.message,
-                variant: "destructive",
-              });
-            }}
           />
         </CardContent>
       </Card>
