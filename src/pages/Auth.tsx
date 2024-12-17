@@ -21,16 +21,18 @@ export default function Auth() {
       if (event === 'SIGNED_OUT') {
         console.log("Sign out session:", session);
       }
+      if (event === 'USER_UPDATED') {
+        console.log("User updated:", session);
+      }
+      // Handle authentication errors
+      if (event === 'USER_DELETED') {
+        toast({
+          title: "Authentication Error",
+          description: "User account not found",
+          variant: "destructive",
+        });
+      }
     });
-
-    const handleAuthError = (error: AuthError) => {
-      console.error("Auth error:", error);
-      toast({
-        title: "Authentication Error",
-        description: error.message,
-        variant: "destructive",
-      });
-    };
 
     return () => {
       subscription.unsubscribe();
@@ -71,6 +73,18 @@ export default function Auth() {
                 sign_in: {
                   email_label: 'Email',
                   password_label: 'Password',
+                  email_input_placeholder: 'Your email address',
+                  password_input_placeholder: 'Your password',
+                  button_label: 'Sign in',
+                  loading_button_label: 'Signing in ...',
+                },
+                sign_up: {
+                  email_label: 'Email',
+                  password_label: 'Password',
+                  email_input_placeholder: 'Your email address',
+                  password_input_placeholder: 'Your password',
+                  button_label: 'Sign up',
+                  loading_button_label: 'Signing up ...',
                 },
               },
             }}
