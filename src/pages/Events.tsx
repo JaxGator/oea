@@ -17,16 +17,16 @@ export default function Events() {
   if (error) {
     toast.error("Failed to load events. Please try again.");
     return (
-      <div className="min-h-screen bg-[#222222] flex items-center justify-center">
-        <div className="text-white">Error loading events. Please try again.</div>
+      <div className="min-h-screen bg-[#F1F0FB] flex items-center justify-center">
+        <div className="text-black">Error loading events. Please try again.</div>
       </div>
     );
   }
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#222222] flex items-center justify-center">
-        <div className="text-white">Loading events...</div>
+      <div className="min-h-screen bg-[#F1F0FB] flex items-center justify-center">
+        <div className="text-black">Loading events...</div>
       </div>
     );
   }
@@ -42,9 +42,9 @@ export default function Events() {
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
   return (
-    <div className="min-h-screen bg-[#222222]">
+    <div className="min-h-screen bg-[#F1F0FB]">
       {/* Header section with responsive padding */}
-      <div className="sticky top-0 z-10 bg-[#222222] border-b border-gray-700 mb-6">
+      <div className="sticky top-0 z-10 bg-[#F1F0FB] border-b border-gray-200 mb-6">
         <div className="max-w-7xl mx-auto px-4 py-4 md:py-6 flex justify-center">
           <h1 className="text-2xl md:text-3xl font-bold text-black">Events</h1>
         </div>
