@@ -8,24 +8,21 @@ import { AuthError, AuthChangeEvent } from "@supabase/supabase-js";
 
 export default function Auth() {
   const { toast } = useToast();
-  // Get the current URL's origin for the redirect
   const redirectTo = `${window.location.origin}/auth/callback`;
 
   useEffect(() => {
-    // Listen for auth state changes to catch any errors
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, session) => {
       console.log("Auth event:", event);
-      if (event === 'SIGNED_IN') {
+      if (event === AuthChangeEvent.SIGNED_IN) {
         console.log("Sign in session:", session);
       }
-      if (event === 'SIGNED_OUT') {
+      if (event === AuthChangeEvent.SIGNED_OUT) {
         console.log("Sign out session:", session);
       }
     });
 
-    // Handle auth errors
     const handleAuthError = (error: AuthError) => {
       console.error("Auth error:", error);
       toast({
@@ -36,7 +33,7 @@ export default function Auth() {
     };
 
     const authChangeSubscription = supabase.auth.onAuthStateChange((event: AuthChangeEvent) => {
-      if (event === "DELETED") {
+      if (event === AuthChangeEvent.USER_DELETED) {
         handleAuthError(new AuthError("User account was deleted"));
       }
     });
