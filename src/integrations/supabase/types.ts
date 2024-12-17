@@ -39,47 +39,6 @@ export type Database = {
         }
         Relationships: []
       }
-      event_comments: {
-        Row: {
-          content: string
-          created_at: string
-          edited_by: string | null
-          event_id: string
-          id: string
-          is_deleted: boolean | null
-          updated_at: string | null
-          user_id: string
-        }
-        Insert: {
-          content: string
-          created_at?: string
-          edited_by?: string | null
-          event_id: string
-          id?: string
-          is_deleted?: boolean | null
-          updated_at?: string | null
-          user_id: string
-        }
-        Update: {
-          content?: string
-          created_at?: string
-          edited_by?: string | null
-          event_id?: string
-          id?: string
-          is_deleted?: boolean | null
-          updated_at?: string | null
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "event_comments_event_id_fkey"
-            columns: ["event_id"]
-            isOneToOne: false
-            referencedRelation: "events"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       event_guests: {
         Row: {
           created_at: string
@@ -179,71 +138,6 @@ export type Database = {
           title?: string
         }
         Relationships: []
-      }
-      media_albums: {
-        Row: {
-          created_at: string
-          created_by: string
-          description: string | null
-          id: string
-          title: string
-        }
-        Insert: {
-          created_at?: string
-          created_by: string
-          description?: string | null
-          id?: string
-          title: string
-        }
-        Update: {
-          created_at?: string
-          created_by?: string
-          description?: string | null
-          id?: string
-          title?: string
-        }
-        Relationships: []
-      }
-      media_items: {
-        Row: {
-          album_id: string | null
-          created_at: string
-          created_by: string
-          description: string | null
-          file_path: string
-          file_type: string
-          id: string
-          title: string | null
-        }
-        Insert: {
-          album_id?: string | null
-          created_at?: string
-          created_by: string
-          description?: string | null
-          file_path: string
-          file_type: string
-          id?: string
-          title?: string | null
-        }
-        Update: {
-          album_id?: string | null
-          created_at?: string
-          created_by?: string
-          description?: string | null
-          file_path?: string
-          file_type?: string
-          id?: string
-          title?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "media_items_album_id_fkey"
-            columns: ["album_id"]
-            isOneToOne: false
-            referencedRelation: "media_albums"
-            referencedColumns: ["id"]
-          },
-        ]
       }
       messages: {
         Row: {
