@@ -3,17 +3,21 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 
 export const PhotoGallery = () => {
+  console.log('PhotoGallery component mounting...');
   const [images, setImages] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchImages = async () => {
+      console.log('Fetching images...');
       try {
         const { data: files, error: listError } = await supabase
           .storage
           .from('gallery')
           .list();
+
+        console.log('Supabase response:', { files, listError });
 
         if (listError) {
           console.error('Error listing files:', listError);
@@ -22,6 +26,7 @@ export const PhotoGallery = () => {
         }
 
         if (!files || files.length === 0) {
+          console.log('No images found');
           setImages([]);
           return;
         }
@@ -30,10 +35,13 @@ export const PhotoGallery = () => {
           file.name.match(/\.(jpg|jpeg|png|gif)$/i)
         );
 
+        console.log('Filtered image files:', imageFiles);
+
         const imageUrls = imageFiles.map(file => 
           `https://qegpuqitjfocyyrivlhv.supabase.co/storage/v1/object/public/gallery/${file.name}`
         );
 
+        console.log('Generated image URLs:', imageUrls);
         setImages(imageUrls);
       } catch (error) {
         console.error('Unexpected error:', error);
@@ -46,9 +54,11 @@ export const PhotoGallery = () => {
     fetchImages();
   }, []);
 
+  console.log('PhotoGallery render state:', { isLoading, error, imageCount: images.length });
+
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center min-h-[200px]">
+      <div className="flex justify-center items-center min-h-[200px] border border-gray-200 rounded-lg">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
       </div>
     );
@@ -56,7 +66,7 @@ export const PhotoGallery = () => {
 
   if (error) {
     return (
-      <div className="text-center text-red-500 py-8">
+      <div className="text-center text-red-500 py-8 border border-red-200 rounded-lg">
         {error}
       </div>
     );
@@ -64,16 +74,16 @@ export const PhotoGallery = () => {
 
   if (images.length === 0) {
     return (
-      <div className="text-center text-gray-500 py-8">
+      <div className="text-center text-gray-500 py-8 border border-gray-200 rounded-lg">
         No images available in the gallery
       </div>
     );
   }
 
   return (
-    <div>
-      <h2 className="text-2xl font-bold text-gray-900 mb-8">Photo Gallery</h2>
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+    <div className="space-y-8">
+      <h2 className="text-2xl font-bold text-gray-900">Photo Gallery</h2>
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         {images.map((imageUrl, index) => (
           <Card key={index} className="overflow-hidden">
             <CardContent className="p-0">
