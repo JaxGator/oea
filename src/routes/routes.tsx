@@ -8,6 +8,7 @@ import Members from "@/pages/Members";
 import Store from "@/pages/Store";
 import Profile from "@/pages/Profile";
 import Admin from "@/pages/Admin";
+import Auth from "@/pages/Auth";
 
 export const router = createBrowserRouter([
   {
@@ -50,5 +51,9 @@ export const router = createBrowserRouter([
         element: <Admin />,
       },
     ],
+  },
+  {
+    path: "/auth",
+    element: <Auth />,
   },
 ]);
