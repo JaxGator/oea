@@ -1,4 +1,4 @@
-import { Menu } from "lucide-react";
+import { Menu, LogIn } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -23,6 +23,7 @@ export function MobileNavigation() {
       },
       { icon: LayoutDashboard, label: "Admin", path: "/admin", external: false }
     ] : []),
+    ...(!user ? [{ icon: LogIn, label: "Sign In", path: "/auth", external: false }] : []),
   ];
 
   return (
