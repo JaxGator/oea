@@ -21,12 +21,16 @@ const fetchFeaturedEvents = async (): Promise<Event[]> => {
       image_url,
       created_at,
       created_by,
-      rsvps:event_rsvps (
+      rsvps:event_rsvps(
         id,
         event_id,
         user_id,
         response,
-        created_at
+        created_at,
+        profiles(
+          full_name,
+          username
+        )
       )
     `)
     .gte('date', today)
@@ -37,7 +41,19 @@ const fetchFeaturedEvents = async (): Promise<Event[]> => {
     throw error;
   }
 
-  return data || [];
+  // Transform the data to match the Event type
+  const transformedData = (data || []).map((event: any): Event => ({
+    ...event,
+    rsvps: event.rsvps?.map((rsvp: any) => ({
+      ...rsvp,
+      profiles: {
+        full_name: rsvp.profiles?.full_name || null,
+        username: rsvp.profiles?.username || ''
+      }
+    })) || []
+  }));
+
+  return transformedData;
 };
 
 export function useFeaturedEvents() {
