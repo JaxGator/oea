@@ -30,21 +30,14 @@ const fetchFeaturedEvents = async (): Promise<Event[]> => {
       )
     `)
     .gte('date', today)
-    .order('date', { ascending: true })
-    .limit(3);
+    .order('date', { ascending: true });
 
   if (error) {
     console.error('Error fetching featured events:', error);
     throw error;
   }
 
-  // Transform and type-check the data
-  const transformedData = (data || []).map((event: any): Event => ({
-    ...event,
-    rsvps: event.rsvps || []
-  }));
-
-  return transformedData;
+  return data || [];
 };
 
 export function useFeaturedEvents() {

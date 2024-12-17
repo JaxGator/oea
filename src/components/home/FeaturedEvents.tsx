@@ -8,13 +8,15 @@ export const FeaturedEvents = () => {
   const navigate = useNavigate();
   const { events, isLoading, userRSVPs, handleRSVP, handleCancelRSVP } = useFeaturedEvents();
 
-  // Filter out past events
-  const upcomingEvents = events.filter(event => {
-    const eventDate = new Date(event.date);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0); // Reset time to start of day for accurate date comparison
-    return eventDate >= today;
-  });
+  // Filter out past events and limit to 4 upcoming events
+  const upcomingEvents = events
+    .filter(event => {
+      const eventDate = new Date(event.date);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0); // Reset time to start of day for accurate date comparison
+      return eventDate >= today;
+    })
+    .slice(0, 4); // Limit to 4 events
 
   return (
     <section className="py-16 bg-[#F1F0FB]">
