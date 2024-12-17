@@ -102,15 +102,18 @@ export function EventCard({ event, onRSVP, onCancelRSVP, userRSVPStatus, onUpdat
   };
 
   const handleCardClick = (e: React.MouseEvent) => {
-    if (
-      (e.target as HTMLElement).tagName === 'BUTTON' ||
-      (e.target as HTMLElement).tagName === 'A' ||
-      (e.target as HTMLElement).closest('button') ||
-      (e.target as HTMLElement).closest('a')
-    ) {
-      return;
+    // Get the closest button or anchor element to the click target
+    const clickedElement = e.target as HTMLElement;
+    const isClickingButton = clickedElement.tagName === 'BUTTON' || 
+                            clickedElement.tagName === 'A' ||
+                            clickedElement.closest('button') ||
+                            clickedElement.closest('a') ||
+                            clickedElement.getAttribute('role') === 'button';
+
+    // If we're not clicking a button or link, navigate to the event details
+    if (!isClickingButton) {
+      navigate(`/events/${event.id}`);
     }
-    navigate(`/events/${event.id}`);
   };
 
   const isFullyBooked = rsvpCount >= event.max_guests;
