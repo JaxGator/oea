@@ -1,20 +1,10 @@
 import { Button } from "@/components/ui/button";
-import { PencilIcon, Trash2Icon } from "lucide-react";
 import { useState } from "react";
 import { GuestList } from "./GuestList";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+import { EventAdminActions } from "./EventAdminActions";
 
 interface Guest {
   firstName: string;
@@ -44,7 +34,6 @@ export function EventActions({
   showDelete,
 }: EventActionsProps) {
   const [guests, setGuests] = useState<Guest[]>([]);
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -85,42 +74,13 @@ export function EventActions({
             {isFullyBooked ? "Fully Booked" : "RSVP Now"}
           </Button>
         ) : null}
-        {isAdmin && (
-          <Button
-            onClick={onEdit}
-            variant="outline"
-            className="px-3"
-          >
-            <PencilIcon className="h-4 w-4" />
-          </Button>
-        )}
-        {showDelete && (
-          <>
-            <Button
-              onClick={() => setShowDeleteDialog(true)}
-              variant="destructive"
-              className="px-3"
-            >
-              <Trash2Icon className="h-4 w-4" />
-            </Button>
-            <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Delete Event</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    Are you sure you want to delete this event? This action cannot be undone.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction onClick={onDelete} className="bg-red-600 hover:bg-red-700">
-                    Delete
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          </>
-        )}
+        
+        <EventAdminActions
+          isAdmin={isAdmin}
+          showDelete={showDelete}
+          onEdit={onEdit}
+          onDelete={onDelete}
+        />
       </div>
     </div>
   );
