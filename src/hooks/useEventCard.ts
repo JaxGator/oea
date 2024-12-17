@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from "react-router-dom";
 
 interface Attendee {
   user_id: string;
@@ -14,6 +15,7 @@ export function useEventCard(eventId: string, onUpdate?: () => void) {
   const [isAdmin, setIsAdmin] = useState(false);
   const [rsvpCount, setRsvpCount] = useState(0);
   const [attendees, setAttendees] = useState<Attendee[]>([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     checkAdminStatus();
@@ -80,15 +82,29 @@ export function useEventCard(eventId: string, onUpdate?: () => void) {
   };
 
   const handleCardClick = (e: React.MouseEvent) => {
-    const clickedElement = e.target as HTMLElement;
-    const isClickingButton = clickedElement.tagName === 'BUTTON' || 
-                            clickedElement.tagName === 'A' ||
-                            clickedElement.closest('button') ||
-                            clickedElement.closest('a') ||
-                            clickedElement.getAttribute('role') === 'button';
+    const target = e.target as HTMLElement;
+    
+    // Check if clicking on or within interactive elements
+    const isInteractive = (
+      target.tagName === 'BUTTON' ||
+      target.tagName === 'A' ||
+      target.tagName === 'INPUT' ||
+      target.tagName === 'TEXTAREA' ||
+      target.closest('button') ||
+      target.closest('a') ||
+      target.closest('input') ||
+      target.closest('textarea') ||
+      target.getAttribute('role') === 'button' ||
+      target.closest('[role="button"]') ||
+      target.closest('[contenteditable="true"]') ||
+      target.closest('dialog') ||
+      target.closest('.dialog') ||
+      target.closest('[data-interactive="true"]')
+    );
 
-    if (!isClickingButton) {
-      window.location.href = `/events/${eventId}`;
+    // Only navigate if not clicking on an interactive element
+    if (!isInteractive) {
+      navigate(`/events/${eventId}`);
     }
   };
 

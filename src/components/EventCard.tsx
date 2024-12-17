@@ -6,7 +6,6 @@ import { AddToCalendar } from "./event/AddToCalendar";
 import { EventCardHeader } from "./event/EventCardHeader";
 import { EventEditDialog } from "./event/EventEditDialog";
 import { useEventCard } from "@/hooks/useEventCard";
-import { useNavigate } from "react-router-dom";
 
 interface EventCardProps {
   event: Event;
@@ -17,7 +16,6 @@ interface EventCardProps {
 }
 
 export function EventCard({ event, onRSVP, onCancelRSVP, userRSVPStatus, onUpdate }: EventCardProps) {
-  const navigate = useNavigate();
   const { 
     showEditDialog,
     setShowEditDialog,
@@ -39,12 +37,12 @@ export function EventCard({ event, onRSVP, onCancelRSVP, userRSVPStatus, onUpdat
 
   return (
     <Card 
-      className="w-full transition-all duration-300 hover:shadow-lg animate-fade-in bg-white cursor-pointer"
+      className="w-full transition-all duration-300 hover:shadow-lg animate-fade-in bg-white"
       onClick={handleCardClick}
     >
       <EventCardHeader imageUrl={event.image_url} title={event.title} />
       
-      <CardContent className="p-4">
+      <CardContent className="p-4" data-interactive="true">
         <EventDetails
           date={event.date}
           time={event.time}
@@ -68,7 +66,7 @@ export function EventCard({ event, onRSVP, onCancelRSVP, userRSVPStatus, onUpdat
         )}
       </CardContent>
 
-      <CardFooter className="p-4 pt-0">
+      <CardFooter className="p-4 pt-0" data-interactive="true">
         <EventActions
           isAdmin={isAdmin && !isPastEvent}
           userRSVPStatus={userRSVPStatus || null}
