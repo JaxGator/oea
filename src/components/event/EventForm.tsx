@@ -47,21 +47,31 @@ export function EventForm({ onSuccess, initialData }: EventFormProps) {
       // Check if user has a profile
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
-        .select('id')
+        .select('id, is_admin')
         .eq('id', user.id)
         .single();
 
       if (profileError || !profile) {
         toast({
           title: "Error",
-          description: "Please complete your profile before creating events",
+          description: "Please complete your profile before managing events",
           variant: "destructive",
         });
         navigate("/profile");
         return;
       }
 
-      if (initialData) {
+      if (!profile.is_admin) {
+        toast({
+          title: "Error",
+          description: "Only admins can manage events",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (initialData?.id) {
+        // Update existing event
         const { error } = await supabase
           .from("events")
           .update({
@@ -82,6 +92,7 @@ export function EventForm({ onSuccess, initialData }: EventFormProps) {
           description: "Event updated successfully",
         });
       } else {
+        // Create new event
         const { error } = await supabase.from("events").insert({
           title: data.title,
           description: data.description,
@@ -103,11 +114,11 @@ export function EventForm({ onSuccess, initialData }: EventFormProps) {
       
       onSuccess();
       form.reset();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error managing event:", error);
       toast({
         title: "Error",
-        description: "Failed to manage event. Please try again.",
+        description: error.message || "Failed to manage event. Please try again.",
         variant: "destructive",
       });
     }
