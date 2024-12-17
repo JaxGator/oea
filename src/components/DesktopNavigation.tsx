@@ -53,6 +53,14 @@ export function DesktopNavigation() {
                   Store
                 </a>
               )}
+              {profile?.is_admin && (
+                <Link
+                  to="/admin"
+                  className="hover:text-primary-100 transition-colors"
+                >
+                  Admin
+                </Link>
+              )}
             </>
           ) : (
             <Link

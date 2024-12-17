@@ -8,6 +8,7 @@ import About from "@/pages/About";
 import Members from "@/pages/Members";
 import Store from "@/pages/Store";
 import Profile from "@/pages/Profile";
+import Admin from "@/pages/Admin";
 
 export const router = createBrowserRouter([
   {
@@ -48,6 +49,10 @@ export const router = createBrowserRouter([
       {
         path: "/profile",
         element: <Profile />,
+      },
+      {
+        path: "/admin",
+        element: <Admin />,
       },
     ],
   },

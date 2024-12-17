@@ -2,7 +2,7 @@ import { Menu } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Home, Calendar, Info, Users, ShoppingBag, UserCircle } from "lucide-react";
+import { Home, Calendar, Info, Users, ShoppingBag, UserCircle, Shield } from "lucide-react";
 import { useAuthState } from "@/hooks/useAuthState";
 
 export function MobileNavigation() {
@@ -23,6 +23,16 @@ export function MobileNavigation() {
               label: "Store",
               path: "https://outdoorenergyadventures.printful.me/",
               external: true,
+            },
+          ]
+        : []),
+      ...(profile?.is_admin
+        ? [
+            {
+              icon: Shield,
+              label: "Admin",
+              path: "/admin",
+              external: false,
             },
           ]
         : []),
