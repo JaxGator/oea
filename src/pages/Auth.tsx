@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { AuthError } from "@supabase/supabase-js";
+import { AuthError, AuthChangeEvent } from "@supabase/supabase-js";
 
 export default function Auth() {
   const { toast } = useToast();
@@ -35,8 +35,8 @@ export default function Auth() {
       });
     };
 
-    const authChangeSubscription = supabase.auth.onAuthStateChange((event) => {
-      if (event === "USER_DELETED") {
+    const authChangeSubscription = supabase.auth.onAuthStateChange((event: AuthChangeEvent) => {
+      if (event === "DELETED") {
         handleAuthError(new AuthError("User account was deleted"));
       }
     });
