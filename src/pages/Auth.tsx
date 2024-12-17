@@ -32,15 +32,8 @@ export default function Auth() {
       });
     };
 
-    const authChangeSubscription = supabase.auth.onAuthStateChange((event) => {
-      if (event === 'SIGNED_OUT') {
-        handleAuthError(new AuthError("User signed out or deleted"));
-      }
-    });
-
     return () => {
       subscription.unsubscribe();
-      authChangeSubscription.data.subscription.unsubscribe();
     };
   }, [toast]);
 
@@ -73,6 +66,14 @@ export default function Auth() {
             }}
             providers={[]}
             redirectTo={redirectTo}
+            onError={(error) => {
+              console.error("Auth UI error:", error);
+              toast({
+                title: "Authentication Error",
+                description: error.message,
+                variant: "destructive",
+              });
+            }}
           />
         </CardContent>
       </Card>
