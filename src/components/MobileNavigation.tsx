@@ -2,43 +2,22 @@ import { Menu } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Home, Calendar, Info, Users, ShoppingBag, UserCircle, Shield } from "lucide-react";
-import { useAuthState } from "@/hooks/useAuthState";
+import { Home, Calendar, Info, Users, ShoppingBag } from "lucide-react";
 
 export function MobileNavigation() {
   const location = useLocation();
-  const { profile, user } = useAuthState();
 
   const navigationItems = [
     { icon: Home, label: "Home", path: "/", external: false },
     { icon: Calendar, label: "Events", path: "/events", external: false },
+    { icon: Users, label: "Members", path: "/members", external: false },
     { icon: Info, label: "About", path: "/about", external: false },
-    ...(user ? [
-      { icon: Users, label: "Members", path: "/members", external: false },
-      { icon: UserCircle, label: "Profile", path: "/profile", external: false },
-      ...(profile?.is_admin || profile?.is_member
-        ? [
-            {
-              icon: ShoppingBag,
-              label: "Store",
-              path: "https://outdoorenergyadventures.printful.me/",
-              external: true,
-            },
-          ]
-        : []),
-      ...(profile?.is_admin
-        ? [
-            {
-              icon: Shield,
-              label: "Admin",
-              path: "/admin",
-              external: false,
-            },
-          ]
-        : []),
-    ] : [
-      { icon: UserCircle, label: "Sign In", path: "/auth", external: false },
-    ]),
+    {
+      icon: ShoppingBag,
+      label: "Store",
+      path: "https://outdoorenergyadventures.printful.me/",
+      external: true,
+    },
   ];
 
   return (
