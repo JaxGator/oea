@@ -23,13 +23,15 @@ export default function Auth() {
       }
       if (event === 'USER_UPDATED') {
         console.log("User updated:", session);
-      }
-      // Handle authentication errors
-      if (event === 'USER_DELETED') {
         toast({
-          title: "Authentication Error",
-          description: "User account not found",
-          variant: "destructive",
+          title: "Profile Updated",
+          description: "Your profile has been updated successfully",
+        });
+      }
+      if (event === 'PASSWORD_RECOVERY') {
+        toast({
+          title: "Password Recovery",
+          description: "Please check your email for password reset instructions",
         });
       }
     });
