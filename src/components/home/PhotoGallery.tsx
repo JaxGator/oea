@@ -10,11 +10,30 @@ export const PhotoGallery = () => {
   useEffect(() => {
     const fetchImages = async () => {
       try {
-        console.log('Fetching images from gallery bucket...');
+        console.log('Starting to fetch images from gallery bucket...');
+        
+        // First, check if we can access the bucket
+        const { data: bucketInfo, error: bucketError } = await supabase
+          .storage
+          .getBucket('gallery');
+          
+        if (bucketError) {
+          console.error('Error accessing gallery bucket:', bucketError);
+          setError('Failed to access gallery bucket');
+          return;
+        }
+        
+        console.log('Successfully accessed gallery bucket:', bucketInfo);
+
+        // Then list the files
         const { data: files, error: listError } = await supabase
           .storage
           .from('gallery')
-          .list();
+          .list('', {
+            limit: 100,
+            offset: 0,
+            sortBy: { column: 'name', order: 'asc' }
+          });
 
         if (listError) {
           console.error('Error listing files:', listError);
@@ -22,7 +41,7 @@ export const PhotoGallery = () => {
           return;
         }
 
-        console.log('Files retrieved:', files);
+        console.log('Files retrieved from bucket:', files);
 
         if (!files || files.length === 0) {
           console.log('No files found in gallery bucket');
@@ -30,22 +49,24 @@ export const PhotoGallery = () => {
           return;
         }
 
-        const imageUrls = files
-          .filter(file => file.name.match(/\.(jpg|jpeg|png|gif)$/i))
-          .map(file => {
-            const { data } = supabase
-              .storage
-              .from('gallery')
-              .getPublicUrl(file.name);
-            console.log(`Generated URL for ${file.name}:`, data.publicUrl);
-            return data.publicUrl;
-          });
+        // Filter and map to public URLs
+        const imageFiles = files.filter(file => file.name.match(/\.(jpg|jpeg|png|gif)$/i));
+        console.log('Filtered image files:', imageFiles);
+
+        const imageUrls = imageFiles.map(file => {
+          const { data } = supabase
+            .storage
+            .from('gallery')
+            .getPublicUrl(file.name);
+          console.log(`Generated URL for ${file.name}:`, data.publicUrl);
+          return data.publicUrl;
+        });
 
         console.log('Final image URLs:', imageUrls);
         setImages(imageUrls);
       } catch (error) {
-        console.error('Error in fetchImages:', error);
-        setError('An error occurred while fetching images');
+        console.error('Unexpected error in fetchImages:', error);
+        setError('An unexpected error occurred while fetching images');
       } finally {
         setIsLoading(false);
       }
