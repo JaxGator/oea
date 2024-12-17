@@ -88,7 +88,7 @@ export const PhotoGallery = () => {
           <li>Loading: {isLoading ? 'true' : 'false'}</li>
           <li>Error: {error || 'none'}</li>
           <li>Images found: {images.length}</li>
-          <li>Supabase URL: {supabase.supabaseUrl}</li>
+          <li>Supabase Config: {process.env.SUPABASE_URL || 'Not available'}</li>
         </ul>
       </div>
 
