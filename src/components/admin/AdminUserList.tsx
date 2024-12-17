@@ -41,11 +41,11 @@ export function AdminUserList() {
     },
   });
 
-  const handleUpdateStatus = async (email: string) => {
+  const handleUpdateStatus = async (username: string) => {
     try {
       setIsUpdating(true);
       const { error } = await supabase.functions.invoke('set-admin-status', {
-        body: { email }
+        body: { username }
       });
 
       if (error) throw error;

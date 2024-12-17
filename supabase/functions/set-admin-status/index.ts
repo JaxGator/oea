@@ -42,13 +42,16 @@ serve(async (req) => {
       )
     }
 
-    const { email } = await req.json()
+    const { username } = await req.json()
 
-    // Get user by email
-    const { data: { users }, error: getUserError } = await supabaseAdmin.auth.admin.listUsers()
-    const targetUser = users.find(u => u.email === email)
+    // Get user by username
+    const { data: targetProfile, error: getUserError } = await supabaseAdmin
+      .from('profiles')
+      .select('id')
+      .eq('username', username)
+      .single()
 
-    if (getUserError || !targetUser) {
+    if (getUserError || !targetProfile) {
       return new Response(
         JSON.stringify({ error: 'User not found' }),
         { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -63,7 +66,7 @@ serve(async (req) => {
         is_approved: true,
         is_member: true 
       })
-      .eq('id', targetUser.id)
+      .eq('id', targetProfile.id)
 
     if (updateError) {
       throw updateError
@@ -76,8 +79,8 @@ serve(async (req) => {
         admin_id: adminUser.id,
         action_type: 'grant_admin',
         target_type: 'user',
-        target_id: targetUser.id,
-        details: { email: targetUser.email }
+        target_id: targetProfile.id,
+        details: { username }
       })
 
     return new Response(

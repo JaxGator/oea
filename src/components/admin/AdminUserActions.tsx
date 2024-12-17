@@ -4,10 +4,10 @@ import { Shield } from "lucide-react";
 interface AdminUserActionsProps {
   profile: {
     id: string;
-    email?: string;
+    username: string;
     is_admin: boolean;
   };
-  onUpdateStatus: (email: string) => void;
+  onUpdateStatus: (username: string) => void;
   isUpdating: boolean;
 }
 
@@ -18,7 +18,7 @@ export function AdminUserActions({ profile, onUpdateStatus, isUpdating }: AdminU
         <Button
           variant="outline"
           size="sm"
-          onClick={() => profile.email && onUpdateStatus(profile.email)}
+          onClick={() => onUpdateStatus(profile.username)}
           disabled={isUpdating}
         >
           <Shield className="h-4 w-4 mr-1" />
