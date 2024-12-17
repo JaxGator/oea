@@ -4,6 +4,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 
 export default function Auth() {
+  // Get the current URL's origin for the redirect
+  const redirectTo = `${window.location.origin}/auth/callback`;
+
   return (
     <div className="min-h-screen bg-[#222222] flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
@@ -32,7 +35,7 @@ export default function Auth() {
               },
             }}
             providers={[]}
-            redirectTo={window.location.origin}
+            redirectTo={redirectTo}
           />
         </CardContent>
       </Card>
