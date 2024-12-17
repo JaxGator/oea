@@ -1,4 +1,4 @@
-import { createBrowserRouter, Outlet } from "react-router-dom";
+import { createBrowserRouter, Outlet, Navigate } from "react-router-dom";
 import { AppLayout } from "@/components/layout/AppLayout";
 import Home from "@/pages/Home";
 import Events from "@/pages/Events";
@@ -9,6 +9,22 @@ import Store from "@/pages/Store";
 import Profile from "@/pages/Profile";
 import Admin from "@/pages/Admin";
 import Auth from "@/pages/Auth";
+import { useAuthState } from "@/hooks/useAuthState";
+
+// Protected route wrapper component
+function ProtectedRoute({ children }: { children: React.ReactNode }) {
+  const { user, isLoading } = useAuthState();
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
+  if (!user) {
+    return <Navigate to="/auth" replace />;
+  }
+
+  return children;
+}
 
 export const router = createBrowserRouter([
   {
@@ -36,7 +52,11 @@ export const router = createBrowserRouter([
       },
       {
         path: "/members",
-        element: <Members />,
+        element: (
+          <ProtectedRoute>
+            <Members />
+          </ProtectedRoute>
+        ),
       },
       {
         path: "/store",
@@ -44,11 +64,19 @@ export const router = createBrowserRouter([
       },
       {
         path: "/profile",
-        element: <Profile />,
+        element: (
+          <ProtectedRoute>
+            <Profile />
+          </ProtectedRoute>
+        ),
       },
       {
         path: "/admin",
-        element: <Admin />,
+        element: (
+          <ProtectedRoute>
+            <Admin />
+          </ProtectedRoute>
+        ),
       },
     ],
   },
