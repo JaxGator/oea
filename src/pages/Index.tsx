@@ -1,4 +1,3 @@
-import { useNavigate } from "react-router-dom";
 import { FeaturedEvents } from "@/components/home/FeaturedEvents";
 import { PhotoGallery } from "@/components/home/PhotoGallery";
 
@@ -8,8 +7,11 @@ export default function Index() {
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
-        <FeaturedEvents />
-        <div className="mt-12">
+        <div className="space-y-8">
+          <div className="p-4 bg-blue-100 rounded">
+            <p>Debug: Index page content</p>
+          </div>
+          <FeaturedEvents />
           <PhotoGallery />
         </div>
       </div>
