@@ -10,9 +10,21 @@ export const PhotoGallery = () => {
   useEffect(() => {
     const fetchImages = async () => {
       try {
-        console.log('Starting to fetch images from gallery bucket...');
+        // Test Supabase connection
+        const { data: testConnection, error: connectionError } = await supabase
+          .from('profiles')
+          .select('id')
+          .limit(1);
+
+        if (connectionError) {
+          console.error('Supabase connection error:', connectionError);
+          setError('Failed to connect to Supabase');
+          return;
+        }
+
+        console.log('Supabase connection successful');
         
-        // First, check if we can access the bucket
+        // Test storage access
         const { data: bucketInfo, error: bucketError } = await supabase
           .storage
           .getBucket('gallery');
@@ -25,15 +37,11 @@ export const PhotoGallery = () => {
         
         console.log('Successfully accessed gallery bucket:', bucketInfo);
 
-        // Then list the files
+        // List files
         const { data: files, error: listError } = await supabase
           .storage
           .from('gallery')
-          .list('', {
-            limit: 100,
-            offset: 0,
-            sortBy: { column: 'name', order: 'asc' }
-          });
+          .list();
 
         if (listError) {
           console.error('Error listing files:', listError);
@@ -41,7 +49,7 @@ export const PhotoGallery = () => {
           return;
         }
 
-        console.log('Files retrieved from bucket:', files);
+        console.log('Files in bucket:', files);
 
         if (!files || files.length === 0) {
           console.log('No files found in gallery bucket');
@@ -49,29 +57,33 @@ export const PhotoGallery = () => {
           return;
         }
 
-        // Filter and map to public URLs
-        const imageFiles = files.filter(file => file.name.match(/\.(jpg|jpeg|png|gif)$/i));
+        // Filter image files
+        const imageFiles = files.filter(file => 
+          file.name.match(/\.(jpg|jpeg|png|gif)$/i)
+        );
+        
         console.log('Filtered image files:', imageFiles);
 
+        // Get public URLs
         const imageUrls = imageFiles.map(file => {
           const { data } = supabase
             .storage
             .from('gallery')
             .getPublicUrl(file.name);
-          console.log(`Generated URL for ${file.name}:`, data.publicUrl);
           return data.publicUrl;
         });
 
-        console.log('Final image URLs:', imageUrls);
+        console.log('Generated image URLs:', imageUrls);
         setImages(imageUrls);
       } catch (error) {
-        console.error('Unexpected error in fetchImages:', error);
-        setError('An unexpected error occurred while fetching images');
+        console.error('Unexpected error:', error);
+        setError('An unexpected error occurred');
       } finally {
         setIsLoading(false);
       }
     };
 
+    console.log('PhotoGallery component mounted');
     fetchImages();
   }, []);
 
