@@ -2,12 +2,12 @@ import { Menu } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Home, Calendar, Info, Users, ShoppingBag } from "lucide-react";
+import { Home, Calendar, Info, Users, ShoppingBag, LayoutDashboard } from "lucide-react";
 import { useAuthState } from "@/hooks/useAuthState";
 
 export function MobileNavigation() {
   const location = useLocation();
-  const { user } = useAuthState();
+  const { user, profile } = useAuthState();
 
   const navigationItems = [
     { icon: Home, label: "Home", path: "/", external: false },
@@ -20,6 +20,7 @@ export function MobileNavigation() {
       path: "https://outdoorenergyadventures.printful.me/",
       external: true,
     },
+    ...(profile?.is_admin ? [{ icon: LayoutDashboard, label: "Admin", path: "/admin", external: false }] : []),
   ];
 
   return (
