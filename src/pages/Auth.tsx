@@ -2,10 +2,30 @@ import { Auth as SupabaseAuth } from "@supabase/auth-ui-react";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
+import { useEffect } from "react";
+import { useToast } from "@/hooks/use-toast";
 
 export default function Auth() {
+  const { toast } = useToast();
   // Get the current URL's origin for the redirect
   const redirectTo = `${window.location.origin}/auth/callback`;
+
+  useEffect(() => {
+    // Listen for auth state changes to catch any errors
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log("Auth event:", event);
+      if (event === "SIGNED_UP") {
+        console.log("Sign up session:", session);
+      }
+      if (event === "USER_DELETED") {
+        console.log("User deleted:", session);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   return (
     <div className="min-h-screen bg-[#222222] flex items-center justify-center p-4">
@@ -36,6 +56,14 @@ export default function Auth() {
             }}
             providers={[]}
             redirectTo={redirectTo}
+            onError={(error) => {
+              console.error("Auth error:", error);
+              toast({
+                title: "Authentication Error",
+                description: error.message,
+                variant: "destructive",
+              });
+            }}
           />
         </CardContent>
       </Card>
