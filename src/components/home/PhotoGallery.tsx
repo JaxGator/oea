@@ -45,7 +45,7 @@ export const PhotoGallery = () => {
           return;
         }
 
-        // Filter and validate image URLs
+        // Filter and construct direct public URLs for images
         const imageUrls = files
           .filter(file => {
             const isImage = file.name.match(/\.(jpg|jpeg|png|gif)$/i);
@@ -53,9 +53,8 @@ export const PhotoGallery = () => {
             return isImage;
           })
           .map(file => {
-            const { data: { publicUrl } } = supabase.storage
-              .from('gallery')
-              .getPublicUrl(file.name);
+            // Construct the direct public URL using the correct format
+            const publicUrl = `${supabase.supabaseUrl}/storage/v1/object/public/gallery/${file.name}`;
             console.log(`Generated URL for ${file.name}:`, publicUrl);
             return publicUrl;
           });
