@@ -71,14 +71,16 @@ export function CreateEventDialog({ open, onOpenChange, onSuccess }: CreateEvent
           Create Event
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Create New Event</DialogTitle>
         </DialogHeader>
-        <EventForm onSuccess={() => {
-          onSuccess?.();
-          handleOpenChange(false);
-        }} />
+        <div className="py-4">
+          <EventForm onSuccess={() => {
+            onSuccess?.();
+            handleOpenChange(false);
+          }} />
+        </div>
       </DialogContent>
     </Dialog>
   );
