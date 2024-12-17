@@ -13,13 +13,14 @@ interface AdminUserActionsProps {
 
 export function AdminUserActions({ profile, onUpdateStatus, isUpdating }: AdminUserActionsProps) {
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center">
       {!profile.is_admin && (
         <Button
           variant="outline"
           size="sm"
           onClick={() => onUpdateStatus(profile.username)}
           disabled={isUpdating}
+          className="w-full sm:w-auto whitespace-nowrap"
         >
           <Shield className="h-4 w-4 mr-1" />
           Make Admin
