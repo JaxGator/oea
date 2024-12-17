@@ -22,6 +22,7 @@ export const PhotoGallery = () => {
         if (listError) {
           console.error('Error listing files:', listError);
           setError('Failed to fetch images');
+          setIsLoading(false);
           return;
         }
 
@@ -30,6 +31,7 @@ export const PhotoGallery = () => {
         if (!files || files.length === 0) {
           console.log('No files found in gallery bucket');
           setImages([]);
+          setIsLoading(false);
           return;
         }
 
@@ -62,7 +64,7 @@ export const PhotoGallery = () => {
 
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center min-h-[200px]">
+      <div className="flex justify-center items-center min-h-[200px] border border-dashed border-gray-300 rounded-lg m-4">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
       </div>
     );
@@ -70,7 +72,7 @@ export const PhotoGallery = () => {
 
   if (error) {
     return (
-      <div className="text-center text-red-500 py-8">
+      <div className="text-center text-red-500 py-8 border border-dashed border-red-300 rounded-lg m-4">
         {error}
       </div>
     );
@@ -81,7 +83,9 @@ export const PhotoGallery = () => {
       <div className="container mx-auto px-4">
         <h2 className="text-2xl font-bold text-gray-900 mb-8">Photo Gallery</h2>
         {images.length === 0 ? (
-          <p className="text-center text-gray-500">No images available in the gallery</p>
+          <div className="text-center text-gray-500 py-8 border border-dashed border-gray-300 rounded-lg">
+            No images available in the gallery
+          </div>
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {images.map((imageUrl, index) => (
@@ -104,4 +108,4 @@ export const PhotoGallery = () => {
       </div>
     </section>
   );
-};
+}
