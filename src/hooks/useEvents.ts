@@ -14,7 +14,7 @@ export const useEvents = (selectedDate?: Date) => {
             id,
             response,
             user_id,
-            profiles:profiles!event_rsvps_user_id_fkey (
+            profiles (
               full_name,
               username
             )
