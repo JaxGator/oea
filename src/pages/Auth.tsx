@@ -36,7 +36,7 @@ export default function Auth() {
     };
 
     const authChangeSubscription = supabase.auth.onAuthStateChange((event) => {
-      if (event === 'USER_DELETED' as const) {
+      if (event === "USER_DELETED") {
         handleAuthError(new AuthError("User account was deleted"));
       }
     });
