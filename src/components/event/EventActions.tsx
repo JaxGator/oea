@@ -2,6 +2,9 @@ import { Button } from "@/components/ui/button";
 import { PencilIcon, Trash2Icon } from "lucide-react";
 import { useState } from "react";
 import { GuestList } from "./GuestList";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -42,8 +45,20 @@ export function EventActions({
 }: EventActionsProps) {
   const [guests, setGuests] = useState<Guest[]>([]);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const navigate = useNavigate();
+  const { toast } = useToast();
 
-  const handleRSVP = () => {
+  const handleRSVP = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      toast({
+        title: "Error",
+        description: "Please log in to RSVP",
+        variant: "destructive",
+      });
+      navigate("/auth");
+      return;
+    }
     onRSVP(guests);
   };
 
