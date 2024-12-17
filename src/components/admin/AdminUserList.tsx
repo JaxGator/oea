@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/table";
 import { Shield, UserCheck, Users } from "lucide-react";
 import { AdminUserActions } from "./AdminUserActions";
+import { EditMemberDialog } from "../members/EditMemberDialog";
 
 interface Profile {
   id: string;
@@ -28,6 +29,7 @@ interface Profile {
 export function AdminUserList() {
   const { toast } = useToast();
   const [isUpdating, setIsUpdating] = useState(false);
+  const [selectedMember, setSelectedMember] = useState<Profile | null>(null);
 
   const { data: profiles = [], isLoading, refetch } = useQuery({
     queryKey: ['admin-profiles'],
@@ -116,16 +118,32 @@ export function AdminUserList() {
                 </div>
               </TableCell>
               <TableCell>
-                <AdminUserActions
-                  profile={profile}
-                  onUpdateStatus={handleUpdateStatus}
-                  isUpdating={isUpdating}
-                />
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setSelectedMember(profile)}
+                  >
+                    Edit
+                  </Button>
+                  <AdminUserActions
+                    profile={profile}
+                    onUpdateStatus={handleUpdateStatus}
+                    isUpdating={isUpdating}
+                  />
+                </div>
               </TableCell>
             </TableRow>
           ))}
         </TableBody>
       </Table>
+
+      <EditMemberDialog
+        member={selectedMember!}
+        open={!!selectedMember}
+        onOpenChange={(open) => !open && setSelectedMember(null)}
+        onUpdate={refetch}
+      />
     </div>
   );
 }

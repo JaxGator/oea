@@ -214,6 +214,19 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_update_user: {
+        Args: {
+          admin_id: string
+          target_user_id: string
+          new_username: string
+          new_full_name: string
+          new_avatar_url: string
+          new_is_admin: boolean
+          new_is_approved: boolean
+          new_is_member: boolean
+        }
+        Returns: undefined
+      }
       create_profile: {
         Args: {
           user_id: string
