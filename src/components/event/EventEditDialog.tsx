@@ -1,6 +1,7 @@
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -20,6 +21,9 @@ export function EventEditDialog({ event, open, onOpenChange, onSuccess }: EventE
       <DialogContent className="max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Edit Event</DialogTitle>
+          <DialogDescription>
+            Make changes to the event details below.
+          </DialogDescription>
         </DialogHeader>
         <div className="py-4">
           <EventForm
@@ -31,9 +35,12 @@ export function EventEditDialog({ event, open, onOpenChange, onSuccess }: EventE
               time: event.time,
               location: event.location,
               max_guests: event.max_guests,
-              image_url: event.image_url,
+              image_url: event.image_url || "",
             }}
-            onSuccess={onSuccess}
+            onSuccess={() => {
+              onSuccess();
+              onOpenChange(false);
+            }}
           />
         </div>
       </DialogContent>

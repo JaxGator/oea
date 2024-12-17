@@ -44,7 +44,7 @@ export function EventForm({ onSuccess, initialData }: EventFormProps) {
         return;
       }
 
-      // Check if user has a profile
+      // Check if user has a profile and is admin
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('id, is_admin')
@@ -70,22 +70,24 @@ export function EventForm({ onSuccess, initialData }: EventFormProps) {
         return;
       }
 
+      const eventData = {
+        title: data.title,
+        description: data.description,
+        date: data.date,
+        time: data.time,
+        location: data.location,
+        max_guests: data.max_guests,
+        image_url: data.image_url,
+      };
+
       if (initialData?.id) {
         // Update existing event
-        const { error } = await supabase
+        const { error: updateError } = await supabase
           .from("events")
-          .update({
-            title: data.title,
-            description: data.description,
-            date: data.date,
-            time: data.time,
-            location: data.location,
-            max_guests: data.max_guests,
-            image_url: data.image_url,
-          })
+          .update(eventData)
           .eq("id", initialData.id);
 
-        if (error) throw error;
+        if (updateError) throw updateError;
 
         toast({
           title: "Success",
@@ -93,18 +95,14 @@ export function EventForm({ onSuccess, initialData }: EventFormProps) {
         });
       } else {
         // Create new event
-        const { error } = await supabase.from("events").insert({
-          title: data.title,
-          description: data.description,
-          date: data.date,
-          time: data.time,
-          location: data.location,
-          max_guests: data.max_guests,
-          created_by: user.id,
-          image_url: data.image_url,
-        });
+        const { error: createError } = await supabase
+          .from("events")
+          .insert({
+            ...eventData,
+            created_by: user.id,
+          });
 
-        if (error) throw error;
+        if (createError) throw createError;
 
         toast({
           title: "Success",
@@ -113,7 +111,9 @@ export function EventForm({ onSuccess, initialData }: EventFormProps) {
       }
       
       onSuccess();
-      form.reset();
+      if (!initialData) {
+        form.reset();
+      }
     } catch (error: any) {
       console.error("Error managing event:", error);
       toast({
