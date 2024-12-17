@@ -5,15 +5,13 @@ import { PhotoGallery } from "@/components/home/PhotoGallery";
 export default function Index() {
   const navigate = useNavigate();
   
-  console.log('Index page rendering...'); // Add debug log
+  console.log('Index page rendering...'); // Debug log
 
   return (
-    <div className="min-h-screen bg-[#222222]">
+    <div className="min-h-screen">
       <div className="bg-white">
         <FeaturedEvents />
-        <div>
-          <PhotoGallery />
-        </div>
+        <PhotoGallery />
       </div>
     </div>
   );
