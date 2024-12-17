@@ -66,13 +66,13 @@ export default function Auth() {
             }}
             providers={[]}
             redirectTo={redirectTo}
-            onError={(error) => {
-              console.error("Auth UI error:", error);
-              toast({
-                title: "Authentication Error",
-                description: error.message,
-                variant: "destructive",
-              });
+            localization={{
+              variables: {
+                sign_in: {
+                  email_label: 'Email',
+                  password_label: 'Password',
+                },
+              },
             }}
           />
         </CardContent>
