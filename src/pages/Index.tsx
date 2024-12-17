@@ -8,13 +8,11 @@ export default function Index() {
   console.log('Index page rendering...'); // Debug log
 
   return (
-    <main className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background">
       <FeaturedEvents />
-      <section className="border-t border-gray-200">
-        <div className="container mx-auto px-4">
-          <PhotoGallery />
-        </div>
-      </section>
-    </main>
+      <div className="container mx-auto px-4 py-8">
+        <PhotoGallery />
+      </div>
+    </div>
   );
 }
