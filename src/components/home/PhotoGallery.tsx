@@ -10,33 +10,6 @@ export const PhotoGallery = () => {
   useEffect(() => {
     const fetchImages = async () => {
       try {
-        // Test Supabase connection
-        const { data: testConnection, error: connectionError } = await supabase
-          .from('profiles')
-          .select('id')
-          .limit(1);
-
-        if (connectionError) {
-          console.error('Supabase connection error:', connectionError);
-          setError('Failed to connect to Supabase');
-          return;
-        }
-
-        console.log('Supabase connection successful');
-        
-        // Test storage access
-        const { data: bucketInfo, error: bucketError } = await supabase
-          .storage
-          .getBucket('gallery');
-          
-        if (bucketError) {
-          console.error('Error accessing gallery bucket:', bucketError);
-          setError('Failed to access gallery bucket');
-          return;
-        }
-        
-        console.log('Successfully accessed gallery bucket:', bucketInfo);
-
         // List files
         const { data: files, error: listError } = await supabase
           .storage
@@ -66,14 +39,12 @@ export const PhotoGallery = () => {
 
         // Get public URLs
         const imageUrls = imageFiles.map(file => {
-          const { data } = supabase
-            .storage
-            .from('gallery')
-            .getPublicUrl(file.name);
-          return data.publicUrl;
+          const url = `https://qegpuqitjfocyyrivlhv.supabase.co/storage/v1/object/public/gallery/${file.name}`;
+          console.log('Generated URL:', url); // Log each URL as it's generated
+          return url;
         });
 
-        console.log('Generated image URLs:', imageUrls);
+        console.log('All image URLs:', imageUrls);
         setImages(imageUrls);
       } catch (error) {
         console.error('Unexpected error:', error);
