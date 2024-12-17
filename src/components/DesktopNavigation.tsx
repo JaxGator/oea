@@ -9,7 +9,6 @@ import { useCallback } from "react";
 // Reusable Navigation Links
 const NAV_LINKS = [
   { to: "/events", label: "Events" },
-  { to: "/members", label: "Members" },
   { to: "/about", label: "About" },
 ];
 
@@ -19,7 +18,7 @@ const STORE_LINK = {
 };
 
 // Component for rendering navigation links
-function NavigationLinks({ links }: { links: { to: string; label: string }[] }) {
+function NavigationLinks({ links, user }: { links: { to: string; label: string }[], user: any }) {
   return (
     <ul className="flex space-x-8">
       {links.map((link) => (
@@ -32,6 +31,16 @@ function NavigationLinks({ links }: { links: { to: string; label: string }[] }) 
           </Link>
         </li>
       ))}
+      {user && (
+        <li>
+          <Link
+            to="/members"
+            className="hover:text-primary-100 transition-colors"
+          >
+            Members
+          </Link>
+        </li>
+      )}
     </ul>
   );
 }
@@ -70,7 +79,7 @@ export function DesktopNavigation() {
               className="h-12"
             />
           </Link>
-          <NavigationLinks links={NAV_LINKS} />
+          <NavigationLinks links={NAV_LINKS} user={user} />
 
           {/* Conditional Links */}
           {user && (
