@@ -18,12 +18,13 @@ import { EditMemberDialog } from "../members/EditMemberDialog";
 
 interface Profile {
   id: string;
-  email: string;
   username: string;
   full_name: string | null;
+  avatar_url: string | null;
   is_admin: boolean;
   is_approved: boolean;
   is_member: boolean;
+  created_at: string;
 }
 
 export function AdminUserList() {
@@ -138,12 +139,14 @@ export function AdminUserList() {
         </TableBody>
       </Table>
 
-      <EditMemberDialog
-        member={selectedMember!}
-        open={!!selectedMember}
-        onOpenChange={(open) => !open && setSelectedMember(null)}
-        onUpdate={refetch}
-      />
+      {selectedMember && (
+        <EditMemberDialog
+          member={selectedMember}
+          open={!!selectedMember}
+          onOpenChange={(open) => !open && setSelectedMember(null)}
+          onUpdate={refetch}
+        />
+      )}
     </div>
   );
 }
