@@ -12,19 +12,33 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, 
   auth: {
     persistSession: true,
     autoRefreshToken: true,
+    detectSessionInUrl: true
   },
   global: {
     headers: {
       'Content-Type': 'application/json',
-    },
+      'X-Client-Info': 'supabase-js-web'
+    }
   },
+  db: {
+    schema: 'public'
+  }
 });
 
 // Add a simple test function to verify connection
 export const testSupabaseConnection = async () => {
   try {
-    const { data, error } = await supabase.from('profiles').select('id').limit(1);
-    if (error) throw error;
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('id')
+      .limit(1)
+      .single();
+      
+    if (error) {
+      console.error('Supabase connection test error:', error);
+      return false;
+    }
+    
     console.log('Supabase connection test successful:', data);
     return true;
   } catch (error) {

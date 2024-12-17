@@ -16,6 +16,7 @@ export const PhotoGallery = () => {
         // Test connection first
         const connected = await testSupabaseConnection();
         setIsConnected(connected);
+        console.log('Connection status:', connected);
         
         if (!connected) {
           throw new Error('Unable to connect to Supabase');
@@ -52,16 +53,21 @@ export const PhotoGallery = () => {
             return isImage;
           })
           .map(file => {
-            const url = supabase.storage
+            const { data: { publicUrl } } = supabase.storage
               .from('gallery')
               .getPublicUrl(file.name);
-            console.log(`Generated URL for ${file.name}:`, url);
-            return url.data.publicUrl;
+            console.log(`Generated URL for ${file.name}:`, publicUrl);
+            return publicUrl;
           });
 
         console.log('Final image URLs:', imageUrls);
         setImages(imageUrls);
-        toast.success(`Loaded ${imageUrls.length} images`);
+        
+        if (imageUrls.length > 0) {
+          toast.success(`Loaded ${imageUrls.length} images`);
+        } else {
+          toast.info('No images found in gallery');
+        }
       } catch (error) {
         console.error('Gallery error:', error);
         const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
