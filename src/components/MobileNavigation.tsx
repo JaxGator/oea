@@ -1,13 +1,18 @@
-import { Menu, LogIn } from "lucide-react";
+import { Menu, LogIn, LogOut } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Home, Calendar, Info, Users, ShoppingBag, LayoutDashboard } from "lucide-react";
 import { useAuthState } from "@/hooks/useAuthState";
+import { supabase } from "@/integrations/supabase/client";
 
 export function MobileNavigation() {
   const location = useLocation();
   const { user, profile } = useAuthState();
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+  };
 
   const navigationItems = [
     { icon: Home, label: "Home", path: "/", external: false },
@@ -24,6 +29,13 @@ export function MobileNavigation() {
       { icon: LayoutDashboard, label: "Admin", path: "/admin", external: false }
     ] : []),
     ...(!user ? [{ icon: LogIn, label: "Sign In", path: "/auth", external: false }] : []),
+    ...(user ? [{ 
+      icon: LogOut, 
+      label: "Sign Out", 
+      path: "#",
+      onClick: handleSignOut,
+      external: false 
+    }] : []),
   ];
 
   return (
@@ -40,7 +52,7 @@ export function MobileNavigation() {
         </SheetTrigger>
         <SheetContent side="right" className="w-[250px] p-0">
           <nav className="flex flex-col p-4">
-            {navigationItems.map(({ icon: Icon, label, path, external }) => 
+            {navigationItems.map(({ icon: Icon, label, path, external, onClick }) => 
               external ? (
                 <a
                   key={path}
@@ -52,6 +64,15 @@ export function MobileNavigation() {
                   <Icon className="h-5 w-5" />
                   <span className="font-medium">{label}</span>
                 </a>
+              ) : onClick ? (
+                <button
+                  key={path}
+                  onClick={onClick}
+                  className="flex items-center gap-3 rounded-lg px-3 py-2 transition-colors hover:bg-primary/10 w-full text-left"
+                >
+                  <Icon className="h-5 w-5" />
+                  <span className="font-medium">{label}</span>
+                </button>
               ) : (
                 <Link
                   key={path}
