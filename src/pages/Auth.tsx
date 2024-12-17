@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { AuthError, AuthChangeEvent } from "@supabase/supabase-js";
+import { AuthError, AuthChangeEvent, User } from "@supabase/supabase-js";
 
 export default function Auth() {
   const { toast } = useToast();
@@ -26,7 +26,15 @@ export default function Auth() {
     });
 
     // Handle auth errors
-    const handleAuthError = (error: AuthError) => {
+    const handleAuthError = () => {
+      const error: AuthError = {
+        name: "AuthError",
+        message: "User account was deleted",
+        status: 400,
+        code: "USER_DELETED",
+        __isAuthError: true
+      };
+      
       console.error("Auth error:", error);
       toast({
         title: "Authentication Error",
@@ -35,13 +43,16 @@ export default function Auth() {
       });
     };
 
-    supabase.auth.onAuthStateChange((event, session) => {
-      if (event === "USER_DELETED") {
-        handleAuthError({ message: "User account was deleted", name: "AuthError" });
+    const authChangeSubscription = supabase.auth.onAuthStateChange((event: AuthChangeEvent) => {
+      if (event === "USER_DELETED" as AuthChangeEvent) {
+        handleAuthError();
       }
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      subscription.unsubscribe();
+      authChangeSubscription.data.subscription.unsubscribe();
+    };
   }, [toast]);
 
   return (
