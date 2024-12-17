@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { supabase } from "@/integrations/supabase/client";
+import { supabase, testSupabaseConnection } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { toast } from "sonner";
 
@@ -7,21 +7,18 @@ export const PhotoGallery = () => {
   const [images, setImages] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isConnected, setIsConnected] = useState<boolean | null>(null);
 
   useEffect(() => {
-    const fetchImages = async () => {
-      console.log('Starting image fetch process...');
+    const initializeGallery = async () => {
+      console.log('Starting gallery initialization...');
       try {
-        // Test Supabase connection
-        const { data: testData, error: testError } = await supabase
-          .from('profiles')
-          .select('id')
-          .limit(1);
+        // Test connection first
+        const connected = await testSupabaseConnection();
+        setIsConnected(connected);
         
-        console.log('Supabase connection test:', { testData, testError });
-
-        if (testError) {
-          throw new Error('Supabase connection failed');
+        if (!connected) {
+          throw new Error('Unable to connect to Supabase');
         }
 
         // Fetch images from gallery bucket
@@ -75,7 +72,7 @@ export const PhotoGallery = () => {
       }
     };
 
-    fetchImages();
+    initializeGallery();
   }, []);
 
   return (
@@ -86,9 +83,9 @@ export const PhotoGallery = () => {
         <p>Debug Information:</p>
         <ul className="list-disc pl-4">
           <li>Loading: {isLoading ? 'true' : 'false'}</li>
+          <li>Connection Status: {isConnected === null ? 'testing' : isConnected ? 'connected' : 'disconnected'}</li>
           <li>Error: {error || 'none'}</li>
           <li>Images found: {images.length}</li>
-          <li>Supabase Config: {process.env.SUPABASE_URL || 'Not available'}</li>
         </ul>
       </div>
 

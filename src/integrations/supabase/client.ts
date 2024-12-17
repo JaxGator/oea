@@ -7,4 +7,28 @@ const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 if (!SUPABASE_URL) throw new Error('Missing SUPABASE_URL');
 if (!SUPABASE_ANON_KEY) throw new Error('Missing SUPABASE_ANON_KEY');
 
-export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY);
+// Initialize the Supabase client with additional options
+export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+  },
+  global: {
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  },
+});
+
+// Add a simple test function to verify connection
+export const testSupabaseConnection = async () => {
+  try {
+    const { data, error } = await supabase.from('profiles').select('id').limit(1);
+    if (error) throw error;
+    console.log('Supabase connection test successful:', data);
+    return true;
+  } catch (error) {
+    console.error('Supabase connection test failed:', error);
+    return false;
+  }
+};
