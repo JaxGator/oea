@@ -23,7 +23,8 @@ export function EventCard({ event, onRSVP, onCancelRSVP, userRSVPStatus, onUpdat
     rsvpCount,
     attendees,
     handleEditSuccess,
-    handleCardClick
+    handleCardClick,
+    handleDelete
   } = useEventCard(event.id, onUpdate);
 
   const isFullyBooked = rsvpCount >= event.max_guests;
@@ -74,7 +75,9 @@ export function EventCard({ event, onRSVP, onCancelRSVP, userRSVPStatus, onUpdat
           onRSVP={(guests) => onRSVP(event.id, guests)}
           onCancelRSVP={() => onCancelRSVP(event.id)}
           onEdit={() => setShowEditDialog(true)}
+          onDelete={handleDelete}
           isPastEvent={isPastEvent}
+          showDelete={isAdmin && isPastEvent}
         />
       </CardFooter>
 

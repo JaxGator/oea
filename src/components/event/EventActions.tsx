@@ -1,10 +1,17 @@
 import { Button } from "@/components/ui/button";
-import { PencilIcon } from "lucide-react";
+import { PencilIcon, Trash2Icon } from "lucide-react";
 import { useState } from "react";
 import { GuestList } from "./GuestList";
-import { supabase } from "@/integrations/supabase/client";
-import { useEffect } from "react";
-import { toast } from "sonner";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface Guest {
   firstName: string;
@@ -17,7 +24,9 @@ interface EventActionsProps {
   onRSVP: (guests: Guest[]) => void;
   onCancelRSVP: () => void;
   onEdit: () => void;
+  onDelete: () => void;
   isPastEvent: boolean;
+  showDelete: boolean;
 }
 
 export function EventActions({
@@ -27,10 +36,12 @@ export function EventActions({
   onRSVP,
   onCancelRSVP,
   onEdit,
+  onDelete,
   isPastEvent,
+  showDelete,
 }: EventActionsProps) {
   const [guests, setGuests] = useState<Guest[]>([]);
-  const [isApproved, setIsApproved] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   const handleRSVP = () => {
     onRSVP(guests);
@@ -67,6 +78,33 @@ export function EventActions({
           >
             <PencilIcon className="h-4 w-4" />
           </Button>
+        )}
+        {showDelete && (
+          <>
+            <Button
+              onClick={() => setShowDeleteDialog(true)}
+              variant="destructive"
+              className="px-3"
+            >
+              <Trash2Icon className="h-4 w-4" />
+            </Button>
+            <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Delete Event</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Are you sure you want to delete this event? This action cannot be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={onDelete} className="bg-red-600 hover:bg-red-700">
+                    Delete
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </>
         )}
       </div>
     </div>

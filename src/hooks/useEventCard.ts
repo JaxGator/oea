@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 interface Attendee {
   user_id: string;
@@ -81,6 +82,23 @@ export function useEventCard(eventId: string, onUpdate?: () => void) {
     if (onUpdate) onUpdate();
   };
 
+  const handleDelete = async () => {
+    try {
+      const { error } = await supabase
+        .from('events')
+        .delete()
+        .eq('id', eventId);
+
+      if (error) throw error;
+
+      toast.success("Event deleted successfully");
+      if (onUpdate) onUpdate();
+    } catch (error: any) {
+      console.error('Error deleting event:', error);
+      toast.error(error.message || "Failed to delete event");
+    }
+  };
+
   const handleCardClick = (e: React.MouseEvent) => {
     const target = e.target as HTMLElement;
     
@@ -115,6 +133,7 @@ export function useEventCard(eventId: string, onUpdate?: () => void) {
     rsvpCount,
     attendees,
     handleEditSuccess,
-    handleCardClick
+    handleCardClick,
+    handleDelete
   };
 }
