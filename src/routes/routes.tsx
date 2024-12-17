@@ -1,7 +1,6 @@
 import { createBrowserRouter, Outlet } from "react-router-dom";
 import { AppLayout } from "@/components/layout/AppLayout";
 import Home from "@/pages/Home";
-import Auth from "@/pages/Auth";
 import Events from "@/pages/Events";
 import EventDetails from "@/pages/EventDetails";
 import About from "@/pages/About";
@@ -21,10 +20,6 @@ export const router = createBrowserRouter([
       {
         path: "/",
         element: <Home />,
-      },
-      {
-        path: "/auth",
-        element: <Auth />,
       },
       {
         path: "/events",

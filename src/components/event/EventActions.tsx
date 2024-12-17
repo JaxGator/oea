@@ -2,7 +2,6 @@ import { Button } from "@/components/ui/button";
 import { PencilIcon } from "lucide-react";
 import { useState } from "react";
 import { GuestList } from "./GuestList";
-import { useAuthState } from "@/hooks/useAuthState";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect } from "react";
 import { toast } from "sonner";
@@ -32,34 +31,8 @@ export function EventActions({
 }: EventActionsProps) {
   const [guests, setGuests] = useState<Guest[]>([]);
   const [isApproved, setIsApproved] = useState(false);
-  const { user } = useAuthState();
-
-  useEffect(() => {
-    const checkApprovalStatus = async () => {
-      if (!user) return;
-      
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('is_approved')
-        .eq('id', user.id)
-        .single();
-      
-      if (error) {
-        console.error('Error checking approval status:', error);
-        return;
-      }
-      
-      setIsApproved(!!data?.is_approved);
-    };
-
-    checkApprovalStatus();
-  }, [user]);
 
   const handleRSVP = () => {
-    if (!isApproved) {
-      toast.error("You need to be approved by an admin before you can RSVP to events.");
-      return;
-    }
     onRSVP(guests);
   };
 
@@ -80,10 +53,10 @@ export function EventActions({
         ) : !isPastEvent ? (
           <Button
             onClick={handleRSVP}
-            disabled={isFullyBooked || !isApproved}
+            disabled={isFullyBooked}
             className="flex-1 bg-[#0d97d1] hover:bg-[#0d97d1]/90 text-white"
           >
-            {isFullyBooked ? "Fully Booked" : !isApproved ? "Approval Required" : "RSVP Now"}
+            {isFullyBooked ? "Fully Booked" : "RSVP Now"}
           </Button>
         ) : null}
         {isAdmin && (

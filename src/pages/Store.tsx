@@ -1,14 +1,6 @@
-import { useAuthState } from "@/hooks/useAuthState";
-import { Navigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 
 export default function Store() {
-  const { profile } = useAuthState();
-
-  if (!profile?.is_admin) {
-    return <Navigate to="/" replace />;
-  }
-
   return (
     <div className="container mx-auto px-4 py-8">
       <Card className="p-6">

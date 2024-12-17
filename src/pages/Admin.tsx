@@ -1,19 +1,11 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { AdminUserList } from "@/components/admin/AdminUserList";
-import { useAuthState } from "@/hooks/useAuthState";
-import { Navigate } from "react-router-dom";
 
 export default function Admin() {
-  const { profile } = useAuthState();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(true);
-
-  // Redirect non-admin users
-  if (!profile?.is_admin) {
-    return <Navigate to="/" replace />;
-  }
 
   return (
     <div className="min-h-screen bg-[#222222] py-12 px-4">
