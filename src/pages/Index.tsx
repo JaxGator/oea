@@ -9,7 +9,7 @@ export default function Index() {
 
   return (
     <div className="min-h-screen">
-      <div className="bg-white">
+      <div>
         <FeaturedEvents />
         <PhotoGallery />
       </div>

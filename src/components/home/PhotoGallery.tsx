@@ -8,9 +8,12 @@ export const PhotoGallery = () => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    console.log('PhotoGallery component mounted'); // Debug log
+    
     const fetchImages = async () => {
       try {
-        // List files
+        console.log('Fetching images...'); // Debug log
+        
         const { data: files, error: listError } = await supabase
           .storage
           .from('gallery')
@@ -40,7 +43,7 @@ export const PhotoGallery = () => {
         // Get public URLs
         const imageUrls = imageFiles.map(file => {
           const url = `https://qegpuqitjfocyyrivlhv.supabase.co/storage/v1/object/public/gallery/${file.name}`;
-          console.log('Generated URL:', url); // Log each URL as it's generated
+          console.log('Generated URL:', url);
           return url;
         });
 
@@ -54,7 +57,6 @@ export const PhotoGallery = () => {
       }
     };
 
-    console.log('PhotoGallery component mounted');
     fetchImages();
   }, []);
 
@@ -75,7 +77,7 @@ export const PhotoGallery = () => {
   }
 
   return (
-    <section className="py-16 bg-white">
+    <section className="py-16">
       <div className="container mx-auto px-4">
         <h2 className="text-2xl font-bold text-gray-900 mb-8">Photo Gallery</h2>
         {images.length === 0 ? (
