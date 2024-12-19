@@ -17,11 +17,9 @@ export function GalleryManager() {
 
   const fetchImages = async () => {
     try {
-      const { data: { publicUrl }, error: bucketError } = supabase.storage
+      const { data: bucketData } = await supabase.storage
         .from('gallery')
         .getPublicUrl('');
-
-      if (bucketError) throw bucketError;
 
       const { data, error } = await supabase.storage
         .from('gallery')
@@ -31,7 +29,7 @@ export function GalleryManager() {
 
       const imageUrls = data
         .filter(file => file.name.match(/\.(jpg|jpeg|png|gif)$/i))
-        .map(file => `${publicUrl}/${file.name}`);
+        .map(file => `${bucketData.publicUrl}/${file.name}`);
 
       setImages(imageUrls);
       setIsLoading(false);
@@ -42,6 +40,7 @@ export function GalleryManager() {
         description: "Failed to load gallery images",
         variant: "destructive",
       });
+      setIsLoading(false);
     }
   };
 
@@ -54,7 +53,7 @@ export function GalleryManager() {
 
       const file = event.target.files[0];
       const fileExt = file.name.split('.').pop();
-      const filePath = `${Math.random()}.${fileExt}`;
+      const filePath = `${crypto.randomUUID()}.${fileExt}`;
 
       const { error: uploadError } = await supabase.storage
         .from('gallery')
