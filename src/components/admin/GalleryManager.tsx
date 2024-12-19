@@ -15,10 +15,6 @@ export function GalleryManager() {
 
   const fetchImages = async () => {
     try {
-      const { data: bucketData } = await supabase.storage
-        .from('gallery')
-        .getPublicUrl('');
-
       const { data: galleryData, error: galleryError } = await supabase
         .from('gallery_images')
         .select('*')
@@ -26,12 +22,20 @@ export function GalleryManager() {
 
       if (galleryError) throw galleryError;
 
-      const imageUrls = galleryData.map(item => ({
-        url: `${bucketData.publicUrl}/${item.file_name}`,
-        id: item.id,
-        displayOrder: item.display_order,
-        fileName: item.file_name
-      }));
+      const imageUrls = await Promise.all(
+        galleryData.map(async (item) => {
+          const { data: { publicUrl } } = supabase.storage
+            .from('gallery')
+            .getPublicUrl(item.file_name);
+
+          return {
+            url: publicUrl,
+            id: item.id,
+            displayOrder: item.display_order,
+            fileName: item.file_name
+          };
+        })
+      );
 
       setImages(imageUrls);
     } catch (error) {
@@ -52,17 +56,14 @@ export function GalleryManager() {
 
   const handleReorder = async (reorderedImages: typeof images) => {
     try {
-      // Update local state immediately for smooth UI
       setImages(reorderedImages);
 
-      // Prepare the updates with all required fields
       const updates = reorderedImages.map((image, index) => ({
         id: image.id,
         display_order: index,
-        file_name: image.fileName // Include the file_name field
+        file_name: image.fileName
       }));
 
-      // Update all images in the database
       const { error } = await supabase
         .from('gallery_images')
         .upsert(updates);
@@ -80,7 +81,6 @@ export function GalleryManager() {
         description: "Failed to update gallery order",
         variant: "destructive",
       });
-      // Revert to previous order by refetching
       fetchImages();
     }
   };
