@@ -5,7 +5,7 @@ import { ImageGrid } from "./gallery/ImageGrid";
 import { useToast } from "@/hooks/use-toast";
 
 export function GalleryManager() {
-  const [images, setImages] = useState<Array<{ url: string; id: string; displayOrder: number; fileName: string }>>([]);
+  const [images, setImages] = useState<Array<{ url: string; id: string }>>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
 
@@ -15,28 +15,18 @@ export function GalleryManager() {
 
   const fetchImages = async () => {
     try {
-      const { data: galleryData, error: galleryError } = await supabase
-        .from('gallery_images')
-        .select('*')
-        .order('display_order');
+      const { data: storageData, error: storageError } = await supabase.storage
+        .from('gallery')
+        .list();
 
-      if (galleryError) throw galleryError;
+      if (storageError) throw storageError;
 
-      // Get public URLs for all images
-      const imageUrls = await Promise.all(
-        galleryData.map(async (item) => {
-          const { data } = supabase.storage
-            .from('gallery')
-            .getPublicUrl(item.file_name);
-
-          return {
-            url: data.publicUrl,
-            id: item.id,
-            displayOrder: item.display_order,
-            fileName: item.file_name
-          };
-        })
-      );
+      const imageUrls = storageData
+        .filter(file => file.name.match(/\.(jpg|jpeg|png|gif)$/i))
+        .map(file => ({
+          id: file.id,
+          url: `${supabase.storage.from('gallery').getPublicUrl(file.name).data.publicUrl}`
+        }));
 
       setImages(imageUrls);
     } catch (error) {
@@ -51,33 +41,23 @@ export function GalleryManager() {
     }
   };
 
-  const handleImageDelete = async (deletedImageUrl: string) => {
+  const handleImageDelete = async (imageUrl: string) => {
     try {
-      // Find the image in our state
-      const imageToDelete = images.find(img => img.url === deletedImageUrl);
-      if (!imageToDelete) return;
+      const fileName = imageUrl.split('/').pop();
+      if (!fileName) return;
 
-      // Remove from state immediately for UI responsiveness
-      setImages(images.filter(img => img.url !== deletedImageUrl));
-
-      // Delete from storage and database
       const { error: storageError } = await supabase.storage
         .from('gallery')
-        .remove([imageToDelete.fileName]);
+        .remove([fileName]);
 
       if (storageError) throw storageError;
-
-      const { error: dbError } = await supabase
-        .from('gallery_images')
-        .delete()
-        .eq('file_name', imageToDelete.fileName);
-
-      if (dbError) throw dbError;
 
       toast({
         title: "Success",
         description: "Image deleted successfully",
       });
+      
+      fetchImages();
     } catch (error) {
       console.error('Error deleting image:', error);
       toast({
@@ -85,39 +65,6 @@ export function GalleryManager() {
         description: "Failed to delete image",
         variant: "destructive",
       });
-      // Refresh the images to ensure state is in sync with server
-      fetchImages();
-    }
-  };
-
-  const handleReorder = async (reorderedImages: typeof images) => {
-    try {
-      setImages(reorderedImages);
-
-      const updates = reorderedImages.map((image, index) => ({
-        id: image.id,
-        display_order: index,
-        file_name: image.fileName
-      }));
-
-      const { error } = await supabase
-        .from('gallery_images')
-        .upsert(updates);
-
-      if (error) throw error;
-
-      toast({
-        title: "Success",
-        description: "Gallery order updated successfully",
-      });
-    } catch (error) {
-      console.error('Error updating image order:', error);
-      toast({
-        title: "Error",
-        description: "Failed to update gallery order",
-        variant: "destructive",
-      });
-      fetchImages();
     }
   };
 
@@ -131,7 +78,6 @@ export function GalleryManager() {
       <ImageGrid 
         images={images} 
         onImageDelete={handleImageDelete}
-        onReorder={handleReorder}
       />
     </div>
   );

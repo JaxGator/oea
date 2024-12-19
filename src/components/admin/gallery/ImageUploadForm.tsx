@@ -28,31 +28,10 @@ export function ImageUploadForm({ onUploadSuccess }: ImageUploadFormProps) {
         .upload(fileName, file, {
           cacheControl: '3600',
           upsert: false,
-          contentType: file.type // Explicitly set the content type
+          contentType: file.type
         });
 
       if (uploadError) throw uploadError;
-
-      // Get the highest display order
-      const { data: orderData, error: orderError } = await supabase
-        .from('gallery_images')
-        .select('display_order')
-        .order('display_order', { ascending: false })
-        .limit(1);
-
-      if (orderError) throw orderError;
-
-      const nextOrder = orderData.length > 0 ? orderData[0].display_order + 1 : 0;
-
-      // Insert record into gallery_images table
-      const { error: insertError } = await supabase
-        .from('gallery_images')
-        .insert({
-          file_name: fileName,
-          display_order: nextOrder
-        });
-
-      if (insertError) throw insertError;
 
       toast({
         title: "Success",
