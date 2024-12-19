@@ -4,7 +4,9 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Check } from "lucide-react";
+import { Check, Upload } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 type TechnicalSettingsProps = {
   configs: Record<string, string>;
@@ -13,6 +15,52 @@ type TechnicalSettingsProps = {
 };
 
 export function TechnicalSettings({ configs, setConfigs, updateConfig }: TechnicalSettingsProps) {
+  const { toast } = useToast();
+  const [isUploading, setIsUploading] = useState<{ [key: string]: boolean }>({
+    metaImage: false,
+    favicon: false
+  });
+
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>, imageType: 'metaImage' | 'favicon') => {
+    try {
+      const file = event.target.files?.[0];
+      if (!file) return;
+
+      setIsUploading(prev => ({ ...prev, [imageType]: true }));
+
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${imageType}-${Math.random()}.${fileExt}`;
+
+      const { error: uploadError, data } = await supabase.storage
+        .from('media')
+        .upload(fileName, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('media')
+        .getPublicUrl(fileName);
+
+      const configKey = imageType === 'metaImage' ? 'default_meta_image' : 'favicon_url';
+      await updateConfig(configKey, publicUrl);
+      setConfigs({ ...configs, [configKey]: publicUrl });
+
+      toast({
+        title: "Success",
+        description: "Image uploaded successfully",
+      });
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      toast({
+        title: "Error",
+        description: "Failed to upload image",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUploading(prev => ({ ...prev, [imageType]: false }));
+    }
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -36,38 +84,56 @@ export function TechnicalSettings({ configs, setConfigs, updateConfig }: Technic
         </div>
 
         <div className="space-y-2">
-          <label className="text-sm font-medium">Default Meta Image URL</label>
-          <div className="flex gap-2">
-            <Input
-              value={configs.default_meta_image}
-              onChange={(e) => setConfigs({ ...configs, default_meta_image: e.target.value })}
-              placeholder="Enter default meta image URL"
-            />
-            <Button
-              onClick={() => updateConfig('default_meta_image', configs.default_meta_image)}
-              className="bg-[#0d97d1] hover:bg-[#0d97d1]/90"
-            >
-              <Check className="h-4 w-4 mr-1" />
-              Save
-            </Button>
+          <label className="text-sm font-medium">Default Meta Image</label>
+          <div className="space-y-2">
+            {configs.default_meta_image && (
+              <img 
+                src={configs.default_meta_image} 
+                alt="Default meta image" 
+                className="h-20 w-auto object-contain"
+              />
+            )}
+            <div className="flex gap-2">
+              <Input
+                type="file"
+                accept="image/*"
+                onChange={(e) => handleImageUpload(e, 'metaImage')}
+                disabled={isUploading.metaImage}
+              />
+              {isUploading.metaImage && (
+                <Button disabled>
+                  <Upload className="mr-2 h-4 w-4 animate-spin" />
+                  Uploading
+                </Button>
+              )}
+            </div>
           </div>
         </div>
 
         <div className="space-y-2">
-          <label className="text-sm font-medium">Favicon URL</label>
-          <div className="flex gap-2">
-            <Input
-              value={configs.favicon_url}
-              onChange={(e) => setConfigs({ ...configs, favicon_url: e.target.value })}
-              placeholder="Enter favicon URL"
-            />
-            <Button
-              onClick={() => updateConfig('favicon_url', configs.favicon_url)}
-              className="bg-[#0d97d1] hover:bg-[#0d97d1]/90"
-            >
-              <Check className="h-4 w-4 mr-1" />
-              Save
-            </Button>
+          <label className="text-sm font-medium">Favicon</label>
+          <div className="space-y-2">
+            {configs.favicon_url && (
+              <img 
+                src={configs.favicon_url} 
+                alt="Favicon" 
+                className="h-8 w-auto object-contain"
+              />
+            )}
+            <div className="flex gap-2">
+              <Input
+                type="file"
+                accept="image/*"
+                onChange={(e) => handleImageUpload(e, 'favicon')}
+                disabled={isUploading.favicon}
+              />
+              {isUploading.favicon && (
+                <Button disabled>
+                  <Upload className="mr-2 h-4 w-4 animate-spin" />
+                  Uploading
+                </Button>
+              )}
+            </div>
           </div>
         </div>
 
