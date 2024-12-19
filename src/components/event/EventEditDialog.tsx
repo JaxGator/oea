@@ -16,6 +16,15 @@ interface EventEditDialogProps {
 }
 
 export function EventEditDialog({ event, open, onOpenChange, onSuccess }: EventEditDialogProps) {
+  const handleSuccess = () => {
+    onSuccess();
+    onOpenChange(false);
+    // Add a small delay before refreshing to ensure the dialog closes smoothly
+    setTimeout(() => {
+      window.location.reload();
+    }, 100);
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[90vh] overflow-y-auto">
@@ -37,10 +46,7 @@ export function EventEditDialog({ event, open, onOpenChange, onSuccess }: EventE
               max_guests: event.max_guests,
               image_url: event.image_url || "",
             }}
-            onSuccess={() => {
-              onSuccess();
-              onOpenChange(false);
-            }}
+            onSuccess={handleSuccess}
           />
         </div>
       </DialogContent>
