@@ -1,8 +1,8 @@
 import { Card, CardContent } from "@/components/ui/card";
 
 export const PhotoGallery = () => {
-  // Replace this URL with your actual Google Drive folder's sharing URL
-  const googleDriveFolderUrl = "https://drive.google.com/embeddedfolder?id=YOUR_FOLDER_ID";
+  // Convert the sharing URL to an embedded format
+  const googleDriveFolderUrl = "https://drive.google.com/embeddedfolder?id=1at3FHbzf32luuL07mKGFwfMBpFJOwTHc";
 
   return (
     <div className="space-y-4 border-2 border-blue-500 p-4 rounded-lg">
