@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { MemberActions } from "./MemberActions";
 import { EditMemberDialog } from "./EditMemberDialog";
 import { useToast } from "@/hooks/use-toast";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface Profile {
   id: string;
@@ -26,6 +27,7 @@ interface MemberListProps {
 export function MemberList({ members, currentUserIsAdmin, isMobile }: MemberListProps) {
   const [editingMember, setEditingMember] = useState<Profile | null>(null);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   return (
     <>
@@ -72,6 +74,7 @@ export function MemberList({ members, currentUserIsAdmin, isMobile }: MemberList
                         title: "Success",
                         description: "Member has been deleted",
                       });
+                      queryClient.invalidateQueries({ queryKey: ['members'] });
                     }}
                     onEdit={() => setEditingMember(member)}
                   />
@@ -92,6 +95,7 @@ export function MemberList({ members, currentUserIsAdmin, isMobile }: MemberList
               title: "Success",
               description: "Member updated successfully",
             });
+            queryClient.invalidateQueries({ queryKey: ['members'] });
           }}
         />
       )}
