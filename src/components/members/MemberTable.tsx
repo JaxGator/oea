@@ -82,6 +82,7 @@ export function MemberTable({ members, currentUserIsAdmin }: MemberTableProps) {
                 <TableCell>
                   <MemberActions
                     memberId={member.id}
+                    memberName={member.username}
                     isCurrentUserAdmin={currentUserIsAdmin}
                     onDelete={() => {
                       toast({

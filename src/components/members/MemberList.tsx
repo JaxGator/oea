@@ -65,6 +65,7 @@ export function MemberList({ members, currentUserIsAdmin, isMobile }: MemberList
                 {currentUserIsAdmin && (
                   <MemberActions
                     memberId={member.id}
+                    memberName={member.username}
                     isCurrentUserAdmin={currentUserIsAdmin}
                     onDelete={() => {
                       toast({

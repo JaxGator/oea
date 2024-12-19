@@ -1,104 +1,74 @@
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Pencil, Trash2 } from "lucide-react";
+import { MoreHorizontal, Trash2, Edit2, MessageCircle } from "lucide-react";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
+import { ChatDialog } from "./ChatDialog";
+import { useAuthState } from "@/hooks/useAuthState";
 
 interface MemberActionsProps {
   memberId: string;
+  memberName: string;
   isCurrentUserAdmin: boolean;
-  onDelete: () => void;
   onEdit: () => void;
+  onDelete: () => void;
 }
 
-export function MemberActions({ memberId, isCurrentUserAdmin, onDelete, onEdit }: MemberActionsProps) {
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const { toast } = useToast();
+export function MemberActions({
+  memberId,
+  memberName,
+  isCurrentUserAdmin,
+  onEdit,
+  onDelete,
+}: MemberActionsProps) {
+  const [showChat, setShowChat] = useState(false);
+  const { user } = useAuthState();
 
-  const handleDelete = async () => {
-    try {
-      // First delete related admin logs
-      const { error: logsError } = await supabase
-        .from('admin_logs')
-        .delete()
-        .eq('admin_id', memberId);
-
-      if (logsError) {
-        console.error('Error deleting admin logs:', logsError);
-        throw logsError;
-      }
-
-      // Call the delete-user edge function
-      const { error: deleteError } = await supabase.functions.invoke('delete-user', {
-        body: { userId: memberId }
-      });
-
-      if (deleteError) throw deleteError;
-
-      toast({
-        title: "Success",
-        description: "Member has been deleted",
-      });
-      
-      onDelete();
-    } catch (error) {
-      console.error('Error deleting member:', error);
-      toast({
-        title: "Error",
-        description: "Failed to delete member",
-        variant: "destructive",
-      });
-    }
-    setShowDeleteDialog(false);
-  };
-
-  if (!isCurrentUserAdmin) return null;
+  if (!user) return null;
 
   return (
-    <div className="flex gap-2">
-      <Button
-        variant="ghost"
-        size="icon"
-        onClick={onEdit}
-        className="h-8 w-8"
-      >
-        <Pencil className="h-4 w-4" />
-      </Button>
-      <Button
-        variant="ghost"
-        size="icon"
-        onClick={() => setShowDeleteDialog(true)}
-        className="h-8 w-8 text-destructive"
-      >
-        <Trash2 className="h-4 w-4" />
-      </Button>
+    <>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" className="h-8 w-8 p-0">
+            <span className="sr-only">Open menu</span>
+            <MoreHorizontal className="h-4 w-4" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuItem onClick={() => setShowChat(true)}>
+            <MessageCircle className="mr-2 h-4 w-4" />
+            Message
+          </DropdownMenuItem>
+          {isCurrentUserAdmin && (
+            <>
+              <DropdownMenuItem onClick={onEdit}>
+                <Edit2 className="mr-2 h-4 w-4" />
+                Edit
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={onDelete}
+                className="text-red-600"
+              >
+                <Trash2 className="mr-2 h-4 w-4" />
+                Delete
+              </DropdownMenuItem>
+            </>
+          )}
+        </DropdownMenuContent>
+      </DropdownMenu>
 
-      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the member's account and all associated admin logs.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground">
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </div>
+      <ChatDialog
+        open={showChat}
+        onOpenChange={setShowChat}
+        recipientId={memberId}
+        recipientName={memberName}
+        currentUserId={user.id}
+      />
+    </>
   );
 }
