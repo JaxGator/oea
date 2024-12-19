@@ -18,10 +18,18 @@ export function ImageUploadForm({ onUploadSuccess }: ImageUploadFormProps) {
 
     setIsUploading(true);
     try {
+      // Generate a unique filename
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+
       // Upload to storage
-      const { data: uploadData, error: uploadError } = await supabase.storage
+      const { error: uploadError } = await supabase.storage
         .from('gallery')
-        .upload(`${Date.now()}-${file.name}`, file);
+        .upload(fileName, file, {
+          cacheControl: '3600',
+          upsert: false,
+          contentType: file.type // Explicitly set the content type
+        });
 
       if (uploadError) throw uploadError;
 
@@ -40,7 +48,7 @@ export function ImageUploadForm({ onUploadSuccess }: ImageUploadFormProps) {
       const { error: insertError } = await supabase
         .from('gallery_images')
         .insert({
-          file_name: uploadData.path,
+          file_name: fileName,
           display_order: nextOrder
         });
 
@@ -80,7 +88,7 @@ export function ImageUploadForm({ onUploadSuccess }: ImageUploadFormProps) {
         <Button asChild disabled={isUploading}>
           <span>
             <Upload className="h-4 w-4 mr-2" />
-            Upload Image
+            {isUploading ? 'Uploading...' : 'Upload Image'}
           </span>
         </Button>
       </label>

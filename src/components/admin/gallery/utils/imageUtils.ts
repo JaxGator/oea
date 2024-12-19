@@ -3,15 +3,18 @@ import { toast } from "@/hooks/use-toast";
 
 export async function handleImageDelete(imageUrl: string, onSuccess: (imageUrl: string) => void) {
   try {
-    const fileName = imageUrl.split('/').pop();
-    if (!fileName) return;
+    // Extract the filename from the URL
+    const urlParts = imageUrl.split('/');
+    const fileName = urlParts[urlParts.length - 1];
 
-    const { error } = await supabase.storage
+    // First delete from storage
+    const { error: storageError } = await supabase.storage
       .from('gallery')
       .remove([fileName]);
 
-    if (error) throw error;
+    if (storageError) throw storageError;
 
+    // Then delete from the database
     const { error: dbError } = await supabase
       .from('gallery_images')
       .delete()
