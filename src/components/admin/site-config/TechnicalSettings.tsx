@@ -31,7 +31,7 @@ export function TechnicalSettings({ configs, setConfigs, updateConfig }: Technic
       const fileExt = file.name.split('.').pop();
       const fileName = `${imageType}-${Math.random()}.${fileExt}`;
 
-      const { error: uploadError, data } = await supabase.storage
+      const { error: uploadError } = await supabase.storage
         .from('media')
         .upload(fileName, file);
 
@@ -43,7 +43,7 @@ export function TechnicalSettings({ configs, setConfigs, updateConfig }: Technic
 
       const configKey = imageType === 'metaImage' ? 'default_meta_image' : 'favicon_url';
       await updateConfig(configKey, publicUrl);
-      setConfigs({ ...configs, [configKey]: publicUrl });
+      setConfigs(prev => ({ ...prev, [configKey]: publicUrl }));
 
       toast({
         title: "Success",
@@ -87,11 +87,17 @@ export function TechnicalSettings({ configs, setConfigs, updateConfig }: Technic
           <label className="text-sm font-medium">Default Meta Image</label>
           <div className="space-y-2">
             {configs.default_meta_image && (
-              <img 
-                src={configs.default_meta_image} 
-                alt="Default meta image" 
-                className="h-20 w-auto object-contain"
-              />
+              <div className="relative w-40 h-40 border rounded-lg overflow-hidden">
+                <img 
+                  src={configs.default_meta_image} 
+                  alt="Default meta image" 
+                  className="w-full h-full object-contain"
+                  onError={(e) => {
+                    const img = e.target as HTMLImageElement;
+                    img.src = '/placeholder.svg';
+                  }}
+                />
+              </div>
             )}
             <div className="flex gap-2">
               <Input
@@ -114,11 +120,17 @@ export function TechnicalSettings({ configs, setConfigs, updateConfig }: Technic
           <label className="text-sm font-medium">Favicon</label>
           <div className="space-y-2">
             {configs.favicon_url && (
-              <img 
-                src={configs.favicon_url} 
-                alt="Favicon" 
-                className="h-8 w-auto object-contain"
-              />
+              <div className="relative w-16 h-16 border rounded-lg overflow-hidden">
+                <img 
+                  src={configs.favicon_url} 
+                  alt="Favicon" 
+                  className="w-full h-full object-contain"
+                  onError={(e) => {
+                    const img = e.target as HTMLImageElement;
+                    img.src = '/placeholder.svg';
+                  }}
+                />
+              </div>
             )}
             <div className="flex gap-2">
               <Input
