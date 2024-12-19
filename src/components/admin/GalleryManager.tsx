@@ -32,7 +32,6 @@ export function GalleryManager() {
         .map(file => `${bucketData.publicUrl}/${file.name}`);
 
       setImages(imageUrls);
-      setIsLoading(false);
     } catch (error) {
       console.error('Error fetching images:', error);
       toast({
@@ -40,6 +39,7 @@ export function GalleryManager() {
         description: "Failed to load gallery images",
         variant: "destructive",
       });
+    } finally {
       setIsLoading(false);
     }
   };
