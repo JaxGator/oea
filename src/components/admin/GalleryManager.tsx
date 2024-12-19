@@ -24,7 +24,7 @@ export function GalleryManager() {
       const imageUrls = storageData
         .filter(file => file.name.match(/\.(jpg|jpeg|png|gif)$/i))
         .map(file => ({
-          id: file.id,
+          id: file.name,
           url: `${supabase.storage.from('gallery').getPublicUrl(file.name).data.publicUrl}`
         }));
 
@@ -43,7 +43,7 @@ export function GalleryManager() {
 
   const handleImageDelete = async (imageUrl: string) => {
     try {
-      const fileName = imageUrl.split('/').pop();
+      const fileName = imageUrl.split('/').pop()?.split('?')[0];
       if (!fileName) return;
 
       const { error: storageError } = await supabase.storage

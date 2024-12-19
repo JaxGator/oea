@@ -16,18 +16,27 @@ export function ImageUploadForm({ onUploadSuccess }: ImageUploadFormProps) {
     const file = event.target.files?.[0];
     if (!file) return;
 
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast({
+        title: "Error",
+        description: "Please upload an image file",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsUploading(true);
     try {
       // Generate a unique filename
       const fileExt = file.name.split('.').pop();
-      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+      const fileName = `${Date.now()}.${fileExt}`;
 
       // Upload to storage
       const { error: uploadError } = await supabase.storage
         .from('gallery')
         .upload(fileName, file, {
           cacheControl: '3600',
-          upsert: false,
           contentType: file.type
         });
 
