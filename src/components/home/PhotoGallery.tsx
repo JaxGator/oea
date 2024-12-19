@@ -53,10 +53,12 @@ export const PhotoGallery = () => {
             return isImage;
           })
           .map(file => {
-            // Construct the direct public URL using the correct format
-            const publicUrl = `${supabase.supabaseUrl}/storage/v1/object/public/gallery/${file.name}`;
-            console.log(`Generated URL for ${file.name}:`, publicUrl);
-            return publicUrl;
+            // Use the getPublicUrl method instead of constructing the URL manually
+            const { data } = supabase.storage
+              .from('gallery')
+              .getPublicUrl(file.name);
+            console.log(`Generated URL for ${file.name}:`, data.publicUrl);
+            return data.publicUrl;
           });
 
         console.log('Final image URLs:', imageUrls);
