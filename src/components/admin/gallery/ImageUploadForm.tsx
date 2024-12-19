@@ -28,17 +28,14 @@ export function ImageUploadForm({ onUploadSuccess }: ImageUploadFormProps) {
 
     setIsUploading(true);
     try {
-      // Generate a unique filename while preserving the original extension
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${Date.now()}.${fileExt}`;
+      // Generate a unique filename while preserving the original name
+      const timestamp = Date.now();
+      const originalName = file.name;
+      const fileName = `${timestamp}-${originalName}`;
 
-      // Upload the file directly without creating a new Blob
       const { error: uploadError } = await supabase.storage
         .from('gallery')
-        .upload(fileName, file, {
-          cacheControl: '3600',
-          contentType: file.type
-        });
+        .upload(fileName, file);
 
       if (uploadError) throw uploadError;
 
@@ -56,7 +53,7 @@ export function ImageUploadForm({ onUploadSuccess }: ImageUploadFormProps) {
         variant: "destructive",
       });
     } finally {
-      setIsUploading(false);
+      setIsLoading(false);
       // Reset the input
       event.target.value = '';
     }
