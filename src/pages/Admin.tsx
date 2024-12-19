@@ -18,8 +18,12 @@ export default function Admin() {
           <div className="p-4 sm:p-6">
             <h1 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6">Admin Dashboard</h1>
             
-            <Tabs defaultValue="users" className="space-y-4">
+            <Tabs defaultValue="gallery" className="space-y-4">
               <TabsList>
+                <TabsTrigger value="gallery">
+                  <Image className="h-4 w-4 mr-2" />
+                  Photo Gallery
+                </TabsTrigger>
                 <TabsTrigger value="users">
                   <Users className="h-4 w-4 mr-2" />
                   Users
@@ -28,11 +32,11 @@ export default function Admin() {
                   <Settings className="h-4 w-4 mr-2" />
                   Site Configuration
                 </TabsTrigger>
-                <TabsTrigger value="gallery">
-                  <Image className="h-4 w-4 mr-2" />
-                  Photo Gallery
-                </TabsTrigger>
               </TabsList>
+
+              <TabsContent value="gallery">
+                <GalleryManager />
+              </TabsContent>
 
               <TabsContent value="users">
                 <AdminUserList />
@@ -40,10 +44,6 @@ export default function Admin() {
 
               <TabsContent value="site-config">
                 <SiteConfigManager />
-              </TabsContent>
-
-              <TabsContent value="gallery">
-                <GalleryManager />
               </TabsContent>
             </Tabs>
           </div>
