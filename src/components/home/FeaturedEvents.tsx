@@ -1,27 +1,60 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { EventCard } from "@/components/EventCard";
 import { useFeaturedEvents } from "@/hooks/useFeaturedEvents";
 import { Card, CardContent } from "@/components/ui/card";
+import { supabase } from "@/integrations/supabase/client";
 
 export const FeaturedEvents = () => {
   const navigate = useNavigate();
   const { events, isLoading, userRSVPs, handleRSVP, handleCancelRSVP } = useFeaturedEvents();
+  const [galleryImages, setGalleryImages] = useState<string[]>([]);
+  const [isLoadingImages, setIsLoadingImages] = useState(true);
 
   // Filter out past events and limit to 4 upcoming events
   const upcomingEvents = events
     .filter(event => {
       const eventDate = new Date(event.date);
       const today = new Date();
-      today.setHours(0, 0, 0, 0); // Reset time to start of day for accurate date comparison
+      today.setHours(0, 0, 0, 0);
       return eventDate >= today;
     })
-    .slice(0, 4); // Limit to 4 events
+    .slice(0, 4);
 
-  // Google Drive folder configuration
-  const folderId = "1at3FHbzf32luuL07mKGFwfMBpFJOwTHc";
-  const embedUrl = `https://drive.google.com/embeddedfolder?id=${folderId}#grid`;
+  useEffect(() => {
+    fetchGalleryImages();
+  }, []);
+
+  const fetchGalleryImages = async () => {
+    try {
+      const { data: files, error } = await supabase
+        .storage
+        .from('gallery')
+        .list();
+
+      if (error) {
+        console.error('Error fetching gallery images:', error);
+        return;
+      }
+
+      const imageUrls = files
+        ?.filter(file => file.name.match(/\.(jpg|jpeg|png|gif)$/i))
+        .map(file => {
+          const { data: { publicUrl } } = supabase
+            .storage
+            .from('gallery')
+            .getPublicUrl(file.name);
+          return publicUrl;
+        }) || [];
+
+      setGalleryImages(imageUrls);
+    } catch (error) {
+      console.error('Error processing gallery images:', error);
+    } finally {
+      setIsLoadingImages(false);
+    }
+  };
 
   return (
     <section className="py-16 bg-[#F1F0FB]">
@@ -62,13 +95,23 @@ export const FeaturedEvents = () => {
           <h2 className="text-2xl font-bold text-gray-900">Photo Gallery</h2>
           <Card>
             <CardContent className="p-4">
-              <iframe 
-                src={embedUrl}
-                className="w-full min-h-[600px] border-0"
-                title="Photo Gallery"
-                allow="autoplay"
-                sandbox="allow-same-origin allow-scripts allow-popups allow-forms allow-downloads"
-              />
+              {isLoadingImages ? (
+                <div className="text-center py-8 text-gray-600">Loading gallery...</div>
+              ) : galleryImages.length === 0 ? (
+                <div className="text-center py-8 text-gray-500">No images found in the gallery.</div>
+              ) : (
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {galleryImages.map((imageUrl, index) => (
+                    <div key={index} className="aspect-square overflow-hidden rounded-lg">
+                      <img
+                        src={imageUrl}
+                        alt={`Gallery image ${index + 1}`}
+                        className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                      />
+                    </div>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
