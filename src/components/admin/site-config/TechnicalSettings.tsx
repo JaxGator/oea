@@ -10,7 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 type TechnicalSettingsProps = {
   configs: Record<string, string>;
-  setConfigs: (configs: Record<string, string>) => void;
+  setConfigs: React.Dispatch<React.SetStateAction<Record<string, string>>>;
   updateConfig: (key: string, value: string) => Promise<void>;
 };
 
