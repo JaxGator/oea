@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Users } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -8,6 +8,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { MemberList } from "@/components/members/MemberList";
 import { MemberTable } from "@/components/members/MemberTable";
 import { useAuthState } from "@/hooks/useAuthState";
+import { useNavigate } from "react-router-dom";
 
 interface Profile {
   id: string;
@@ -23,6 +24,7 @@ export default function Members() {
   const { user } = useAuthState();
   const { toast } = useToast();
   const isMobile = useIsMobile();
+  const navigate = useNavigate();
 
   const { data: currentUserProfile } = useQuery({
     queryKey: ['profile', user?.id],
@@ -39,6 +41,49 @@ export default function Members() {
     },
     enabled: !!user?.id
   });
+
+  // Subscribe to new messages
+  useEffect(() => {
+    if (!user?.id) return;
+
+    const channel = supabase
+      .channel('schema-db-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'messages',
+          filter: `receiver_id=eq.${user.id}`
+        },
+        async (payload) => {
+          // Fetch sender's profile to show in notification
+          const { data: senderProfile } = await supabase
+            .from('profiles')
+            .select('username')
+            .eq('id', payload.new.sender_id)
+            .single();
+
+          toast({
+            title: "New Message",
+            description: `${senderProfile?.username || 'Someone'} sent you a message`,
+            action: (
+              <button
+                onClick={() => navigate('/messages')}
+                className="bg-primary text-primary-foreground px-3 py-2 rounded-md text-sm font-medium"
+              >
+                View
+              </button>
+            ),
+          });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user?.id, toast, navigate]);
 
   const { data: members = [], isLoading: isLoadingMembers, error } = useQuery({
     queryKey: ['members'],
