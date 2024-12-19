@@ -5,12 +5,17 @@ import { EventCard } from "@/components/EventCard";
 import { useFeaturedEvents } from "@/hooks/useFeaturedEvents";
 import { Card, CardContent } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
+import {
+  Dialog,
+  DialogContent,
+} from "@/components/ui/dialog";
 
 export const FeaturedEvents = () => {
   const navigate = useNavigate();
   const { events, isLoading, userRSVPs, handleRSVP, handleCancelRSVP } = useFeaturedEvents();
   const [galleryImages, setGalleryImages] = useState<string[]>([]);
   const [isLoadingImages, setIsLoadingImages] = useState(true);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   // Filter out past events and limit to 4 upcoming events
   const upcomingEvents = events
@@ -102,7 +107,11 @@ export const FeaturedEvents = () => {
               ) : (
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                   {galleryImages.map((imageUrl, index) => (
-                    <div key={index} className="aspect-square overflow-hidden rounded-lg">
+                    <div 
+                      key={index} 
+                      className="aspect-square overflow-hidden rounded-lg cursor-pointer"
+                      onClick={() => setSelectedImage(imageUrl)}
+                    >
                       <img
                         src={imageUrl}
                         alt={`Gallery image ${index + 1}`}
@@ -115,6 +124,18 @@ export const FeaturedEvents = () => {
             </CardContent>
           </Card>
         </div>
+
+        <Dialog open={!!selectedImage} onOpenChange={() => setSelectedImage(null)}>
+          <DialogContent className="max-w-[90vw] max-h-[90vh] p-0">
+            {selectedImage && (
+              <img
+                src={selectedImage}
+                alt="Full size gallery image"
+                className="w-full h-full object-contain"
+              />
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
     </section>
   );
