@@ -8,9 +8,6 @@ export default function Index() {
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
         <div className="space-y-8">
-          <div className="p-4 bg-blue-100 rounded">
-            <p>Debug: Index page content</p>
-          </div>
           <FeaturedEvents />
           <PhotoGallery />
         </div>
