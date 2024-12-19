@@ -28,11 +28,12 @@ export function ImageUploadForm({ onUploadSuccess }: ImageUploadFormProps) {
 
     setIsUploading(true);
     try {
-      // Use the original filename directly
+      // Upload the file with its original name
       const { error: uploadError } = await supabase.storage
         .from('gallery')
         .upload(file.name, file, {
-          upsert: true // Allow overwriting if file exists
+          contentType: file.type,
+          upsert: true
         });
 
       if (uploadError) throw uploadError;
