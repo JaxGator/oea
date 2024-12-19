@@ -1,6 +1,7 @@
 import React from 'react';
 import { Facebook, Instagram, Youtube } from 'lucide-react';
 import { useSocialLinks } from '@/hooks/useSocialLinks';
+import { Link } from 'react-router-dom';
 
 export const Footer = () => {
   const { data: socialLinks } = useSocialLinks();
@@ -30,8 +31,17 @@ export const Footer = () => {
             ) : null
           )}
         </div>
-        <div className="mt-6 text-center text-sm">
-          <p>&copy; {new Date().getFullYear()} Outdoor Energy Adventures. All rights reserved.</p>
+        <div className="mt-6 text-center space-y-4">
+          <div className="flex justify-center space-x-4 text-sm">
+            <Link to="/terms" className="hover:text-primary-100 transition-colors">
+              Terms and Conditions
+            </Link>
+            <span>•</span>
+            <Link to="/privacy" className="hover:text-primary-100 transition-colors">
+              Privacy Policy
+            </Link>
+          </div>
+          <p className="text-sm">&copy; {new Date().getFullYear()} Outdoor Energy Adventures. All rights reserved.</p>
         </div>
       </div>
     </footer>

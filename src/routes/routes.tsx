@@ -9,6 +9,8 @@ import Store from "@/pages/Store";
 import Profile from "@/pages/Profile";
 import Admin from "@/pages/Admin";
 import Auth from "@/pages/Auth";
+import { TermsAndConditions } from "@/components/legal/TermsAndConditions";
+import { PrivacyPolicy } from "@/components/legal/PrivacyPolicy";
 import { useAuthState } from "@/hooks/useAuthState";
 
 // Protected route wrapper component
@@ -77,6 +79,14 @@ export const router = createBrowserRouter([
             <Admin />
           </ProtectedRoute>
         ),
+      },
+      {
+        path: "/terms",
+        element: <TermsAndConditions />,
+      },
+      {
+        path: "/privacy",
+        element: <PrivacyPolicy />,
       },
     ],
   },
