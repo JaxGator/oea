@@ -3,11 +3,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { Users } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
-import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { MemberList } from "@/components/members/MemberList";
 import { MemberTable } from "@/components/members/MemberTable";
+import { useAuthState } from "@/hooks/useAuthState";
 
 interface Profile {
   id: string;
@@ -20,9 +20,25 @@ interface Profile {
 }
 
 export default function Members() {
-  const [currentUserIsAdmin] = useState(false);
+  const { user } = useAuthState();
   const { toast } = useToast();
   const isMobile = useIsMobile();
+
+  const { data: currentUserProfile } = useQuery({
+    queryKey: ['profile', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return null;
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+      
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user?.id
+  });
 
   const { data: members = [], isLoading: isLoadingMembers, error } = useQuery({
     queryKey: ['members'],
@@ -82,14 +98,14 @@ export default function Members() {
               {isMobile ? (
                 <MemberList 
                   members={members}
-                  currentUserIsAdmin={currentUserIsAdmin}
+                  currentUserIsAdmin={currentUserProfile?.is_admin || false}
                   isMobile={isMobile}
                 />
               ) : (
                 <ScrollArea className="rounded-md border">
                   <MemberTable 
                     members={members}
-                    currentUserIsAdmin={currentUserIsAdmin}
+                    currentUserIsAdmin={currentUserProfile?.is_admin || false}
                   />
                 </ScrollArea>
               )}
