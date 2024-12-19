@@ -32,13 +32,10 @@ export function ImageUploadForm({ onUploadSuccess }: ImageUploadFormProps) {
       const fileExt = file.name.split('.').pop();
       const fileName = `${Date.now()}.${fileExt}`;
 
-      // Create a blob from the file with the correct content type
-      const blob = new Blob([await file.arrayBuffer()], { type: file.type });
-
-      // Upload to storage with the correct content type
+      // Upload the file directly without creating a new Blob
       const { error: uploadError } = await supabase.storage
         .from('gallery')
-        .upload(fileName, blob, {
+        .upload(fileName, file, {
           cacheControl: '3600',
           contentType: file.type
         });
