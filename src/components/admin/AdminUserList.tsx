@@ -15,6 +15,12 @@ import {
 import { Shield, UserCheck, Users } from "lucide-react";
 import { AdminUserActions } from "./AdminUserActions";
 import { EditMemberDialog } from "../members/EditMemberDialog";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface Profile {
   id: string;
@@ -101,59 +107,114 @@ export function AdminUserList() {
                         <span className="font-medium">{profile.username}</span>
                         <span className="text-sm text-gray-500">{profile.full_name || '-'}</span>
                         <div className="flex flex-wrap gap-1 md:hidden mt-2">
-                          {profile.is_admin && (
-                            <Badge variant="default" className="bg-red-500">
-                              <Shield className="h-3 w-3 mr-1" />
-                              Admin
-                            </Badge>
-                          )}
-                          {profile.is_approved && (
-                            <Badge variant="default" className="bg-green-500">
-                              <UserCheck className="h-3 w-3 mr-1" />
-                              Approved
-                            </Badge>
-                          )}
-                          {profile.is_member && (
-                            <Badge variant="default" className="bg-blue-500">
-                              <Users className="h-3 w-3 mr-1" />
-                              Member
-                            </Badge>
-                          )}
+                          <TooltipProvider>
+                            {profile.is_admin && (
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Badge variant="default" className="bg-red-500">
+                                    <Shield className="h-3 w-3 mr-1" />
+                                    Admin
+                                  </Badge>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p>User has administrative privileges</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            )}
+                            {profile.is_approved && (
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Badge variant="default" className="bg-green-500">
+                                    <UserCheck className="h-3 w-3 mr-1" />
+                                    Approved
+                                  </Badge>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p>User has been approved by an admin</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            )}
+                            {profile.is_member && (
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Badge variant="default" className="bg-blue-500">
+                                    <Users className="h-3 w-3 mr-1" />
+                                    Member
+                                  </Badge>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p>User is a confirmed member</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            )}
+                          </TooltipProvider>
                         </div>
                       </div>
                     </TableCell>
                     <TableCell className="hidden md:table-cell">
                       <div className="flex flex-wrap gap-1">
-                        {profile.is_admin && (
-                          <Badge variant="default" className="bg-red-500">
-                            <Shield className="h-3 w-3 mr-1" />
-                            Admin
-                          </Badge>
-                        )}
-                        {profile.is_approved && (
-                          <Badge variant="default" className="bg-green-500">
-                            <UserCheck className="h-3 w-3 mr-1" />
-                            Approved
-                          </Badge>
-                        )}
-                        {profile.is_member && (
-                          <Badge variant="default" className="bg-blue-500">
-                            <Users className="h-3 w-3 mr-1" />
-                            Member
-                          </Badge>
-                        )}
+                        <TooltipProvider>
+                          {profile.is_admin && (
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Badge variant="default" className="bg-red-500">
+                                  <Shield className="h-3 w-3 mr-1" />
+                                  Admin
+                                </Badge>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>User has administrative privileges</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          )}
+                          {profile.is_approved && (
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Badge variant="default" className="bg-green-500">
+                                  <UserCheck className="h-3 w-3 mr-1" />
+                                  Approved
+                                </Badge>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>User has been approved by an admin</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          )}
+                          {profile.is_member && (
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Badge variant="default" className="bg-blue-500">
+                                  <Users className="h-3 w-3 mr-1" />
+                                  Member
+                                </Badge>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>User is a confirmed member</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          )}
+                        </TooltipProvider>
                       </div>
                     </TableCell>
                     <TableCell>
                       <div className="flex flex-col sm:flex-row gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setSelectedMember(profile)}
-                          className="w-full sm:w-auto"
-                        >
-                          Edit
-                        </Button>
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setSelectedMember(profile)}
+                                className="w-full sm:w-auto"
+                              >
+                                Edit
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Edit user details and permissions</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
                         <AdminUserActions
                           profile={profile}
                           onUpdateStatus={handleUpdateStatus}
