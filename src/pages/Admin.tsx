@@ -3,7 +3,9 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { AdminUserList } from "@/components/admin/AdminUserList";
 import { SiteConfigManager } from "@/components/admin/SiteConfigManager";
+import { GalleryManager } from "@/components/admin/GalleryManager";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Users, Settings, Image } from "lucide-react";
 
 export default function Admin() {
   const { toast } = useToast();
@@ -18,8 +20,18 @@ export default function Admin() {
             
             <Tabs defaultValue="users" className="space-y-4">
               <TabsList>
-                <TabsTrigger value="users">Users</TabsTrigger>
-                <TabsTrigger value="site-config">Site Configuration</TabsTrigger>
+                <TabsTrigger value="users">
+                  <Users className="h-4 w-4 mr-2" />
+                  Users
+                </TabsTrigger>
+                <TabsTrigger value="site-config">
+                  <Settings className="h-4 w-4 mr-2" />
+                  Site Configuration
+                </TabsTrigger>
+                <TabsTrigger value="gallery">
+                  <Image className="h-4 w-4 mr-2" />
+                  Photo Gallery
+                </TabsTrigger>
               </TabsList>
 
               <TabsContent value="users">
@@ -28,6 +40,10 @@ export default function Admin() {
 
               <TabsContent value="site-config">
                 <SiteConfigManager />
+              </TabsContent>
+
+              <TabsContent value="gallery">
+                <GalleryManager />
               </TabsContent>
             </Tabs>
           </div>
