@@ -28,14 +28,17 @@ export function ImageUploadForm({ onUploadSuccess }: ImageUploadFormProps) {
 
     setIsUploading(true);
     try {
-      // Generate a unique filename
+      // Generate a unique filename while preserving the original extension
       const fileExt = file.name.split('.').pop();
       const fileName = `${Date.now()}.${fileExt}`;
 
-      // Upload to storage
+      // Create a blob from the file with the correct content type
+      const blob = new Blob([await file.arrayBuffer()], { type: file.type });
+
+      // Upload to storage with the correct content type
       const { error: uploadError } = await supabase.storage
         .from('gallery')
-        .upload(fileName, file, {
+        .upload(fileName, blob, {
           cacheControl: '3600',
           contentType: file.type
         });

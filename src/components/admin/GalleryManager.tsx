@@ -25,7 +25,7 @@ export function GalleryManager() {
         .filter(file => file.name.match(/\.(jpg|jpeg|png|gif)$/i))
         .map(file => ({
           id: file.name,
-          url: `${supabase.storage.from('gallery').getPublicUrl(file.name).data.publicUrl}`
+          url: supabase.storage.from('gallery').getPublicUrl(file.name).data.publicUrl
         }));
 
       setImages(imageUrls);
