@@ -22,20 +22,19 @@ export function GalleryManager() {
 
       if (galleryError) throw galleryError;
 
-      const imageUrls = await Promise.all(
-        galleryData.map(async (item) => {
-          const { data: { publicUrl } } = supabase.storage
-            .from('gallery')
-            .getPublicUrl(item.file_name);
+      // Get public URLs for all images
+      const imageUrls = galleryData.map((item) => {
+        const { data } = supabase.storage
+          .from('gallery')
+          .getPublicUrl(item.file_name);
 
-          return {
-            url: publicUrl,
-            id: item.id,
-            displayOrder: item.display_order,
-            fileName: item.file_name
-          };
-        })
-      );
+        return {
+          url: data.publicUrl,
+          id: item.id,
+          displayOrder: item.display_order,
+          fileName: item.file_name
+        };
+      });
 
       setImages(imageUrls);
     } catch (error) {
