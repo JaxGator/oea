@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { supabase, testSupabaseConnection } from "@/integrations/supabase/client";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 export const useGalleryImages = () => {
@@ -10,63 +10,35 @@ export const useGalleryImages = () => {
 
   useEffect(() => {
     const fetchImages = async () => {
-      console.log('Starting gallery initialization...');
+      console.log('Starting gallery initialization from Google Drive...');
       try {
-        const connected = await testSupabaseConnection();
-        setIsConnected(connected);
-        console.log('Connection status:', connected);
+        const { data, error: fetchError } = await supabase.functions.invoke('fetch-drive-images');
         
-        if (!connected) {
-          throw new Error('Unable to connect to Supabase');
+        if (fetchError) {
+          throw new Error(`Failed to fetch images: ${fetchError.message}`);
         }
 
-        const { data: files, error: listError } = await supabase
-          .storage
-          .from('gallery')
-          .list('', {
-            limit: 100,
-            offset: 0,
-            sortBy: { column: 'name', order: 'asc' },
-          });
-
-        console.log('Storage list response:', { files, listError });
-
-        if (listError) {
-          throw new Error(`Failed to list files: ${listError.message}`);
-        }
-
-        if (!files || files.length === 0) {
-          console.log('No images found in gallery bucket');
+        if (!data?.files || data.files.length === 0) {
+          console.log('No images found in Google Drive folder');
           setImages([]);
+          toast.info('No images found in gallery');
           return;
         }
 
-        const imageUrls = files
-          .filter(file => {
-            const isImage = file.name.match(/\.(jpg|jpeg|png|gif)$/i);
-            console.log(`File ${file.name} is image: ${!!isImage}`);
-            return isImage;
-          })
-          .map(file => {
-            const { data } = supabase.storage
-              .from('gallery')
-              .getPublicUrl(file.name);
-            console.log(`Generated URL for ${file.name}:`, data.publicUrl);
-            return data.publicUrl;
-          });
-
+        const imageUrls = data.files.map(file => file.url);
         console.log('Final image URLs:', imageUrls);
         setImages(imageUrls);
         
         if (imageUrls.length > 0) {
-          toast.success(`Loaded ${imageUrls.length} images`);
-        } else {
-          toast.info('No images found in gallery');
+          toast.success(`Loaded ${imageUrls.length} images from Google Drive`);
         }
+        
+        setIsConnected(true);
       } catch (error) {
         console.error('Gallery error:', error);
         const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
         setError(errorMessage);
+        setIsConnected(false);
         toast.error(`Failed to load gallery: ${errorMessage}`);
       } finally {
         setIsLoading(false);
