@@ -28,14 +28,12 @@ export function ImageUploadForm({ onUploadSuccess }: ImageUploadFormProps) {
 
     setIsUploading(true);
     try {
-      // Generate a unique filename while preserving the original name
-      const timestamp = Date.now();
-      const originalName = file.name;
-      const fileName = `${timestamp}-${originalName}`;
-
+      // Use the original filename directly
       const { error: uploadError } = await supabase.storage
         .from('gallery')
-        .upload(fileName, file);
+        .upload(file.name, file, {
+          upsert: true // Allow overwriting if file exists
+        });
 
       if (uploadError) throw uploadError;
 
