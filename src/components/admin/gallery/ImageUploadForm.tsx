@@ -1,8 +1,7 @@
 import { useState } from "react";
-import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Upload } from "lucide-react";
 
 interface ImageUploadFormProps {
@@ -10,33 +9,48 @@ interface ImageUploadFormProps {
 }
 
 export function ImageUploadForm({ onUploadSuccess }: ImageUploadFormProps) {
-  const [uploading, setUploading] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   const { toast } = useToast();
 
-  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setIsUploading(true);
     try {
-      if (!event.target.files || event.target.files.length === 0) {
-        return;
-      }
-      setUploading(true);
-
-      const file = event.target.files[0];
-      const fileExt = file.name.split('.').pop();
-      const filePath = `${crypto.randomUUID()}.${fileExt}`;
-
-      const { error: uploadError } = await supabase.storage
+      // Upload to storage
+      const { data: uploadData, error: uploadError } = await supabase.storage
         .from('gallery')
-        .upload(filePath, file);
+        .upload(`${Date.now()}-${file.name}`, file);
 
-      if (uploadError) {
-        throw uploadError;
-      }
+      if (uploadError) throw uploadError;
+
+      // Get the highest display order
+      const { data: orderData, error: orderError } = await supabase
+        .from('gallery_images')
+        .select('display_order')
+        .order('display_order', { ascending: false })
+        .limit(1);
+
+      if (orderError) throw orderError;
+
+      const nextOrder = orderData.length > 0 ? orderData[0].display_order + 1 : 0;
+
+      // Insert record into gallery_images table
+      const { error: insertError } = await supabase
+        .from('gallery_images')
+        .insert({
+          file_name: uploadData.path,
+          display_order: nextOrder
+        });
+
+      if (insertError) throw insertError;
 
       toast({
         title: "Success",
         description: "Image uploaded successfully",
       });
-
+      
       onUploadSuccess();
     } catch (error) {
       console.error('Error uploading image:', error);
@@ -46,28 +60,30 @@ export function ImageUploadForm({ onUploadSuccess }: ImageUploadFormProps) {
         variant: "destructive",
       });
     } finally {
-      setUploading(false);
+      setIsUploading(false);
+      // Reset the input
+      event.target.value = '';
     }
   };
 
   return (
-    <div className="space-y-2">
-      <h2 className="text-lg font-semibold">Photo Gallery Management</h2>
-      <div className="flex gap-2">
-        <Input
-          type="file"
-          accept="image/*"
-          onChange={handleImageUpload}
-          disabled={uploading}
-          className="flex-1"
-        />
-        {uploading && (
-          <Button disabled>
-            <Upload className="mr-2 h-4 w-4 animate-spin" />
-            Uploading
-          </Button>
-        )}
-      </div>
+    <div className="flex items-center gap-4">
+      <input
+        type="file"
+        accept="image/*"
+        onChange={handleFileUpload}
+        className="hidden"
+        id="gallery-upload"
+        disabled={isUploading}
+      />
+      <label htmlFor="gallery-upload">
+        <Button asChild disabled={isUploading}>
+          <span>
+            <Upload className="h-4 w-4 mr-2" />
+            Upload Image
+          </span>
+        </Button>
+      </label>
     </div>
   );
 }

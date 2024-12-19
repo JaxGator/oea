@@ -2,10 +2,12 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { ImageUploadForm } from "./gallery/ImageUploadForm";
 import { ImageGrid } from "./gallery/ImageGrid";
+import { useToast } from "@/hooks/use-toast";
 
 export function GalleryManager() {
-  const [images, setImages] = useState<string[]>([]);
+  const [images, setImages] = useState<Array<{ url: string; id: string; displayOrder: number }>>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const { toast } = useToast();
 
   useEffect(() => {
     fetchImages();
@@ -17,26 +19,68 @@ export function GalleryManager() {
         .from('gallery')
         .getPublicUrl('');
 
-      const { data, error } = await supabase.storage
-        .from('gallery')
-        .list();
+      const { data: galleryData, error: galleryError } = await supabase
+        .from('gallery_images')
+        .select('*')
+        .order('display_order');
 
-      if (error) throw error;
+      if (galleryError) throw galleryError;
 
-      const imageUrls = data
-        .filter(file => file.name.match(/\.(jpg|jpeg|png|gif)$/i))
-        .map(file => `${bucketData.publicUrl}/${file.name}`);
+      const imageUrls = galleryData.map(item => ({
+        url: `${bucketData.publicUrl}/${item.file_name}`,
+        id: item.id,
+        displayOrder: item.display_order
+      }));
 
       setImages(imageUrls);
     } catch (error) {
       console.error('Error fetching images:', error);
+      toast({
+        title: "Error",
+        description: "Failed to fetch images",
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleImageDelete = (deletedImageUrl: string) => {
-    setImages(images.filter(img => img !== deletedImageUrl));
+    setImages(images.filter(img => img.url !== deletedImageUrl));
+  };
+
+  const handleReorder = async (reorderedImages: typeof images) => {
+    try {
+      // Update local state immediately for smooth UI
+      setImages(reorderedImages);
+
+      // Prepare the updates
+      const updates = reorderedImages.map((image, index) => ({
+        id: image.id,
+        display_order: index
+      }));
+
+      // Update all images in the database
+      const { error } = await supabase
+        .from('gallery_images')
+        .upsert(updates);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Gallery order updated successfully",
+      });
+    } catch (error) {
+      console.error('Error updating image order:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update gallery order",
+        variant: "destructive",
+      });
+      // Revert to previous order by refetching
+      fetchImages();
+    }
   };
 
   if (isLoading) {
@@ -46,7 +90,11 @@ export function GalleryManager() {
   return (
     <div className="space-y-6">
       <ImageUploadForm onUploadSuccess={fetchImages} />
-      <ImageGrid images={images} onImageDelete={handleImageDelete} />
+      <ImageGrid 
+        images={images} 
+        onImageDelete={handleImageDelete}
+        onReorder={handleReorder}
+      />
     </div>
   );
 }
