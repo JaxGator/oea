@@ -5,7 +5,7 @@ import { ImageGrid } from "./gallery/ImageGrid";
 import { useToast } from "@/hooks/use-toast";
 
 export function GalleryManager() {
-  const [images, setImages] = useState<Array<{ url: string; id: string; displayOrder: number }>>([]);
+  const [images, setImages] = useState<Array<{ url: string; id: string; displayOrder: number; fileName: string }>>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
 
@@ -29,7 +29,8 @@ export function GalleryManager() {
       const imageUrls = galleryData.map(item => ({
         url: `${bucketData.publicUrl}/${item.file_name}`,
         id: item.id,
-        displayOrder: item.display_order
+        displayOrder: item.display_order,
+        fileName: item.file_name
       }));
 
       setImages(imageUrls);
@@ -54,10 +55,11 @@ export function GalleryManager() {
       // Update local state immediately for smooth UI
       setImages(reorderedImages);
 
-      // Prepare the updates
+      // Prepare the updates with all required fields
       const updates = reorderedImages.map((image, index) => ({
         id: image.id,
-        display_order: index
+        display_order: index,
+        file_name: image.fileName // Include the file_name field
       }));
 
       // Update all images in the database

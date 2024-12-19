@@ -19,9 +19,9 @@ import {
 import { SortableImage } from "./SortableImage";
 
 interface ImageGridProps {
-  images: Array<{ url: string; id: string; displayOrder: number }>;
+  images: Array<{ url: string; id: string; displayOrder: number; fileName: string }>;
   onImageDelete: (imageUrl: string) => void;
-  onReorder: (newOrder: Array<{ url: string; id: string; displayOrder: number }>) => void;
+  onReorder: (newOrder: Array<{ url: string; id: string; displayOrder: number; fileName: string }>) => void;
 }
 
 export function ImageGrid({ images, onImageDelete, onReorder }: ImageGridProps) {
