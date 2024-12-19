@@ -1,13 +1,10 @@
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { X } from "lucide-react";
+import { ImageType } from "./types/gallery";
 
 interface SortableImageProps {
-  image: {
-    url: string;
-    id: string;
-    displayOrder: number;
-  };
+  image: ImageType;
   onDelete: () => void;
 }
 
