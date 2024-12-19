@@ -34,25 +34,34 @@ export function MemberActions({
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" className="h-8 w-8 p-0">
-            <span className="sr-only">Open menu</span>
-            <MoreHorizontal className="h-4 w-4" />
+          <Button 
+            variant="ghost" 
+            className="h-8 w-8 p-0 hover:bg-slate-100 dark:hover:bg-slate-800"
+            aria-label="Open menu"
+          >
+            <MoreHorizontal className="h-4 w-4 text-slate-600 dark:text-slate-400" />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          <DropdownMenuItem onClick={() => setShowChat(true)}>
+        <DropdownMenuContent align="end" className="w-[160px]">
+          <DropdownMenuItem 
+            onClick={() => setShowChat(true)}
+            className="cursor-pointer"
+          >
             <MessageCircle className="mr-2 h-4 w-4" />
             Message
           </DropdownMenuItem>
           {isCurrentUserAdmin && (
             <>
-              <DropdownMenuItem onClick={onEdit}>
+              <DropdownMenuItem 
+                onClick={onEdit}
+                className="cursor-pointer"
+              >
                 <Edit2 className="mr-2 h-4 w-4" />
                 Edit
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={onDelete}
-                className="text-red-600"
+                className="cursor-pointer text-red-600"
               >
                 <Trash2 className="mr-2 h-4 w-4" />
                 Delete
