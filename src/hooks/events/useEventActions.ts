@@ -32,23 +32,26 @@ export function useEventActions(eventId: string, onUpdate?: () => void) {
   const handleCardClick = (e: React.MouseEvent) => {
     const target = e.target as HTMLElement;
     
+    // Check if the click is on or within an interactive element
     const isInteractive = (
       target.tagName === 'BUTTON' ||
       target.tagName === 'A' ||
       target.tagName === 'INPUT' ||
       target.tagName === 'TEXTAREA' ||
+      target.closest('[role="button"]') ||
       target.closest('button') ||
       target.closest('a') ||
       target.closest('input') ||
       target.closest('textarea') ||
-      target.getAttribute('role') === 'button' ||
-      target.closest('[role="button"]') ||
       target.closest('[contenteditable="true"]') ||
       target.closest('dialog') ||
       target.closest('.dialog') ||
-      target.closest('[data-interactive="true"]')
+      target.closest('[data-interactive="true"]') ||
+      target.closest('.quill') ||  // Added to prevent navigation when clicking on the editor
+      target.closest('[role="dialog"]')
     );
 
+    // Only navigate if the click is not on an interactive element
     if (!isInteractive) {
       navigate(`/events/${eventId}`);
     }
