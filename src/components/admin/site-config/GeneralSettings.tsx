@@ -55,25 +55,6 @@ export function GeneralSettings({ configs, setConfigs, updateConfig }: GeneralSe
         </div>
 
         <div className="space-y-2">
-          <label className="text-sm font-medium">Contact Email</label>
-          <div className="flex gap-2">
-            <Input
-              type="email"
-              value={configs.contact_email}
-              onChange={(e) => setConfigs({ ...configs, contact_email: e.target.value })}
-              placeholder="Enter contact email"
-            />
-            <Button
-              onClick={() => updateConfig('contact_email', configs.contact_email)}
-              className="bg-[#0d97d1] hover:bg-[#0d97d1]/90"
-            >
-              <Check className="h-4 w-4 mr-1" />
-              Save
-            </Button>
-          </div>
-        </div>
-
-        <div className="space-y-2">
           <label className="text-sm font-medium">Social Links</label>
           <div className="space-y-4">
             {Object.entries(JSON.parse(configs.social_links || '{"facebook":"","instagram":"","youtube":""}')).map(([platform, url]) => (
