@@ -2,6 +2,8 @@ import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { AdminUserList } from "@/components/admin/AdminUserList";
+import { SiteConfigManager } from "@/components/admin/SiteConfigManager";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function Admin() {
   const { toast } = useToast();
@@ -13,7 +15,21 @@ export default function Admin() {
         <div className="bg-white rounded-lg shadow-lg overflow-hidden">
           <div className="p-4 sm:p-6">
             <h1 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6">Admin Dashboard</h1>
-            <AdminUserList />
+            
+            <Tabs defaultValue="users" className="space-y-4">
+              <TabsList>
+                <TabsTrigger value="users">Users</TabsTrigger>
+                <TabsTrigger value="site-config">Site Configuration</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="users">
+                <AdminUserList />
+              </TabsContent>
+
+              <TabsContent value="site-config">
+                <SiteConfigManager />
+              </TabsContent>
+            </Tabs>
           </div>
         </div>
       </div>
