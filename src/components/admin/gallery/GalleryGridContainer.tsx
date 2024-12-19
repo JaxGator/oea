@@ -11,6 +11,7 @@ import {
   SortableContext,
   sortableKeyboardCoordinates,
   rectSortingStrategy,
+  arrayMove
 } from '@dnd-kit/sortable';
 import { SortableImage } from "./SortableImage";
 import { ImageType } from "./types/gallery";
