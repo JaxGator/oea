@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { EventCard } from "@/components/EventCard";
 import { useFeaturedEvents } from "@/hooks/useFeaturedEvents";
+import { Card, CardContent } from "@/components/ui/card";
 
 export const FeaturedEvents = () => {
   const navigate = useNavigate();
@@ -17,6 +18,10 @@ export const FeaturedEvents = () => {
       return eventDate >= today;
     })
     .slice(0, 4); // Limit to 4 events
+
+  // Google Drive folder configuration
+  const folderId = "1at3FHbzf32luuL07mKGFwfMBpFJOwTHc";
+  const embedUrl = `https://drive.google.com/embeddedfolder?id=${folderId}#grid`;
 
   return (
     <section className="py-16 bg-[#F1F0FB]">
@@ -51,6 +56,22 @@ export const FeaturedEvents = () => {
             ))}
           </div>
         )}
+
+        {/* Photo Gallery Section */}
+        <div className="mt-16 space-y-4">
+          <h2 className="text-2xl font-bold text-gray-900">Photo Gallery</h2>
+          <Card>
+            <CardContent className="p-4">
+              <iframe 
+                src={embedUrl}
+                className="w-full min-h-[600px] border-0"
+                title="Photo Gallery"
+                allow="autoplay"
+                sandbox="allow-same-origin allow-scripts allow-popups allow-forms allow-downloads"
+              />
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </section>
   );
