@@ -12,11 +12,13 @@ export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
     storageKey: 'supabase.auth.token',
     debug: true,
     persistSession: true,
-    detectSessionInUrl: true
+    detectSessionInUrl: true,
+    autoRefreshToken: true
   },
   global: {
     headers: {
-      'x-application-name': 'oea-events'
+      'x-application-name': 'oea-events',
+      'apikey': supabaseAnonKey
     }
   }
 });
