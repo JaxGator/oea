@@ -20,16 +20,11 @@ const defaultCenter = {
 };
 
 export function EventsMap({ events }: EventsMapProps) {
+  const { user, profile } = useAuthState();
   const [googleMapsKey, setGoogleMapsKey] = useState<string>('');
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [eventLocations, setEventLocations] = useState<Array<{ event: Event; position: google.maps.LatLngLiteral }>>([]);
   const [error, setError] = useState<string | null>(null);
-  const { user, profile } = useAuthState();
-
-  // If user is not authenticated and approved, don't render the map
-  if (!user || !profile?.is_approved) {
-    return null;
-  }
 
   useEffect(() => {
     const fetchApiKey = async () => {
@@ -53,10 +48,11 @@ export function EventsMap({ events }: EventsMapProps) {
       }
     };
 
-    fetchApiKey();
-  }, []);
+    if (user && profile?.is_approved) {
+      fetchApiKey();
+    }
+  }, [user, profile]);
 
-  // Geocode addresses to coordinates
   useEffect(() => {
     const geocodeAddresses = async () => {
       if (!googleMapsKey || !events.length) return;
@@ -101,7 +97,7 @@ export function EventsMap({ events }: EventsMapProps) {
       }
     };
 
-    if (events.length > 0) {
+    if (googleMapsKey && events.length > 0) {
       geocodeAddresses();
     }
   }, [events, googleMapsKey]);
@@ -115,6 +111,11 @@ export function EventsMap({ events }: EventsMapProps) {
       map.fitBounds(bounds);
     }
   }, [eventLocations]);
+
+  // If user is not authenticated and approved, don't render the map
+  if (!user || !profile?.is_approved) {
+    return null;
+  }
 
   if (error) {
     return (
