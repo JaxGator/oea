@@ -6,10 +6,9 @@ import { Upload } from "lucide-react";
 
 interface ImageUploadFormProps {
   onUploadSuccess: () => void;
-  folderPath?: string;
 }
 
-export function ImageUploadForm({ onUploadSuccess, folderPath = '' }: ImageUploadFormProps) {
+export function ImageUploadForm({ onUploadSuccess }: ImageUploadFormProps) {
   const [isUploading, setIsUploading] = useState(false);
   const { toast } = useToast();
 
@@ -33,7 +32,6 @@ export function ImageUploadForm({ onUploadSuccess, folderPath = '' }: ImageUploa
       const timestamp = Date.now();
       const fileExt = file.name.split('.').pop();
       const fileName = `${timestamp}.${fileExt}`;
-      const fullPath = folderPath ? `${folderPath}/${fileName}` : fileName;
 
       // Convert file to ArrayBuffer
       const arrayBuffer = await file.arrayBuffer();
@@ -41,7 +39,7 @@ export function ImageUploadForm({ onUploadSuccess, folderPath = '' }: ImageUploa
 
       const { error: uploadError } = await supabase.storage
         .from('gallery')
-        .upload(fullPath, fileData, {
+        .upload(fileName, fileData, {
           contentType: file.type,
           duplex: 'half',
           cacheControl: '3600'
