@@ -41,11 +41,14 @@ const Auth = () => {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log("Auth state change:", event, session); // Add logging
       if (event === 'SIGNED_IN' && session) {
         navigate("/");
       } else if (event === 'SIGNED_OUT') {
         // Clear any stored session data
         await supabase.auth.signOut();
+      } else if (event === 'USER_UPDATED') {
+        console.log("User updated:", session); // Add logging
       }
     });
 
@@ -80,8 +83,22 @@ const Auth = () => {
                   },
                 },
               },
+              className: {
+                container: 'auth-container',
+                button: 'auth-button',
+                input: 'auth-input',
+              },
             }}
             providers={[]}
+            redirectTo={window.location.origin}
+            onError={(error) => {
+              console.error("Auth error:", error);
+              toast({
+                title: "Authentication Error",
+                description: error.message || "Please check your credentials and try again",
+                variant: "destructive",
+              });
+            }}
           />
         </div>
       </div>
