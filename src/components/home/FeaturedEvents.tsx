@@ -5,10 +5,9 @@ import { EventCard } from "@/components/EventCard";
 import { useFeaturedEvents } from "@/hooks/useFeaturedEvents";
 import { Card, CardContent } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
-import {
-  Dialog,
-  DialogContent,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { WixEventImporter } from "@/components/event/WixEventImporter";
+import { useAuthState } from "@/hooks/useAuthState";
 
 export const FeaturedEvents = () => {
   const navigate = useNavigate();
@@ -16,6 +15,8 @@ export const FeaturedEvents = () => {
   const [galleryImages, setGalleryImages] = useState<string[]>([]);
   const [isLoadingImages, setIsLoadingImages] = useState(true);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [showImporter, setShowImporter] = useState(false);
+  const { user } = useAuthState();
 
   // Filter out past events and limit to 4 upcoming events
   const upcomingEvents = events
@@ -66,13 +67,24 @@ export const FeaturedEvents = () => {
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-center mb-8">
           <h2 className="text-2xl font-bold text-gray-900">Upcoming Events</h2>
-          <Button 
-            onClick={() => navigate("/events")}
-            variant="outline"
-            className="bg-[#0d97d1] hover:bg-[#0d97d1]/90 text-white border-[#0d97d1] hover:border-[#0d97d1]/90"
-          >
-            View All Events
-          </Button>
+          <div className="flex gap-4">
+            {user && (
+              <Button
+                onClick={() => setShowImporter(true)}
+                variant="outline"
+                className="bg-white hover:bg-gray-50"
+              >
+                Import Events
+              </Button>
+            )}
+            <Button 
+              onClick={() => navigate("/events")}
+              variant="outline"
+              className="bg-[#0d97d1] hover:bg-[#0d97d1]/90 text-white border-[#0d97d1] hover:border-[#0d97d1]/90"
+            >
+              View All Events
+            </Button>
+          </div>
         </div>
         
         {isLoading ? (
@@ -94,6 +106,12 @@ export const FeaturedEvents = () => {
             ))}
           </div>
         )}
+
+        <Dialog open={showImporter} onOpenChange={setShowImporter}>
+          <DialogContent className="max-w-3xl">
+            <WixEventImporter />
+          </DialogContent>
+        </Dialog>
 
         {/* Photo Gallery Section */}
         <div className="mt-16 space-y-4">
