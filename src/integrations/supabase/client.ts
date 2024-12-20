@@ -17,7 +17,8 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, 
   global: {
     headers: {
       'Content-Type': 'application/json',
-      'X-Client-Info': 'supabase-js-web'
+      'X-Client-Info': 'supabase-js-web',
+      'apikey': SUPABASE_ANON_KEY
     }
   },
   db: {
@@ -37,14 +38,14 @@ export const testSupabaseConnection = async () => {
       .from('profiles')
       .select('id')
       .limit(1)
-      .single();
+      .maybeSingle();
       
     if (error) {
       console.error('Supabase connection test error:', error);
       return false;
     }
     
-    console.log('Supabase connection test successful:', data);
+    console.log('Supabase connection test successful');
     return true;
   } catch (error) {
     console.error('Supabase connection test failed:', error);
