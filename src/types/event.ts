@@ -9,17 +9,20 @@ export interface Event {
   created_by: string;
   created_at: string;
   image_url: string;
-  rsvps?: {
-    id: string;
-    event_id: string;
-    user_id: string;
-    response: 'attending' | 'not_attending' | 'maybe';
-    created_at: string;
-    profiles: {
-      full_name: string | null;
-      username: string;
-    };
-  }[];
+  rsvps?: EventRSVP[];
+}
+
+export interface EventRSVP {
+  id: string;
+  event_id: string;
+  user_id: string;
+  response: 'attending' | 'not_attending' | 'maybe';
+  created_at: string;
+  profiles: {
+    id?: string;
+    full_name: string | null;
+    username: string;
+  };
 }
 
 export interface EventFormData {

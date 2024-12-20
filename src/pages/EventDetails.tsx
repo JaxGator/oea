@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { format } from "date-fns";
-import { Event } from "@/types/event";
+import { Event, EventRSVP } from "@/types/event";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function EventDetails() {
@@ -14,7 +14,6 @@ export default function EventDetails() {
   const { data: event, isLoading } = useQuery({
     queryKey: ['event', eventId],
     queryFn: async () => {
-      // First, fetch the event details
       const { data: eventData, error: eventError } = await supabase
         .from('events')
         .select('*')
@@ -23,42 +22,40 @@ export default function EventDetails() {
 
       if (eventError) throw eventError;
 
-      // Then, fetch the RSVPs and associated profiles
       const { data: rsvpData, error: rsvpError } = await supabase
         .from('event_rsvps')
-        .select('id, response, user_id')
+        .select(`
+          id,
+          event_id,
+          user_id,
+          response,
+          created_at,
+          profiles (
+            id,
+            full_name,
+            username
+          )
+        `)
         .eq('event_id', eventId);
 
       if (rsvpError) throw rsvpError;
 
-      // If there are RSVPs, fetch the associated profiles
-      if (rsvpData && rsvpData.length > 0) {
-        const userIds = rsvpData.map(rsvp => rsvp.user_id);
-        const { data: profilesData, error: profilesError } = await supabase
-          .from('profiles')
-          .select('id, full_name, username')
-          .in('id', userIds);
-
-        if (profilesError) throw profilesError;
-
-        // Combine the RSVP data with profile information
-        const rsvpsWithProfiles = rsvpData.map(rsvp => ({
-          ...rsvp,
-          profiles: profilesData?.find(profile => profile.id === rsvp.user_id) || {
-            full_name: null,
-            username: 'Unknown User'
-          }
-        }));
-
-        return {
-          ...eventData,
-          rsvps: rsvpsWithProfiles
-        } as Event;
-      }
+      const rsvpsWithProfiles = rsvpData?.map((rsvp): EventRSVP => ({
+        id: rsvp.id,
+        event_id: rsvp.event_id,
+        user_id: rsvp.user_id,
+        response: rsvp.response,
+        created_at: rsvp.created_at,
+        profiles: {
+          id: rsvp.profiles?.id,
+          full_name: rsvp.profiles?.full_name,
+          username: rsvp.profiles?.username || 'Unknown User'
+        }
+      }));
 
       return {
         ...eventData,
-        rsvps: []
+        rsvps: rsvpsWithProfiles
       } as Event;
     },
   });
