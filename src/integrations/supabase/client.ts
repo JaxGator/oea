@@ -18,7 +18,8 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, 
   global: {
     headers: {
       'Content-Type': 'application/json',
-      'X-Client-Info': 'supabase-js-web'
+      'X-Client-Info': 'supabase-js-web',
+      'apikey': SUPABASE_ANON_KEY
     }
   },
   db: {
@@ -31,14 +32,14 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, 
   }
 });
 
-// Add a simple test function to verify connection
+// Add a test function to verify connection
 export const testSupabaseConnection = async () => {
   try {
     const { data, error } = await supabase
       .from('profiles')
       .select('id')
       .limit(1)
-      .single();
+      .maybeSingle();
       
     if (error) {
       console.error('Supabase connection test error:', error);
@@ -52,3 +53,10 @@ export const testSupabaseConnection = async () => {
     return false;
   }
 };
+
+// Call test connection on init
+testSupabaseConnection().then(isConnected => {
+  if (!isConnected) {
+    console.error('Failed to establish initial Supabase connection');
+  }
+});

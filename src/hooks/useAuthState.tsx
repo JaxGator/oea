@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { AuthState, Profile } from "@/types/auth";
+import { toast } from "sonner";
 
 export function useAuthState() {
   const [state, setState] = useState<AuthState>({
@@ -11,7 +12,14 @@ export function useAuthState() {
 
   useEffect(() => {
     // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(({ data: { session }, error }) => {
+      if (error) {
+        console.error("Session error:", error);
+        toast.error("Failed to get session");
+        setState(prev => ({ ...prev, isLoading: false }));
+        return;
+      }
+
       if (session?.user) {
         setState((prev) => ({
           ...prev,
@@ -56,7 +64,7 @@ export function useAuthState() {
         .from("profiles")
         .select("*")
         .eq("id", userId)
-        .single();
+        .maybeSingle();
 
       if (error) {
         throw error;
@@ -69,6 +77,7 @@ export function useAuthState() {
       }));
     } catch (error) {
       console.error("Error fetching profile:", error);
+      toast.error("Failed to fetch profile data");
       setState((prev) => ({
         ...prev,
         isLoading: false,
