@@ -2,10 +2,11 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, UserCircle } from "lucide-react";
 import { format } from "date-fns";
 import { Event, EventRSVP } from "@/types/event";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export default function EventDetails() {
   const { eventId } = useParams();
@@ -33,10 +34,16 @@ export default function EventDetails() {
           profiles (
             id,
             full_name,
-            username
+            username,
+            avatar_url
+          ),
+          event_guests (
+            id,
+            first_name
           )
         `)
-        .eq('event_id', eventId);
+        .eq('event_id', eventId)
+        .eq('response', 'attending');
 
       if (rsvpError) throw rsvpError;
 
@@ -49,8 +56,10 @@ export default function EventDetails() {
         profiles: {
           id: rsvp.profiles?.id,
           full_name: rsvp.profiles?.full_name,
-          username: rsvp.profiles?.username || 'Unknown User'
-        }
+          username: rsvp.profiles?.username || 'Unknown User',
+          avatar_url: rsvp.profiles?.avatar_url
+        },
+        guests: rsvp.event_guests || []
       }));
 
       return {
@@ -121,10 +130,39 @@ export default function EventDetails() {
 
             <div className="border-t pt-6">
               <h2 className="text-xl font-semibold mb-4">Attendees</h2>
-              <div className="space-y-2">
+              <div className="space-y-6">
                 {event.rsvps?.filter(rsvp => rsvp.response === 'attending').map(rsvp => (
-                  <div key={rsvp.id} className="text-gray-600">
-                    {rsvp.profiles.full_name || rsvp.profiles.username}
+                  <div key={rsvp.id} className="space-y-3">
+                    <div className="flex items-center space-x-3">
+                      <Avatar className="h-10 w-10">
+                        <AvatarImage src={rsvp.profiles.avatar_url || ''} />
+                        <AvatarFallback>
+                          <UserCircle className="h-6 w-6 text-gray-400" />
+                        </AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <p className="font-medium">
+                          {rsvp.profiles.full_name || rsvp.profiles.username}
+                        </p>
+                      </div>
+                    </div>
+                    {rsvp.guests && rsvp.guests.length > 0 && (
+                      <div className="ml-8 pl-4 border-l border-gray-200">
+                        <p className="text-sm text-gray-500 mb-2">Guests:</p>
+                        <div className="space-y-2">
+                          {rsvp.guests.map(guest => (
+                            <div key={guest.id} className="flex items-center space-x-2">
+                              <Avatar className="h-8 w-8">
+                                <AvatarFallback>
+                                  <UserCircle className="h-5 w-5 text-gray-400" />
+                                </AvatarFallback>
+                              </Avatar>
+                              <span className="text-sm">{guest.first_name}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
