@@ -28,10 +28,13 @@ export function ImageUploadForm({ onUploadSuccess }: ImageUploadFormProps) {
 
     setIsUploading(true);
     try {
-      // Upload the file directly without wrapping it in FormData
+      // Generate a unique filename while preserving the extension
+      const fileExt = file.name.split('.').pop();
+      const uniqueFileName = `${crypto.randomUUID()}.${fileExt}`;
+
       const { error: uploadError } = await supabase.storage
         .from('gallery')
-        .upload(file.name, file, {
+        .upload(uniqueFileName, file, {
           cacheControl: '3600',
           contentType: file.type,
           upsert: true
