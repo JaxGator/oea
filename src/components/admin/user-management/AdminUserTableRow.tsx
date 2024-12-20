@@ -17,6 +17,7 @@ interface Profile {
   is_admin: boolean;
   is_approved: boolean;
   is_member: boolean;
+  created_at: string;  // Added this field to match the type
 }
 
 interface AdminUserTableRowProps {
