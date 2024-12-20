@@ -62,7 +62,30 @@ serve(async (req) => {
 
     console.log('Attempting to delete user with ID:', userId)
 
-    // Delete the user's profile first (this will cascade to related records)
+    // First, delete all related records that might prevent user deletion
+    // Delete event RSVPs and guests
+    const { error: rsvpError } = await supabaseAdmin
+      .from('event_rsvps')
+      .delete()
+      .eq('user_id', userId)
+
+    if (rsvpError) {
+      console.error('Error deleting RSVPs:', rsvpError)
+      throw rsvpError
+    }
+
+    // Delete messages
+    const { error: messagesError } = await supabaseAdmin
+      .from('messages')
+      .delete()
+      .or(`sender_id.eq.${userId},receiver_id.eq.${userId}`)
+
+    if (messagesError) {
+      console.error('Error deleting messages:', messagesError)
+      throw messagesError
+    }
+
+    // Delete the user's profile
     const { error: profileError } = await supabaseAdmin
       .from('profiles')
       .delete()
@@ -73,7 +96,7 @@ serve(async (req) => {
       throw profileError
     }
 
-    // Delete the user from auth.users
+    // Finally, delete the user from auth.users
     const { error: deleteError } = await supabaseAdmin.auth.admin.deleteUser(userId)
 
     if (deleteError) {
@@ -98,7 +121,10 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error in delete-user function:', error)
     return new Response(
-      JSON.stringify({ error: 'Database error deleting user' }),
+      JSON.stringify({ 
+        error: 'Database error deleting user',
+        details: error.message 
+      }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   }
