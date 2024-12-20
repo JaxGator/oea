@@ -19,7 +19,7 @@ export function EventForm({ onSuccess, initialData }: EventFormProps) {
       time: "",
       location: "",
       max_guests: 50,
-      image_url: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&q=80",
+      image_url: "/lovable-uploads/609edf01-3169-439a-80f5-f6f15de7a5a6.png",
     },
   });
 
