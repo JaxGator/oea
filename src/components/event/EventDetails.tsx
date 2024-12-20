@@ -1,5 +1,5 @@
 import { CalendarIcon, MapPinIcon, UsersIcon } from "lucide-react";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { useAuthState } from "@/hooks/useAuthState";
 import { useQuery } from "@tanstack/react-query";
@@ -33,7 +33,6 @@ export function EventDetails({
   const showLocation = user && profile?.is_approved;
   const isWixEvent = description === 'Imported from Wix';
 
-  // Fetch associated photo albums
   const { data: albums } = useQuery({
     queryKey: ['eventAlbums', eventId],
     queryFn: async () => {
@@ -51,18 +50,15 @@ export function EventDetails({
       
       return data || [];
     },
-    enabled: !!eventId // Only run query if eventId exists
+    enabled: !!eventId
   });
-
-  // Create a Date object in local timezone
-  const eventDate = new Date(`${date}T00:00:00`);
 
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-2 text-gray-600">
         <CalendarIcon className="w-4 h-4" />
         <span className="text-sm">
-          {format(eventDate, "EEEE, MMMM do, yyyy")} at {time}
+          {format(parseISO(date), "EEEE, MMMM do, yyyy")} at {time}
         </span>
       </div>
       
