@@ -28,10 +28,14 @@ export function ImageUploadForm({ onUploadSuccess }: ImageUploadFormProps) {
 
     setIsUploading(true);
     try {
+      // Create FormData and append the file
+      const formData = new FormData();
+      formData.append('file', file);
+
       // Upload the file with its original name
       const { error: uploadError } = await supabase.storage
         .from('gallery')
-        .upload(file.name, file, {
+        .upload(file.name, formData.get('file') as File, {
           contentType: file.type,
           upsert: true
         });
