@@ -32,7 +32,7 @@ export function EditableContent({ content, pageId, sectionId, onUpdate }: Editab
           content={content}
           editedContent={editedContent}
           onContentChange={setEditedContent}
-          onSave={() => handleSave(onUpdate)}
+          onSave={handleSave}
           onCancel={() => {
             setEditedContent(content);
             setIsEditing(false);
