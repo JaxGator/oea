@@ -10,7 +10,10 @@ interface ViewContentProps {
 export function ViewContent({ content, onEdit, showEditButton = true }: ViewContentProps) {
   return (
     <>
-      <div className="max-w-none whitespace-pre-wrap">{content}</div>
+      <div 
+        className="prose max-w-none"
+        dangerouslySetInnerHTML={{ __html: content }}
+      />
       {showEditButton && (
         <Button
           variant="outline"

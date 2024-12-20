@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { CheckIcon, XIcon } from "lucide-react";
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
 
 interface EditContentProps {
   content: string;
@@ -17,14 +18,28 @@ export function EditContent({
   onSave, 
   onCancel 
 }: EditContentProps) {
+  const modules = {
+    toolbar: [
+      [{ 'header': [1, 2, 3, false] }],
+      ['bold', 'italic', 'underline', 'strike'],
+      [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+      ['link'],
+      ['clean']
+    ],
+  };
+
   return (
     <div className="space-y-2">
-      <Textarea
-        value={editedContent}
-        onChange={(e) => onContentChange(e.target.value)}
-        className="min-h-[200px] w-full"
-      />
-      <div className="flex justify-end gap-2">
+      <div className="min-h-[200px]">
+        <ReactQuill
+          theme="snow"
+          value={editedContent}
+          onChange={onContentChange}
+          modules={modules}
+          className="bg-white"
+        />
+      </div>
+      <div className="flex justify-end gap-2 mt-14">
         <Button
           variant="outline"
           size="sm"
