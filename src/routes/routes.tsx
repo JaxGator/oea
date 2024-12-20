@@ -9,9 +9,12 @@ import Store from "@/pages/Store";
 import Profile from "@/pages/Profile";
 import Admin from "@/pages/Admin";
 import Auth from "@/pages/Auth";
+import Maintenance from "@/pages/Maintenance";
 import { TermsAndConditions } from "@/components/legal/TermsAndConditions";
 import { PrivacyPolicy } from "@/components/legal/PrivacyPolicy";
 import { useAuthState } from "@/hooks/useAuthState";
+import { useMaintenanceMode } from "@/hooks/useMaintenanceMode";
+import { Loader2 } from "lucide-react";
 
 // Protected route wrapper component
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -28,12 +31,34 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   return children;
 }
 
+// Maintenance mode wrapper component
+function MaintenanceModeWrapper({ children }: { children: React.ReactNode }) {
+  const { isMaintenanceMode, isLoading, profile } = useMaintenanceMode();
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
+
+  // Allow admins to bypass maintenance mode
+  if (isMaintenanceMode && !profile?.is_admin) {
+    return <Navigate to="/maintenance" replace />;
+  }
+
+  return children;
+}
+
 export const router = createBrowserRouter([
   {
     element: (
-      <AppLayout>
-        <Outlet />
-      </AppLayout>
+      <MaintenanceModeWrapper>
+        <AppLayout>
+          <Outlet />
+        </AppLayout>
+      </MaintenanceModeWrapper>
     ),
     children: [
       {
@@ -93,5 +118,9 @@ export const router = createBrowserRouter([
   {
     path: "/auth",
     element: <Auth />,
+  },
+  {
+    path: "/maintenance",
+    element: <Maintenance />,
   },
 ]);
