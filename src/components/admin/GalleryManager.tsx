@@ -2,7 +2,9 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { ImageUploadForm } from "./gallery/ImageUploadForm";
 import { ImageGrid } from "./gallery/ImageGrid";
+import { AlbumCreateForm } from "./gallery/AlbumCreateForm";
 import { useToast } from "@/hooks/use-toast";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export function GalleryManager() {
   const [images, setImages] = useState<Array<{ url: string; id: string }>>([]);
@@ -73,12 +75,25 @@ export function GalleryManager() {
   }
 
   return (
-    <div className="space-y-6">
-      <ImageUploadForm onUploadSuccess={fetchImages} />
-      <ImageGrid 
-        images={images} 
-        onImageDelete={handleImageDelete}
-      />
-    </div>
+    <Tabs defaultValue="images" className="space-y-6">
+      <TabsList>
+        <TabsTrigger value="images">Images</TabsTrigger>
+        <TabsTrigger value="albums">Albums</TabsTrigger>
+      </TabsList>
+      
+      <TabsContent value="images" className="space-y-6">
+        <ImageUploadForm onUploadSuccess={fetchImages} />
+        <ImageGrid 
+          images={images} 
+          onImageDelete={handleImageDelete}
+        />
+      </TabsContent>
+      
+      <TabsContent value="albums">
+        <div className="space-y-6">
+          <AlbumCreateForm onSuccess={fetchImages} />
+        </div>
+      </TabsContent>
+    </Tabs>
   );
 }
