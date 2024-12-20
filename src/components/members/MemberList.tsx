@@ -1,12 +1,13 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { UserCircle } from "lucide-react";
+import { UserCircle, MessageSquare } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { MemberActions } from "./MemberActions";
 import { EditMemberDialog } from "./EditMemberDialog";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Profile {
   id: string;
@@ -16,6 +17,7 @@ interface Profile {
   is_admin: boolean;
   is_approved: boolean;
   is_member: boolean;
+  has_unread_messages?: boolean;
 }
 
 interface MemberListProps {
@@ -24,10 +26,43 @@ interface MemberListProps {
   isMobile: boolean;
 }
 
-export function MemberList({ members, currentUserIsAdmin, isMobile }: MemberListProps) {
+export function MemberList({ members: initialMembers, currentUserIsAdmin, isMobile }: MemberListProps) {
+  const [members, setMembers] = useState<Profile[]>(initialMembers);
   const [editingMember, setEditingMember] = useState<Profile | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
+
+  useEffect(() => {
+    setMembers(initialMembers);
+  }, [initialMembers]);
+
+  useEffect(() => {
+    const channel = supabase
+      .channel('messages-channel')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'messages'
+        },
+        (payload: any) => {
+          setMembers(prevMembers => 
+            prevMembers.map(member => {
+              if (member.id === payload.new.receiver_id) {
+                return { ...member, has_unread_messages: true };
+              }
+              return member;
+            })
+          );
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
 
   return (
     <>
@@ -46,7 +81,12 @@ export function MemberList({ members, currentUserIsAdmin, isMobile }: MemberList
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium truncate">{member.username}</p>
+                  <div className="flex items-center gap-2">
+                    <p className="text-sm font-medium truncate">{member.username}</p>
+                    {member.has_unread_messages && (
+                      <MessageSquare className="h-4 w-4 text-primary animate-pulse" />
+                    )}
+                  </div>
                   <p className="text-sm text-gray-500 truncate">{member.full_name || '-'}</p>
                   <div className="flex flex-wrap gap-2 mt-2">
                     {member.is_admin && (

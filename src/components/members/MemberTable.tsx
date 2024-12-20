@@ -7,13 +7,14 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { UserCircle } from "lucide-react";
+import { UserCircle, MessageSquare } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { MemberActions } from "./MemberActions";
 import { EditMemberDialog } from "./EditMemberDialog";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Profile {
   id: string;
@@ -23,6 +24,7 @@ interface Profile {
   is_admin: boolean;
   is_approved: boolean;
   is_member: boolean;
+  has_unread_messages?: boolean;
 }
 
 interface MemberTableProps {
@@ -30,10 +32,43 @@ interface MemberTableProps {
   currentUserIsAdmin: boolean;
 }
 
-export function MemberTable({ members, currentUserIsAdmin }: MemberTableProps) {
+export function MemberTable({ members: initialMembers, currentUserIsAdmin }: MemberTableProps) {
+  const [members, setMembers] = useState<Profile[]>(initialMembers);
   const [editingMember, setEditingMember] = useState<Profile | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
+
+  useEffect(() => {
+    setMembers(initialMembers);
+  }, [initialMembers]);
+
+  useEffect(() => {
+    const channel = supabase
+      .channel('messages-channel')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'messages'
+        },
+        (payload: any) => {
+          setMembers(prevMembers => 
+            prevMembers.map(member => {
+              if (member.id === payload.new.receiver_id) {
+                return { ...member, has_unread_messages: true };
+              }
+              return member;
+            })
+          );
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
 
   return (
     <>
@@ -61,7 +96,14 @@ export function MemberTable({ members, currentUserIsAdmin }: MemberTableProps) {
                   </AvatarFallback>
                 </Avatar>
               </TableCell>
-              <TableCell>{member.username}</TableCell>
+              <TableCell>
+                <div className="flex items-center gap-2">
+                  {member.username}
+                  {member.has_unread_messages && (
+                    <MessageSquare className="h-4 w-4 text-primary animate-pulse" />
+                  )}
+                </div>
+              </TableCell>
               <TableCell>{member.full_name || '-'}</TableCell>
               <TableCell>
                 <div className="flex gap-2">
