@@ -49,14 +49,16 @@ export function EventDetails({
         </div>
       )}
 
-      {isWixEvent && (
-        <div className="flex items-center gap-2 text-gray-600">
-          <UsersIcon className="w-4 h-4" />
-          <span className="text-sm">
-            {rsvpCount} / {maxGuests} attendees
-          </span>
-        </div>
-      )}
+      <div className="flex items-center gap-2 text-gray-600">
+        <UsersIcon className="w-4 h-4" />
+        <span className="text-sm">
+          {isWixEvent ? (
+            `${rsvpCount} attendees`
+          ) : (
+            `${rsvpCount} / ${maxGuests} attendees`
+          )}
+        </span>
+      </div>
 
       {isWixEvent && attendeeNames.length > 0 && (
         <div className="text-sm text-gray-600">
