@@ -19,6 +19,11 @@ const Auth = () => {
           console.error("Session check error:", error);
           // Clear any invalid session data
           await supabase.auth.signOut();
+          toast({
+            title: "Session Error",
+            description: "Please sign in again",
+            variant: "destructive",
+          });
           return;
         }
 
@@ -41,14 +46,14 @@ const Auth = () => {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log("Auth state change:", event, session); // Add logging
+      console.log("Auth state change:", event, session);
       if (event === 'SIGNED_IN' && session) {
         navigate("/");
       } else if (event === 'SIGNED_OUT') {
         // Clear any stored session data
         await supabase.auth.signOut();
       } else if (event === 'USER_UPDATED') {
-        console.log("User updated:", session); // Add logging
+        console.log("User updated:", session);
       }
     });
 
@@ -91,6 +96,7 @@ const Auth = () => {
             }}
             providers={[]}
             redirectTo={window.location.origin}
+            magicLink={false}
           />
         </div>
       </div>
