@@ -1,4 +1,4 @@
-import { Bike, Mountain, Sailboat, PersonStanding, Users, Fish, CircleDot, Waves } from "lucide-react";
+import { Bike, Mountain, Sailboat, PersonStanding, Users, Fish, CircleDot, Waves, Trophy, Golf, SwimmingPool } from "lucide-react";
 import { EditableContent } from "@/components/EditableContent";
 
 interface ActivityType {
@@ -15,6 +15,10 @@ const activities: ActivityType[] = [
   { name: "Social Events", icon: <Users className="h-8 w-8" /> },
   { name: "Fishing", icon: <Fish className="h-8 w-8" /> },
   { name: "Pickleball", icon: <CircleDot className="h-8 w-8" /> },
+  { name: "Snorkeling", icon: <Waves className="h-8 w-8" /> },
+  { name: "Swimming", icon: <SwimmingPool className="h-8 w-8" /> },
+  { name: "Sporting Events", icon: <Trophy className="h-8 w-8" /> },
+  { name: "Golf", icon: <Golf className="h-8 w-8" /> },
 ];
 
 export function ActivityTypes() {
