@@ -17,10 +17,16 @@ export default function About() {
             imageAlt="Jacksonville, Florida skyline at sunset"
           />
           
+          <div className="prose max-w-none bg-white p-6 rounded-lg shadow-sm mb-8">
+            <h2 className="text-2xl font-semibold mb-4" dangerouslySetInnerHTML={{ __html: content.missionTitle }} />
+            <div dangerouslySetInnerHTML={{ __html: content.mission }} />
+          </div>
+
           <ActivityTypes />
           
-          <div className="space-y-8">
-            <AboutContent content={content} />
+          <div className="prose max-w-none bg-white p-6 rounded-lg shadow-sm">
+            <h2 className="text-2xl font-semibold mb-4" dangerouslySetInnerHTML={{ __html: content.guidelinesTitle }} />
+            <div dangerouslySetInnerHTML={{ __html: content.guidelines }} />
           </div>
         </div>
       </div>
