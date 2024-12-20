@@ -36,14 +36,42 @@ export function useContentEditor(initialContent: string, pageId: string, section
         return;
       }
 
-      const { error } = await supabase
+      // First, check if the record exists
+      const { data: existingContent } = await supabase
         .from('page_content')
-        .upsert({
-          page_id: pageId,
-          section_id: sectionId,
-          content: editedContent,
-          updated_by: user.id,
-        });
+        .select('id')
+        .eq('page_id', pageId)
+        .eq('section_id', sectionId)
+        .maybeSingle();
+
+      let error;
+      
+      if (existingContent) {
+        // Update existing record
+        const { error: updateError } = await supabase
+          .from('page_content')
+          .update({
+            content: editedContent,
+            updated_by: user.id,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('page_id', pageId)
+          .eq('section_id', sectionId);
+          
+        error = updateError;
+      } else {
+        // Insert new record
+        const { error: insertError } = await supabase
+          .from('page_content')
+          .insert({
+            page_id: pageId,
+            section_id: sectionId,
+            content: editedContent,
+            updated_by: user.id,
+          });
+          
+        error = insertError;
+      }
 
       if (error) throw error;
 
