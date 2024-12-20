@@ -28,14 +28,11 @@ export function ImageUploadForm({ onUploadSuccess }: ImageUploadFormProps) {
 
     setIsUploading(true);
     try {
-      // Create FormData and append the file
-      const formData = new FormData();
-      formData.append('file', file);
-
-      // Upload the file with its original name
+      // Upload the file directly without wrapping it in FormData
       const { error: uploadError } = await supabase.storage
         .from('gallery')
-        .upload(file.name, formData.get('file') as File, {
+        .upload(file.name, file, {
+          cacheControl: '3600',
           contentType: file.type,
           upsert: true
         });
@@ -56,7 +53,7 @@ export function ImageUploadForm({ onUploadSuccess }: ImageUploadFormProps) {
         variant: "destructive",
       });
     } finally {
-      setIsUploading(false);
+      setIsLoading(false);
       // Reset the input
       event.target.value = '';
     }
