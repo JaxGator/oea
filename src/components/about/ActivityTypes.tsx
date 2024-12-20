@@ -1,5 +1,6 @@
 import { Bike, Mountain, Sailboat, Footprints, Users, Fish, CircleDot, Waves, Trophy, Flag } from "lucide-react";
 import { EditableContent } from "@/components/EditableContent";
+import { supabase } from "@/integrations/supabase/client";
 
 interface ActivityType {
   name: string;
