@@ -22,19 +22,36 @@ const activities: ActivityType[] = [
 ];
 
 export function ActivityTypes() {
-  const handleTitleUpdate = (newContent: string) => {
-    // The onUpdate callback will be handled by the EditableContent component
-    console.log('Title updated:', newContent);
+  const handleTitleUpdate = async (newContent: string) => {
+    try {
+      const { error } = await supabase
+        .from('page_content')
+        .upsert({
+          page_id: 'about',
+          section_id: 'activities-title',
+          content: newContent,
+        }, {
+          onConflict: 'page_id,section_id'
+        });
+
+      if (error) {
+        console.error('Error updating content:', error);
+      }
+    } catch (error) {
+      console.error('Error:', error);
+    }
   };
 
   return (
     <div className="bg-white p-6 rounded-lg shadow-sm mb-8">
-      <EditableContent
-        content="Our Activities"
-        pageId="about"
-        sectionId="activities-title"
-        onUpdate={handleTitleUpdate}
-      />
+      <div className="text-2xl font-semibold mb-4">
+        <EditableContent
+          content="Our Activities"
+          pageId="about"
+          sectionId="activities-title"
+          onUpdate={handleTitleUpdate}
+        />
+      </div>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-6">
         {activities.map((activity) => (
           <div
