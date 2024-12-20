@@ -5,10 +5,21 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { ChatDialog } from "./ChatDialog";
 import { useAuthState } from "@/hooks/useAuthState";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface MemberActionsProps {
   memberId: string;
@@ -26,6 +37,7 @@ export function MemberActions({
   onDelete,
 }: MemberActionsProps) {
   const [showChat, setShowChat] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const { user } = useAuthState();
 
   if (!user) return null;
@@ -52,6 +64,7 @@ export function MemberActions({
           </DropdownMenuItem>
           {isCurrentUserAdmin && (
             <>
+              <DropdownMenuSeparator />
               <DropdownMenuItem 
                 onClick={onEdit}
                 className="cursor-pointer"
@@ -60,7 +73,7 @@ export function MemberActions({
                 Edit
               </DropdownMenuItem>
               <DropdownMenuItem
-                onClick={onDelete}
+                onClick={() => setShowDeleteDialog(true)}
                 className="cursor-pointer text-red-600"
               >
                 <Trash2 className="mr-2 h-4 w-4" />
@@ -78,6 +91,29 @@ export function MemberActions({
         recipientName={memberName}
         currentUserId={user.id}
       />
+
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete User</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete {memberName}? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                onDelete();
+                setShowDeleteDialog(false);
+              }}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }

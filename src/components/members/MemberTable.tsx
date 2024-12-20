@@ -1,22 +1,12 @@
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { UserCircle, MessageSquare } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { MemberActions } from "./MemberActions";
-import { EditMemberDialog } from "./EditMemberDialog";
-import { useState, useEffect } from "react";
-import { useToast } from "@/hooks/use-toast";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { EditMemberDialog } from "./EditMemberDialog";
+import { MemberActions } from "./MemberActions";
+import { useToast } from "@/hooks/use-toast";
+import { useAuthState } from "@/hooks/useAuthState";
 
-interface Profile {
+interface Member {
   id: string;
   username: string;
   full_name: string | null;
@@ -24,140 +14,117 @@ interface Profile {
   is_admin: boolean;
   is_approved: boolean;
   is_member: boolean;
-  has_unread_messages?: boolean;
 }
 
-interface MemberTableProps {
-  members: Profile[];
-  currentUserIsAdmin: boolean;
-}
-
-export function MemberTable({ members: initialMembers, currentUserIsAdmin }: MemberTableProps) {
-  const [members, setMembers] = useState<Profile[]>(initialMembers);
-  const [editingMember, setEditingMember] = useState<Profile | null>(null);
+export function MemberTable() {
+  const [editingMember, setEditingMember] = useState<Member | null>(null);
+  const { profile } = useAuthState();
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  useEffect(() => {
-    setMembers(initialMembers);
-  }, [initialMembers]);
+  const { data: members = [], isLoading } = useQuery({
+    queryKey: ['members'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .order('username');
 
-  useEffect(() => {
-    const channel = supabase
-      .channel('messages-channel')
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'messages'
-        },
-        (payload: any) => {
-          setMembers(prevMembers => 
-            prevMembers.map(member => {
-              if (member.id === payload.new.receiver_id) {
-                return { ...member, has_unread_messages: true };
-              }
-              return member;
-            })
-          );
-        }
-      )
-      .subscribe();
+      if (error) throw error;
+      return data as Member[];
+    },
+  });
 
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, []);
+  const handleDeleteMember = async (memberId: string) => {
+    try {
+      const { error } = await supabase.functions.invoke('delete-user', {
+        body: { userId: memberId }
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Member deleted successfully",
+      });
+
+      queryClient.invalidateQueries({ queryKey: ['members'] });
+    } catch (error) {
+      console.error('Error deleting member:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete member",
+        variant: "destructive",
+      });
+    }
+  };
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
 
   return (
-    <>
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Profile</TableHead>
-            <TableHead>Username</TableHead>
-            <TableHead>Full Name</TableHead>
-            <TableHead>Status</TableHead>
-            {currentUserIsAdmin && <TableHead>Actions</TableHead>}
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {members.map((member) => (
-            <TableRow key={member.id}>
-              <TableCell>
-                <Avatar className="h-10 w-10">
-                  <AvatarImage 
-                    src={member.avatar_url || ''} 
-                    alt={`${member.username}'s profile picture`}
-                  />
-                  <AvatarFallback>
-                    <UserCircle className="h-10 w-10" aria-hidden="true" />
-                  </AvatarFallback>
-                </Avatar>
-              </TableCell>
-              <TableCell>
-                <div className="flex items-center gap-2">
-                  {member.username}
-                  {member.has_unread_messages && (
-                    <MessageSquare className="h-4 w-4 text-primary animate-pulse" />
-                  )}
-                </div>
-              </TableCell>
-              <TableCell>{member.full_name || '-'}</TableCell>
-              <TableCell>
-                <div className="flex gap-2">
-                  {member.is_admin && (
-                    <Badge variant="default">Admin</Badge>
-                  )}
-                  {member.is_approved ? (
-                    <Badge variant="secondary">Approved</Badge>
-                  ) : (
-                    <Badge variant="outline">Pending</Badge>
-                  )}
-                  {member.is_member && (
-                    <Badge variant="default" className="bg-green-500 hover:bg-green-600">
-                      Member
-                    </Badge>
-                  )}
-                </div>
-              </TableCell>
-              {currentUserIsAdmin && (
-                <TableCell>
+    <div className="rounded-md border">
+      <div className="relative overflow-x-auto">
+        <table className="w-full text-sm text-left">
+          <thead className="text-xs uppercase bg-gray-50 dark:bg-gray-800">
+            <tr>
+              <th className="px-6 py-3">Username</th>
+              <th className="px-6 py-3">Full Name</th>
+              <th className="px-6 py-3">Status</th>
+              <th className="px-6 py-3">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {members.map((member) => (
+              <tr 
+                key={member.id}
+                className="bg-white border-b dark:bg-gray-900 dark:border-gray-700"
+              >
+                <td className="px-6 py-4">{member.username}</td>
+                <td className="px-6 py-4">{member.full_name || '-'}</td>
+                <td className="px-6 py-4">
+                  <div className="flex gap-2">
+                    {member.is_admin && (
+                      <span className="px-2 py-1 text-xs rounded-full bg-purple-100 text-purple-800">
+                        Admin
+                      </span>
+                    )}
+                    {member.is_approved && (
+                      <span className="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">
+                        Approved
+                      </span>
+                    )}
+                    {member.is_member && (
+                      <span className="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">
+                        Member
+                      </span>
+                    )}
+                  </div>
+                </td>
+                <td className="px-6 py-4">
                   <MemberActions
                     memberId={member.id}
                     memberName={member.username}
-                    isCurrentUserAdmin={currentUserIsAdmin}
-                    onDelete={() => {
-                      toast({
-                        title: "Success",
-                        description: "Member has been deleted",
-                      });
-                      queryClient.invalidateQueries({ queryKey: ['members'] });
-                    }}
+                    isCurrentUserAdmin={profile?.is_admin || false}
                     onEdit={() => setEditingMember(member)}
+                    onDelete={() => handleDeleteMember(member.id)}
                   />
-                </TableCell>
-              )}
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
 
       {editingMember && (
         <EditMemberDialog
           member={editingMember}
           open={!!editingMember}
           onOpenChange={(open) => !open && setEditingMember(null)}
-          onUpdate={() => {
-            toast({
-              title: "Success",
-              description: "Member updated successfully",
-            });
-            queryClient.invalidateQueries({ queryKey: ['members'] });
-          }}
+          onUpdate={() => queryClient.invalidateQueries({ queryKey: ['members'] })}
         />
       )}
-    </>
+    </div>
   );
 }
