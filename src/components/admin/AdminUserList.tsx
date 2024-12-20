@@ -1,128 +1,53 @@
-import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Shield, UserCheck, Users } from "lucide-react";
-import { AdminUserActions } from "./AdminUserActions";
-import { EditMemberDialog } from "../members/EditMemberDialog";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { AdminUserTableHeader } from "./user-management/AdminUserTableHeader";
-import { AdminUserTableRow } from "./user-management/AdminUserTableRow";
+import { Member } from "@/components/members/types";
+import { MemberTable } from "@/components/members/MemberTable";
 import { AdminUserTableWrapper } from "./user-management/AdminUserTableWrapper";
-
-interface Profile {
-  id: string;
-  username: string;
-  full_name: string | null;
-  avatar_url: string | null;
-  is_admin: boolean;
-  is_approved: boolean;
-  is_member: boolean;
-  created_at: string;
-}
+import { CreateUserDialog } from "./user-management/CreateUserDialog";
+import { useToast } from "@/hooks/use-toast";
 
 export function AdminUserList() {
   const { toast } = useToast();
-  const [isUpdating, setIsUpdating] = useState(false);
-  const [selectedMember, setSelectedMember] = useState<Profile | null>(null);
 
-  const { data: profiles = [], isLoading, refetch } = useQuery({
-    queryKey: ['admin-profiles'],
+  const { data: members, isLoading, error, refetch } = useQuery({
+    queryKey: ['members'],
     queryFn: async () => {
-      const { data: profiles, error } = await supabase
+      const { data, error } = await supabase
         .from('profiles')
-        .select('*');
+        .select('*')
+        .order('username');
 
-      if (error) throw error;
-      return profiles;
+      if (error) {
+        console.error('Error fetching members:', error);
+        toast({
+          title: "Error",
+          description: "Failed to fetch members",
+          variant: "destructive",
+        });
+        throw error;
+      }
+
+      return data as Member[];
     },
   });
 
-  const handleUpdateStatus = async (username: string) => {
-    try {
-      setIsUpdating(true);
-      const { error } = await supabase.functions.invoke('set-admin-status', {
-        body: { username }
-      });
-
-      if (error) throw error;
-
-      toast({
-        title: "Success",
-        description: "User status updated successfully",
-      });
-      
-      refetch();
-    } catch (error) {
-      console.error('Error updating user status:', error);
-      toast({
-        title: "Error",
-        description: "Failed to update user status",
-        variant: "destructive",
-      });
-    } finally {
-      setIsUpdating(false);
-    }
-  };
-
   if (isLoading) {
-    return (
-      <div className="p-4" role="status" aria-live="polite">
-        <span className="sr-only">Loading users...</span>
-        Loading users...
-      </div>
-    );
+    return <div>Loading...</div>;
+  }
+
+  if (error) {
+    return <div>Error loading members</div>;
   }
 
   return (
     <div className="space-y-4">
-      <AdminUserTableHeader />
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold">User Management</h2>
+        <CreateUserDialog onUserCreated={refetch} />
+      </div>
       <AdminUserTableWrapper>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead scope="col" className="whitespace-nowrap">User</TableHead>
-              <TableHead scope="col" className="hidden md:table-cell">Status</TableHead>
-              <TableHead scope="col">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {profiles.map((profile) => (
-              <AdminUserTableRow
-                key={profile.id}
-                profile={profile}
-                onEdit={setSelectedMember}
-                onUpdateStatus={handleUpdateStatus}
-                isUpdating={isUpdating}
-              />
-            ))}
-          </TableBody>
-        </Table>
+        <MemberTable members={members || []} currentUserIsAdmin={true} />
       </AdminUserTableWrapper>
-
-      {selectedMember && (
-        <EditMemberDialog
-          member={selectedMember}
-          open={!!selectedMember}
-          onOpenChange={(open) => !open && setSelectedMember(null)}
-          onUpdate={refetch}
-        />
-      )}
     </div>
   );
 }
