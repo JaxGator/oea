@@ -127,12 +127,12 @@ export function AlbumCreateForm({ onSuccess }: AlbumCreateFormProps) {
 
       <div className="space-y-2">
         <Label htmlFor="event">Associated Event (Optional)</Label>
-        <Select value={eventId || ''} onValueChange={setEventId}>
+        <Select value={eventId || 'none'} onValueChange={(value) => setEventId(value === 'none' ? null : value)}>
           <SelectTrigger>
             <SelectValue placeholder="Select an event" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">None</SelectItem>
+            <SelectItem value="none">No Event</SelectItem>
             {events?.map((event) => (
               <SelectItem key={event.id} value={event.id}>
                 {event.title}
