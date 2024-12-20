@@ -56,7 +56,7 @@ export function AdminNotifications() {
           </div>
           <Button 
             className="w-full"
-            onClick={() => navigate('/admin')}
+            onClick={() => navigate('/admin?tab=users')}
           >
             Manage Users
           </Button>
