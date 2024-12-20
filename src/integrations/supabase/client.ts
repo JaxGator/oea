@@ -14,6 +14,8 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, 
     detectSessionInUrl: true,
     flowType: 'pkce',
     storage: typeof window !== 'undefined' ? window.localStorage : undefined,
+    storageKey: 'supabase.auth.token',
+    debug: true
   },
   global: {
     headers: {
@@ -29,7 +31,7 @@ export const testSupabaseConnection = async () => {
       .from('profiles')
       .select('id')
       .limit(1)
-      .maybeSingle();
+      .single();
       
     if (error) {
       console.error('Supabase connection test error:', error);
