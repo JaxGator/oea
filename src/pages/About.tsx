@@ -4,7 +4,7 @@ import { ActivityTypes } from "@/components/about/ActivityTypes";
 import { useAboutContent } from "@/hooks/useAboutContent";
 
 export default function About() {
-  const { content, user, handleContentUpdate } = useAboutContent();
+  const { content } = useAboutContent();
 
   return (
     <div className="min-h-screen bg-[#F1F0FB]">
@@ -20,11 +20,7 @@ export default function About() {
           <ActivityTypes />
           
           <div className="space-y-8">
-            <AboutContent 
-              content={content}
-              isAuthenticated={!!user}
-              onUpdate={handleContentUpdate}
-            />
+            <AboutContent content={content} />
           </div>
         </div>
       </div>

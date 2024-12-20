@@ -27,17 +27,8 @@ export function useAboutContent() {
     guidelinesTitle: "Guidelines",
     missionTitle: "Our Mission"
   });
-  const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      setUser(session?.user || null);
-    });
-
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user || null);
-    });
-
     const fetchContent = async () => {
       const { data, error } = await supabase
         .from('page_content')
@@ -61,16 +52,9 @@ export function useAboutContent() {
     };
 
     fetchContent();
-    return () => subscription.unsubscribe();
   }, []);
 
-  const handleContentUpdate = (section: 'guidelines' | 'mission' | 'guidelinesTitle' | 'missionTitle', newContent: string) => {
-    setContent(prev => ({ ...prev, [section]: newContent }));
-  };
-
   return {
-    content,
-    user,
-    handleContentUpdate
+    content
   };
 }
