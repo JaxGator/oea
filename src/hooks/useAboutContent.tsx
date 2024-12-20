@@ -4,6 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 interface AboutContent {
   guidelines: string;
   mission: string;
+  guidelinesTitle: string;
+  missionTitle: string;
 }
 
 export function useAboutContent() {
@@ -21,7 +23,9 @@ export function useAboutContent() {
 5. Full Members have the ability to suggest bringing others in who would be a good fit for our group of friends, or to serve as event organizers.
 
 6. If voted in by the group, the only financial commitment is to buy a logo shirt (all other merchandise available is optional!)`,
-    mission: `We believe that everyone should have access to outdoor recreation and the opportunity to develop a connection with nature. Through our programs, we strive to remove barriers and create inclusive spaces where participants can challenge themselves, build confidence, and develop leadership skills.`
+    mission: `We believe that everyone should have access to outdoor recreation and the opportunity to develop a connection with nature. Through our programs, we strive to remove barriers and create inclusive spaces where participants can challenge themselves, build confidence, and develop leadership skills.`,
+    guidelinesTitle: "Guidelines",
+    missionTitle: "Our Mission"
   });
   const [user, setUser] = useState<any>(null);
 
@@ -60,7 +64,7 @@ export function useAboutContent() {
     return () => subscription.unsubscribe();
   }, []);
 
-  const handleContentUpdate = (section: 'guidelines' | 'mission', newContent: string) => {
+  const handleContentUpdate = (section: 'guidelines' | 'mission' | 'guidelinesTitle' | 'missionTitle', newContent: string) => {
     setContent(prev => ({ ...prev, [section]: newContent }));
   };
 
