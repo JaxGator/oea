@@ -75,6 +75,7 @@ export function useContentEditor(initialContent: string, pageId: string, section
 
       if (error) throw error;
 
+      // Call onUpdate to update the parent component's state
       onUpdate(editedContent);
       setIsEditing(false);
       toast({
