@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { AuthState, Profile } from "@/types/auth";
+import { toast } from "sonner";
 
 export function useAuthState() {
   const [state, setState] = useState<AuthState>({
@@ -52,13 +53,22 @@ export function useAuthState() {
 
   const fetchProfile = async (userId: string) => {
     try {
-      const { data, error } = await supabase
+      const { data, error, status } = await supabase
         .from("profiles")
         .select("*")
         .eq("id", userId)
-        .single();
+        .maybeSingle();
 
       if (error) {
+        if (status === 406) {
+          // Handle not found
+          setState((prev) => ({
+            ...prev,
+            isLoading: false,
+            profile: null,
+          }));
+          return;
+        }
         throw error;
       }
 
@@ -67,11 +77,13 @@ export function useAuthState() {
         isLoading: false,
         profile: data as Profile,
       }));
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error fetching profile:", error);
+      toast.error("Failed to load profile data. Please try refreshing the page.");
       setState((prev) => ({
         ...prev,
         isLoading: false,
+        profile: null,
       }));
     }
   };
