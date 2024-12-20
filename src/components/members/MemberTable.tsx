@@ -2,23 +2,9 @@ import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { EditMemberDialog } from "./EditMemberDialog";
-import { MemberActions } from "./MemberActions";
 import { useToast } from "@/hooks/use-toast";
-
-interface Member {
-  id: string;
-  username: string;
-  full_name: string | null;
-  avatar_url: string | null;
-  is_admin: boolean;
-  is_approved: boolean;
-  is_member: boolean;
-}
-
-interface MemberTableProps {
-  members: Member[];
-  currentUserIsAdmin: boolean;
-}
+import { Member, MemberTableProps } from "./types";
+import { MemberTableRow } from "./MemberTableRow";
 
 export function MemberTable({ members, currentUserIsAdmin }: MemberTableProps) {
   const [editingMember, setEditingMember] = useState<Member | null>(null);
@@ -50,58 +36,28 @@ export function MemberTable({ members, currentUserIsAdmin }: MemberTableProps) {
   };
 
   return (
-    <div className="rounded-md border">
-      <div className="relative overflow-x-auto">
-        <table className="w-full text-sm text-left">
-          <thead className="text-xs uppercase bg-gray-50 dark:bg-gray-800">
-            <tr>
-              <th className="px-6 py-3">Username</th>
-              <th className="px-6 py-3">Full Name</th>
-              <th className="px-6 py-3">Status</th>
-              <th className="px-6 py-3">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {members.map((member) => (
-              <tr 
-                key={member.id}
-                className="bg-white border-b dark:bg-gray-900 dark:border-gray-700"
-              >
-                <td className="px-6 py-4">{member.username}</td>
-                <td className="px-6 py-4">{member.full_name || '-'}</td>
-                <td className="px-6 py-4">
-                  <div className="flex gap-2">
-                    {member.is_admin && (
-                      <span className="px-2 py-1 text-xs rounded-full bg-purple-100 text-purple-800">
-                        Admin
-                      </span>
-                    )}
-                    {member.is_approved && (
-                      <span className="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">
-                        Approved
-                      </span>
-                    )}
-                    {member.is_member && (
-                      <span className="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">
-                        Member
-                      </span>
-                    )}
-                  </div>
-                </td>
-                <td className="px-6 py-4">
-                  <MemberActions
-                    memberId={member.id}
-                    memberName={member.username}
-                    isCurrentUserAdmin={currentUserIsAdmin}
-                    onEdit={() => setEditingMember(member)}
-                    onDelete={() => handleDeleteMember(member.id)}
-                  />
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+    <div className="relative overflow-x-auto">
+      <table className="w-full text-sm text-left">
+        <thead className="text-xs uppercase bg-gray-50 dark:bg-gray-800">
+          <tr>
+            <th className="px-6 py-3">Username</th>
+            <th className="px-6 py-3">Full Name</th>
+            <th className="px-6 py-3">Status</th>
+            <th className="px-6 py-3">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {members.map((member) => (
+            <MemberTableRow
+              key={member.id}
+              member={member}
+              isCurrentUserAdmin={currentUserIsAdmin}
+              onEdit={setEditingMember}
+              onDelete={handleDeleteMember}
+            />
+          ))}
+        </tbody>
+      </table>
 
       {editingMember && (
         <EditMemberDialog

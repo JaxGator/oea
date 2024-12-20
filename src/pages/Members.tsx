@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Users } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -9,16 +9,6 @@ import { MemberList } from "@/components/members/MemberList";
 import { MemberTable } from "@/components/members/MemberTable";
 import { useAuthState } from "@/hooks/useAuthState";
 import { useNavigate } from "react-router-dom";
-
-interface Profile {
-  id: string;
-  username: string;
-  full_name: string | null;
-  avatar_url: string | null;
-  is_admin: boolean;
-  is_approved: boolean;
-  is_member: boolean;
-}
 
 export default function Members() {
   const { user } = useAuthState();
@@ -61,7 +51,6 @@ export default function Members() {
     staleTime: 1000 * 60 * 5,
   });
 
-  // Subscribe to new messages
   useEffect(() => {
     if (!user?.id) return;
 
