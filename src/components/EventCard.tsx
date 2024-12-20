@@ -53,6 +53,7 @@ export function EventCard({ event, onRSVP, onCancelRSVP, userRSVPStatus, onUpdat
           description={event.description || ""}
           attendeeNames={attendeeNames}
           userRSVPStatus={userRSVPStatus}
+          eventId={event.id}
         />
         {userRSVPStatus === 'attending' && (
           <AddToCalendar
