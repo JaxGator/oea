@@ -2,7 +2,14 @@ import { useContentState } from "./useContentState";
 import { useContentSave } from "./useContentSave";
 import { useAuthState } from "@/hooks/useAuthState";
 
-export function useContentEditor(initialContent: string, pageId: string, sectionId: string) {
+interface UseContentEditorProps {
+  initialContent: string;
+  pageId: string;
+  sectionId: string;
+  onUpdate: (content: string) => void;
+}
+
+export function useContentEditor({ initialContent, pageId, sectionId, onUpdate }: UseContentEditorProps) {
   const { profile } = useAuthState();
   const isAdmin = profile?.is_admin ?? false;
 
@@ -18,7 +25,7 @@ export function useContentEditor(initialContent: string, pageId: string, section
   const { saveContent } = useContentSave({
     pageId,
     sectionId,
-    onUpdate: () => {},
+    onUpdate,
     setIsEditing,
   });
 

@@ -17,7 +17,12 @@ export function EditableContent({ content, pageId, sectionId, onUpdate }: Editab
     setEditedContent,
     isAdmin,
     handleSave
-  } = useContentEditor(content, pageId, sectionId);
+  } = useContentEditor({
+    initialContent: content,
+    pageId,
+    sectionId,
+    onUpdate,
+  });
 
   return (
     <div className="relative group">
