@@ -22,16 +22,16 @@ export default function Admin() {
             <h1 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6">Admin Dashboard</h1>
             
             <Tabs defaultValue={tabFromUrl || "gallery"} className="space-y-4">
-              <TabsList>
-                <TabsTrigger value="gallery">
+              <TabsList className="flex flex-col sm:flex-row w-full sm:w-auto gap-2 sm:gap-0 h-auto">
+                <TabsTrigger value="gallery" className="w-full sm:w-auto justify-start sm:justify-center">
                   <Image className="h-4 w-4 mr-2" />
                   Photo Gallery
                 </TabsTrigger>
-                <TabsTrigger value="users">
+                <TabsTrigger value="users" className="w-full sm:w-auto justify-start sm:justify-center">
                   <Users className="h-4 w-4 mr-2" />
                   Users
                 </TabsTrigger>
-                <TabsTrigger value="site-config">
+                <TabsTrigger value="site-config" className="w-full sm:w-auto justify-start sm:justify-center">
                   <Settings className="h-4 w-4 mr-2" />
                   Site Configuration
                 </TabsTrigger>
