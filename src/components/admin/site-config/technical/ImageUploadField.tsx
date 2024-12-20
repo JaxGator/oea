@@ -30,14 +30,34 @@ export function ImageUploadField({
       const file = event.target.files?.[0];
       if (!file) return;
 
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        toast({
+          title: "Error",
+          description: "Please upload an image file",
+          variant: "destructive",
+        });
+        return;
+      }
+
       setIsUploading(true);
 
+      // Convert file to ArrayBuffer
+      const arrayBuffer = await file.arrayBuffer();
+      const fileData = new Uint8Array(arrayBuffer);
+
+      // Create a timestamp-based filename with original extension
+      const timestamp = Date.now();
       const fileExt = file.name.split('.').pop();
-      const fileName = `${imageType}-${Math.random()}.${fileExt}`;
+      const fileName = `${imageType}-${timestamp}.${fileExt}`;
 
       const { error: uploadError } = await supabase.storage
         .from('media')
-        .upload(fileName, file);
+        .upload(fileName, fileData, {
+          contentType: file.type,
+          duplex: 'half',
+          cacheControl: '3600'
+        });
 
       if (uploadError) throw uploadError;
 
@@ -61,6 +81,8 @@ export function ImageUploadField({
       });
     } finally {
       setIsUploading(false);
+      // Reset the input
+      event.target.value = '';
     }
   };
 
