@@ -1,5 +1,6 @@
 import { AboutHero } from "@/components/about/AboutHero";
 import { AboutContent } from "@/components/about/AboutContent";
+import { ActivityTypes } from "@/components/about/ActivityTypes";
 import { useAboutContent } from "@/hooks/useAboutContent";
 
 export default function About() {
@@ -15,6 +16,8 @@ export default function About() {
             imageUrl="https://images.unsplash.com/photo-1605723517503-3cadb5818a0c?q=80&w=2970&auto=format&fit=crop"
             imageAlt="Jacksonville, Florida skyline at sunset"
           />
+          
+          <ActivityTypes />
           
           <div className="space-y-8">
             <AboutContent 
