@@ -26,7 +26,11 @@ export function useSession() {
       try {
         const { data: { session }, error } = await supabase.auth.getSession();
         
-        if (error) throw error;
+        if (error) {
+          // If there's an error getting the session, sign out to clear any invalid tokens
+          await supabase.auth.signOut();
+          throw error;
+        }
 
         if (isMounted) {
           setState({
@@ -41,12 +45,14 @@ export function useSession() {
         if (isMounted) {
           setState(prev => ({
             ...prev,
+            session: null,
+            user: null,
             isLoading: false,
             error: error as Error
           }));
           toast({
             title: "Authentication Error",
-            description: "Failed to initialize authentication",
+            description: "Please sign in again",
             variant: "destructive",
           });
         }
@@ -56,15 +62,31 @@ export function useSession() {
     initializeAuth();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_, session) => {
+      async (event, session) => {
         if (!isMounted) return;
 
-        setState({
-          session,
-          user: session?.user ?? null,
-          isLoading: false,
-          error: null
-        });
+        if (event === 'TOKEN_REFRESHED') {
+          setState({
+            session,
+            user: session?.user ?? null,
+            isLoading: false,
+            error: null
+          });
+        } else if (event === 'SIGNED_OUT' || event === 'USER_DELETED') {
+          setState({
+            session: null,
+            user: null,
+            isLoading: false,
+            error: null
+          });
+        } else {
+          setState({
+            session,
+            user: session?.user ?? null,
+            isLoading: false,
+            error: null
+          });
+        }
       }
     );
 
