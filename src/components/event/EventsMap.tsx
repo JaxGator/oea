@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { GoogleMap, LoadScript, Marker, InfoWindow } from '@react-google-maps/api';
 import { Event } from '@/types/event';
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 interface EventsMapProps {
   events: Event[];
@@ -21,16 +22,29 @@ export function EventsMap({ events }: EventsMapProps) {
   const [googleMapsKey, setGoogleMapsKey] = useState<string>('');
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [eventLocations, setEventLocations] = useState<Array<{ event: Event; position: google.maps.LatLngLiteral }>>([]);
+  const [error, setError] = useState<string | null>(null);
 
   // Fetch Google Maps API key from Supabase Edge Function
   useEffect(() => {
     const fetchApiKey = async () => {
-      const { data: { token }, error } = await supabase.functions.invoke('get-google-maps-token');
-      if (error) {
-        console.error('Error fetching Google Maps token:', error);
-        return;
+      try {
+        const { data, error: functionError } = await supabase.functions.invoke('get-google-maps-token');
+        
+        if (functionError) {
+          console.error('Error fetching Google Maps token:', functionError);
+          throw new Error('Failed to load map configuration. Please try again later.');
+        }
+        
+        if (!data?.token) {
+          throw new Error('Invalid map configuration received. Please contact support.');
+        }
+
+        setGoogleMapsKey(data.token);
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'Failed to load map configuration';
+        setError(errorMessage);
+        toast.error(errorMessage);
       }
-      setGoogleMapsKey(token);
     };
 
     fetchApiKey();
@@ -39,33 +53,46 @@ export function EventsMap({ events }: EventsMapProps) {
   // Geocode addresses to coordinates
   useEffect(() => {
     const geocodeAddresses = async () => {
-      if (!googleMapsKey) return;
+      if (!googleMapsKey || !events.length) return;
 
-      const locations = await Promise.all(
-        events.map(async (event) => {
-          try {
-            const response = await fetch(
-              `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(
-                event.location
-              )}&key=${googleMapsKey}`
-            );
-            const data = await response.json();
+      try {
+        const locations = await Promise.all(
+          events.map(async (event) => {
+            try {
+              const response = await fetch(
+                `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(
+                  event.location
+                )}&key=${googleMapsKey}`
+              );
+              const data = await response.json();
 
-            if (data.results && data.results[0]) {
-              const { lat, lng } = data.results[0].geometry.location;
-              return {
-                event,
-                position: { lat, lng },
-              };
+              if (!response.ok) {
+                throw new Error(data.error_message || 'Geocoding request failed');
+              }
+
+              if (data.results && data.results[0]) {
+                const { lat, lng } = data.results[0].geometry.location;
+                return {
+                  event,
+                  position: { lat, lng },
+                };
+              }
+              
+              console.warn(`Could not geocode location for event: ${event.title}`);
+              return null;
+            } catch (error) {
+              console.error('Error geocoding address:', error);
+              return null;
             }
-          } catch (error) {
-            console.error('Error geocoding address:', error);
-          }
-          return null;
-        })
-      );
+          })
+        );
 
-      setEventLocations(locations.filter((loc): loc is NonNullable<typeof loc> => loc !== null));
+        setEventLocations(locations.filter((loc): loc is NonNullable<typeof loc> => loc !== null));
+      } catch (err) {
+        const errorMessage = 'Failed to load event locations on the map';
+        setError(errorMessage);
+        toast.error(errorMessage);
+      }
     };
 
     if (events.length > 0) {
@@ -83,7 +110,21 @@ export function EventsMap({ events }: EventsMapProps) {
     }
   }, [eventLocations]);
 
-  if (!googleMapsKey) return null;
+  if (error) {
+    return (
+      <div className="w-full h-[400px] rounded-lg overflow-hidden shadow-lg mb-8 bg-gray-100 flex items-center justify-center">
+        <p className="text-gray-600">Unable to load map: {error}</p>
+      </div>
+    );
+  }
+
+  if (!googleMapsKey) {
+    return (
+      <div className="w-full h-[400px] rounded-lg overflow-hidden shadow-lg mb-8 bg-gray-100 flex items-center justify-center">
+        <p className="text-gray-600">Loading map...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full h-[400px] rounded-lg overflow-hidden shadow-lg mb-8">

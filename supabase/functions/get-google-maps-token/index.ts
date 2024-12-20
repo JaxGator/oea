@@ -14,7 +14,8 @@ serve(async (req) => {
     const token = Deno.env.get('GOOGLE_MAPS_API_KEY')
     
     if (!token) {
-      throw new Error('Google Maps API key not found')
+      console.error('Google Maps API key not found in environment variables')
+      throw new Error('Google Maps API key not configured. Please set the GOOGLE_MAPS_API_KEY secret in the Supabase dashboard.')
     }
 
     return new Response(
@@ -25,6 +26,7 @@ serve(async (req) => {
       },
     )
   } catch (error) {
+    console.error('Error in get-google-maps-token function:', error.message)
     return new Response(
       JSON.stringify({ error: error.message }),
       { 
