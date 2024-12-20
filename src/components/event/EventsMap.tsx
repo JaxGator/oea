@@ -31,7 +31,6 @@ export function EventsMap({ events }: EventsMapProps) {
     return null;
   }
 
-  // Fetch Google Maps API key from Supabase Edge Function
   useEffect(() => {
     const fetchApiKey = async () => {
       try {
