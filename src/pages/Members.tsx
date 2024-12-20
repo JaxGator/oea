@@ -16,7 +16,7 @@ export default function Members() {
   const isMobile = useIsMobile();
   const navigate = useNavigate();
 
-  const { data: currentUserProfile } = useQuery({
+  const { data: currentUserProfile, isLoading: isLoadingProfile } = useQuery({
     queryKey: ['profile', user?.id],
     queryFn: async () => {
       if (!user?.id) return null;
@@ -24,12 +24,14 @@ export default function Members() {
         .from('profiles')
         .select('*')
         .eq('id', user.id)
-        .single();
+        .maybeSingle();
       
       if (error) throw error;
       return data;
     },
-    enabled: !!user?.id
+    enabled: !!user?.id,
+    retry: 3,
+    retryDelay: (attemptIndex) => Math.min(1000 * Math.pow(2, attemptIndex), 10000)
   });
 
   const { data: members = [], isLoading: isLoadingMembers, error } = useQuery({
@@ -47,7 +49,8 @@ export default function Members() {
 
       return data || [];
     },
-    retry: 1,
+    retry: 3,
+    retryDelay: (attemptIndex) => Math.min(1000 * Math.pow(2, attemptIndex), 10000),
     staleTime: 1000 * 60 * 5,
   });
 
@@ -69,7 +72,7 @@ export default function Members() {
             .from('profiles')
             .select('username')
             .eq('id', payload.new.sender_id)
-            .single();
+            .maybeSingle();
 
           toast({
             title: "New Message",
@@ -105,7 +108,9 @@ export default function Members() {
     );
   }
 
-  if (isLoadingMembers) {
+  const isLoading = isLoadingMembers || isLoadingProfile;
+
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-[#222222] flex items-center justify-center">
         <div className="text-white">Loading members...</div>
