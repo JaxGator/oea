@@ -3,21 +3,20 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { SessionContextProvider } from "@supabase/auth-helpers-react";
+import { SessionContextProvider, Session } from "@supabase/auth-helpers-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
 interface AppProvidersProps {
   children: ReactNode;
-  session: any;
+  session?: Session | null;
 }
 
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      retry: 1,
       refetchOnWindowFocus: false,
-      staleTime: 1000 * 60 * 5,
+      retry: 1,
     },
   },
 });
@@ -44,10 +43,7 @@ export function AppProviders({ children, session }: AppProvidersProps) {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <SessionContextProvider 
-        supabaseClient={supabase}
-        initialSession={session}
-      >
+      <SessionContextProvider supabaseClient={supabase} initialSession={session}>
         <TooltipProvider>
           {children}
           <Toaster />

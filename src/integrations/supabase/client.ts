@@ -1,32 +1,27 @@
 import { createClient } from '@supabase/supabase-js';
-import type { Database } from './types';
+import { Database } from '@/types/supabase';
 
-const SUPABASE_URL = "https://qegpuqitjfocyyrivlhv.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFlZ3B1cWl0amZvY3l5cml2bGh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzM5MzU4NTMsImV4cCI6MjA0OTUxMTg1M30.o3yD902DFG0PlLD0V8pEvx-IbnVawP3HDhNEp6cMoW4";
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-if (!SUPABASE_URL) throw new Error('Missing SUPABASE_URL');
-if (!SUPABASE_ANON_KEY) throw new Error('Missing SUPABASE_ANON_KEY');
+if (!supabaseUrl || !supabaseAnonKey) {
+  throw new Error('Missing Supabase environment variables');
+}
 
-export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, {
+export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
   auth: {
-    persistSession: true,
-    autoRefreshToken: true,
-    detectSessionInUrl: true,
     flowType: 'pkce',
     storage: typeof window !== 'undefined' ? window.localStorage : undefined,
     storageKey: 'supabase.auth.token',
     debug: true,
-    cookieOptions: {
-      domain: window.location.hostname,
-      secure: window.location.protocol === 'https:',
-      sameSite: 'Lax'
-    }
+    persistSession: true,
+    detectSessionInUrl: true
   },
   global: {
     headers: {
-      'X-Client-Info': 'supabase-js-web',
-    },
-  },
+      'x-application-name': 'oea-events'
+    }
+  }
 });
 
 // Add a test function to verify connection
@@ -46,10 +41,3 @@ export const testSupabaseConnection = async () => {
     return false;
   }
 };
-
-// Call test connection on init
-testSupabaseConnection().then(isConnected => {
-  if (!isConnected) {
-    console.error('Failed to establish initial Supabase connection');
-  }
-});
