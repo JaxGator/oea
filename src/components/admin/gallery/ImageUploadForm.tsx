@@ -28,16 +28,21 @@ export function ImageUploadForm({ onUploadSuccess }: ImageUploadFormProps) {
 
     setIsUploading(true);
     try {
-      // Generate a unique filename while preserving the extension
+      // Create a timestamp-based filename with original extension
+      const timestamp = Date.now();
       const fileExt = file.name.split('.').pop();
-      const uniqueFileName = `${crypto.randomUUID()}.${fileExt}`;
+      const fileName = `${timestamp}.${fileExt}`;
+
+      // Convert file to ArrayBuffer
+      const arrayBuffer = await file.arrayBuffer();
+      const fileData = new Uint8Array(arrayBuffer);
 
       const { error: uploadError } = await supabase.storage
         .from('gallery')
-        .upload(uniqueFileName, file, {
-          cacheControl: '3600',
+        .upload(fileName, fileData, {
           contentType: file.type,
-          upsert: true
+          duplex: 'half',
+          cacheControl: '3600'
         });
 
       if (uploadError) throw uploadError;
