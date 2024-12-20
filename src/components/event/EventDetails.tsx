@@ -26,6 +26,7 @@ export function EventDetails({
 }: EventDetailsProps) {
   const { user, profile } = useAuthState();
   const showLocation = user && profile?.is_approved;
+  const isWixEvent = description === 'Imported from Wix';
 
   return (
     <div className="space-y-4">
@@ -48,14 +49,16 @@ export function EventDetails({
         </div>
       )}
 
-      <div className="flex items-center gap-2 text-gray-600">
-        <UsersIcon className="w-4 h-4" />
-        <span className="text-sm">
-          {rsvpCount} / {maxGuests} attendees
-        </span>
-      </div>
+      {isWixEvent && (
+        <div className="flex items-center gap-2 text-gray-600">
+          <UsersIcon className="w-4 h-4" />
+          <span className="text-sm">
+            {rsvpCount} / {maxGuests} attendees
+          </span>
+        </div>
+      )}
 
-      {attendeeNames.length > 0 && (
+      {isWixEvent && attendeeNames.length > 0 && (
         <div className="text-sm text-gray-600">
           <p className="font-medium mb-1">Attending:</p>
           <p>{attendeeNames.join(', ')}</p>
