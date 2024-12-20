@@ -12,6 +12,7 @@ interface Attendee {
 export function useRSVPDetails(eventId: string) {
   const [rsvpCount, setRsvpCount] = useState(0);
   const [attendees, setAttendees] = useState<Attendee[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     fetchRSVPDetails();
@@ -19,26 +20,32 @@ export function useRSVPDetails(eventId: string) {
 
   const fetchRSVPDetails = async () => {
     try {
-      // Get RSVP count
-      const { count } = await supabase
+      // Get RSVP count with error handling
+      const { count, error: countError } = await supabase
         .from('event_rsvps')
         .select('*', { count: 'exact', head: true })
         .eq('event_id', eventId);
+
+      if (countError) throw countError;
       setRsvpCount(count || 0);
 
       // Get attendees with their profile information
-      const { data: rsvpData } = await supabase
+      const { data: rsvpData, error: rsvpError } = await supabase
         .from('event_rsvps')
         .select('user_id')
         .eq('event_id', eventId)
         .eq('response', 'attending');
 
-      if (rsvpData) {
+      if (rsvpError) throw rsvpError;
+
+      if (rsvpData && rsvpData.length > 0) {
         const userIds = rsvpData.map(rsvp => rsvp.user_id);
-        const { data: profileData } = await supabase
+        const { data: profileData, error: profileError } = await supabase
           .from('profiles')
           .select('id, full_name, username')
           .in('id', userIds);
+
+        if (profileError) throw profileError;
 
         if (profileData) {
           const attendeeData = rsvpData.map(rsvp => {
@@ -53,11 +60,18 @@ export function useRSVPDetails(eventId: string) {
           });
           setAttendees(attendeeData);
         }
+      } else {
+        setAttendees([]);
       }
-    } catch (error) {
+      
+      setError(null);
+    } catch (error: any) {
       console.error('Error fetching RSVP details:', error);
+      setError(error.message);
+      setRsvpCount(0);
+      setAttendees([]);
     }
   };
 
-  return { rsvpCount, attendees };
+  return { rsvpCount, attendees, error };
 }

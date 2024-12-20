@@ -31,6 +31,15 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, 
   }
 });
 
+// Add error handling for fetch operations
+export const handleSupabaseError = (error: any) => {
+  console.error('Supabase operation failed:', error);
+  if (error.message === 'Failed to fetch') {
+    console.error('Network error or CORS issue detected');
+  }
+  throw error;
+};
+
 // Add a simple test function to verify connection
 export const testSupabaseConnection = async () => {
   try {
