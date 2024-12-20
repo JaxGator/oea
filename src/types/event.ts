@@ -9,6 +9,7 @@ export interface Event {
   created_by: string;
   created_at: string;
   image_url: string;
+  imported_rsvp_count?: number;
   rsvps?: {
     id: string;
     event_id: string;
