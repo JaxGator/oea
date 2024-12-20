@@ -47,7 +47,7 @@ export function UserMenu({ user, profile }: UserMenuProps) {
       </Link>
       <Button
         variant="ghost"
-        className="text-white hover:text-primary-100"
+        className="text-white hover:text-primary-100 hover:bg-gray-800"
         onClick={handleSignOut}
       >
         Sign Out
