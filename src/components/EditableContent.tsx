@@ -12,11 +12,11 @@ interface EditableContentProps {
 export function EditableContent({ content, pageId, sectionId, onUpdate }: EditableContentProps) {
   const {
     isEditing,
-    setIsEditing,
     editedContent,
     setEditedContent,
+    startEditing,
     handleSave,
-    isAdmin
+    cancelEditing
   } = useContentEditor({
     initialContent: content,
     pageId,
@@ -29,8 +29,8 @@ export function EditableContent({ content, pageId, sectionId, onUpdate }: Editab
       {!isEditing ? (
         <ViewContent 
           content={content} 
-          onEdit={() => setIsEditing(true)}
-          showEditButton={isAdmin}
+          onEdit={startEditing}
+          showEditButton={false}
         />
       ) : (
         <EditContent
@@ -38,10 +38,7 @@ export function EditableContent({ content, pageId, sectionId, onUpdate }: Editab
           editedContent={editedContent}
           onContentChange={setEditedContent}
           onSave={handleSave}
-          onCancel={() => {
-            setEditedContent(content);
-            setIsEditing(false);
-          }}
+          onCancel={cancelEditing}
         />
       )}
     </div>
