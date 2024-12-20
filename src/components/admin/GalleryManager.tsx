@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { ImageUploadForm } from "./gallery/ImageUploadForm";
 import { ImageGrid } from "./gallery/ImageGrid";
 import { AlbumCreateForm } from "./gallery/AlbumCreateForm";
+import { AlbumList } from "./gallery/AlbumList";
 import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
@@ -75,11 +76,16 @@ export function GalleryManager() {
   }
 
   return (
-    <Tabs defaultValue="images" className="space-y-6">
+    <Tabs defaultValue="albums" className="space-y-6">
       <TabsList>
-        <TabsTrigger value="images">Images</TabsTrigger>
         <TabsTrigger value="albums">Albums</TabsTrigger>
+        <TabsTrigger value="images">All Images</TabsTrigger>
       </TabsList>
+      
+      <TabsContent value="albums" className="space-y-6">
+        <AlbumCreateForm onSuccess={fetchImages} />
+        <AlbumList onImageDelete={handleImageDelete} />
+      </TabsContent>
       
       <TabsContent value="images" className="space-y-6">
         <ImageUploadForm onUploadSuccess={fetchImages} />
@@ -87,12 +93,6 @@ export function GalleryManager() {
           images={images} 
           onImageDelete={handleImageDelete}
         />
-      </TabsContent>
-      
-      <TabsContent value="albums">
-        <div className="space-y-6">
-          <AlbumCreateForm onSuccess={fetchImages} />
-        </div>
       </TabsContent>
     </Tabs>
   );
