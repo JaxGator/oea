@@ -1,7 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { Database } from '@/types/supabase';
 
-// Use the project ID and anon key from the Supabase configuration
 const supabaseUrl = 'https://qegpuqitjfocyyrivlhv.supabase.co';
 const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFlZ3B1cWl0amZvY3l5cml2bGh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MDg5NjI5ODgsImV4cCI6MjAyNDUzODk4OH0.qDTKGVv4VYGw_RQ8jI_92uVJhDQXEPqGLKBJzkJhQXA';
 
@@ -10,14 +9,12 @@ export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
     autoRefreshToken: true,
     persistSession: true,
     detectSessionInUrl: true,
-    storage: typeof window !== 'undefined' ? window.localStorage : undefined,
-    storageKey: 'supabase.auth.token',
-    debug: true
+    storage: typeof window !== 'undefined' ? window.localStorage : undefined
   },
   global: {
     headers: {
       'x-application-name': 'oea-events',
-      'Authorization': `Bearer ${supabaseAnonKey}`
+      'apikey': supabaseAnonKey
     }
   }
 });
