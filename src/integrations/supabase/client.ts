@@ -16,10 +16,18 @@ export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
   db: {
     schema: 'public',
   },
+  global: {
+    headers: {
+      'Cache-Control': 'no-store',
+    },
+  },
 });
 
-// Add error handling for failed requests
-supabase.handleError = (error: any) => {
-  console.error('Supabase error:', error);
-  throw error;
-};
+// Add error handling through interceptors
+supabase.rest.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    console.error('Supabase error:', error);
+    throw error;
+  }
+);
