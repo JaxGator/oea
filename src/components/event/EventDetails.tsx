@@ -53,16 +53,17 @@ export function EventDetails({
         <UsersIcon className="w-4 h-4" />
         <span className="text-sm">
           {isWixEvent ? (
-            `${rsvpCount} past attendees`
+            `${rsvpCount} attendees`
           ) : (
             `${rsvpCount} / ${maxGuests} attendees`
           )}
         </span>
       </div>
 
-      {isWixEvent && rsvpCount > 0 && (
+      {isWixEvent && attendeeNames.length > 0 && (
         <div className="text-sm text-gray-600">
-          <p className="font-medium mb-1">Past Event</p>
+          <p className="font-medium mb-1">Attending:</p>
+          <p>{attendeeNames.join(', ')}</p>
         </div>
       )}
       
