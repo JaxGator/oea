@@ -37,14 +37,21 @@ export function EventDetails({
   const { data: albums } = useQuery({
     queryKey: ['eventAlbums', eventId],
     queryFn: async () => {
+      if (!eventId) return [];
+      
       const { data, error } = await supabase
         .from('gallery_albums')
         .select('*')
         .eq('event_id', eventId);
       
-      if (error) throw error;
-      return data;
+      if (error) {
+        console.error('Error fetching albums:', error);
+        return [];
+      }
+      
+      return data || [];
     },
+    enabled: !!eventId // Only run query if eventId exists
   });
 
   // Create a Date object in local timezone
@@ -82,7 +89,7 @@ export function EventDetails({
         </span>
       </div>
 
-      {isWixEvent && attendeeNames.length > 0 && (
+      {isWixEvent && attendeeNames && attendeeNames.length > 0 && (
         <div className="text-sm text-gray-600">
           <p className="font-medium mb-1">Attending:</p>
           <p>{attendeeNames.join(', ')}</p>
