@@ -3,6 +3,7 @@ import { GoogleMap, LoadScript, Marker, InfoWindow } from '@react-google-maps/ap
 import { Event } from '@/types/event';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useAuthState } from '@/hooks/useAuthState';
 
 interface EventsMapProps {
   events: Event[];
@@ -23,6 +24,12 @@ export function EventsMap({ events }: EventsMapProps) {
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [eventLocations, setEventLocations] = useState<Array<{ event: Event; position: google.maps.LatLngLiteral }>>([]);
   const [error, setError] = useState<string | null>(null);
+  const { user, profile } = useAuthState();
+
+  // If user is not authenticated and approved, don't render the map
+  if (!user || !profile?.is_approved) {
+    return null;
+  }
 
   // Fetch Google Maps API key from Supabase Edge Function
   useEffect(() => {
