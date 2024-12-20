@@ -21,6 +21,9 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { AdminUserTableHeader } from "./user-management/AdminUserTableHeader";
+import { AdminUserTableRow } from "./user-management/AdminUserTableRow";
+import { AdminUserTableWrapper } from "./user-management/AdminUserTableWrapper";
 
 interface Profile {
   id: string;
@@ -78,157 +81,39 @@ export function AdminUserList() {
   };
 
   if (isLoading) {
-    return <div className="p-4">Loading users...</div>;
+    return (
+      <div className="p-4" role="status" aria-live="polite">
+        <span className="sr-only">Loading users...</span>
+        Loading users...
+      </div>
+    );
   }
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-2 mb-4 p-4">
-        <Users className="h-5 w-5" />
-        <h2 className="text-xl font-semibold">User Management</h2>
-      </div>
-
-      <div className="overflow-x-auto">
-        <div className="inline-block min-w-full align-middle">
-          <div className="overflow-hidden md:rounded-lg">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="whitespace-nowrap">User</TableHead>
-                  <TableHead className="hidden md:table-cell">Status</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {profiles.map((profile) => (
-                  <TableRow key={profile.id} className="hover:bg-gray-50">
-                    <TableCell className="py-4">
-                      <div className="flex flex-col gap-1">
-                        <span className="font-medium">{profile.username}</span>
-                        <span className="text-sm text-gray-500">{profile.full_name || '-'}</span>
-                        <div className="flex flex-wrap gap-1 md:hidden mt-2">
-                          <TooltipProvider>
-                            {profile.is_admin && (
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <Badge variant="default" className="bg-red-500">
-                                    <Shield className="h-3 w-3 mr-1" />
-                                    Admin
-                                  </Badge>
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                  <p>User has administrative privileges</p>
-                                </TooltipContent>
-                              </Tooltip>
-                            )}
-                            {profile.is_approved && (
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <Badge variant="default" className="bg-green-500">
-                                    <UserCheck className="h-3 w-3 mr-1" />
-                                    Approved
-                                  </Badge>
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                  <p>User has been approved by an admin</p>
-                                </TooltipContent>
-                              </Tooltip>
-                            )}
-                            {profile.is_member && (
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <Badge variant="default" className="bg-blue-500">
-                                    <Users className="h-3 w-3 mr-1" />
-                                    Member
-                                  </Badge>
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                  <p>User is a confirmed member</p>
-                                </TooltipContent>
-                              </Tooltip>
-                            )}
-                          </TooltipProvider>
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell className="hidden md:table-cell">
-                      <div className="flex flex-wrap gap-1">
-                        <TooltipProvider>
-                          {profile.is_admin && (
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Badge variant="default" className="bg-red-500">
-                                  <Shield className="h-3 w-3 mr-1" />
-                                  Admin
-                                </Badge>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                <p>User has administrative privileges</p>
-                              </TooltipContent>
-                            </Tooltip>
-                          )}
-                          {profile.is_approved && (
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Badge variant="default" className="bg-green-500">
-                                  <UserCheck className="h-3 w-3 mr-1" />
-                                  Approved
-                                </Badge>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                <p>User has been approved by an admin</p>
-                              </TooltipContent>
-                            </Tooltip>
-                          )}
-                          {profile.is_member && (
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Badge variant="default" className="bg-blue-500">
-                                  <Users className="h-3 w-3 mr-1" />
-                                  Member
-                                </Badge>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                <p>User is a confirmed member</p>
-                              </TooltipContent>
-                            </Tooltip>
-                          )}
-                        </TooltipProvider>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex flex-col sm:flex-row gap-2">
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => setSelectedMember(profile)}
-                                className="w-full sm:w-auto"
-                              >
-                                Edit
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>Edit user details and permissions</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                        <AdminUserActions
-                          profile={profile}
-                          onUpdateStatus={handleUpdateStatus}
-                          isUpdating={isUpdating}
-                        />
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-        </div>
-      </div>
+      <AdminUserTableHeader />
+      <AdminUserTableWrapper>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead scope="col" className="whitespace-nowrap">User</TableHead>
+              <TableHead scope="col" className="hidden md:table-cell">Status</TableHead>
+              <TableHead scope="col">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {profiles.map((profile) => (
+              <AdminUserTableRow
+                key={profile.id}
+                profile={profile}
+                onEdit={setSelectedMember}
+                onUpdateStatus={handleUpdateStatus}
+                isUpdating={isUpdating}
+              />
+            ))}
+          </TableBody>
+        </Table>
+      </AdminUserTableWrapper>
 
       {selectedMember && (
         <EditMemberDialog
