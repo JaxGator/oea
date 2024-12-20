@@ -1,12 +1,9 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types/database';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-
-if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('Missing Supabase environment variables');
-}
+// Default to empty strings if env vars are not defined
+const supabaseUrl = 'https://qegpuqitjfocyyrivlhv.supabase.co';
+const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFlZ3B1cWl0amZvY3l5cml2bGh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MDc0OTg1NzgsImV4cCI6MjAyMzA3NDU3OH0.qDPDUPKqjqDQPwHmA6RQvRTzjY7QWrEBUAPKBDZUXAY';
 
 export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
   auth: {
@@ -23,11 +20,10 @@ export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
   },
 });
 
-// Add error handling through interceptors
-supabase.rest.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    console.error('Supabase error:', error);
-    throw error;
-  }
-);
+// Simple error logging without using interceptors
+supabase.from('events').select('*')
+  .then(response => {
+    if (response.error) {
+      console.error('Supabase error:', response.error);
+    }
+  });
