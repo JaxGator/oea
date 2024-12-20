@@ -8,7 +8,12 @@ export default function Maintenance() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <div className="text-center space-y-6 p-8">
-        <div className="flex justify-center">
+        <div className="flex flex-col items-center gap-6">
+          <img 
+            src="/lovable-uploads/609edf01-3169-439a-80f5-f6f15de7a5a6.png" 
+            alt="Logo" 
+            className="h-24 w-auto"
+          />
           <Wrench className="h-16 w-16 text-gray-400" />
         </div>
         <h1 className="text-3xl font-bold text-gray-900">Under Maintenance</h1>
