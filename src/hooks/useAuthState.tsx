@@ -59,30 +59,46 @@ export function useAuthState() {
   }, []);
 
   const fetchProfile = async (userId: string) => {
-    try {
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", userId)
-        .maybeSingle();
+    const maxRetries = 3;
+    let retryCount = 0;
 
-      if (error) {
-        throw error;
+    const attemptFetch = async (): Promise<void> => {
+      try {
+        const { data, error } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", userId)
+          .maybeSingle();
+
+        if (error) {
+          throw error;
+        }
+
+        setState((prev) => ({
+          ...prev,
+          isLoading: false,
+          profile: data as Profile,
+        }));
+      } catch (error) {
+        console.error("Error fetching profile:", error);
+        
+        if (retryCount < maxRetries) {
+          retryCount++;
+          // Exponential backoff: 1s, 2s, 4s
+          const delay = Math.pow(2, retryCount - 1) * 1000;
+          await new Promise(resolve => setTimeout(resolve, delay));
+          return attemptFetch();
+        }
+
+        toast.error("Failed to load profile data. Please refresh the page.");
+        setState((prev) => ({
+          ...prev,
+          isLoading: false,
+        }));
       }
+    };
 
-      setState((prev) => ({
-        ...prev,
-        isLoading: false,
-        profile: data as Profile,
-      }));
-    } catch (error) {
-      console.error("Error fetching profile:", error);
-      toast.error("Failed to fetch profile data");
-      setState((prev) => ({
-        ...prev,
-        isLoading: false,
-      }));
-    }
+    await attemptFetch();
   };
 
   return state;
