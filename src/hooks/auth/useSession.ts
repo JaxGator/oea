@@ -72,7 +72,7 @@ export function useSession() {
             isLoading: false,
             error: null
           });
-        } else if (event === 'SIGNED_OUT' || event === 'USER_DELETED') {
+        } else if (event === 'SIGNED_OUT') {
           setState({
             session: null,
             user: null,
