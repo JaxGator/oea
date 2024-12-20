@@ -14,20 +14,9 @@ export function useAdminStatus() {
     
     const checkAdminStatus = async () => {
       try {
-        // First check if we can connect to Supabase
-        const { error: connectionError } = await supabase
-          .from('profiles')
-          .select('count')
-          .limit(1)
-          .single();
-
-        if (connectionError) {
-          throw new Error('Unable to connect to the database');
-        }
-
         const { data: { user }, error: userError } = await supabase.auth.getUser();
-        if (userError) throw userError;
         
+        // If there's no user, just set isAdmin to false without showing error
         if (!user) {
           if (isMounted) {
             setState(prev => ({ ...prev, isAdmin: false, isLoading: false }));
@@ -35,6 +24,7 @@ export function useAdminStatus() {
           return;
         }
 
+        // Only proceed with admin check if we have a logged-in user
         const { data, error: profileError } = await supabase
           .from('profiles')
           .select('is_admin')
@@ -53,13 +43,17 @@ export function useAdminStatus() {
         }
       } catch (err) {
         console.error("Error checking admin status:", err);
+        // Only show toast for logged-in users
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user && isMounted) {
+          toast.error("Failed to verify admin status. Please try again.");
+        }
         if (isMounted) {
           setState(prev => ({
             ...prev,
             error: err as Error,
             isLoading: false
           }));
-          toast.error("Failed to verify admin status. Please try again.");
         }
       }
     };
