@@ -15,8 +15,8 @@ export function EditableContent({ content, pageId, sectionId, onUpdate }: Editab
     setIsEditing,
     editedContent,
     setEditedContent,
-    isAdmin,
-    handleSave
+    handleSave,
+    isAdmin
   } = useContentEditor({
     initialContent: content,
     pageId,

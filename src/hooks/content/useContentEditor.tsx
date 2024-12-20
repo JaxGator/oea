@@ -18,8 +18,6 @@ export function useContentEditor({ initialContent, pageId, sectionId, onUpdate }
     setIsEditing,
     editedContent,
     setEditedContent,
-    startEditing,
-    cancelEditing,
   } = useContentState(initialContent);
 
   const { saveContent } = useContentSave({
@@ -38,9 +36,7 @@ export function useContentEditor({ initialContent, pageId, sectionId, onUpdate }
     setIsEditing,
     editedContent,
     setEditedContent,
-    startEditing,
     handleSave,
-    cancelEditing,
     isAdmin,
   };
 }
