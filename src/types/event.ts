@@ -22,12 +22,7 @@ export interface EventRSVP {
     id?: string;
     full_name: string | null;
     username: string;
-    avatar_url?: string | null;
   };
-  guests?: {
-    id: string;
-    first_name: string | null;
-  }[];
 }
 
 export interface EventFormData {

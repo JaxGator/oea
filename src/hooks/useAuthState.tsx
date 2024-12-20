@@ -56,7 +56,7 @@ export function useAuthState() {
         .from("profiles")
         .select("*")
         .eq("id", userId)
-        .maybeSingle();
+        .single();
 
       if (error) {
         throw error;
