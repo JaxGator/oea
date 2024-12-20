@@ -19,7 +19,7 @@ export function UserMenu({ user, profile }: UserMenuProps) {
   if (!user) {
     return (
       <Link to="/auth">
-        <Button variant="ghost" className="text-white hover:text-primary-100">
+        <Button variant="ghost" className="text-white hover:text-primary-100 hover:bg-gray-800">
           Sign In
         </Button>
       </Link>
