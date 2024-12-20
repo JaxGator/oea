@@ -5,54 +5,86 @@ import { toast } from "sonner";
 export function useAdminStatus() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
-    checkAdminStatus();
-  }, []);
-
-  const checkAdminStatus = async () => {
-    const maxRetries = 3;
-    let retryCount = 0;
-
-    const attemptCheck = async (): Promise<void> => {
+    let isMounted = true;
+    
+    const checkAdminStatus = async () => {
       try {
-        const { data: { user } } = await supabase.auth.getUser();
+        // First check if we can connect to Supabase
+        const { error: connectionError } = await supabase.from('profiles').select('count').limit(1).single();
+        if (connectionError) {
+          throw new Error('Unable to connect to the database');
+        }
+
+        const { data: { user }, error: userError } = await supabase.auth.getUser();
+        if (userError) throw userError;
         
         if (!user) {
-          setIsLoading(false);
+          if (isMounted) {
+            setIsAdmin(false);
+            setIsLoading(false);
+          }
           return;
         }
 
-        const { data, error } = await supabase
+        const { data, error: profileError } = await supabase
           .from('profiles')
           .select('is_admin')
           .eq('id', user.id)
           .maybeSingle();
 
-        if (error) {
-          throw error;
-        }
+        if (profileError) throw profileError;
 
-        setIsAdmin(!!data?.is_admin);
-        setIsLoading(false);
-      } catch (error) {
-        console.error("Error checking admin status:", error);
-        
-        if (retryCount < maxRetries) {
-          retryCount++;
-          // Exponential backoff: 1s, 2s, 4s
-          const delay = Math.pow(2, retryCount - 1) * 1000;
-          await new Promise(resolve => setTimeout(resolve, delay));
-          return attemptCheck();
+        if (isMounted) {
+          setIsAdmin(!!data?.is_admin);
+          setError(null);
         }
-
-        toast.error("Failed to verify admin status. Please refresh the page.");
-        setIsLoading(false);
+      } catch (err) {
+        console.error("Error checking admin status:", err);
+        if (isMounted) {
+          setError(err as Error);
+          toast.error("Failed to verify admin status. Please try again.");
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
       }
     };
 
-    await attemptCheck();
-  };
+    // Initial check
+    checkAdminStatus();
 
-  return { isAdmin, isLoading };
+    // Set up real-time subscription for admin status changes
+    const subscription = supabase
+      .channel('admin-changes')
+      .on('postgres_changes', 
+        { 
+          event: 'UPDATE', 
+          schema: 'public', 
+          table: 'profiles',
+          filter: `id=eq.${supabase.auth.getUser().then(({ data }) => data.user?.id)}`
+        }, 
+        (payload) => {
+          if (isMounted) {
+            setIsAdmin(!!(payload.new as any).is_admin);
+          }
+        }
+      )
+      .subscribe();
+
+    // Cleanup
+    return () => {
+      isMounted = false;
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  return { 
+    isAdmin, 
+    isLoading,
+    error: error?.message
+  };
 }
