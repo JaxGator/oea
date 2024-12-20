@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { ImagePreview } from "./components/ImagePreview";
 import { UploadButton } from "./components/UploadButton";
@@ -23,6 +23,22 @@ export function ImageUploadField({
 }: ImageUploadFieldProps) {
   const { toast } = useToast();
   const [isUploading, setIsUploading] = useState(false);
+
+  // Effect to update favicon when it changes
+  useEffect(() => {
+    if (imageType === 'favicon' && imageUrl) {
+      const faviconLink = document.querySelector("link[rel*='icon']") as HTMLLinkElement;
+      if (faviconLink) {
+        faviconLink.href = imageUrl;
+      } else {
+        const newFaviconLink = document.createElement('link');
+        newFaviconLink.rel = 'icon';
+        newFaviconLink.type = 'image/x-icon';
+        newFaviconLink.href = imageUrl;
+        document.head.appendChild(newFaviconLink);
+      }
+    }
+  }, [imageUrl, imageType]);
 
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     try {
