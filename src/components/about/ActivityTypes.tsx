@@ -1,6 +1,4 @@
 import { Bike, Mountain, Sailboat, Footprints, Users, Fish, CircleDot, Waves, Trophy, Flag } from "lucide-react";
-import { EditableContent } from "@/components/EditableContent";
-import { supabase } from "@/integrations/supabase/client";
 
 interface ActivityType {
   name: string;
@@ -23,35 +21,10 @@ const activities: ActivityType[] = [
 ];
 
 export function ActivityTypes() {
-  const handleTitleUpdate = async (newContent: string) => {
-    try {
-      const { error } = await supabase
-        .from('page_content')
-        .upsert({
-          page_id: 'about',
-          section_id: 'activities-title',
-          content: newContent,
-        }, {
-          onConflict: 'page_id,section_id'
-        });
-
-      if (error) {
-        console.error('Error updating content:', error);
-      }
-    } catch (error) {
-      console.error('Error:', error);
-    }
-  };
-
   return (
     <div className="bg-white p-6 rounded-lg shadow-sm mb-8">
       <div className="text-2xl font-semibold mb-4">
-        <EditableContent
-          content="Our Activities"
-          pageId="about"
-          sectionId="activities-title"
-          onUpdate={handleTitleUpdate}
-        />
+        Our Activities
       </div>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-6">
         {activities.map((activity) => (
