@@ -7,6 +7,7 @@ interface SessionState {
   session: Session | null;
   user: User | null;
   isLoading: boolean;
+  error: Error | null;
 }
 
 export function useSession() {
@@ -14,6 +15,7 @@ export function useSession() {
     session: null,
     user: null,
     isLoading: true,
+    error: null
   });
   const { toast } = useToast();
 
@@ -24,41 +26,30 @@ export function useSession() {
       try {
         const { data: { session }, error } = await supabase.auth.getSession();
         
-        if (error) {
-          console.error("Session error:", error);
-          toast({
-            title: "Authentication Error",
-            description: "Failed to get session",
-            variant: "destructive",
-          });
-          if (isMounted) {
-            setState(prev => ({ ...prev, isLoading: false }));
-          }
-          return;
-        }
+        if (error) throw error;
 
-        if (session?.user && isMounted) {
-          setState((prev) => ({
-            ...prev,
+        if (isMounted) {
+          setState({
             session,
-            user: session.user,
-          }));
-        } else if (isMounted) {
-          setState((prev) => ({
-            ...prev,
+            user: session?.user ?? null,
             isLoading: false,
-          }));
+            error: null
+          });
         }
       } catch (error) {
         console.error("Auth initialization error:", error);
         if (isMounted) {
-          setState(prev => ({ ...prev, isLoading: false }));
+          setState(prev => ({
+            ...prev,
+            isLoading: false,
+            error: error as Error
+          }));
+          toast({
+            title: "Authentication Error",
+            description: "Failed to initialize authentication",
+            variant: "destructive",
+          });
         }
-        toast({
-          title: "Authentication Error",
-          description: "Failed to initialize authentication",
-          variant: "destructive",
-        });
       }
     };
 
@@ -68,12 +59,12 @@ export function useSession() {
       async (_, session) => {
         if (!isMounted) return;
 
-        setState(prev => ({
-          ...prev,
+        setState({
           session,
           user: session?.user ?? null,
           isLoading: false,
-        }));
+          error: null
+        });
       }
     );
 
