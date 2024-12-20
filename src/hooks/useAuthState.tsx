@@ -11,33 +11,51 @@ export function useAuthState() {
   });
 
   useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session }, error }) => {
-      if (error) {
-        console.error("Session error:", error);
-        toast.error("Failed to get session");
-        setState(prev => ({ ...prev, isLoading: false }));
-        return;
-      }
+    let isMounted = true;
 
-      if (session?.user) {
-        setState((prev) => ({
-          ...prev,
-          user: session.user,
-        }));
-        fetchProfile(session.user.id);
-      } else {
-        setState((prev) => ({
-          ...prev,
-          isLoading: false,
-        }));
+    // Get initial session
+    const initializeAuth = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.error("Session error:", error);
+          toast.error("Failed to get session");
+          if (isMounted) {
+            setState(prev => ({ ...prev, isLoading: false }));
+          }
+          return;
+        }
+
+        if (session?.user && isMounted) {
+          setState((prev) => ({
+            ...prev,
+            user: session.user,
+          }));
+          fetchProfile(session.user.id);
+        } else if (isMounted) {
+          setState((prev) => ({
+            ...prev,
+            isLoading: false,
+          }));
+        }
+      } catch (error) {
+        console.error("Auth initialization error:", error);
+        if (isMounted) {
+          setState(prev => ({ ...prev, isLoading: false }));
+        }
+        toast.error("Failed to initialize authentication");
       }
-    });
+    };
+
+    initializeAuth();
 
     // Listen for auth changes
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (!isMounted) return;
+
       if (session?.user) {
         setState((prev) => ({
           ...prev,
@@ -54,6 +72,7 @@ export function useAuthState() {
     });
 
     return () => {
+      isMounted = false;
       subscription.unsubscribe();
     };
   }, []);
@@ -61,6 +80,7 @@ export function useAuthState() {
   const fetchProfile = async (userId: string) => {
     const maxRetries = 3;
     let retryCount = 0;
+    let lastError: Error | null = null;
 
     const attemptFetch = async (): Promise<void> => {
       try {
@@ -81,6 +101,7 @@ export function useAuthState() {
         }));
       } catch (error) {
         console.error("Error fetching profile:", error);
+        lastError = error as Error;
         
         if (retryCount < maxRetries) {
           retryCount++;
@@ -90,11 +111,15 @@ export function useAuthState() {
           return attemptFetch();
         }
 
-        toast.error("Failed to load profile data. Please refresh the page.");
         setState((prev) => ({
           ...prev,
           isLoading: false,
         }));
+
+        // Only show toast error if all retries failed
+        if (retryCount === maxRetries) {
+          toast.error("Failed to load profile. Please try refreshing the page.");
+        }
       }
     };
 
