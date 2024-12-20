@@ -42,6 +42,25 @@ export default function Members() {
     enabled: !!user?.id
   });
 
+  const { data: members = [], isLoading: isLoadingMembers, error } = useQuery({
+    queryKey: ['members'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .order('username');
+      
+      if (error) {
+        console.error('Error fetching members:', error);
+        throw error;
+      }
+
+      return data || [];
+    },
+    retry: 1,
+    staleTime: 1000 * 60 * 5,
+  });
+
   // Subscribe to new messages
   useEffect(() => {
     if (!user?.id) return;
@@ -57,7 +76,6 @@ export default function Members() {
           filter: `receiver_id=eq.${user.id}`
         },
         async (payload) => {
-          // Fetch sender's profile to show in notification
           const { data: senderProfile } = await supabase
             .from('profiles')
             .select('username')
@@ -84,25 +102,6 @@ export default function Members() {
       supabase.removeChannel(channel);
     };
   }, [user?.id, toast, navigate]);
-
-  const { data: members = [], isLoading: isLoadingMembers, error } = useQuery({
-    queryKey: ['members'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .order('username');
-      
-      if (error) {
-        console.error('Error fetching members:', error);
-        throw error;
-      }
-
-      return data || [];
-    },
-    retry: 1,
-    staleTime: 1000 * 60 * 5,
-  });
 
   if (error) {
     toast({
