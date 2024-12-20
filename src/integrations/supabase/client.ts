@@ -7,7 +7,6 @@ const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 if (!SUPABASE_URL) throw new Error('Missing SUPABASE_URL');
 if (!SUPABASE_ANON_KEY) throw new Error('Missing SUPABASE_ANON_KEY');
 
-// Initialize the Supabase client with additional options
 export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, {
   auth: {
     persistSession: true,
@@ -19,7 +18,7 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, 
     headers: {
       'Content-Type': 'application/json',
       'X-Client-Info': 'supabase-js-web',
-      'apikey': SUPABASE_ANON_KEY
+      'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
     }
   },
   db: {
