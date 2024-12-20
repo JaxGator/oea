@@ -91,14 +91,6 @@ const Auth = () => {
             }}
             providers={[]}
             redirectTo={window.location.origin}
-            onError={(error) => {
-              console.error("Auth error:", error);
-              toast({
-                title: "Authentication Error",
-                description: error.message || "Please check your credentials and try again",
-                variant: "destructive",
-              });
-            }}
           />
         </div>
       </div>
