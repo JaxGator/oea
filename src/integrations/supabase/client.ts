@@ -13,7 +13,7 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, 
     autoRefreshToken: true,
     detectSessionInUrl: true,
     flowType: 'pkce',
-    storage: window.localStorage
+    storage: window.localStorage,
   },
   global: {
     headers: {
@@ -23,11 +23,6 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, 
   db: {
     schema: 'public'
   },
-  realtime: {
-    params: {
-      eventsPerSecond: 10
-    }
-  }
 });
 
 // Add a test function to verify connection
