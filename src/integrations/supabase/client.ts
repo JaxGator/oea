@@ -7,18 +7,17 @@ const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 
 export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
   auth: {
-    flowType: 'pkce',
-    storage: typeof window !== 'undefined' ? window.localStorage : undefined,
-    storageKey: 'supabase.auth.token',
-    debug: true,
+    autoRefreshToken: true,
     persistSession: true,
     detectSessionInUrl: true,
-    autoRefreshToken: true
+    storage: typeof window !== 'undefined' ? window.localStorage : undefined,
+    storageKey: 'supabase.auth.token',
+    debug: true
   },
   global: {
     headers: {
       'x-application-name': 'oea-events',
-      'apikey': supabaseAnonKey
+      'Authorization': `Bearer ${supabaseAnonKey}`
     }
   }
 });
