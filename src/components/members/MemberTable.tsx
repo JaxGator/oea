@@ -16,24 +16,15 @@ interface Member {
   is_member: boolean;
 }
 
-export function MemberTable() {
+interface MemberTableProps {
+  members: Member[];
+  currentUserIsAdmin: boolean;
+}
+
+export function MemberTable({ members, currentUserIsAdmin }: MemberTableProps) {
   const [editingMember, setEditingMember] = useState<Member | null>(null);
-  const { profile } = useAuthState();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-
-  const { data: members = [], isLoading } = useQuery({
-    queryKey: ['members'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .order('username');
-
-      if (error) throw error;
-      return data as Member[];
-    },
-  });
 
   const handleDeleteMember = async (memberId: string) => {
     try {
@@ -58,10 +49,6 @@ export function MemberTable() {
       });
     }
   };
-
-  if (isLoading) {
-    return <div>Loading...</div>;
-  }
 
   return (
     <div className="rounded-md border">
@@ -106,7 +93,7 @@ export function MemberTable() {
                   <MemberActions
                     memberId={member.id}
                     memberName={member.username}
-                    isCurrentUserAdmin={profile?.is_admin || false}
+                    isCurrentUserAdmin={currentUserIsAdmin}
                     onEdit={() => setEditingMember(member)}
                     onDelete={() => handleDeleteMember(member.id)}
                   />
