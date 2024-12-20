@@ -2,6 +2,7 @@ import { DesktopNavigation } from "@/components/DesktopNavigation";
 import { MobileNavigation } from "@/components/MobileNavigation";
 import { AdminNotifications } from "@/components/admin/notifications/AdminNotifications";
 import { useAuthState } from "@/hooks/useAuthState";
+import { Footer } from "@/components/home/Footer";
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
   const { profile } = useAuthState();
@@ -19,6 +20,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
       <main className="flex-1">
         {children}
       </main>
+      <Footer />
       <MobileNavigation />
     </div>
   );
