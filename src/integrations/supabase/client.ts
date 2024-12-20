@@ -14,7 +14,7 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, 
     autoRefreshToken: true,
     detectSessionInUrl: true,
     flowType: 'pkce',
-    storage: window.localStorage,
+    storage: typeof window !== 'undefined' ? window.localStorage : undefined,
     storageKey: 'supabase.auth.token',
   },
   global: {
@@ -29,6 +29,29 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, 
     params: {
       eventsPerSecond: 10
     }
+  },
+  // Add retrying capability
+  fetch: (url, options) => {
+    return fetch(url, {
+      ...options,
+      credentials: 'include',
+      headers: {
+        ...options?.headers,
+        'Cache-Control': 'no-cache',
+      },
+    }).then(async (response) => {
+      if (!response.ok) {
+        console.error('Supabase request failed:', {
+          url,
+          status: response.status,
+          statusText: response.statusText,
+        });
+      }
+      return response;
+    }).catch((error) => {
+      console.error('Supabase fetch error:', error);
+      throw error;
+    });
   }
 });
 
@@ -48,7 +71,7 @@ export const testSupabaseConnection = async () => {
       .from('profiles')
       .select('id')
       .limit(1)
-      .single();
+      .maybeSingle();
       
     if (error) {
       console.error('Supabase connection test error:', error);
