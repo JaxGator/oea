@@ -5,11 +5,11 @@ interface AboutHeroProps {
 
 export function AboutHero({ imageUrl, imageAlt }: AboutHeroProps) {
   return (
-    <div className="w-full h-[150px] md:h-[200px] mb-12 rounded-lg overflow-hidden">
+    <div className="w-full h-[150px] md:h-[200px] mb-12 rounded-lg overflow-hidden flex items-center justify-center">
       <img 
         src={imageUrl}
         alt={imageAlt}
-        className="w-full h-full object-cover"
+        className="w-full h-full object-cover object-center"
       />
     </div>
   );
