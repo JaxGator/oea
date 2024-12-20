@@ -1,6 +1,5 @@
-import React, { useEffect, useRef } from 'react';
-import mapboxgl from 'mapbox-gl';
-import 'mapbox-gl/dist/mapbox-gl.css';
+import React, { useCallback, useEffect, useState } from 'react';
+import { GoogleMap, LoadScript, Marker, InfoWindow } from '@react-google-maps/api';
 import { Event } from '@/types/event';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -8,95 +7,115 @@ interface EventsMapProps {
   events: Event[];
 }
 
+const mapContainerStyle = {
+  width: '100%',
+  height: '400px',
+};
+
+const defaultCenter = {
+  lat: 39.8283,
+  lng: -98.5795, // Center of USA
+};
+
 export function EventsMap({ events }: EventsMapProps) {
-  const mapContainer = useRef<HTMLDivElement>(null);
-  const map = useRef<mapboxgl.Map | null>(null);
-  const markersRef = useRef<mapboxgl.Marker[]>([]);
+  const [googleMapsKey, setGoogleMapsKey] = useState<string>('');
+  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+  const [eventLocations, setEventLocations] = useState<Array<{ event: Event; position: google.maps.LatLngLiteral }>>([]);
 
+  // Fetch Google Maps API key from Supabase Edge Function
   useEffect(() => {
-    const initializeMap = async () => {
-      if (!mapContainer.current) return;
-
-      // Fetch Mapbox token from Supabase Edge Function secrets
-      const { data: { token }, error } = await supabase.functions.invoke('get-mapbox-token');
+    const fetchApiKey = async () => {
+      const { data: { token }, error } = await supabase.functions.invoke('get-google-maps-token');
       if (error) {
-        console.error('Error fetching Mapbox token:', error);
+        console.error('Error fetching Google Maps token:', error);
         return;
       }
+      setGoogleMapsKey(token);
+    };
 
-      mapboxgl.accessToken = token;
+    fetchApiKey();
+  }, []);
 
-      // Initialize map
-      map.current = new mapboxgl.Map({
-        container: mapContainer.current,
-        style: 'mapbox://styles/mapbox/light-v11',
-        zoom: 4,
-        center: [-98.5795, 39.8283], // Center of USA
+  // Geocode addresses to coordinates
+  useEffect(() => {
+    const geocodeAddresses = async () => {
+      if (!googleMapsKey) return;
+
+      const locations = await Promise.all(
+        events.map(async (event) => {
+          try {
+            const response = await fetch(
+              `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(
+                event.location
+              )}&key=${googleMapsKey}`
+            );
+            const data = await response.json();
+
+            if (data.results && data.results[0]) {
+              const { lat, lng } = data.results[0].geometry.location;
+              return {
+                event,
+                position: { lat, lng },
+              };
+            }
+          } catch (error) {
+            console.error('Error geocoding address:', error);
+          }
+          return null;
+        })
+      );
+
+      setEventLocations(locations.filter((loc): loc is NonNullable<typeof loc> => loc !== null));
+    };
+
+    if (events.length > 0) {
+      geocodeAddresses();
+    }
+  }, [events, googleMapsKey]);
+
+  const onLoad = useCallback((map: google.maps.Map) => {
+    if (eventLocations.length > 0) {
+      const bounds = new google.maps.LatLngBounds();
+      eventLocations.forEach(({ position }) => {
+        bounds.extend(position);
       });
+      map.fitBounds(bounds);
+    }
+  }, [eventLocations]);
 
-      // Add navigation controls
-      map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
-
-      // Add markers for each event
-      const bounds = new mapboxgl.LngLatBounds();
-      const markers: mapboxgl.Marker[] = [];
-
-      for (const event of events) {
-        // Convert address to coordinates using Mapbox Geocoding API
-        const response = await fetch(
-          `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
-            event.location
-          )}.json?access_token=${token}`
-        );
-        const data = await response.json();
-
-        if (data.features && data.features.length > 0) {
-          const [lng, lat] = data.features[0].center;
-          
-          // Create popup
-          const popup = new mapboxgl.Popup({ offset: 25 }).setHTML(`
-            <div class="p-2">
-              <h3 class="font-semibold">${event.title}</h3>
-              <p class="text-sm">${event.location}</p>
-              <p class="text-sm">${event.date} at ${event.time}</p>
-            </div>
-          `);
-
-          // Create marker
-          const marker = new mapboxgl.Marker()
-            .setLngLat([lng, lat])
-            .setPopup(popup)
-            .addTo(map.current);
-
-          markers.push(marker);
-          bounds.extend([lng, lat]);
-        }
-      }
-
-      // Store markers for cleanup
-      markersRef.current = markers;
-
-      // Fit map to bounds if there are markers
-      if (!bounds.isEmpty()) {
-        map.current.fitBounds(bounds, {
-          padding: 50,
-          maxZoom: 15,
-        });
-      }
-    };
-
-    initializeMap();
-
-    // Cleanup
-    return () => {
-      markersRef.current.forEach(marker => marker.remove());
-      map.current?.remove();
-    };
-  }, [events]);
+  if (!googleMapsKey) return null;
 
   return (
     <div className="w-full h-[400px] rounded-lg overflow-hidden shadow-lg mb-8">
-      <div ref={mapContainer} className="w-full h-full" />
+      <LoadScript googleMapsApiKey={googleMapsKey}>
+        <GoogleMap
+          mapContainerStyle={mapContainerStyle}
+          center={defaultCenter}
+          zoom={4}
+          onLoad={onLoad}
+        >
+          {eventLocations.map(({ event, position }) => (
+            <Marker
+              key={event.id}
+              position={position}
+              onClick={() => setSelectedEvent(event)}
+            />
+          ))}
+
+          {selectedEvent && (
+            <InfoWindow
+              position={eventLocations.find(loc => loc.event.id === selectedEvent.id)?.position}
+              onCloseClick={() => setSelectedEvent(null)}
+            >
+              <div className="p-2">
+                <h3 className="font-semibold">{selectedEvent.title}</h3>
+                <p className="text-sm">{selectedEvent.location}</p>
+                <p className="text-sm">{selectedEvent.date} at {selectedEvent.time}</p>
+              </div>
+            </InfoWindow>
+          )}
+        </GoogleMap>
+      </LoadScript>
     </div>
   );
 }
