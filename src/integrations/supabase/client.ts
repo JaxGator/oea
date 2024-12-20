@@ -15,7 +15,12 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, 
     flowType: 'pkce',
     storage: typeof window !== 'undefined' ? window.localStorage : undefined,
     storageKey: 'supabase.auth.token',
-    debug: true
+    debug: true,
+    cookieOptions: {
+      domain: window.location.hostname,
+      secure: window.location.protocol === 'https:',
+      sameSite: 'Lax'
+    }
   },
   global: {
     headers: {
@@ -27,18 +32,14 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, 
 // Add a test function to verify connection
 export const testSupabaseConnection = async () => {
   try {
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('id')
-      .limit(1)
-      .single();
-      
+    const { data: { session }, error } = await supabase.auth.getSession();
+    
     if (error) {
       console.error('Supabase connection test error:', error);
       return false;
     }
     
-    console.log('Supabase connection test successful:', data);
+    console.log('Supabase connection test successful:', session);
     return true;
   } catch (error) {
     console.error('Supabase connection test failed:', error);
