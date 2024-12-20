@@ -3,9 +3,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 export function useAdminStatus() {
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
+  const [state, setState] = useState({
+    isAdmin: false,
+    isLoading: true,
+    error: null as Error | null
+  });
 
   useEffect(() => {
     let isMounted = true;
@@ -13,7 +15,12 @@ export function useAdminStatus() {
     const checkAdminStatus = async () => {
       try {
         // First check if we can connect to Supabase
-        const { error: connectionError } = await supabase.from('profiles').select('count').limit(1).single();
+        const { error: connectionError } = await supabase
+          .from('profiles')
+          .select('count')
+          .limit(1)
+          .single();
+
         if (connectionError) {
           throw new Error('Unable to connect to the database');
         }
@@ -23,8 +30,7 @@ export function useAdminStatus() {
         
         if (!user) {
           if (isMounted) {
-            setIsAdmin(false);
-            setIsLoading(false);
+            setState(prev => ({ ...prev, isAdmin: false, isLoading: false }));
           }
           return;
         }
@@ -38,18 +44,22 @@ export function useAdminStatus() {
         if (profileError) throw profileError;
 
         if (isMounted) {
-          setIsAdmin(!!data?.is_admin);
-          setError(null);
+          setState(prev => ({
+            ...prev,
+            isAdmin: !!data?.is_admin,
+            error: null,
+            isLoading: false
+          }));
         }
       } catch (err) {
         console.error("Error checking admin status:", err);
         if (isMounted) {
-          setError(err as Error);
+          setState(prev => ({
+            ...prev,
+            error: err as Error,
+            isLoading: false
+          }));
           toast.error("Failed to verify admin status. Please try again.");
-        }
-      } finally {
-        if (isMounted) {
-          setIsLoading(false);
         }
       }
     };
@@ -69,7 +79,10 @@ export function useAdminStatus() {
         }, 
         (payload) => {
           if (isMounted) {
-            setIsAdmin(!!(payload.new as any).is_admin);
+            setState(prev => ({
+              ...prev,
+              isAdmin: !!(payload.new as any).is_admin
+            }));
           }
         }
       )
@@ -83,8 +96,8 @@ export function useAdminStatus() {
   }, []);
 
   return { 
-    isAdmin, 
-    isLoading,
-    error: error?.message
+    isAdmin: state.isAdmin, 
+    isLoading: state.isLoading,
+    error: state.error?.message
   };
 }
