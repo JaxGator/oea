@@ -7,13 +7,9 @@ import { toast } from "sonner";
 
 interface WixEvent {
   title: string;
-  description: string;
-  date: string;
-  time: string;
+  rsvp_guests: number;
+  start_date: string;
   location: string;
-  maxGuests: number;
-  imageUrl?: string;
-  createdAt?: string;
 }
 
 export function WixEventImporter() {
@@ -29,21 +25,33 @@ export function WixEventImporter() {
     reader.onload = (e) => {
       const text = e.target?.result as string;
       const lines = text.split('\n');
-      const headers = lines[0].split(',').map(header => header.trim());
+      const headers = lines[0].split(',').map(header => header.trim().toLowerCase());
       
       const events: WixEvent[] = lines.slice(1)
         .filter(line => line.trim() !== '')
         .map(line => {
-          const values = line.split(',').map(value => value.trim());
+          // Handle possible commas within quoted strings
+          const values: string[] = [];
+          let currentValue = '';
+          let insideQuotes = false;
+          
+          for (let char of line) {
+            if (char === '"') {
+              insideQuotes = !insideQuotes;
+            } else if (char === ',' && !insideQuotes) {
+              values.push(currentValue.trim());
+              currentValue = '';
+            } else {
+              currentValue += char;
+            }
+          }
+          values.push(currentValue.trim());
+
           const event: WixEvent = {
             title: values[headers.indexOf('title')] || '',
-            description: values[headers.indexOf('description')] || '',
-            date: values[headers.indexOf('date')] || '',
-            time: values[headers.indexOf('time')] || '12:00',
-            location: values[headers.indexOf('location')] || '',
-            maxGuests: parseInt(values[headers.indexOf('maxGuests')]) || 50,
-            imageUrl: values[headers.indexOf('imageUrl')],
-            createdAt: values[headers.indexOf('createdAt')]
+            rsvp_guests: parseInt(values[headers.indexOf('rsvp guests')]) || 0,
+            start_date: values[headers.indexOf('start date')] || '',
+            location: values[headers.indexOf('location')] || ''
           };
           return event;
         });
@@ -65,16 +73,21 @@ export function WixEventImporter() {
 
     for (const event of csvData) {
       try {
+        // Parse the date and time from the ISO string
+        const eventDate = new Date(event.start_date);
+        const formattedDate = eventDate.toISOString().split('T')[0];
+        const formattedTime = eventDate.toTimeString().split(' ')[0].substring(0, 5);
+
         const { data, error } = await supabase.rpc('import_wix_event', {
           p_title: event.title,
-          p_description: event.description,
-          p_date: event.date,
-          p_time: event.time,
-          p_location: event.location,
-          p_max_guests: event.maxGuests,
+          p_description: 'Imported from Wix',
+          p_date: formattedDate,
+          p_time: formattedTime,
+          p_location: event.location || 'Location TBA',
+          p_max_guests: Math.max(50, event.rsvp_guests + 10), // Set max guests to at least 50 or rsvp_guests + 10
           p_created_by: user.id,
-          p_image_url: event.imageUrl,
-          p_created_at: event.createdAt || new Date().toISOString()
+          p_image_url: '/lovable-uploads/609edf01-3169-439a-80f5-f6f15de7a5a6.png',
+          p_rsvp_count: event.rsvp_guests
         });
 
         if (error) throw error;
@@ -88,6 +101,7 @@ export function WixEventImporter() {
     setIsLoading(false);
     if (successCount > 0) {
       toast.success(`Successfully imported ${successCount} events`);
+      window.location.reload(); // Refresh to show new events
     }
     if (errorCount > 0) {
       toast.error(`Failed to import ${errorCount} events`);
@@ -114,7 +128,7 @@ export function WixEventImporter() {
               hover:file:bg-blue-100"
           />
           <p className="text-sm text-gray-500">
-            Upload a CSV file with columns: title, description, date (YYYY-MM-DD), time (HH:MM), location, maxGuests, imageUrl (optional)
+            Upload a CSV file with columns: title, rsvp guests, start date, location
           </p>
         </div>
 
@@ -126,7 +140,10 @@ export function WixEventImporter() {
                 <div key={index} className="p-2 bg-gray-50 rounded">
                   <p className="font-medium">{event.title}</p>
                   <p className="text-sm text-gray-600">
-                    {event.date} at {event.time} - {event.location}
+                    {new Date(event.start_date).toLocaleDateString()} - {event.location || 'Location TBA'}
+                  </p>
+                  <p className="text-sm text-gray-600">
+                    RSVP Count: {event.rsvp_guests}
                   </p>
                 </div>
               ))}
