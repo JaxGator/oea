@@ -18,8 +18,7 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, 
   global: {
     headers: {
       'Content-Type': 'application/json',
-      'X-Client-Info': 'supabase-js-web',
-      'apikey': SUPABASE_ANON_KEY
+      'X-Client-Info': 'supabase-js-web'
     }
   },
   db: {
