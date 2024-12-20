@@ -13,6 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useQuery } from "@tanstack/react-query";
+import { useSession } from "@/hooks/auth/useSession";
 
 interface AlbumCreateFormProps {
   onSuccess: () => void;
@@ -24,6 +25,7 @@ export function AlbumCreateForm({ onSuccess }: AlbumCreateFormProps) {
   const [eventId, setEventId] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const { toast } = useToast();
+  const { session } = useSession();
 
   // Fetch events for the dropdown
   const { data: events } = useQuery({
@@ -41,6 +43,15 @@ export function AlbumCreateForm({ onSuccess }: AlbumCreateFormProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!session?.user?.id) {
+      toast({
+        title: "Error",
+        description: "You must be logged in to create an album",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     setIsCreating(true);
 
     try {
@@ -54,6 +65,7 @@ export function AlbumCreateForm({ onSuccess }: AlbumCreateFormProps) {
           description,
           event_id: eventId,
           folder_path: folderPath,
+          created_by: session.user.id,
         });
 
       if (error) throw error;
