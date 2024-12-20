@@ -115,6 +115,7 @@ export type Database = {
           description: string | null
           id: string
           image_url: string
+          imported_rsvp_count: number | null
           location: string
           max_guests: number
           time: string
@@ -127,6 +128,7 @@ export type Database = {
           description?: string | null
           id?: string
           image_url: string
+          imported_rsvp_count?: number | null
           location: string
           max_guests: number
           time: string
@@ -139,6 +141,7 @@ export type Database = {
           description?: string | null
           id?: string
           image_url?: string
+          imported_rsvp_count?: number | null
           location?: string
           max_guests?: number
           time?: string
@@ -335,20 +338,36 @@ export type Database = {
         }
         Returns: undefined
       }
-      import_wix_event: {
-        Args: {
-          p_title: string
-          p_description: string
-          p_date: string
-          p_time: string
-          p_location: string
-          p_max_guests: number
-          p_created_by: string
-          p_image_url: string
-          p_created_at?: string
-        }
-        Returns: string
-      }
+      import_wix_event:
+        | {
+            Args: {
+              p_title: string
+              p_description: string
+              p_date: string
+              p_time: string
+              p_location: string
+              p_max_guests: number
+              p_created_by: string
+              p_image_url: string
+              p_created_at?: string
+            }
+            Returns: string
+          }
+        | {
+            Args: {
+              p_title: string
+              p_description: string
+              p_date: string
+              p_time: string
+              p_location: string
+              p_max_guests: number
+              p_created_by: string
+              p_image_url: string
+              p_rsvp_count?: number
+              p_created_at?: string
+            }
+            Returns: string
+          }
     }
     Enums: {
       rsvp_response: "attending" | "not_attending" | "maybe"
