@@ -3,6 +3,7 @@ import { CreateEventDialog } from "@/components/CreateEventDialog";
 import { DateFilter } from "@/components/DateFilter";
 import { useEvents } from "@/hooks/useEvents";
 import { EventList } from "@/components/event/EventList";
+import { EventsMap } from "@/components/event/EventsMap";
 import { useRSVP } from "@/hooks/useRSVP";
 import { toast } from "sonner";
 import { Separator } from "@/components/ui/separator";
@@ -73,6 +74,9 @@ export default function Events() {
             <div className="space-y-8">
               <div>
                 <h2 className="text-xl md:text-2xl font-semibold mb-4">Upcoming Events</h2>
+                {upcomingEvents.length > 0 && (
+                  <EventsMap events={upcomingEvents} />
+                )}
                 <EventList 
                   events={upcomingEvents}
                   onRSVP={handleRSVP}
