@@ -14,6 +14,18 @@ export function useEventActions(eventId: string, onUpdate?: () => void) {
 
   const handleDelete = async () => {
     try {
+      // First, delete any associated gallery albums
+      const { error: albumsError } = await supabase
+        .from('gallery_albums')
+        .delete()
+        .eq('event_id', eventId);
+
+      if (albumsError) {
+        console.error('Error deleting associated gallery albums:', albumsError);
+        throw albumsError;
+      }
+
+      // Then delete the event
       const { error } = await supabase
         .from('events')
         .delete()
