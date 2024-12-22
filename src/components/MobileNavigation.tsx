@@ -1,4 +1,4 @@
-import { Menu, LogIn, LogOut } from "lucide-react";
+import { Menu, LogIn, LogOut, MessageSquare } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -21,6 +21,9 @@ export function MobileNavigation() {
     { icon: BookOpen, label: "Resources", path: "/resources", external: false },
     ...(user ? [{ icon: Users, label: "Members", path: "/members", external: false }] : []),
     { icon: Info, label: "About", path: "/about", external: false },
+    ...((profile?.is_approved || profile?.is_admin) ? [
+      { icon: MessageSquare, label: "Group Chat", path: "/chat", external: false }
+    ] : []),
     ...(profile?.is_admin ? [
       {
         icon: ShoppingBag,

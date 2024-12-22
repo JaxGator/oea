@@ -4,6 +4,7 @@ import { NavigationLinks } from "./navigation/NavigationLinks";
 import { StoreLink } from "./navigation/StoreLink";
 import { UserMenu } from "./navigation/UserMenu";
 import { SearchDialog } from "./search/SearchDialog";
+import { MessageSquare } from "lucide-react";
 
 const NAV_LINKS = [
   { to: "/events", label: "Events" },
@@ -31,6 +32,16 @@ export function DesktopNavigation() {
             />
           </Link>
           <NavigationLinks links={NAV_LINKS} user={user} />
+
+          {user && (profile?.is_approved || profile?.is_admin) && (
+            <Link
+              to="/chat"
+              className="flex items-center space-x-2 hover:text-primary-100 transition-colors"
+            >
+              <MessageSquare className="h-4 w-4" />
+              <span>Group Chat</span>
+            </Link>
+          )}
 
           {user && profile?.is_admin && (
             <>
