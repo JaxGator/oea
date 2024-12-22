@@ -41,7 +41,7 @@ const Resources = () => {
     <div className="min-h-screen bg-background">
       {/* Hero Section */}
       <div className="relative w-full">
-        <div className="aspect-[21/9] w-full">
+        <div className="aspect-[21/4.5] w-full">
           <img
             src="https://images.unsplash.com/photo-1605723517503-3cadb5818a0c"
             alt="Downtown Jacksonville Skyline"
@@ -54,7 +54,7 @@ const Resources = () => {
             <img 
               src="/lovable-uploads/609edf01-3169-439a-80f5-f6f15de7a5a6.png"
               alt="OEA Logo"
-              className="w-48 h-48 md:w-64 md:h-64 object-contain"
+              className="w-32 h-32 md:w-48 md:h-48 object-contain"
             />
           </div>
         </div>
