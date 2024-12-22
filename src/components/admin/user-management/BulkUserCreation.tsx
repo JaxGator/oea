@@ -85,7 +85,15 @@ export function BulkUserCreation() {
           body: { users: userList }
         });
 
-        if (error) throw error;
+        if (error) {
+          console.error('Error in bulk user creation:', error);
+          toast({
+            title: "Error",
+            description: error.message || "Failed to create users. Check console for details.",
+            variant: "destructive"
+          });
+          return;
+        }
 
         const successCount = data.results.length;
         const errorCount = data.errors.length;
@@ -99,11 +107,11 @@ export function BulkUserCreation() {
         // Log detailed results for admin reference
         console.log('Bulk creation results:', data);
 
-      } catch (error) {
+      } catch (error: any) {
         console.error('Error in bulk user creation:', error);
         toast({
           title: "Error",
-          description: "Failed to create users. Check console for details.",
+          description: error.message || "Failed to create users. Check console for details.",
           variant: "destructive"
         });
       }
