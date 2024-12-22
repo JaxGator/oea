@@ -10,6 +10,7 @@ import { PlusIcon } from "lucide-react";
 import { useState, useEffect } from "react";
 import { EventForm } from "./event/EventForm";
 import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 interface CreateEventDialogProps {
   open?: boolean;
@@ -20,6 +21,7 @@ interface CreateEventDialogProps {
 export function CreateEventDialog({ open, onOpenChange, onSuccess }: CreateEventDialogProps) {
   const [dialogOpen, setDialogOpen] = useState(open || false);
   const [canCreateEvents, setCanCreateEvents] = useState(false);
+  const { toast } = useToast();
 
   useEffect(() => {
     if (typeof open !== 'undefined') {
@@ -34,21 +36,41 @@ export function CreateEventDialog({ open, onOpenChange, onSuccess }: CreateEvent
 
   useEffect(() => {
     const checkUserPermissions = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (!user) {
+      try {
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        
+        if (sessionError) {
+          console.error('Session error:', sessionError);
+          return;
+        }
+
+        if (!session?.user) {
+          setCanCreateEvents(false);
+          return;
+        }
+
+        // Check if user is admin by querying the profiles table
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('is_admin')
+          .eq('id', session.user.id)
+          .single();
+
+        if (profileError) {
+          console.error('Profile error:', profileError);
+          toast({
+            title: "Error",
+            description: "Failed to check user permissions",
+            variant: "destructive",
+          });
+          return;
+        }
+
+        setCanCreateEvents(profile?.is_admin || false);
+      } catch (error) {
+        console.error('Permission check error:', error);
         setCanCreateEvents(false);
-        return;
       }
-
-      // Check if user is admin by querying the profiles table
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('is_admin')
-        .eq('id', user.id)
-        .single();
-
-      setCanCreateEvents(profile?.is_admin || false);
     };
 
     checkUserPermissions();
@@ -59,7 +81,7 @@ export function CreateEventDialog({ open, onOpenChange, onSuccess }: CreateEvent
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [toast]);
 
   if (!canCreateEvents) return null;
 

@@ -6,27 +6,38 @@ import { EventList } from "@/components/event/EventList";
 import { useRSVP } from "@/hooks/useRSVP";
 import { toast } from "sonner";
 import { Separator } from "@/components/ui/separator";
+import { useAuthState } from "@/hooks/useAuthState";
+import { useNavigate } from "react-router-dom";
+import { useEffect } from "react";
 
 export default function Events() {
+  const navigate = useNavigate();
+  const { isAuthenticated, isLoading } = useAuthState();
   const [isCreateEventOpen, setIsCreateEventOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date>();
   
-  const { data: events = [], isLoading, error } = useEvents(selectedDate);
+  const { data: events = [], isLoading: isEventsLoading, error } = useEvents(selectedDate);
   const { handleRSVP, cancelRSVP } = useRSVP();
+
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
+      navigate('/auth');
+    }
+  }, [isAuthenticated, isLoading, navigate]);
+
+  if (isLoading || isEventsLoading) {
+    return (
+      <div className="min-h-screen bg-[#F1F0FB] flex items-center justify-center">
+        <div className="text-black">Loading...</div>
+      </div>
+    );
+  }
 
   if (error) {
     toast.error("Failed to load events. Please try again.");
     return (
       <div className="min-h-screen bg-[#F1F0FB] flex items-center justify-center">
         <div className="text-black">Error loading events. Please try again.</div>
-      </div>
-    );
-  }
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-[#F1F0FB] flex items-center justify-center">
-        <div className="text-black">Loading events...</div>
       </div>
     );
   }
