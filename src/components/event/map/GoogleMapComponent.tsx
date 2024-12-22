@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useRef } from 'react';
 import { GoogleMap, LoadScript, Marker, InfoWindow } from '@react-google-maps/api';
 import { Event } from '@/types/event';
 import { EventInfoWindow } from './EventInfoWindow';
+import { EventMapLoading } from './EventMapLoading';
 
 interface GoogleMapComponentProps {
   googleMapsKey: string;
