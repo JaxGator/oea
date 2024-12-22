@@ -14,11 +14,20 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, 
     detectSessionInUrl: true,
     flowType: 'pkce',
     storage: typeof window !== 'undefined' ? window.localStorage : undefined,
+    storageKey: 'supabase.auth.token',
+    debug: process.env.NODE_ENV === 'development',
   },
   global: {
     headers: {
       'X-Client-Info': 'supabase-js-web',
     },
+  },
+  cookies: {
+    name: 'sb-auth-token',
+    lifetime: 60 * 60 * 24 * 7, // 7 days
+    domain: window.location.hostname,
+    path: '/',
+    sameSite: 'lax'
   },
 });
 
