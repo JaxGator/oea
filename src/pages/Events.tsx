@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { Separator } from "@/components/ui/separator";
 import { useAuthState } from "@/hooks/useAuthState";
 import { Loader2 } from "lucide-react";
+import { TawkToWidget } from "@/components/event/TawkToWidget";
 
 export default function Events() {
   const { isAuthenticated } = useAuthState();
@@ -97,6 +98,7 @@ export default function Events() {
           </div>
         </div>
       </div>
+      <TawkToWidget />
     </div>
   );
 }
