@@ -4,13 +4,13 @@ import { EventsMap } from "@/components/event/EventsMap";
 import { useEvents } from "@/hooks/useEvents";
 
 export default function Index() {
-  const { events } = useEvents();
+  const { data: events } = useEvents();
   
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
         <div className="space-y-8">
-          <EventsMap events={events} />
+          <EventsMap events={events || []} />
           <FeaturedEvents />
           <PhotoGallery />
         </div>
