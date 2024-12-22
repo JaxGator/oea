@@ -9,6 +9,7 @@ import { MemberList } from "@/components/members/MemberList";
 import { MemberTable } from "@/components/members/MemberTable";
 import { useAuthState } from "@/hooks/useAuthState";
 import { useNavigate } from "react-router-dom";
+import { GroupChat } from "@/components/chat/GroupChat";
 
 export default function Members() {
   const { user } = useAuthState();
@@ -120,7 +121,7 @@ export default function Members() {
 
   return (
     <div className="min-h-screen bg-[#222222] py-12 px-4">
-      <div className="max-w-6xl mx-auto">
+      <div className="max-w-6xl mx-auto space-y-6">
         <div className="bg-white rounded-lg p-6 shadow-lg">
           <div className="flex items-center gap-2 mb-6">
             <Users className="h-6 w-6" aria-hidden="true" />
@@ -149,6 +150,11 @@ export default function Members() {
               )}
             </div>
           )}
+        </div>
+
+        {/* Add the group chat component */}
+        <div className="bg-white rounded-lg shadow-lg">
+          <GroupChat />
         </div>
       </div>
     </div>
