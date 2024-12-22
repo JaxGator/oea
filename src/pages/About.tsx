@@ -6,21 +6,19 @@ export default function About() {
 
   return (
     <div className="min-h-screen bg-[#F1F0FB]">
-      <div className="relative w-full">
-        <div className="aspect-[21/4.5] w-full">
+      <div className="relative w-full min-h-[30vh] sm:min-h-[35vh] md:min-h-[40vh]">
+        <img 
+          src="https://images.unsplash.com/photo-1605723517503-3cadb5818a0c"
+          alt="Jacksonville, Florida skyline at sunset"
+          className="absolute inset-0 w-full h-full object-cover object-center"
+        />
+        <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center space-y-6">
+          <h1 className="text-4xl md:text-5xl font-bold text-white">About Us</h1>
           <img 
-            src="https://images.unsplash.com/photo-1605723517503-3cadb5818a0c"
-            alt="Jacksonville, Florida skyline at sunset"
-            className="w-full h-full object-cover object-center"
+            src="/lovable-uploads/609edf01-3169-439a-80f5-f6f15de7a5a6.png"
+            alt="OEA Logo"
+            className="w-24 h-24 md:w-32 md:h-32 object-contain"
           />
-          <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center space-y-6">
-            <h1 className="text-4xl md:text-5xl font-bold text-white">About Us</h1>
-            <img 
-              src="/lovable-uploads/609edf01-3169-439a-80f5-f6f15de7a5a6.png"
-              alt="OEA Logo"
-              className="w-24 h-24 md:w-32 md:h-32 object-contain"
-            />
-          </div>
         </div>
       </div>
 
