@@ -1,6 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 
-export type ImageType = 'metaImage' | 'favicon';
+export type ImageType = 'metaImage' | 'favicon' | 'default';
 
 export async function uploadImage(file: File, imageType: ImageType) {
   if (!file.type.startsWith('image/')) {

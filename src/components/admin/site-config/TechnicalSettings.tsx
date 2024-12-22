@@ -5,10 +5,11 @@ import { CodeEditor } from "./technical/CodeEditor";
 import { SitemapConfig } from "./technical/SitemapConfig";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { Dispatch, SetStateAction } from "react";
 
 type TechnicalSettingsProps = {
   configs: Record<string, string>;
-  setConfigs: (configs: Record<string, string>) => void;
+  setConfigs: Dispatch<SetStateAction<Record<string, string>>>;
   isLoading?: boolean;
 };
 
@@ -25,7 +26,7 @@ export function TechnicalSettings({ configs, setConfigs, isLoading }: TechnicalS
 
       if (error) throw error;
 
-      setConfigs((prev: Record<string, string>) => ({ ...prev, [key]: value }));
+      setConfigs((prev) => ({ ...prev, [key]: value }));
 
       toast({
         title: "Success",
