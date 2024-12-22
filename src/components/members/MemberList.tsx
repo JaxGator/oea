@@ -7,7 +7,8 @@ import { MemberActions } from "./MemberActions";
 import { EditMemberDialog } from "./EditMemberDialog";
 import { useMembers } from "@/hooks/useMembers";
 import { supabase } from "@/integrations/supabase/client";
-import { Profile } from "./types";
+import { Profile } from "@/types/auth";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface MemberListProps {
   members: Profile[];
@@ -18,6 +19,7 @@ interface MemberListProps {
 export function MemberList({ members: initialMembers, currentUserIsAdmin, isMobile }: MemberListProps) {
   const [members, setMembers] = useState<Profile[]>(initialMembers);
   const { editingMember, setEditingMember, handleDeleteMember } = useMembers();
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     setMembers(initialMembers);
@@ -96,7 +98,7 @@ export function MemberList({ members: initialMembers, currentUserIsAdmin, isMobi
                     memberId={member.id}
                     memberName={member.username}
                     isCurrentUserAdmin={currentUserIsAdmin}
-                    onDelete={handleDeleteMember}
+                    onDelete={() => handleDeleteMember(member.id)}
                     onEdit={() => setEditingMember(member)}
                   />
                 )}

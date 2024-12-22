@@ -2,9 +2,11 @@ import { EditMemberDialog } from "./EditMemberDialog";
 import { Member, MemberTableProps } from "./types";
 import { MemberTableRow } from "./MemberTableRow";
 import { useMembers } from "@/hooks/useMembers";
+import { useQueryClient } from "@tanstack/react-query";
 
 export function MemberTable({ members, currentUserIsAdmin }: MemberTableProps) {
   const { editingMember, setEditingMember, handleDeleteMember } = useMembers();
+  const queryClient = useQueryClient();
 
   return (
     <div className="relative overflow-x-auto">
@@ -35,7 +37,9 @@ export function MemberTable({ members, currentUserIsAdmin }: MemberTableProps) {
           member={editingMember}
           open={!!editingMember}
           onOpenChange={(open) => !open && setEditingMember(null)}
-          onUpdate={() => queryClient.invalidateQueries({ queryKey: ['members'] })}
+          onUpdate={() => {
+            queryClient.invalidateQueries({ queryKey: ['members'] });
+          }}
         />
       )}
     </div>
