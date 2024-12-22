@@ -20,9 +20,13 @@ export function TechnicalSettings({ configs, setConfigs, isLoading }: TechnicalS
     try {
       const { error } = await supabase
         .from('site_config')
-        .upsert({ key, value })
-        .select()
-        .maybeSingle();
+        .upsert({ 
+          key, 
+          value,
+          updated_at: new Date().toISOString()
+        }, {
+          onConflict: 'key'
+        });
 
       if (error) throw error;
 
@@ -65,13 +69,13 @@ export function TechnicalSettings({ configs, setConfigs, isLoading }: TechnicalS
         <CodeEditor
           label="Custom Scripts"
           value={configs.custom_scripts || ""}
-          onChange={(value) => setConfigs({ ...configs, custom_scripts: value })}
+          onChange={(value) => setConfigs({ ...prev => ({ ...prev, custom_scripts: value })})}
           onSave={() => updateConfig('custom_scripts', configs.custom_scripts || "")}
         />
 
         <SitemapConfig
           value={configs.sitemap_config || ""}
-          onChange={(value) => setConfigs({ ...configs, sitemap_config: value })}
+          onChange={(value) => setConfigs(prev => ({ ...prev, sitemap_config: value }))}
           onSave={() => updateConfig('sitemap_config', configs.sitemap_config || "")}
           isLoading={isLoading}
         />

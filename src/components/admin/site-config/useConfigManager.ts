@@ -40,8 +40,13 @@ export function useConfigManager() {
     try {
       const { error } = await supabase
         .from('site_config')
-        .update({ value })
-        .eq('key', key);
+        .upsert({ 
+          key, 
+          value,
+          updated_at: new Date().toISOString()
+        }, {
+          onConflict: 'key'
+        });
 
       if (error) throw error;
 
