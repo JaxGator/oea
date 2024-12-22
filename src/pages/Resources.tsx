@@ -42,7 +42,7 @@ const Resources = () => {
       {/* Hero Section */}
       <div className="relative h-[400px] w-full">
         <img
-          src="https://images.unsplash.com/photo-1702165639441-d1f64c2e2f04"
+          src="https://images.unsplash.com/photo-1472396961693-142e6e269027"
           alt="Florida State Park"
           className="w-full h-full object-cover"
         />
