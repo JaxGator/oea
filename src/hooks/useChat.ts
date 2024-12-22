@@ -10,17 +10,16 @@ interface Message {
   created_at: string;
 }
 
-export function useChat(recipientId: string, currentUserId: string) {
+export function useChat() {
   const [newMessage, setNewMessage] = useState("");
   const { toast } = useToast();
 
   const { data: messages = [], refetch } = useQuery({
-    queryKey: ['messages', recipientId],
+    queryKey: ['group-chat-messages'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('messages')
+        .from('group_chat_messages')
         .select('*')
-        .or(`and(sender_id.eq.${currentUserId},receiver_id.eq.${recipientId}),and(sender_id.eq.${recipientId},receiver_id.eq.${currentUserId})`)
         .order('created_at', { ascending: true });
 
       if (error) throw error;
@@ -34,11 +33,9 @@ export function useChat(recipientId: string, currentUserId: string) {
 
     try {
       const { error } = await supabase
-        .from('messages')
+        .from('group_chat_messages')
         .insert({
           content: newMessage.trim(),
-          sender_id: currentUserId,
-          receiver_id: recipientId,
         });
 
       if (error) throw error;
