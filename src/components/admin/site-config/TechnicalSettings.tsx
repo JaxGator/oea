@@ -25,6 +25,8 @@ export function TechnicalSettings({ configs, setConfigs, isLoading }: TechnicalS
 
       if (error) throw error;
 
+      setConfigs(prev => ({ ...prev, [key]: value }));
+
       toast({
         title: "Success",
         description: "Configuration updated successfully",
@@ -36,7 +38,6 @@ export function TechnicalSettings({ configs, setConfigs, isLoading }: TechnicalS
         description: "Failed to update configuration. Please try again.",
         variant: "destructive",
       });
-      throw error; // Re-throw to be handled by the component
     }
   };
 
@@ -44,9 +45,8 @@ export function TechnicalSettings({ configs, setConfigs, isLoading }: TechnicalS
     <Card>
       <CardContent className="space-y-6 pt-6">
         <MaintenanceMode
-          isEnabled={configs.maintenance_mode === 'true'}
+          enabled={configs.maintenance_mode === 'true'}
           onToggle={(enabled) => {
-            setConfigs({ ...configs, maintenance_mode: String(enabled) });
             updateConfig('maintenance_mode', String(enabled));
           }}
           isLoading={isLoading}
@@ -54,24 +54,24 @@ export function TechnicalSettings({ configs, setConfigs, isLoading }: TechnicalS
 
         <ImageUploadField
           label="Default Event Image"
-          value={configs.default_event_image || ""}
-          onChange={(value) => setConfigs({ ...configs, default_event_image: value })}
-          onSave={() => updateConfig('default_event_image', configs.default_event_image)}
-          isLoading={isLoading}
+          imageUrl={configs.default_event_image}
+          configKey="default_event_image"
+          updateConfig={updateConfig}
+          setConfigs={setConfigs}
+          imageType="event"
         />
 
         <CodeEditor
           label="Custom Scripts"
           value={configs.custom_scripts || ""}
           onChange={(value) => setConfigs({ ...configs, custom_scripts: value })}
-          onSave={() => updateConfig('custom_scripts', configs.custom_scripts)}
-          isLoading={isLoading}
+          onSave={() => updateConfig('custom_scripts', configs.custom_scripts || "")}
         />
 
         <SitemapConfig
           value={configs.sitemap_config || ""}
           onChange={(value) => setConfigs({ ...configs, sitemap_config: value })}
-          onSave={() => updateConfig('sitemap_config', configs.sitemap_config)}
+          onSave={() => updateConfig('sitemap_config', configs.sitemap_config || "")}
           isLoading={isLoading}
         />
       </CardContent>
