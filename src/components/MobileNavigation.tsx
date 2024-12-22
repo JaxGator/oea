@@ -2,7 +2,7 @@ import { Menu, LogIn, LogOut } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Home, Calendar, Info, Users, ShoppingBag, LayoutDashboard } from "lucide-react";
+import { Home, Calendar, Info, Users, ShoppingBag, LayoutDashboard, BookOpen } from "lucide-react";
 import { useAuthState } from "@/hooks/useAuthState";
 import { supabase } from "@/integrations/supabase/client";
 import { SearchDialog } from "./search/SearchDialog";
@@ -18,6 +18,7 @@ export function MobileNavigation() {
   const navigationItems = [
     { icon: Home, label: "Home", path: "/", external: false },
     { icon: Calendar, label: "Events", path: "/events", external: false },
+    { icon: BookOpen, label: "Resources", path: "/resources", external: false },
     ...(user ? [{ icon: Users, label: "Members", path: "/members", external: false }] : []),
     { icon: Info, label: "About", path: "/about", external: false },
     ...(profile?.is_admin ? [

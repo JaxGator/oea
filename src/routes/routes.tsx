@@ -10,6 +10,7 @@ import Profile from "@/pages/Profile";
 import Admin from "@/pages/Admin";
 import Auth from "@/pages/Auth";
 import Maintenance from "@/pages/Maintenance";
+import Resources from "@/pages/Resources";
 import { TermsAndConditions } from "@/components/legal/TermsAndConditions";
 import { PrivacyPolicy } from "@/components/legal/PrivacyPolicy";
 import { useAuthState } from "@/hooks/useAuthState";
@@ -76,6 +77,10 @@ export const router = createBrowserRouter([
       {
         path: "/about",
         element: <About />,
+      },
+      {
+        path: "/resources",
+        element: <Resources />,
       },
       {
         path: "/members",

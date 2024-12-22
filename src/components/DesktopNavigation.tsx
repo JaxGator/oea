@@ -7,6 +7,7 @@ import { SearchDialog } from "./search/SearchDialog";
 
 const NAV_LINKS = [
   { to: "/events", label: "Events" },
+  { to: "/resources", label: "Resources" },
   { to: "/about", label: "About" },
 ];
 
