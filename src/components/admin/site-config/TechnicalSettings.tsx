@@ -2,7 +2,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { MaintenanceMode } from "./technical/MaintenanceMode";
 import { ImageUploadField } from "./technical/ImageUploadField";
 import { CodeEditor } from "./technical/CodeEditor";
-import { SitemapConfig } from "./technical/SitemapConfig";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Dispatch, SetStateAction } from "react";
@@ -69,15 +68,8 @@ export function TechnicalSettings({ configs, setConfigs, isLoading }: TechnicalS
         <CodeEditor
           label="Custom Scripts"
           value={configs.custom_scripts || ""}
-          onChange={(value) => setConfigs({ ...prev => ({ ...prev, custom_scripts: value })})}
+          onChange={(value) => setConfigs(prev => ({ ...prev, custom_scripts: value }))}
           onSave={() => updateConfig('custom_scripts', configs.custom_scripts || "")}
-        />
-
-        <SitemapConfig
-          value={configs.sitemap_config || ""}
-          onChange={(value) => setConfigs(prev => ({ ...prev, sitemap_config: value }))}
-          onSave={() => updateConfig('sitemap_config', configs.sitemap_config || "")}
-          isLoading={isLoading}
         />
       </CardContent>
     </Card>
