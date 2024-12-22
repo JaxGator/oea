@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { GoogleMap, LoadScript, Marker, InfoWindow } from '@react-google-maps/api';
 import { Event } from '@/types/event';
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 interface EventsMapProps {
   events: Event[];
@@ -19,12 +20,23 @@ export function EventsMap({ events }: EventsMapProps) {
 
   useEffect(() => {
     const fetchGoogleMapsKey = async () => {
-      const { data, error } = await supabase.functions.invoke('get-google-maps-token');
-      if (error) {
-        console.error('Error fetching Google Maps token:', error);
-        return;
+      try {
+        const { data, error } = await supabase.functions.invoke('get-google-maps-token');
+        if (error) {
+          console.error('Error fetching Google Maps token:', error);
+          toast.error('Failed to load map. Please try again later.');
+          return;
+        }
+        if (!data?.token) {
+          console.error('No token returned from function');
+          toast.error('Failed to load map configuration');
+          return;
+        }
+        setMapKey(data.token);
+      } catch (err) {
+        console.error('Error in fetchGoogleMapsKey:', err);
+        toast.error('Failed to initialize map');
       }
-      setMapKey(data.token);
     };
 
     const geocodeLocations = async () => {
@@ -32,26 +44,33 @@ export function EventsMap({ events }: EventsMapProps) {
         event.location && event.location.trim() !== ''
       );
 
-      const geocodedLocations = await Promise.all(
-        validEvents.map(async (event) => {
-          try {
-            const response = await fetch(
-              `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(event.location)}&key=${mapKey}`
-            );
-            const data = await response.json();
+      try {
+        const geocodedLocations = await Promise.all(
+          validEvents.map(async (event) => {
+            try {
+              const response = await fetch(
+                `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(event.location)}&key=${mapKey}`
+              );
+              const data = await response.json();
 
-            if (data.results && data.results.length > 0) {
-              const { lat, lng } = data.results[0].geometry.location;
-              return { lat, lng, event };
+              if (data.results && data.results.length > 0) {
+                const { lat, lng } = data.results[0].geometry.location;
+                return { lat, lng, event };
+              }
+              console.warn('No results found for location:', event.location);
+              return null;
+            } catch (error) {
+              console.error('Error geocoding location:', error);
+              return null;
             }
-          } catch (error) {
-            console.error('Error geocoding location:', error);
-          }
-          return null;
-        })
-      );
+          })
+        );
 
-      setLocations(geocodedLocations.filter((loc): loc is Location & { event: Event } => loc !== null));
+        setLocations(geocodedLocations.filter((loc): loc is Location & { event: Event } => loc !== null));
+      } catch (err) {
+        console.error('Error in geocodeLocations:', err);
+        toast.error('Failed to load event locations');
+      }
     };
 
     fetchGoogleMapsKey();
