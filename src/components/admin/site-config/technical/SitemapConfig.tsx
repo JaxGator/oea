@@ -15,29 +15,16 @@ export function SitemapConfig({ value, onChange, onSave, isLoading }: SitemapCon
   const { toast } = useToast();
   const [isValidJson, setIsValidJson] = React.useState(true);
   const [isSaving, setIsSaving] = React.useState(false);
-  const [sitemapPreview, setSitemapPreview] = React.useState<string>('');
 
   const handleChange = (newValue: string) => {
     try {
       if (newValue) {
         JSON.parse(newValue);
-        // Generate preview automatically when valid JSON is entered
-        const routes = JSON.parse(newValue);
-        const xml = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${routes.map((route: string) => `
-  <url>
-    <loc>${window.location.origin}${route}</loc>
-    <lastmod>${new Date().toISOString().split('T')[0]}</lastmod>
-  </url>`).join('')}
-</urlset>`;
-        setSitemapPreview(xml);
       }
       setIsValidJson(true);
       onChange(newValue);
     } catch (e) {
       setIsValidJson(false);
-      setSitemapPreview('');
     }
   };
 
@@ -96,17 +83,6 @@ ${routes.map((route: string) => `
           </Button>
         </div>
       </div>
-
-      {sitemapPreview && (
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Generated Sitemap Preview</label>
-          <div className="bg-gray-50 p-4 rounded-md">
-            <pre className="text-xs overflow-x-auto whitespace-pre-wrap">
-              {sitemapPreview}
-            </pre>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
