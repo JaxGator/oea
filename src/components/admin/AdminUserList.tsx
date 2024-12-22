@@ -4,6 +4,7 @@ import { Member } from "@/components/members/types";
 import { MemberTable } from "@/components/members/MemberTable";
 import { AdminUserTableWrapper } from "./user-management/AdminUserTableWrapper";
 import { CreateUserDialog } from "./user-management/CreateUserDialog";
+import { BulkUserCreation } from "./user-management/BulkUserCreation";
 import { useToast } from "@/hooks/use-toast";
 
 export function AdminUserList() {
@@ -43,7 +44,10 @@ export function AdminUserList() {
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">User Management</h2>
-        <CreateUserDialog onUserCreated={refetch} />
+        <div className="flex gap-2">
+          <CreateUserDialog onUserCreated={refetch} />
+          <BulkUserCreation />
+        </div>
       </div>
       <AdminUserTableWrapper>
         <MemberTable members={members || []} currentUserIsAdmin={true} />
