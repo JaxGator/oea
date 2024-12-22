@@ -1,39 +1,10 @@
-import { useState } from "react";
-import { useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { EditMemberDialog } from "./EditMemberDialog";
-import { useToast } from "@/hooks/use-toast";
 import { Member, MemberTableProps } from "./types";
 import { MemberTableRow } from "./MemberTableRow";
+import { useMembers } from "@/hooks/useMembers";
 
 export function MemberTable({ members, currentUserIsAdmin }: MemberTableProps) {
-  const [editingMember, setEditingMember] = useState<Member | null>(null);
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
-
-  const handleDeleteMember = async (memberId: string) => {
-    try {
-      const { error } = await supabase.functions.invoke('delete-user', {
-        body: { userId: memberId }
-      });
-
-      if (error) throw error;
-
-      toast({
-        title: "Success",
-        description: "Member deleted successfully",
-      });
-
-      queryClient.invalidateQueries({ queryKey: ['members'] });
-    } catch (error) {
-      console.error('Error deleting member:', error);
-      toast({
-        title: "Error",
-        description: "Failed to delete member",
-        variant: "destructive",
-      });
-    }
-  };
+  const { editingMember, setEditingMember, handleDeleteMember } = useMembers();
 
   return (
     <div className="relative overflow-x-auto">

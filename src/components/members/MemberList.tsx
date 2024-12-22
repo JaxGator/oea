@@ -1,24 +1,13 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { UserCircle, MessageSquare } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { MemberActions } from "./MemberActions";
 import { EditMemberDialog } from "./EditMemberDialog";
-import { useToast } from "@/hooks/use-toast";
-import { useQueryClient } from "@tanstack/react-query";
+import { useMembers } from "@/hooks/useMembers";
 import { supabase } from "@/integrations/supabase/client";
-
-interface Profile {
-  id: string;
-  username: string;
-  full_name: string | null;
-  avatar_url: string | null;
-  is_admin: boolean;
-  is_approved: boolean;
-  is_member: boolean;
-  has_unread_messages?: boolean;
-}
+import { Profile } from "./types";
 
 interface MemberListProps {
   members: Profile[];
@@ -28,9 +17,7 @@ interface MemberListProps {
 
 export function MemberList({ members: initialMembers, currentUserIsAdmin, isMobile }: MemberListProps) {
   const [members, setMembers] = useState<Profile[]>(initialMembers);
-  const [editingMember, setEditingMember] = useState<Profile | null>(null);
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
+  const { editingMember, setEditingMember, handleDeleteMember } = useMembers();
 
   useEffect(() => {
     setMembers(initialMembers);
@@ -109,13 +96,7 @@ export function MemberList({ members: initialMembers, currentUserIsAdmin, isMobi
                     memberId={member.id}
                     memberName={member.username}
                     isCurrentUserAdmin={currentUserIsAdmin}
-                    onDelete={() => {
-                      toast({
-                        title: "Success",
-                        description: "Member has been deleted",
-                      });
-                      queryClient.invalidateQueries({ queryKey: ['members'] });
-                    }}
+                    onDelete={handleDeleteMember}
                     onEdit={() => setEditingMember(member)}
                   />
                 )}
@@ -131,10 +112,6 @@ export function MemberList({ members: initialMembers, currentUserIsAdmin, isMobi
           open={!!editingMember}
           onOpenChange={(open) => !open && setEditingMember(null)}
           onUpdate={() => {
-            toast({
-              title: "Success",
-              description: "Member updated successfully",
-            });
             queryClient.invalidateQueries({ queryKey: ['members'] });
           }}
         />
