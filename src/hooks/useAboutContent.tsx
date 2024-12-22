@@ -23,9 +23,9 @@ export function useAboutContent() {
 5. Full Members have the ability to suggest bringing others in who would be a good fit for our group of friends, or to serve as event organizers.
 
 6. If voted in by the group, the only financial commitment is to buy a logo shirt (all other merchandise available is optional!)`,
-    mission: `We believe that everyone should have access to outdoor recreation and the opportunity to develop a connection with nature. Through our programs, we strive to remove barriers and create inclusive spaces where participants can challenge themselves, build confidence, and develop leadership skills!
+    mission: `We believe everyone deserves the chance to enjoy the great outdoors and build a meaningful connection with nature. Through our activities, we aim to break down barriers and create a welcoming space where friends can challenge themselves, boost their confidence, and grow as leaders—all while having a great time!
 
-If you are not familiar with us or our group, our events are not open to the public or to people we do not know personally.  We are a loosely organized group of friends with a desire to schedule fun things to do for ourselves and our extended circle of friends.`,
+Our group is a close-knit circle of friends who love organizing fun adventures for ourselves and those in our extended circle. While our events aren't open to the general public or folks we don't know personally, we're always excited to share great experiences with familiar faces.`,
     guidelinesTitle: "Guidelines",
     missionTitle: "Our Mission"
   });
