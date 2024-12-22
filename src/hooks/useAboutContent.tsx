@@ -10,19 +10,29 @@ interface AboutContent {
 
 export function useAboutContent() {
   const [content, setContent] = useState<AboutContent>({
-    guidelines: `Group Participation and Conduct
+    guidelines: `Friendly and Fun Group Guidelines
+Hey there, friends!
+We're all about creating a welcoming space where everyone can enjoy fun, meaningful experiences together. To keep things running smoothly, here are a few simple guidelines we'd love for you to follow:
 
-1. We want to bring fun and meaningful experiences to our friends, and to do that we need people to commit to our planned events first and above other group planned activities whenever possible - especially meetup type group events.
+Prioritize the Fun!
+Our events are designed with you in mind, so we'd appreciate it if you could prioritize them when possible. Meetup-style events are especially important for building our awesome community vibes!
 
-2. If you decide you do not wish to continue to participate in our group events or we notice a large drop-off in participation after 3 months, we will assume you no longer want to be active.
+Stay Engaged!
+Life happens, and that's okay! But if you decide to step back from events or we notice you've gone quiet for three months, we'll assume you've moved on (though we'll miss you!).
 
-3. We want everyone to feel welcome and included - after all, you are among friends! To keep that mantra in focus, we expect everyone to refrain from excessive use of vulgar language and innuendo around others at our events.
+Spread the Good Vibes!
+This is your happy place, and we want everyone to feel included and comfortable. Let's keep the atmosphere kind by minimizing vulgar language or suggestive humor during events.
 
-4. We are all adults, so if there is disagreement amongst members - please handle it offline with that person directly. We have a very strict NO DRAMA policy.
+Keep it Cool!
+Disagreements happen—it's all part of being human. But if they do, let's handle them privately and respectfully. Drama-free is the way to be!
 
-5. Full Members have the ability to suggest bringing others in who would be a good fit for our group of friends, or to serve as event organizers.
+Bring in Your Besties!
+Full members can suggest inviting new friends who'll vibe with our group or even help organize events. The more, the merrier!
 
-6. If voted in by the group, the only financial commitment is to buy a logo shirt (all other merchandise available is optional!)`,
+Look the Part!
+If you're voted in as a full member, the only must-do is grabbing a logo shirt to rep the group. All other swag is totally optional, but hey, who doesn't love extra merch?
+
+Let's make every gathering a blast and keep this group a space where friendships thrive. Thanks for being part of the fun! 🎉`,
     mission: `We believe everyone deserves the chance to enjoy the great outdoors and build a meaningful connection with nature. Through our activities, we aim to break down barriers and create a welcoming space where friends can challenge themselves, boost their confidence, and grow as leaders—all while having a great time!
 
 Our group is a close-knit circle of friends who love organizing fun adventures for ourselves and those in our extended circle. While our events aren't open to the general public or folks we don't know personally, we're always excited to share great experiences with familiar faces.`,
