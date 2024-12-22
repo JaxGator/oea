@@ -1,4 +1,4 @@
-import { LucideIcon, Home, Calendar, BookOpen, Info, Users, MessageSquare, ShoppingBag, LayoutDashboard, LogIn, LogOut } from "lucide-react";
+import { LucideIcon, Home, Calendar, BookOpen, Info, Users, ShoppingBag, LayoutDashboard, LogIn, LogOut } from "lucide-react";
 import { Profile } from "@/types/auth";
 
 export interface NavigationItem {
@@ -40,12 +40,6 @@ export const createNavigationItems = (
     icon: Info, 
     label: "About", 
     path: "/about" 
-  },
-  {
-    icon: MessageSquare,
-    label: "Group Chat",
-    path: "/chat",
-    show: (user, profile) => !!user && (profile?.is_approved || profile?.is_admin)
   },
   {
     icon: ShoppingBag,

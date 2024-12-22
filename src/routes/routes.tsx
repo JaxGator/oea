@@ -10,7 +10,6 @@ import Auth from "@/pages/Auth";
 import Profile from "@/pages/Profile";
 import Admin from "@/pages/Admin";
 import Store from "@/pages/Store";
-import Chat from "@/pages/Chat";
 
 export const router = createBrowserRouter([
   {
@@ -56,10 +55,6 @@ export const router = createBrowserRouter([
       {
         path: "store",
         element: <Store />,
-      },
-      {
-        path: "chat",
-        element: <Chat />,
       },
     ],
   },
