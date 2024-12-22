@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useAuthState } from "@/hooks/useAuthState";
+import { Input } from "@/components/ui/input";
+import { Pencil, Check } from "lucide-react";
 
 interface ChatMessage {
   id: string;
@@ -21,12 +23,30 @@ export function GroupChat() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const [chatTitle, setChatTitle] = useState("Event Discussion");
+  const [isEditingTitle, setIsEditingTitle] = useState(false);
+  const [tempTitle, setTempTitle] = useState("");
   const { toast } = useToast();
   const { user, profile } = useAuthState();
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!user) return;
+
+    // Fetch chat title
+    const fetchChatTitle = async () => {
+      const { data, error } = await supabase
+        .from('site_config')
+        .select('value')
+        .eq('key', 'group_chat_title')
+        .single();
+      
+      if (!error && data) {
+        setChatTitle(data.value || "Event Discussion");
+      }
+    };
+
+    fetchChatTitle();
 
     const fetchMessages = async () => {
       try {
@@ -122,6 +142,33 @@ export function GroupChat() {
     }
   };
 
+  const handleUpdateTitle = async () => {
+    if (!tempTitle.trim()) return;
+
+    try {
+      const { error } = await supabase
+        .from('site_config')
+        .update({ value: tempTitle })
+        .eq('key', 'group_chat_title');
+
+      if (error) throw error;
+
+      setChatTitle(tempTitle);
+      setIsEditingTitle(false);
+      toast({
+        title: "Success",
+        description: "Chat title updated successfully",
+      });
+    } catch (error) {
+      console.error('Error updating chat title:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update chat title",
+        variant: "destructive",
+      });
+    }
+  };
+
   if (!profile?.is_approved && !profile?.is_admin) {
     return (
       <div className="p-4 text-center text-gray-500">
@@ -132,8 +179,40 @@ export function GroupChat() {
 
   return (
     <div className="flex flex-col h-[600px] border rounded-lg bg-white">
-      <div className="p-4 border-b">
-        <h2 className="text-lg font-semibold">Event Discussion</h2>
+      <div className="p-4 border-b flex items-center justify-between">
+        {isEditingTitle && profile?.is_admin ? (
+          <div className="flex items-center gap-2 flex-1">
+            <Input
+              value={tempTitle}
+              onChange={(e) => setTempTitle(e.target.value)}
+              className="max-w-md"
+              placeholder="Enter chat title"
+            />
+            <Button
+              onClick={handleUpdateTitle}
+              size="sm"
+              className="bg-green-500 hover:bg-green-600"
+            >
+              <Check className="h-4 w-4" />
+            </Button>
+          </div>
+        ) : (
+          <div className="flex items-center gap-2">
+            <h2 className="text-lg font-semibold">{chatTitle}</h2>
+            {profile?.is_admin && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setTempTitle(chatTitle);
+                  setIsEditingTitle(true);
+                }}
+              >
+                <Pencil className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
+        )}
       </div>
       
       <ScrollArea ref={scrollRef} className="flex-1 p-4">
