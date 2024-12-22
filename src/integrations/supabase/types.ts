@@ -413,6 +413,19 @@ export type Database = {
             }
             Returns: string
           }
+      search_site: {
+        Args: {
+          search_term: string
+        }
+        Returns: {
+          type: string
+          id: string
+          title: string
+          description: string
+          url: string
+          created_at: string
+        }[]
+      }
     }
     Enums: {
       rsvp_response: "attending" | "not_attending" | "maybe"

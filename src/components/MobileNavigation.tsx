@@ -5,6 +5,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Home, Calendar, Info, Users, ShoppingBag, LayoutDashboard } from "lucide-react";
 import { useAuthState } from "@/hooks/useAuthState";
 import { supabase } from "@/integrations/supabase/client";
+import { SearchDialog } from "./search/SearchDialog";
 
 export function MobileNavigation() {
   const location = useLocation();
@@ -51,6 +52,9 @@ export function MobileNavigation() {
           </Button>
         </SheetTrigger>
         <SheetContent side="right" className="w-[250px] p-0">
+          <div className="p-4">
+            <SearchDialog />
+          </div>
           <nav className="flex flex-col p-4">
             {navigationItems.map(({ icon: Icon, label, path, external, onClick }) => 
               external ? (

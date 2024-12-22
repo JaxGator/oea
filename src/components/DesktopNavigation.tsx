@@ -3,6 +3,7 @@ import { useAuthState } from "@/hooks/useAuthState";
 import { NavigationLinks } from "./navigation/NavigationLinks";
 import { StoreLink } from "./navigation/StoreLink";
 import { UserMenu } from "./navigation/UserMenu";
+import { SearchDialog } from "./search/SearchDialog";
 
 const NAV_LINKS = [
   { to: "/events", label: "Events" },
@@ -43,7 +44,10 @@ export function DesktopNavigation() {
           )}
         </div>
 
-        <UserMenu user={user} profile={profile} />
+        <div className="flex items-center space-x-4">
+          <SearchDialog />
+          <UserMenu user={user} profile={profile} />
+        </div>
       </div>
     </nav>
   );
