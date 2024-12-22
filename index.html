@@ -15,12 +15,19 @@
         try {
           const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFlZ3B1cWl0amZvY3l5cml2bGh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzM5MzU4NTMsImV4cCI6MjA0OTUxMTg1M30.o3yD902DFG0PlLD0V8pEvx-IbnVawP3HDhNEp6cMoW4';
           
-          const { data } = await fetch('https://qegpuqitjfocyyrivlhv.functions.supabase.co/get-google-analytics-id', {
+          const response = await fetch('https://qegpuqitjfocyyrivlhv.functions.supabase.co/get-google-analytics-id', {
+            method: 'GET',
             headers: {
               'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
               'Content-Type': 'application/json'
             }
-          }).then(res => res.json());
+          });
+
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+
+          const { data } = await response.json();
           
           if (data?.value) {
             // Create and load the Google Analytics script
