@@ -3,16 +3,19 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Download } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { Skeleton } from "@/components/ui/skeleton";
 
 type SitemapConfigProps = {
   value: string;
   onChange: (value: string) => void;
-  onSave: () => void;
+  onSave: () => Promise<void>;
+  isLoading?: boolean;
 };
 
-export function SitemapConfig({ value, onChange, onSave }: SitemapConfigProps) {
+export function SitemapConfig({ value, onChange, onSave, isLoading }: SitemapConfigProps) {
   const { toast } = useToast();
   const [isValidJson, setIsValidJson] = React.useState(true);
+  const [isSaving, setIsSaving] = React.useState(false);
 
   const handleChange = (newValue: string) => {
     try {
@@ -23,6 +26,26 @@ export function SitemapConfig({ value, onChange, onSave }: SitemapConfigProps) {
       onChange(newValue);
     } catch (e) {
       setIsValidJson(false);
+    }
+  };
+
+  const handleSave = async () => {
+    try {
+      setIsSaving(true);
+      await onSave();
+      toast({
+        title: "Success",
+        description: "Sitemap configuration saved successfully",
+      });
+    } catch (error) {
+      console.error('Error saving sitemap config:', error);
+      toast({
+        title: "Error",
+        description: "Failed to save sitemap configuration. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -53,6 +76,7 @@ ${routes.map((route: string) => `
         description: "Sitemap generated successfully",
       });
     } catch (error) {
+      console.error('Error generating sitemap:', error);
       toast({
         title: "Error",
         description: "Failed to generate sitemap. Please check your configuration.",
@@ -60,6 +84,19 @@ ${routes.map((route: string) => `
       });
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="space-y-2">
+        <Skeleton className="h-4 w-32" />
+        <Skeleton className="h-[200px] w-full" />
+        <div className="flex gap-2">
+          <Skeleton className="h-10 w-32" />
+          <Skeleton className="h-10 w-32" />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-2">
@@ -76,15 +113,16 @@ ${routes.map((route: string) => `
         )}
         <div className="flex gap-2">
           <Button
-            onClick={onSave}
+            onClick={handleSave}
             className="bg-[#0d97d1] hover:bg-[#0d97d1]/90"
+            disabled={!isValidJson || isSaving}
           >
-            Save Configuration
+            {isSaving ? 'Saving...' : 'Save Configuration'}
           </Button>
           <Button
             onClick={generateSitemap}
             variant="outline"
-            disabled={!isValidJson}
+            disabled={!isValidJson || isSaving}
           >
             <Download className="h-4 w-4 mr-2" />
             Generate Sitemap
