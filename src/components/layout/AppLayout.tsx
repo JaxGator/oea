@@ -4,6 +4,7 @@ import { MobileNavigation } from "@/components/MobileNavigation";
 import { AdminNotifications } from "@/components/admin/notifications/AdminNotifications";
 import { useAuthState } from "@/hooks/useAuthState";
 import { Footer } from "@/components/home/Footer";
+import { CookieConsent } from "@/components/CookieConsent";
 import { supabase } from "@/integrations/supabase/client";
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
@@ -43,6 +44,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
       </main>
       <Footer />
       <MobileNavigation />
+      <CookieConsent />
     </div>
   );
 }
