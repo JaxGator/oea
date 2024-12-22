@@ -47,7 +47,7 @@ export function CookieConsent() {
         <div className="flex gap-4">
           <Button
             variant="outline"
-            className="text-white border-white hover:text-white hover:bg-gray-800"
+            className="bg-gray-800 text-white border-gray-600 hover:bg-gray-700 hover:border-gray-500"
             onClick={declineCookies}
           >
             Decline
