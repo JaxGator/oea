@@ -1,7 +1,6 @@
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Download } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -22,12 +21,23 @@ export function SitemapConfig({ value, onChange, onSave, isLoading }: SitemapCon
     try {
       if (newValue) {
         JSON.parse(newValue);
+        // Generate preview automatically when valid JSON is entered
+        const routes = JSON.parse(newValue);
+        const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${routes.map((route: string) => `
+  <url>
+    <loc>${window.location.origin}${route}</loc>
+    <lastmod>${new Date().toISOString().split('T')[0]}</lastmod>
+  </url>`).join('')}
+</urlset>`;
+        setSitemapPreview(xml);
       }
       setIsValidJson(true);
       onChange(newValue);
-      setSitemapPreview(''); // Clear preview when config changes
     } catch (e) {
       setIsValidJson(false);
+      setSitemapPreview('');
     }
   };
 
@@ -51,51 +61,12 @@ export function SitemapConfig({ value, onChange, onSave, isLoading }: SitemapCon
     }
   };
 
-  const generateSitemap = async () => {
-    try {
-      const routes = JSON.parse(value || '[]');
-      const xml = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${routes.map((route: string) => `
-  <url>
-    <loc>${window.location.origin}${route}</loc>
-    <lastmod>${new Date().toISOString().split('T')[0]}</lastmod>
-  </url>`).join('')}
-</urlset>`;
-
-      setSitemapPreview(xml);
-
-      const blob = new Blob([xml], { type: 'text/xml' });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'sitemap.xml';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      window.URL.revokeObjectURL(url);
-
-      toast({
-        title: "Success",
-        description: "Sitemap generated successfully",
-      });
-    } catch (error) {
-      console.error('Error generating sitemap:', error);
-      toast({
-        title: "Error",
-        description: "Failed to generate sitemap. Please check your configuration.",
-        variant: "destructive",
-      });
-    }
-  };
-
   if (isLoading) {
     return (
       <div className="space-y-2">
         <Skeleton className="h-4 w-32" />
         <Skeleton className="h-[200px] w-full" />
         <div className="flex gap-2">
-          <Skeleton className="h-10 w-32" />
           <Skeleton className="h-10 w-32" />
         </div>
       </div>
@@ -122,14 +93,6 @@ ${routes.map((route: string) => `
             disabled={!isValidJson || isSaving}
           >
             {isSaving ? 'Saving...' : 'Save Configuration'}
-          </Button>
-          <Button
-            onClick={generateSitemap}
-            variant="outline"
-            disabled={!isValidJson || isSaving}
-          >
-            <Download className="h-4 w-4 mr-2" />
-            Generate Sitemap
           </Button>
         </div>
       </div>
