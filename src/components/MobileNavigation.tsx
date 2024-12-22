@@ -1,11 +1,11 @@
-import { Menu, LogIn, LogOut, MessageSquare } from "lucide-react";
+import { Menu } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Home, Calendar, Info, Users, ShoppingBag, LayoutDashboard, BookOpen } from "lucide-react";
 import { useAuthState } from "@/hooks/useAuthState";
 import { supabase } from "@/integrations/supabase/client";
 import { SearchDialog } from "./search/SearchDialog";
+import { createNavigationItems } from "@/utils/navigation";
 
 export function MobileNavigation() {
   const location = useLocation();
@@ -15,33 +15,7 @@ export function MobileNavigation() {
     await supabase.auth.signOut();
   };
 
-  const navigationItems = [
-    { icon: Home, label: "Home", path: "/", external: false },
-    { icon: Calendar, label: "Events", path: "/events", external: false },
-    { icon: BookOpen, label: "Resources", path: "/resources", external: false },
-    ...(user ? [{ icon: Users, label: "Members", path: "/members", external: false }] : []),
-    { icon: Info, label: "About", path: "/about", external: false },
-    ...((profile?.is_approved || profile?.is_admin) ? [
-      { icon: MessageSquare, label: "Group Chat", path: "/chat", external: false }
-    ] : []),
-    ...(profile?.is_admin ? [
-      {
-        icon: ShoppingBag,
-        label: "Store",
-        path: "https://outdoorenergyadventures.printful.me/",
-        external: true,
-      },
-      { icon: LayoutDashboard, label: "Admin", path: "/admin", external: false }
-    ] : []),
-    ...(!user ? [{ icon: LogIn, label: "Sign In", path: "/auth", external: false }] : []),
-    ...(user ? [{ 
-      icon: LogOut, 
-      label: "Sign Out", 
-      path: "#",
-      onClick: handleSignOut,
-      external: false 
-    }] : []),
-  ];
+  const navigationItems = createNavigationItems(user, profile, handleSignOut);
 
   return (
     <div className="fixed bottom-4 right-4 md:hidden z-50">
@@ -60,42 +34,44 @@ export function MobileNavigation() {
             <SearchDialog />
           </div>
           <nav className="flex flex-col p-4">
-            {navigationItems.map(({ icon: Icon, label, path, external, onClick }) => 
-              external ? (
-                <a
-                  key={path}
-                  href={path}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-3 rounded-lg px-3 py-2 transition-colors hover:bg-primary/10"
-                >
-                  <Icon className="h-5 w-5" />
-                  <span className="font-medium">{label}</span>
-                </a>
-              ) : onClick ? (
-                <button
-                  key={path}
-                  onClick={onClick}
-                  className="flex items-center gap-3 rounded-lg px-3 py-2 transition-colors hover:bg-primary/10 w-full text-left"
-                >
-                  <Icon className="h-5 w-5" />
-                  <span className="font-medium">{label}</span>
-                </button>
-              ) : (
-                <Link
-                  key={path}
-                  to={path}
-                  className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-colors ${
-                    location.pathname === path
-                      ? "bg-primary text-primary-foreground"
-                      : "hover:bg-primary/10"
-                  }`}
-                >
-                  <Icon className="h-5 w-5" />
-                  <span className="font-medium">{label}</span>
-                </Link>
-              )
-            )}
+            {navigationItems
+              .filter(item => !item.show || item.show(user, profile))
+              .map(({ icon: Icon, label, path, external, onClick }) => 
+                external ? (
+                  <a
+                    key={path}
+                    href={path}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-3 rounded-lg px-3 py-2 transition-colors hover:bg-primary/10"
+                  >
+                    <Icon className="h-5 w-5" />
+                    <span className="font-medium">{label}</span>
+                  </a>
+                ) : onClick ? (
+                  <button
+                    key={path}
+                    onClick={onClick}
+                    className="flex items-center gap-3 rounded-lg px-3 py-2 transition-colors hover:bg-primary/10 w-full text-left"
+                  >
+                    <Icon className="h-5 w-5" />
+                    <span className="font-medium">{label}</span>
+                  </button>
+                ) : (
+                  <Link
+                    key={path}
+                    to={path}
+                    className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-colors ${
+                      location.pathname === path
+                        ? "bg-primary text-primary-foreground"
+                        : "hover:bg-primary/10"
+                    }`}
+                  >
+                    <Icon className="h-5 w-5" />
+                    <span className="font-medium">{label}</span>
+                  </Link>
+                )
+              )}
           </nav>
         </SheetContent>
       </Sheet>

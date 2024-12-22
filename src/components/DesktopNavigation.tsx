@@ -1,24 +1,18 @@
 import { Link } from "react-router-dom";
 import { useAuthState } from "@/hooks/useAuthState";
-import { NavigationLinks } from "./navigation/NavigationLinks";
-import { StoreLink } from "./navigation/StoreLink";
 import { UserMenu } from "./navigation/UserMenu";
 import { SearchDialog } from "./search/SearchDialog";
-import { MessageSquare } from "lucide-react";
-
-const NAV_LINKS = [
-  { to: "/events", label: "Events" },
-  { to: "/resources", label: "Resources" },
-  { to: "/about", label: "About" },
-];
-
-const STORE_LINK = {
-  href: "https://outdoorenergyadventures.printful.me/",
-  label: "Store",
-};
+import { createNavigationItems } from "@/utils/navigation";
+import { supabase } from "@/integrations/supabase/client";
 
 export function DesktopNavigation() {
   const { user, profile } = useAuthState();
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+  };
+
+  const navigationItems = createNavigationItems(user, profile, handleSignOut);
 
   return (
     <nav className="hidden md:block bg-gray-900 text-white p-4">
@@ -31,29 +25,22 @@ export function DesktopNavigation() {
               className="h-12"
             />
           </Link>
-          <NavigationLinks links={NAV_LINKS} user={user} />
-
-          {user && (profile?.is_approved || profile?.is_admin) && (
-            <Link
-              to="/chat"
-              className="flex items-center space-x-2 hover:text-primary-100 transition-colors"
-            >
-              <MessageSquare className="h-4 w-4" />
-              <span>Group Chat</span>
-            </Link>
-          )}
-
-          {user && profile?.is_admin && (
-            <>
-              <StoreLink href={STORE_LINK.href} label={STORE_LINK.label} />
-              <Link
-                to="/admin"
-                className="hover:text-primary-100 transition-colors"
-              >
-                Admin
-              </Link>
-            </>
-          )}
+          
+          <div className="flex space-x-8">
+            {navigationItems
+              .filter(item => !item.onClick && (!item.show || item.show(user, profile)))
+              .filter(item => !item.external && item.path !== '/auth' && item.path !== '#')
+              .map(({ icon: Icon, label, path }) => (
+                <Link
+                  key={path}
+                  to={path}
+                  className="flex items-center space-x-2 hover:text-primary-100 transition-colors"
+                >
+                  <Icon className="h-4 w-4" />
+                  <span>{label}</span>
+                </Link>
+              ))}
+          </div>
         </div>
 
         <div className="flex items-center space-x-4">
