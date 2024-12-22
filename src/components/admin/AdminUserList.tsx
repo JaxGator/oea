@@ -6,12 +6,9 @@ import { AdminUserTableWrapper } from "./user-management/AdminUserTableWrapper";
 import { CreateUserDialog } from "./user-management/CreateUserDialog";
 import { BulkUserCreation } from "./user-management/BulkUserCreation";
 import { useToast } from "@/hooks/use-toast";
-import { Button } from "@/components/ui/button";
-import { useState } from "react";
 
 export function AdminUserList() {
   const { toast } = useToast();
-  const [isUpdating, setIsUpdating] = useState(false);
 
   const { data: members, isLoading, error, refetch } = useQuery({
     queryKey: ['members'],
@@ -35,29 +32,6 @@ export function AdminUserList() {
     },
   });
 
-  const handleBulkPasswordUpdate = async () => {
-    try {
-      setIsUpdating(true);
-      const { error } = await supabase.functions.invoke('bulk-password-update');
-      
-      if (error) throw error;
-
-      toast({
-        title: "Success",
-        description: "Member passwords have been updated to 'oea-password'",
-      });
-    } catch (error) {
-      console.error('Error updating passwords:', error);
-      toast({
-        title: "Error",
-        description: "Failed to update member passwords",
-        variant: "destructive",
-      });
-    } finally {
-      setIsUpdating(false);
-    }
-  };
-
   if (isLoading) {
     return <div>Loading...</div>;
   }
@@ -73,13 +47,6 @@ export function AdminUserList() {
         <div className="flex gap-2">
           <CreateUserDialog onUserCreated={refetch} />
           <BulkUserCreation />
-          <Button 
-            variant="outline" 
-            onClick={handleBulkPasswordUpdate}
-            disabled={isUpdating}
-          >
-            Update Member Passwords
-          </Button>
         </div>
       </div>
       <AdminUserTableWrapper>
