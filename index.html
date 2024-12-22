@@ -13,19 +13,27 @@
       // Load Google Analytics based on site configuration
       window.addEventListener('load', async function() {
         try {
-          const { data } = await fetch('/api/site-config/google-analytics-id').then(res => res.json());
-          if (data?.google_analytics_id) {
+          const { data } = await fetch('https://qegpuqitjfocyyrivlhv.functions.supabase.co/get-google-analytics-id', {
+            headers: {
+              'Authorization': `Bearer ${window.VITE_SUPABASE_ANON_KEY}`,
+              'Content-Type': 'application/json'
+            }
+          }).then(res => res.json());
+          
+          if (data?.value) {
+            // Create and load the Google Analytics script
             const script = document.createElement('script');
             script.async = true;
-            script.src = `https://www.googletagmanager.com/gtag/js?id=${data.google_analytics_id}`;
+            script.src = `https://www.googletagmanager.com/gtag/js?id=${data.value}`;
             document.head.appendChild(script);
 
+            // Initialize Google Analytics
             window.dataLayer = window.dataLayer || [];
             function gtag() {
               dataLayer.push(arguments);
             }
             gtag('js', new Date());
-            gtag('config', data.google_analytics_id);
+            gtag('config', data.value);
           }
         } catch (error) {
           console.error('Error loading Google Analytics:', error);
