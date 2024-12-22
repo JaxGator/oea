@@ -1,4 +1,4 @@
-import { Bike, Mountain, Sailboat, Footprints, Users, Fish, CircleDot, Waves, Trophy, Flag } from "lucide-react";
+import { Bike, Mountain, Ship, ShipWheel, Footprints, Users, Fish, CircleDot, Waves, Trophy, Flag } from "lucide-react";
 
 interface ActivityType {
   name: string;
@@ -6,15 +6,14 @@ interface ActivityType {
 }
 
 const activities: ActivityType[] = [
-  { name: "Kayaking", icon: <Sailboat className="h-8 w-8" /> },
+  { name: "Kayaking", icon: <Ship className="h-8 w-8" /> },
   { name: "Cycling", icon: <Bike className="h-8 w-8" /> },
   { name: "Hiking", icon: <Mountain className="h-8 w-8" /> },
-  { name: "Boating", icon: <Sailboat className="h-8 w-8" /> },
+  { name: "Boating", icon: <ShipWheel className="h-8 w-8" /> },
   { name: "Running", icon: <Footprints className="h-8 w-8" /> },
   { name: "Social Events", icon: <Users className="h-8 w-8" /> },
   { name: "Fishing", icon: <Fish className="h-8 w-8" /> },
   { name: "Pickleball", icon: <CircleDot className="h-8 w-8" /> },
-  { name: "Snorkeling", icon: <Waves className="h-8 w-8" /> },
   { name: "Swimming", icon: <Waves className="h-8 w-8" /> },
   { name: "Sporting Events", icon: <Trophy className="h-8 w-8" /> },
   { name: "Golf", icon: <Flag className="h-8 w-8" /> },
