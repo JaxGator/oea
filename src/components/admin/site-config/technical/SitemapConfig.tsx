@@ -16,6 +16,7 @@ export function SitemapConfig({ value, onChange, onSave, isLoading }: SitemapCon
   const { toast } = useToast();
   const [isValidJson, setIsValidJson] = React.useState(true);
   const [isSaving, setIsSaving] = React.useState(false);
+  const [sitemapPreview, setSitemapPreview] = React.useState<string>('');
 
   const handleChange = (newValue: string) => {
     try {
@@ -24,6 +25,7 @@ export function SitemapConfig({ value, onChange, onSave, isLoading }: SitemapCon
       }
       setIsValidJson(true);
       onChange(newValue);
+      setSitemapPreview(''); // Clear preview when config changes
     } catch (e) {
       setIsValidJson(false);
     }
@@ -60,6 +62,8 @@ ${routes.map((route: string) => `
     <lastmod>${new Date().toISOString().split('T')[0]}</lastmod>
   </url>`).join('')}
 </urlset>`;
+
+      setSitemapPreview(xml);
 
       const blob = new Blob([xml], { type: 'text/xml' });
       const url = window.URL.createObjectURL(blob);
@@ -99,9 +103,9 @@ ${routes.map((route: string) => `
   }
 
   return (
-    <div className="space-y-2">
-      <label className="text-sm font-medium">Sitemap Configuration</label>
+    <div className="space-y-4">
       <div className="space-y-2">
+        <label className="text-sm font-medium">Sitemap Configuration</label>
         <Textarea
           value={value}
           onChange={(e) => handleChange(e.target.value)}
@@ -129,6 +133,17 @@ ${routes.map((route: string) => `
           </Button>
         </div>
       </div>
+
+      {sitemapPreview && (
+        <div className="space-y-2">
+          <label className="text-sm font-medium">Generated Sitemap Preview</label>
+          <div className="bg-gray-50 p-4 rounded-md">
+            <pre className="text-xs overflow-x-auto whitespace-pre-wrap">
+              {sitemapPreview}
+            </pre>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
