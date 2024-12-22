@@ -29,15 +29,14 @@ export function DesktopNavigation() {
           <div className="flex space-x-8">
             {navigationItems
               .filter(item => !item.onClick && (!item.show || item.show(user, profile)))
-              .filter(item => !item.external && item.path !== '/auth' && item.path !== '#')
-              .map(({ icon: Icon, label, path }) => (
+              .filter(item => !item.external && item.path !== '/auth' && item.path !== '#' && item.path !== '/')
+              .map(({ label, path }) => (
                 <Link
                   key={path}
                   to={path}
-                  className="flex items-center space-x-2 hover:text-primary-100 transition-colors"
+                  className="hover:text-primary-100 transition-colors"
                 >
-                  <Icon className="h-4 w-4" />
-                  <span>{label}</span>
+                  {label}
                 </Link>
               ))}
           </div>
