@@ -1,6 +1,5 @@
-import { useEffect, useRef } from 'react';
-import mapboxgl from 'mapbox-gl';
-import 'mapbox-gl/dist/mapbox-gl.css';
+import { useEffect, useState } from 'react';
+import { GoogleMap, LoadScript, Marker, InfoWindow } from '@react-google-maps/api';
 import { Event } from '@/types/event';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -8,100 +7,110 @@ interface EventsMapProps {
   events: Event[];
 }
 
+interface Location {
+  lat: number;
+  lng: number;
+}
+
 export function EventsMap({ events }: EventsMapProps) {
-  const mapContainer = useRef<HTMLDivElement>(null);
-  const map = useRef<mapboxgl.Map | null>(null);
+  const [locations, setLocations] = useState<(Location & { event: Event })[]>([]);
+  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+  const [mapKey, setMapKey] = useState<string>('');
 
   useEffect(() => {
-    const fetchMapboxToken = async () => {
-      const { data, error } = await supabase.functions.invoke('get-mapbox-token');
+    const fetchGoogleMapsKey = async () => {
+      const { data, error } = await supabase.functions.invoke('get-google-maps-token');
       if (error) {
-        console.error('Error fetching Mapbox token:', error);
+        console.error('Error fetching Google Maps token:', error);
         return;
       }
-      return data.token;
+      setMapKey(data.token);
     };
 
-    const initializeMap = async () => {
-      if (!mapContainer.current) return;
-
-      const token = await fetchMapboxToken();
-      if (!token) return;
-
-      mapboxgl.accessToken = token;
-
-      // Filter out events without locations
+    const geocodeLocations = async () => {
       const validEvents = events.filter(event => 
         event.location && event.location.trim() !== ''
       );
 
-      if (validEvents.length === 0) return;
+      const geocodedLocations = await Promise.all(
+        validEvents.map(async (event) => {
+          try {
+            const response = await fetch(
+              `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(event.location)}&key=${mapKey}`
+            );
+            const data = await response.json();
 
-      // Create the map
-      map.current = new mapboxgl.Map({
-        container: mapContainer.current,
-        style: 'mapbox://styles/mapbox/light-v11',
-        zoom: 12,
-      });
-
-      // Add navigation controls
-      map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
-
-      // Add markers for each event
-      const bounds = new mapboxgl.LngLatBounds();
-      
-      // Add markers sequentially
-      validEvents.forEach(async (event) => {
-        try {
-          // Geocode the location
-          const response = await fetch(
-            `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(event.location)}.json?access_token=${token}`
-          );
-          const data = await response.json();
-
-          if (data.features && data.features.length > 0) {
-            const [lng, lat] = data.features[0].center;
-
-            // Create a marker
-            new mapboxgl.Marker()
-              .setLngLat([lng, lat])
-              .setPopup(
-                new mapboxgl.Popup({ offset: 25 })
-                  .setHTML(`
-                    <strong>${event.title}</strong><br>
-                    ${event.date} at ${event.time}<br>
-                    ${event.location}
-                  `)
-              )
-              .addTo(map.current!);
-
-            // Extend bounds
-            bounds.extend([lng, lat]);
-
-            // Fit bounds after adding all markers
-            map.current?.fitBounds(bounds, {
-              padding: 50,
-              maxZoom: 14,
-            });
+            if (data.results && data.results.length > 0) {
+              const { lat, lng } = data.results[0].geometry.location;
+              return { lat, lng, event };
+            }
+          } catch (error) {
+            console.error('Error geocoding location:', error);
           }
-        } catch (error) {
-          console.error('Error geocoding location:', error);
-        }
-      });
+          return null;
+        })
+      );
+
+      setLocations(geocodedLocations.filter((loc): loc is Location & { event: Event } => loc !== null));
     };
 
-    initializeMap();
+    fetchGoogleMapsKey();
+    if (mapKey && events.length > 0) {
+      geocodeLocations();
+    }
+  }, [events, mapKey]);
 
-    return () => {
-      if (map.current) {
-        map.current.remove();
-      }
-    };
-  }, [events]);
+  if (!mapKey || locations.length === 0) {
+    return null;
+  }
+
+  const center = locations[0];
+  const mapContainerStyle = {
+    width: '100%',
+    height: '400px',
+  };
 
   return (
-    <div className="w-full h-[400px] rounded-lg overflow-hidden shadow-lg mb-8">
-      <div ref={mapContainer} className="w-full h-full" />
+    <div className="w-full rounded-lg overflow-hidden shadow-lg mb-8">
+      <LoadScript googleMapsApiKey={mapKey}>
+        <GoogleMap
+          mapContainerStyle={mapContainerStyle}
+          zoom={12}
+          center={center}
+          options={{
+            styles: [
+              {
+                featureType: 'all',
+                elementType: 'geometry',
+                stylers: [{ lightness: 20 }],
+              },
+            ],
+          }}
+        >
+          {locations.map((location, index) => (
+            <Marker
+              key={index}
+              position={location}
+              onClick={() => setSelectedEvent(location.event)}
+            />
+          ))}
+
+          {selectedEvent && (
+            <InfoWindow
+              position={locations.find(loc => loc.event.id === selectedEvent.id) || locations[0]}
+              onCloseClick={() => setSelectedEvent(null)}
+            >
+              <div className="p-2">
+                <h3 className="font-semibold">{selectedEvent.title}</h3>
+                <p className="text-sm">
+                  {selectedEvent.date} at {selectedEvent.time}<br />
+                  {selectedEvent.location}
+                </p>
+              </div>
+            </InfoWindow>
+          )}
+        </GoogleMap>
+      </LoadScript>
     </div>
   );
 }
