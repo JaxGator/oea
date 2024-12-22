@@ -67,7 +67,9 @@ export default function Events() {
 
           <div className="bg-white rounded-lg p-4 md:p-6 shadow-lg">
             {upcomingEvents.length > 0 && (
-              <EventsMap events={upcomingEvents} />
+              <div className="mb-8">
+                <EventsMap events={upcomingEvents} />
+              </div>
             )}
             
             <div className="space-y-8">
