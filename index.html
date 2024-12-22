@@ -13,9 +13,11 @@
       // Load Google Analytics based on site configuration
       window.addEventListener('load', async function() {
         try {
+          const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFlZ3B1cWl0amZvY3l5cml2bGh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzM5MzU4NTMsImV4cCI6MjA0OTUxMTg1M30.o3yD902DFG0PlLD0V8pEvx-IbnVawP3HDhNEp6cMoW4';
+          
           const { data } = await fetch('https://qegpuqitjfocyyrivlhv.functions.supabase.co/get-google-analytics-id', {
             headers: {
-              'Authorization': `Bearer ${window.VITE_SUPABASE_ANON_KEY}`,
+              'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
               'Content-Type': 'application/json'
             }
           }).then(res => res.json());
@@ -46,7 +48,7 @@
     <div id="root"></div>
     <script>
       window.VITE_SUPABASE_URL = 'https://qegpuqitjfocyyrivlhv.supabase.co';
-      window.VITE_SUPABASE_ANON_KEY = 'your-anon-key';
+      window.VITE_SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFlZ3B1cWl0amZvY3l5cml2bGh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzM5MzU4NTMsImV4cCI6MjA0OTUxMTg1M30.o3yD902DFG0PlLD0V8pEvx-IbnVawP3HDhNEp6cMoW4';
     </script>
     <script src="https://cdn.gpteng.co/gptengineer.js" type="module" crossorigin="anonymous"></script>
     <script type="module" src="/src/main.tsx"></script>
