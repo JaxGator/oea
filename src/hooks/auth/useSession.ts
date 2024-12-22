@@ -20,36 +20,45 @@ export function useSession() {
   const { toast } = useToast();
 
   useEffect(() => {
-    let isMounted = true;
+    let mounted = true;
 
-    const initializeAuth = async () => {
+    async function getActiveSession() {
       try {
-        const { data: { session }, error } = await supabase.auth.getSession();
+        // Get the current session
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         
-        if (error) {
-          // If there's an error getting the session, sign out to clear any invalid tokens
-          await supabase.auth.signOut();
-          throw error;
-        }
+        if (sessionError) throw sessionError;
 
-        if (isMounted) {
+        if (!mounted) return;
+
+        if (session) {
           setState({
             session,
-            user: session?.user ?? null,
+            user: session.user,
+            isLoading: false,
+            error: null
+          });
+        } else {
+          setState({
+            session: null,
+            user: null,
             isLoading: false,
             error: null
           });
         }
       } catch (error) {
-        console.error("Auth initialization error:", error);
-        if (isMounted) {
-          setState(prev => ({
-            ...prev,
-            session: null,
-            user: null,
-            isLoading: false,
-            error: error as Error
-          }));
+        console.error("Session initialization error:", error);
+        if (!mounted) return;
+        
+        setState({
+          session: null,
+          user: null,
+          isLoading: false,
+          error: error as Error
+        });
+
+        // Only show toast for non-session_not_found errors
+        if ((error as any)?.message !== "session_not_found") {
           toast({
             title: "Authentication Error",
             description: "Please sign in again",
@@ -57,32 +66,27 @@ export function useSession() {
           });
         }
       }
-    };
+    }
 
-    initializeAuth();
+    getActiveSession();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        if (!isMounted) return;
+        if (!mounted) return;
 
-        if (event === 'TOKEN_REFRESHED') {
-          setState({
-            session,
-            user: session?.user ?? null,
-            isLoading: false,
-            error: null
-          });
-        } else if (event === 'SIGNED_OUT') {
+        console.log("Auth state change:", event, session);
+
+        if (event === 'SIGNED_OUT') {
           setState({
             session: null,
             user: null,
             isLoading: false,
             error: null
           });
-        } else {
+        } else if (session) {
           setState({
             session,
-            user: session?.user ?? null,
+            user: session.user,
             isLoading: false,
             error: null
           });
@@ -91,7 +95,7 @@ export function useSession() {
     );
 
     return () => {
-      isMounted = false;
+      mounted = false;
       subscription.unsubscribe();
     };
   }, [toast]);

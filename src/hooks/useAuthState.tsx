@@ -9,6 +9,7 @@ export function useAuthState() {
     user,
     profile,
     isLoading: isSessionLoading || isProfileLoading,
-    error: sessionError || profileError
+    error: sessionError || profileError,
+    isAuthenticated: !!user
   };
 }
