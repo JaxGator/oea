@@ -11,6 +11,7 @@ interface AboutContent {
 export function useAboutContent() {
   const [content, setContent] = useState<AboutContent>({
     guidelines: `Friendly and Fun Group Guidelines
+
 Hey there, friends!
 We're all about creating a welcoming space where everyone can enjoy fun, meaningful experiences together. To keep things running smoothly, here are a few simple guidelines we'd love for you to follow:
 
