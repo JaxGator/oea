@@ -40,12 +40,14 @@ const Resources = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Hero Section */}
-      <div className="relative h-[400px] w-full">
-        <img
-          src="https://images.unsplash.com/photo-1605723517503-3cadb5818a0c"
-          alt="Downtown Jacksonville Skyline"
-          className="w-full h-full object-cover"
-        />
+      <div className="relative w-full">
+        <div className="aspect-[21/9] w-full">
+          <img
+            src="https://images.unsplash.com/photo-1605723517503-3cadb5818a0c"
+            alt="Downtown Jacksonville Skyline"
+            className="w-full h-full object-cover"
+          />
+        </div>
         <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
           <h1 className="text-4xl md:text-5xl font-bold text-white text-center">
             Resources
