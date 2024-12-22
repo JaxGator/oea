@@ -25,7 +25,7 @@ export function TechnicalSettings({ configs, setConfigs, isLoading }: TechnicalS
 
       if (error) throw error;
 
-      setConfigs(prev => ({ ...prev, [key]: value }));
+      setConfigs((prev: Record<string, string>) => ({ ...prev, [key]: value }));
 
       toast({
         title: "Success",
@@ -58,7 +58,7 @@ export function TechnicalSettings({ configs, setConfigs, isLoading }: TechnicalS
           configKey="default_event_image"
           updateConfig={updateConfig}
           setConfigs={setConfigs}
-          imageType="event"
+          imageType="default"
         />
 
         <CodeEditor

@@ -7,7 +7,7 @@ import { TechnicalSettings } from "./site-config/TechnicalSettings";
 import { useConfigManager } from "./site-config/useConfigManager";
 
 export function SiteConfigManager() {
-  const { configs, setConfigs, isLoading } = useConfigManager();
+  const { configs, setConfigs, updateConfig, isLoading } = useConfigManager();
 
   if (isLoading) {
     return <div>Loading...</div>;
@@ -22,6 +22,7 @@ export function SiteConfigManager() {
           <GeneralSettings
             configs={configs}
             setConfigs={setConfigs}
+            updateConfig={updateConfig}
           />
         </TabsContent>
 
@@ -29,6 +30,7 @@ export function SiteConfigManager() {
           <IntegrationsSettings
             configs={configs}
             setConfigs={setConfigs}
+            updateConfig={updateConfig}
           />
         </TabsContent>
 
@@ -36,6 +38,7 @@ export function SiteConfigManager() {
           <LegalSettings
             configs={configs}
             setConfigs={setConfigs}
+            updateConfig={updateConfig}
           />
         </TabsContent>
 
