@@ -1,89 +1,23 @@
-import { useEffect, useState } from 'react';
-import { GoogleMap, LoadScript, Marker, InfoWindow } from '@react-google-maps/api';
+import { useState } from 'react';
+import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api';
 import { Event } from '@/types/event';
-import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
+import { useGoogleMapsToken } from '@/hooks/useGoogleMapsToken';
+import { useEventLocations } from '@/hooks/useEventLocations';
+import { EventInfoWindow } from './EventInfoWindow';
 
 interface EventsMapProps {
   events: Event[];
 }
 
-interface Location {
-  lat: number;
-  lng: number;
-}
-
 export function EventsMap({ events }: EventsMapProps) {
-  const [locations, setLocations] = useState<(Location & { event: Event })[]>([]);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
-  const [mapKey, setMapKey] = useState<string>('');
+  const { mapKey, isLoading, error } = useGoogleMapsToken();
+  const locations = useEventLocations(events, mapKey);
 
-  useEffect(() => {
-    const fetchGoogleMapsKey = async () => {
-      try {
-        const { data, error } = await supabase.functions.invoke('get-google-maps-token');
-        if (error) {
-          console.error('Error fetching Google Maps token:', error);
-          toast.error('Failed to load map. Please try again later.');
-          return;
-        }
-        if (!data?.token) {
-          console.error('No token returned from function');
-          toast.error('Failed to load map configuration');
-          return;
-        }
-        setMapKey(data.token);
-      } catch (err) {
-        console.error('Error in fetchGoogleMapsKey:', err);
-        toast.error('Failed to initialize map');
-      }
-    };
-
-    const geocodeLocations = async () => {
-      const validEvents = events.filter(event => 
-        event.location && event.location.trim() !== ''
-      );
-
-      try {
-        const geocodedLocations = await Promise.all(
-          validEvents.map(async (event) => {
-            try {
-              const response = await fetch(
-                `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(event.location)}&key=${mapKey}`
-              );
-              const data = await response.json();
-
-              if (data.results && data.results.length > 0) {
-                const { lat, lng } = data.results[0].geometry.location;
-                return { lat, lng, event };
-              }
-              console.warn('No results found for location:', event.location);
-              return null;
-            } catch (error) {
-              console.error('Error geocoding location:', error);
-              return null;
-            }
-          })
-        );
-
-        setLocations(geocodedLocations.filter((loc): loc is Location & { event: Event } => loc !== null));
-      } catch (err) {
-        console.error('Error in geocodeLocations:', err);
-        toast.error('Failed to load event locations');
-      }
-    };
-
-    fetchGoogleMapsKey();
-    if (mapKey && events.length > 0) {
-      geocodeLocations();
-    }
-  }, [events, mapKey]);
-
-  if (!mapKey || locations.length === 0) {
+  if (isLoading || error || locations.length === 0) {
     return null;
   }
 
-  const center = locations[0];
   const mapContainerStyle = {
     width: '100%',
     height: '400px',
@@ -95,7 +29,7 @@ export function EventsMap({ events }: EventsMapProps) {
         <GoogleMap
           mapContainerStyle={mapContainerStyle}
           zoom={12}
-          center={center}
+          center={locations[0]}
           options={{
             styles: [
               {
@@ -115,18 +49,11 @@ export function EventsMap({ events }: EventsMapProps) {
           ))}
 
           {selectedEvent && (
-            <InfoWindow
-              position={locations.find(loc => loc.event.id === selectedEvent.id) || locations[0]}
-              onCloseClick={() => setSelectedEvent(null)}
-            >
-              <div className="p-2">
-                <h3 className="font-semibold">{selectedEvent.title}</h3>
-                <p className="text-sm">
-                  {selectedEvent.date} at {selectedEvent.time}<br />
-                  {selectedEvent.location}
-                </p>
-              </div>
-            </InfoWindow>
+            <EventInfoWindow
+              event={selectedEvent}
+              locations={locations}
+              onClose={() => setSelectedEvent(null)}
+            />
           )}
         </GoogleMap>
       </LoadScript>
