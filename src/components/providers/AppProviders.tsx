@@ -8,7 +8,6 @@ import { supabase } from "@/integrations/supabase/client";
 
 interface AppProvidersProps {
   children: ReactNode;
-  session: any;
 }
 
 const queryClient = new QueryClient({
@@ -24,7 +23,7 @@ const queryClient = new QueryClient({
 export function AppProviders({ children }: AppProvidersProps) {
   return (
     <QueryClientProvider client={queryClient}>
-      <SessionContextProvider supabaseClient={supabase}>
+      <SessionContextProvider supabaseClient={supabase} initialSession={null}>
         <TooltipProvider>
           {children}
           <Toaster />

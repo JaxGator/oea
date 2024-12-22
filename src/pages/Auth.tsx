@@ -10,6 +10,17 @@ const Auth = () => {
   const { toast } = useToast();
 
   useEffect(() => {
+    // Clear any existing session data on mount
+    const clearSession = async () => {
+      try {
+        await supabase.auth.signOut();
+      } catch (error) {
+        console.error("Error clearing session:", error);
+      }
+    };
+    
+    clearSession();
+
     // Check if user is already logged in
     const checkSession = async () => {
       try {
@@ -17,13 +28,13 @@ const Auth = () => {
         
         if (error) {
           console.error("Session check error:", error);
-          // Clear any invalid session data
-          await supabase.auth.signOut();
-          toast({
-            title: "Session Error",
-            description: "Please sign in again",
-            variant: "destructive",
-          });
+          if (error.message !== "session_not_found") {
+            toast({
+              title: "Authentication Error",
+              description: "Please try signing in again",
+              variant: "destructive",
+            });
+          }
           return;
         }
 
@@ -47,13 +58,14 @@ const Auth = () => {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log("Auth state change:", event, session);
+      
       if (event === 'SIGNED_IN' && session) {
         navigate("/");
       } else if (event === 'SIGNED_OUT') {
         // Clear any stored session data
         await supabase.auth.signOut();
-      } else if (event === 'USER_UPDATED') {
-        console.log("User updated:", session);
+      } else if (event === 'TOKEN_REFRESHED') {
+        console.log("Token refreshed successfully");
       }
     });
 
@@ -97,6 +109,14 @@ const Auth = () => {
             providers={[]}
             redirectTo={`${window.location.origin}/auth/callback`}
             magicLink={false}
+            onError={(error) => {
+              console.error("Auth error:", error);
+              toast({
+                title: "Authentication Error",
+                description: error.message,
+                variant: "destructive",
+              });
+            }}
           />
         </div>
       </div>

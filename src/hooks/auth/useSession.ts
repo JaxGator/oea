@@ -27,7 +27,10 @@ export function useSession() {
         // Get the current session
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         
-        if (sessionError) throw sessionError;
+        if (sessionError) {
+          console.error("Session error:", sessionError);
+          throw sessionError;
+        }
 
         if (!mounted) return;
 
@@ -60,10 +63,12 @@ export function useSession() {
         // Only show toast for non-session_not_found errors
         if ((error as any)?.message !== "session_not_found") {
           toast({
-            title: "Authentication Error",
+            title: "Session Error",
             description: "Please sign in again",
             variant: "destructive",
           });
+          // Clear any invalid session data
+          await supabase.auth.signOut();
         }
       }
     }
@@ -76,7 +81,7 @@ export function useSession() {
 
         console.log("Auth state change:", event, session);
 
-        if (event === 'SIGNED_OUT') {
+        if (event === 'SIGNED_OUT' || event === 'USER_DELETED') {
           setState({
             session: null,
             user: null,
