@@ -3,10 +3,10 @@ import { Search } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
-  Dialog,
-  DialogContent,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { Input } from "@/components/ui/input";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -33,26 +33,31 @@ export function SearchDialog() {
         search_term: searchTerm
       });
       if (error) throw error;
-      return data as SearchResult[];
+      // Strip HTML tags from description
+      return (data as SearchResult[]).map(result => ({
+        ...result,
+        description: result.description ? result.description.replace(/<[^>]*>/g, '') : null
+      }));
     },
     enabled: searchTerm.length > 2
   });
 
   const handleSelect = (result: SearchResult) => {
     setOpen(false);
+    setSearchTerm("");
     navigate(result.url);
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
         <Button variant="ghost" className="w-9 px-0">
           <Search className="h-4 w-4" />
           <span className="sr-only">Search</span>
         </Button>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-[550px]">
-        <div className="space-y-4">
+      </PopoverTrigger>
+      <PopoverContent className="w-[300px] sm:w-[400px] p-2" align="end">
+        <div className="space-y-2">
           <Input
             placeholder="Search events and pages..."
             value={searchTerm}
@@ -60,8 +65,8 @@ export function SearchDialog() {
             className="w-full"
             autoFocus
           />
-          <div className="space-y-2">
-            {isLoading && <div className="text-sm">Loading...</div>}
+          <div className="max-h-[300px] overflow-y-auto space-y-1">
+            {isLoading && <div className="text-sm p-2">Loading...</div>}
             {results?.map((result) => (
               <button
                 key={result.id}
@@ -75,20 +80,20 @@ export function SearchDialog() {
                   </span>
                 </div>
                 {result.description && (
-                  <p className="text-sm text-muted-foreground line-clamp-1">
+                  <span className="text-sm text-muted-foreground line-clamp-1">
                     {result.description}
-                  </p>
+                  </span>
                 )}
               </button>
             ))}
             {results?.length === 0 && searchTerm.length > 2 && (
-              <div className="text-sm text-muted-foreground">
+              <div className="text-sm text-muted-foreground p-2">
                 No results found
               </div>
             )}
           </div>
         </div>
-      </DialogContent>
-    </Dialog>
+      </PopoverContent>
+    </Popover>
   );
 }
