@@ -9,17 +9,24 @@ declare global {
 
 export function TawkToWidget() {
   useEffect(() => {
-    // Tawk.to widget script
+    // Initialize Tawk API variables
+    window.Tawk_API = window.Tawk_API || {};
+    window.Tawk_LoadStart = new Date();
+
+    // Create and append the Tawk.to script
     const script = document.createElement('script');
     script.async = true;
-    script.src = 'https://embed.tawk.to/YOUR_TAWK_TO_PROPERTY_ID/default';
+    script.src = 'https://embed.tawk.to/67687b5049e2fd8dfefc16d1/1ifo23cud';
     script.charset = 'UTF-8';
     script.setAttribute('crossorigin', '*');
-    document.head.appendChild(script);
+    
+    // Insert the script before the first script tag
+    const firstScript = document.getElementsByTagName('script')[0];
+    firstScript.parentNode?.insertBefore(script, firstScript);
 
     return () => {
       // Cleanup on unmount
-      document.head.removeChild(script);
+      script.remove();
       delete window.Tawk_API;
       delete window.Tawk_LoadStart;
     };
