@@ -13,15 +13,12 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, 
     autoRefreshToken: true,
     detectSessionInUrl: true,
     flowType: 'pkce',
-    storage: window.localStorage,
+    storage: typeof window !== 'undefined' ? window.localStorage : undefined,
   },
   global: {
     headers: {
-      'X-Client-Info': 'supabase-js-web'
-    }
-  },
-  db: {
-    schema: 'public'
+      'X-Client-Info': 'supabase-js-web',
+    },
   },
 });
 
@@ -48,8 +45,10 @@ export const testSupabaseConnection = async () => {
 };
 
 // Call test connection on init
-testSupabaseConnection().then(isConnected => {
-  if (!isConnected) {
-    console.error('Failed to establish initial Supabase connection');
-  }
-});
+if (typeof window !== 'undefined') {
+  testSupabaseConnection().then(isConnected => {
+    if (!isConnected) {
+      console.error('Failed to establish initial Supabase connection');
+    }
+  });
+}
