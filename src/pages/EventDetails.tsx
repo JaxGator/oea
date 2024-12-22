@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { format } from "date-fns";
-import { Event } from "@/types/event";
+import { Event, EventRSVP } from "@/types/event";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function EventDetails() {
@@ -30,7 +30,7 @@ export default function EventDetails() {
           user_id,
           response,
           created_at,
-          profiles:profiles (
+          profiles (
             id,
             full_name,
             username
@@ -40,13 +40,17 @@ export default function EventDetails() {
 
       if (rsvpError) throw rsvpError;
 
-      const rsvpsWithProfiles = rsvpData?.map(rsvp => ({
+      const rsvpsWithProfiles = rsvpData?.map((rsvp): EventRSVP => ({
         id: rsvp.id,
         event_id: rsvp.event_id,
         user_id: rsvp.user_id,
         response: rsvp.response,
         created_at: rsvp.created_at,
-        profile: rsvp.profiles
+        profiles: {
+          id: rsvp.profiles?.id,
+          full_name: rsvp.profiles?.full_name,
+          username: rsvp.profiles?.username || 'Unknown User'
+        }
       }));
 
       return {
@@ -120,7 +124,7 @@ export default function EventDetails() {
               <div className="space-y-2">
                 {event.rsvps?.filter(rsvp => rsvp.response === 'attending').map(rsvp => (
                   <div key={rsvp.id} className="text-gray-600">
-                    {rsvp.profile?.full_name || rsvp.profile?.username || 'Anonymous'}
+                    {rsvp.profiles.full_name || rsvp.profiles.username}
                   </div>
                 ))}
               </div>

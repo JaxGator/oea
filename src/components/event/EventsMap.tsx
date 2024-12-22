@@ -6,13 +6,8 @@ import { EventMapLoading } from './map/EventMapLoading';
 import { useGoogleMapsKey } from './map/useGoogleMapsKey';
 import { useEventLocations } from './map/useEventLocations';
 
-// Lazy load the Google Maps components with preload
+// Lazy load the Google Maps components
 const GoogleMapComponent = lazy(() => import('./map/GoogleMapComponent'));
-// Preload the component
-if (typeof window !== 'undefined') {
-  const preloadMap = () => import('./map/GoogleMapComponent');
-  preloadMap();
-}
 
 interface EventsMapProps {
   events: Event[];
@@ -24,7 +19,7 @@ export function EventsMap({ events }: EventsMapProps) {
   const isEnabled = Boolean(user && profile?.is_approved);
   
   const { googleMapsKey, error: keyError } = useGoogleMapsKey(isEnabled);
-  const { eventLocations, error: locationsError, isLoading } = useEventLocations(events, googleMapsKey);
+  const { eventLocations, error: locationsError } = useEventLocations(events, googleMapsKey);
 
   // If user is not authenticated and approved, don't render the map
   if (!user || !profile?.is_approved) {
@@ -35,7 +30,7 @@ export function EventsMap({ events }: EventsMapProps) {
     return <EventMapError error={keyError || locationsError} />;
   }
 
-  if (!googleMapsKey || isLoading) {
+  if (!googleMapsKey) {
     return <EventMapLoading />;
   }
 
