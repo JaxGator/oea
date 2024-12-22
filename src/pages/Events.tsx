@@ -7,37 +7,22 @@ import { useRSVP } from "@/hooks/useRSVP";
 import { toast } from "sonner";
 import { Separator } from "@/components/ui/separator";
 import { useAuthState } from "@/hooks/useAuthState";
-import { useNavigate } from "react-router-dom";
-import { useEffect } from "react";
+import { Loader2 } from "lucide-react";
 
 export default function Events() {
-  const navigate = useNavigate();
-  const { isAuthenticated, isLoading } = useAuthState();
+  const { isAuthenticated } = useAuthState();
   const [isCreateEventOpen, setIsCreateEventOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date>();
   
   const { data: events = [], isLoading: isEventsLoading, error } = useEvents(selectedDate);
   const { handleRSVP, cancelRSVP } = useRSVP();
 
-  useEffect(() => {
-    // Only redirect if we're sure the user is not authenticated
-    if (!isLoading && !isAuthenticated) {
-      navigate('/auth', { replace: true });
-    }
-  }, [isAuthenticated, isLoading, navigate]);
-
-  // Show loading state while checking authentication
-  if (isLoading || isEventsLoading) {
+  if (isEventsLoading) {
     return (
       <div className="min-h-screen bg-[#F1F0FB] flex items-center justify-center">
-        <div className="text-black">Loading...</div>
+        <Loader2 className="h-8 w-8 animate-spin" />
       </div>
     );
-  }
-
-  // Don't render anything while redirecting
-  if (!isAuthenticated) {
-    return null;
   }
 
   if (error) {
@@ -75,10 +60,12 @@ export default function Events() {
                 selectedDate={selectedDate}
                 onDateSelect={setSelectedDate}
               />
-              <CreateEventDialog
-                open={isCreateEventOpen}
-                onOpenChange={setIsCreateEventOpen}
-              />
+              {isAuthenticated && (
+                <CreateEventDialog
+                  open={isCreateEventOpen}
+                  onOpenChange={setIsCreateEventOpen}
+                />
+              )}
             </div>
           </div>
 
