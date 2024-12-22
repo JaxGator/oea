@@ -23,7 +23,11 @@ export function ChatDialog({
     newMessage,
     setNewMessage,
     handleSendMessage,
-  } = useChat(recipientId, currentUserId);
+  } = useChat();
+
+  const onSubmit = (e: React.FormEvent) => {
+    handleSendMessage(e, currentUserId);
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -36,7 +40,7 @@ export function ChatDialog({
           <MessageInput
             value={newMessage}
             onChange={setNewMessage}
-            onSubmit={handleSendMessage}
+            onSubmit={onSubmit}
           />
         </div>
       </DialogContent>

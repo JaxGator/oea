@@ -6,8 +6,9 @@ import { useAuthState } from "@/hooks/useAuthState";
 import { Footer } from "@/components/home/Footer";
 import { CookieConsent } from "@/components/CookieConsent";
 import { supabase } from "@/integrations/supabase/client";
+import { Outlet } from "react-router-dom";
 
-export function AppLayout({ children }: { children: React.ReactNode }) {
+export default function AppLayout() {
   const { profile } = useAuthState();
   
   useEffect(() => {
@@ -40,7 +41,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         )}
       </div>
       <main className="flex-1">
-        {children}
+        <Outlet />
       </main>
       <Footer />
       <MobileNavigation />

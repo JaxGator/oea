@@ -27,7 +27,7 @@ export function useChat() {
     },
   });
 
-  const handleSendMessage = async (e: React.FormEvent) => {
+  const handleSendMessage = async (e: React.FormEvent, userId: string) => {
     e.preventDefault();
     if (!newMessage.trim()) return;
 
@@ -36,6 +36,7 @@ export function useChat() {
         .from('group_chat_messages')
         .insert({
           content: newMessage.trim(),
+          sender_id: userId
         });
 
       if (error) throw error;
