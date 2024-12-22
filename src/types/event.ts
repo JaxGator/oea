@@ -18,8 +18,8 @@ export interface EventRSVP {
   user_id: string;
   response: 'attending' | 'not_attending' | 'maybe';
   created_at: string;
-  profiles: {
-    id?: string;
+  profile?: {
+    id: string;
     full_name: string | null;
     username: string;
   };
