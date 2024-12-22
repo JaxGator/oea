@@ -1,5 +1,5 @@
 import { CalendarIcon, MapPinIcon, UsersIcon } from "lucide-react";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { useAuthState } from "@/hooks/useAuthState";
 
@@ -28,12 +28,15 @@ export function EventDetails({
   const showLocation = user && profile?.is_approved;
   const isWixEvent = description === 'Imported from Wix';
 
+  // Parse the date string and create a new Date object in local timezone
+  const eventDate = parseISO(date);
+
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-2 text-gray-600">
         <CalendarIcon className="w-4 h-4" />
         <span className="text-sm">
-          {format(new Date(date), "EEEE, MMMM do, yyyy")} at {time}
+          {format(eventDate, "EEEE, MMMM do, yyyy")} at {time}
         </span>
       </div>
       
