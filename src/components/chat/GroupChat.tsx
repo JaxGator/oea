@@ -5,6 +5,7 @@ import { useAuthState } from "@/hooks/useAuthState";
 import { ChatHeader } from "./ChatHeader";
 import { ChatMessage } from "./ChatMessage";
 import { ChatInput } from "./ChatInput";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface ChatMessage {
   id: string;
@@ -21,7 +22,7 @@ export function GroupChat() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [chatTitle, setChatTitle] = useState("Event Discussion");
-  const { user, profile } = useAuthState();
+  const { user, profile, isLoading: isAuthLoading } = useAuthState();
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -38,8 +39,6 @@ export function GroupChat() {
         setChatTitle(data.value || "Event Discussion");
       }
     };
-
-    fetchChatTitle();
 
     const fetchMessages = async () => {
       try {
@@ -63,6 +62,7 @@ export function GroupChat() {
       }
     };
 
+    fetchChatTitle();
     fetchMessages();
 
     const channel = supabase
@@ -70,7 +70,7 @@ export function GroupChat() {
       .on(
         'postgres_changes',
         {
-          event: '*', // Listen for all events (INSERT, UPDATE, DELETE)
+          event: '*',
           schema: 'public',
           table: 'group_chat_messages'
         },
@@ -107,10 +107,31 @@ export function GroupChat() {
     }
   };
 
+  // Show loading state while checking auth
+  if (isAuthLoading) {
+    return (
+      <div className="flex flex-col h-[600px] border rounded-lg bg-white">
+        <div className="border-b p-4">
+          <Skeleton className="h-6 w-48" />
+        </div>
+        <div className="flex-1 p-4">
+          <div className="space-y-4">
+            <Skeleton className="h-12 w-full" />
+            <Skeleton className="h-12 w-full" />
+            <Skeleton className="h-12 w-full" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Check for approval status after loading is complete
   if (!profile?.is_approved && !profile?.is_admin) {
     return (
-      <div className="p-4 text-center text-gray-500">
-        Your account needs to be approved to participate in group chat.
+      <div className="flex flex-col h-[600px] border rounded-lg bg-white">
+        <div className="p-4 text-center text-gray-500">
+          Your account needs to be approved to participate in group chat.
+        </div>
       </div>
     );
   }
@@ -125,8 +146,10 @@ export function GroupChat() {
       
       <ScrollArea ref={scrollRef} className="flex-1 p-4">
         {isLoading ? (
-          <div className="flex items-center justify-center h-full">
-            <p>Loading messages...</p>
+          <div className="space-y-4">
+            <Skeleton className="h-12 w-full" />
+            <Skeleton className="h-12 w-full" />
+            <Skeleton className="h-12 w-full" />
           </div>
         ) : messages.length === 0 ? (
           <div className="flex items-center justify-center h-full text-gray-500">
