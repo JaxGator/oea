@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { MoreHorizontal, Trash2, Edit2, MessageCircle } from "lucide-react";
+import { MoreHorizontal, Trash2, Edit2 } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -8,7 +8,6 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { ChatDialog } from "./ChatDialog";
 import { useAuthState } from "@/hooks/useAuthState";
 import {
   AlertDialog,
@@ -36,7 +35,6 @@ export function MemberActions({
   onEdit,
   onDelete,
 }: MemberActionsProps) {
-  const [showChat, setShowChat] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const { user } = useAuthState();
 
@@ -55,16 +53,8 @@ export function MemberActions({
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-[160px]">
-          <DropdownMenuItem 
-            onClick={() => setShowChat(true)}
-            className="cursor-pointer"
-          >
-            <MessageCircle className="mr-2 h-4 w-4" />
-            Message
-          </DropdownMenuItem>
           {isCurrentUserAdmin && (
             <>
-              <DropdownMenuSeparator />
               <DropdownMenuItem 
                 onClick={onEdit}
                 className="cursor-pointer"
@@ -72,6 +62,7 @@ export function MemberActions({
                 <Edit2 className="mr-2 h-4 w-4" />
                 Edit
               </DropdownMenuItem>
+              <DropdownMenuSeparator />
               <DropdownMenuItem
                 onClick={() => setShowDeleteDialog(true)}
                 className="cursor-pointer text-red-600"
@@ -83,14 +74,6 @@ export function MemberActions({
           )}
         </DropdownMenuContent>
       </DropdownMenu>
-
-      <ChatDialog
-        open={showChat}
-        onOpenChange={setShowChat}
-        recipientId={memberId}
-        recipientName={memberName}
-        currentUserId={user.id}
-      />
 
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <AlertDialogContent>
