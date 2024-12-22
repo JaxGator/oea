@@ -1,4 +1,4 @@
-import { Bike, Mountain, Ship, ShipWheel, Footprints, Users, Fish, CircleDot, Waves, Trophy, Flag } from "lucide-react";
+import { Bike, Mountain, Ship, ShipWheel, Footprints, Users, Fish, CircleDot, Waves, Trophy, Flag, TentTree } from "lucide-react";
 
 interface ActivityType {
   name: string;
@@ -17,6 +17,7 @@ const activities: ActivityType[] = [
   { name: "Swimming", icon: <Waves className="h-8 w-8" /> },
   { name: "Sporting Events", icon: <Trophy className="h-8 w-8" /> },
   { name: "Golf", icon: <Flag className="h-8 w-8" /> },
+  { name: "Camping", icon: <TentTree className="h-8 w-8" /> },
 ];
 
 export function ActivityTypes() {
