@@ -24,7 +24,6 @@ export function useSession() {
 
     async function getActiveSession() {
       try {
-        // Get the current session
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         
         if (sessionError) {
@@ -60,14 +59,12 @@ export function useSession() {
           error: error as Error
         });
 
-        // Only show toast for non-session_not_found errors
         if ((error as any)?.message !== "session_not_found") {
           toast({
             title: "Session Error",
             description: "Please sign in again",
             variant: "destructive",
           });
-          // Clear any invalid session data
           await supabase.auth.signOut();
         }
       }
@@ -81,7 +78,7 @@ export function useSession() {
 
         console.log("Auth state change:", event, session);
 
-        if (event === 'SIGNED_OUT' || event === 'USER_DELETED') {
+        if (event === 'SIGNED_OUT') {
           setState({
             session: null,
             user: null,

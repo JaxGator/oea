@@ -10,7 +10,6 @@ const Auth = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Clear any existing session data on mount
     const clearSession = async () => {
       try {
         await supabase.auth.signOut();
@@ -21,7 +20,6 @@ const Auth = () => {
     
     clearSession();
 
-    // Check if user is already logged in
     const checkSession = async () => {
       try {
         const { data: { session }, error } = await supabase.auth.getSession();
@@ -53,7 +51,6 @@ const Auth = () => {
 
     checkSession();
 
-    // Listen for auth changes
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
@@ -62,7 +59,6 @@ const Auth = () => {
       if (event === 'SIGNED_IN' && session) {
         navigate("/");
       } else if (event === 'SIGNED_OUT') {
-        // Clear any stored session data
         await supabase.auth.signOut();
       } else if (event === 'TOKEN_REFRESHED') {
         console.log("Token refreshed successfully");
@@ -109,14 +105,6 @@ const Auth = () => {
             providers={[]}
             redirectTo={`${window.location.origin}/auth/callback`}
             magicLink={false}
-            onError={(error) => {
-              console.error("Auth error:", error);
-              toast({
-                title: "Authentication Error",
-                description: error.message,
-                variant: "destructive",
-              });
-            }}
           />
         </div>
       </div>
