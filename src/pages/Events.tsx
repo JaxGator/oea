@@ -20,17 +20,24 @@ export default function Events() {
   const { handleRSVP, cancelRSVP } = useRSVP();
 
   useEffect(() => {
+    // Only redirect if we're sure the user is not authenticated
     if (!isLoading && !isAuthenticated) {
-      navigate('/auth');
+      navigate('/auth', { replace: true });
     }
   }, [isAuthenticated, isLoading, navigate]);
 
+  // Show loading state while checking authentication
   if (isLoading || isEventsLoading) {
     return (
       <div className="min-h-screen bg-[#F1F0FB] flex items-center justify-center">
         <div className="text-black">Loading...</div>
       </div>
     );
+  }
+
+  // Don't render anything while redirecting
+  if (!isAuthenticated) {
+    return null;
   }
 
   if (error) {
