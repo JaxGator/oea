@@ -12,7 +12,7 @@ const NAV_LINKS = [
 ];
 
 const STORE_LINK = {
-  href: "https://outdoorenergyadventures.printful.me/",
+  to: "/store",
   label: "Store",
 };
 
@@ -34,7 +34,12 @@ export function DesktopNavigation() {
 
           {user && profile?.is_admin && (
             <>
-              <StoreLink href={STORE_LINK.href} label={STORE_LINK.label} />
+              <Link
+                to={STORE_LINK.to}
+                className="hover:text-primary-100 transition-colors"
+              >
+                {STORE_LINK.label}
+              </Link>
               <Link
                 to="/admin"
                 className="hover:text-primary-100 transition-colors"

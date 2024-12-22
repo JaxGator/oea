@@ -22,12 +22,7 @@ export function MobileNavigation() {
     ...(user ? [{ icon: Users, label: "Members", path: "/members", external: false }] : []),
     { icon: Info, label: "About", path: "/about", external: false },
     ...(profile?.is_admin ? [
-      {
-        icon: ShoppingBag,
-        label: "Store",
-        path: "https://outdoorenergyadventures.printful.me/",
-        external: true,
-      },
+      { icon: ShoppingBag, label: "Store", path: "/store", external: false },
       { icon: LayoutDashboard, label: "Admin", path: "/admin", external: false }
     ] : []),
     ...(!user ? [{ icon: LogIn, label: "Sign In", path: "/auth", external: false }] : []),
@@ -58,18 +53,7 @@ export function MobileNavigation() {
           </div>
           <nav className="flex flex-col p-4">
             {navigationItems.map(({ icon: Icon, label, path, external, onClick }) => 
-              external ? (
-                <a
-                  key={path}
-                  href={path}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-3 rounded-lg px-3 py-2 transition-colors hover:bg-primary/10"
-                >
-                  <Icon className="h-5 w-5" />
-                  <span className="font-medium">{label}</span>
-                </a>
-              ) : onClick ? (
+              onClick ? (
                 <button
                   key={path}
                   onClick={onClick}

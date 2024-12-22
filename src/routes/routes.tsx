@@ -17,7 +17,6 @@ import { useAuthState } from "@/hooks/useAuthState";
 import { useMaintenanceMode } from "@/hooks/useMaintenanceMode";
 import { Loader2 } from "lucide-react";
 
-// Protected route wrapper component
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, isLoading } = useAuthState();
 
