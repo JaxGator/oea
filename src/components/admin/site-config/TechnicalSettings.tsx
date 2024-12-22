@@ -3,6 +3,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { MaintenanceMode } from "./technical/MaintenanceMode";
 import { ImageUploadField } from "./technical/ImageUploadField";
 import { CodeEditor } from "./technical/CodeEditor";
+import { SitemapConfig } from "./technical/SitemapConfig";
 
 type TechnicalSettingsProps = {
   configs: Record<string, string>;
@@ -57,12 +58,10 @@ export function TechnicalSettings({ configs, setConfigs, updateConfig }: Technic
           onSave={() => updateConfig('custom_scripts', configs.custom_scripts)}
         />
 
-        <CodeEditor
-          label="Sitemap Configuration"
+        <SitemapConfig
           value={configs.sitemap_config || ""}
           onChange={(value) => setConfigs({ ...configs, sitemap_config: value })}
           onSave={() => updateConfig('sitemap_config', configs.sitemap_config)}
-          minHeight="200px"
         />
       </CardContent>
     </Card>
