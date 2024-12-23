@@ -53,11 +53,11 @@ export function EventActions({
     onRSVP(guests);
   };
 
-  const disableRSVP = isPastEvent && isWixEvent;
+  const disableRSVP = isPastEvent || (isPastEvent && isWixEvent);
 
   return (
     <div className="space-y-4">
-      {!userRSVPStatus && !isFullyBooked && !isPastEvent && !disableRSVP && (
+      {!userRSVPStatus && !isFullyBooked && !disableRSVP && (
         <GuestList onGuestsChange={setGuests} />
       )}
       <div className="flex gap-2">
