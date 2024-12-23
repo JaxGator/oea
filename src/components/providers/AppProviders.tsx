@@ -23,7 +23,7 @@ const queryClient = new QueryClient({
 export function AppProviders({ children }: AppProvidersProps) {
   return (
     <QueryClientProvider client={queryClient}>
-      <SessionContextProvider supabaseClient={supabase} initialSession={null}>
+      <SessionContextProvider supabaseClient={supabase}>
         <TooltipProvider>
           {children}
           <Toaster />
