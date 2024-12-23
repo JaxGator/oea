@@ -15,23 +15,45 @@ export const useRSVP = () => {
     if (!user) return;
 
     try {
-      // First create the RSVP
-      const { data: rsvp, error: rsvpError } = await supabase
+      // Check if RSVP already exists
+      const { data: existingRSVP } = await supabase
         .from('event_rsvps')
-        .insert({
-          event_id: eventId,
-          user_id: user.id,
-          response: 'attending'
-        })
-        .select()
-        .single();
+        .select('id')
+        .eq('event_id', eventId)
+        .eq('user_id', user.id)
+        .maybeSingle();
 
-      if (rsvpError) throw rsvpError;
+      let rsvpId;
 
-      // Then add guests if there are any
+      if (existingRSVP) {
+        // If RSVP exists, use its ID
+        rsvpId = existingRSVP.id;
+        
+        // Delete existing guests
+        await supabase
+          .from('event_guests')
+          .delete()
+          .eq('rsvp_id', rsvpId);
+      } else {
+        // Create new RSVP if none exists
+        const { data: newRSVP, error: rsvpError } = await supabase
+          .from('event_rsvps')
+          .insert({
+            event_id: eventId,
+            user_id: user.id,
+            response: 'attending'
+          })
+          .select()
+          .single();
+
+        if (rsvpError) throw rsvpError;
+        rsvpId = newRSVP.id;
+      }
+
+      // Add new guests if there are any
       if (guests.length > 0) {
         const guestRecords = guests.map(guest => ({
-          rsvp_id: rsvp.id,
+          rsvp_id: rsvpId,
           first_name: guest.firstName
         }));
 
@@ -44,7 +66,7 @@ export const useRSVP = () => {
 
       toast({
         title: "Success",
-        description: "Your RSVP has been recorded",
+        description: existingRSVP ? "Your RSVP has been updated" : "Your RSVP has been recorded",
       });
       
       // Invalidate both events and event-rsvps queries
