@@ -29,6 +29,7 @@ export function EventCard({ event, onRSVP, onCancelRSVP, userRSVPStatus, onUpdat
 
   const isFullyBooked = rsvpCount >= event.max_guests;
   const isPastEvent = new Date(event.date) < new Date(new Date().setHours(0, 0, 0, 0));
+  const isWixEvent = event.description === 'Imported from Wix';
 
   const attendeeNames = attendees.map(attendee => {
     const fullName = attendee.profile.full_name;
@@ -69,15 +70,15 @@ export function EventCard({ event, onRSVP, onCancelRSVP, userRSVPStatus, onUpdat
 
       <CardFooter className="p-4 pt-0" data-interactive="true">
         <EventActions
-          isAdmin={isAdmin && !isPastEvent}
+          isAdmin={isAdmin}
           userRSVPStatus={userRSVPStatus || null}
           isFullyBooked={isFullyBooked}
           onRSVP={(guests) => onRSVP(event.id, guests)}
           onCancelRSVP={() => onCancelRSVP(event.id)}
           onEdit={() => setShowEditDialog(true)}
           onDelete={handleDelete}
-          isPastEvent={isPastEvent}
-          showDelete={isAdmin && isPastEvent}
+          isPastEvent={isPastEvent && !isWixEvent} // Allow editing past Wix events
+          showDelete={isAdmin && (isPastEvent || isWixEvent)}
         />
       </CardFooter>
 
