@@ -5,9 +5,10 @@ import { EventFormValues } from "./EventFormTypes";
 
 interface EventSchedulingProps {
   form: UseFormReturn<EventFormValues>;
+  disabled?: boolean;
 }
 
-export function EventScheduling({ form }: EventSchedulingProps) {
+export function EventScheduling({ form, disabled }: EventSchedulingProps) {
   return (
     <>
       <FormField
@@ -17,7 +18,7 @@ export function EventScheduling({ form }: EventSchedulingProps) {
           <FormItem>
             <FormLabel>Date</FormLabel>
             <FormControl>
-              <Input type="date" {...field} />
+              <Input type="date" {...field} disabled={disabled} />
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -30,7 +31,7 @@ export function EventScheduling({ form }: EventSchedulingProps) {
           <FormItem>
             <FormLabel>Time</FormLabel>
             <FormControl>
-              <Input type="time" {...field} />
+              <Input type="time" {...field} disabled={disabled} />
             </FormControl>
             <FormMessage />
           </FormItem>
