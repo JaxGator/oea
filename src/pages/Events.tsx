@@ -9,6 +9,8 @@ import { toast } from "sonner";
 import { Separator } from "@/components/ui/separator";
 import { useAuthState } from "@/hooks/useAuthState";
 import { Loader2 } from "lucide-react";
+import { GroupChat } from "@/components/chat/GroupChat";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function Events() {
   const { isAuthenticated } = useAuthState();
@@ -55,50 +57,65 @@ export default function Events() {
 
       <div className="px-4 pb-20 md:pb-12">
         <div className="max-w-7xl mx-auto">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 space-y-4 md:space-y-0">
-            <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 w-full md:w-auto">
-              <DateFilter
-                selectedDate={selectedDate}
-                onDateSelect={setSelectedDate}
-              />
-              {isAuthenticated && (
-                <CreateEventDialog
-                  open={isCreateEventOpen}
-                  onOpenChange={setIsCreateEventOpen}
-                />
-              )}
-            </div>
-          </div>
+          <Tabs defaultValue="events" className="w-full">
+            <TabsList className="grid w-full grid-cols-2 mb-8">
+              <TabsTrigger value="events">Events</TabsTrigger>
+              <TabsTrigger value="discussion">Event Discussion</TabsTrigger>
+            </TabsList>
 
-          <div className="bg-white rounded-lg p-4 md:p-6 shadow-lg">
-            <div className="space-y-8">
-              <div>
-                <h2 className="text-xl md:text-2xl font-semibold mb-4">Upcoming Events</h2>
-                {upcomingEvents.length > 0 && (
-                  <EventsMap events={upcomingEvents} />
-                )}
-                <EventList 
-                  events={upcomingEvents}
-                  onRSVP={handleRSVP}
-                  onCancelRSVP={cancelRSVP}
-                />
+            <TabsContent value="events">
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 space-y-4 md:space-y-0">
+                <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 w-full md:w-auto">
+                  <DateFilter
+                    selectedDate={selectedDate}
+                    onDateSelect={setSelectedDate}
+                  />
+                  {isAuthenticated && (
+                    <CreateEventDialog
+                      open={isCreateEventOpen}
+                      onOpenChange={setIsCreateEventOpen}
+                    />
+                  )}
+                </div>
               </div>
 
-              {pastEvents.length > 0 && (
-                <>
-                  <Separator className="my-8" />
+              <div className="bg-white rounded-lg p-4 md:p-6 shadow-lg">
+                <div className="space-y-8">
                   <div>
-                    <h2 className="text-xl md:text-2xl font-semibold mb-4">Past Events</h2>
+                    <h2 className="text-xl md:text-2xl font-semibold mb-4">Upcoming Events</h2>
+                    {upcomingEvents.length > 0 && (
+                      <EventsMap events={upcomingEvents} />
+                    )}
                     <EventList 
-                      events={pastEvents}
+                      events={upcomingEvents}
                       onRSVP={handleRSVP}
                       onCancelRSVP={cancelRSVP}
                     />
                   </div>
-                </>
-              )}
-            </div>
-          </div>
+
+                  {pastEvents.length > 0 && (
+                    <>
+                      <Separator className="my-8" />
+                      <div>
+                        <h2 className="text-xl md:text-2xl font-semibold mb-4">Past Events</h2>
+                        <EventList 
+                          events={pastEvents}
+                          onRSVP={handleRSVP}
+                          onCancelRSVP={cancelRSVP}
+                        />
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="discussion">
+              <div className="bg-white rounded-lg shadow-lg">
+                <GroupChat />
+              </div>
+            </TabsContent>
+          </Tabs>
         </div>
       </div>
     </div>
