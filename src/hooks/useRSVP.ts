@@ -15,61 +15,29 @@ export const useRSVP = () => {
     if (!user) return;
 
     try {
-      // Use maybeSingle() instead of single() to handle the case where no RSVP exists
-      const { data: existingRSVP, error: rsvpError } = await supabase
+      // First create the RSVP
+      const { data: rsvp, error: rsvpError } = await supabase
         .from('event_rsvps')
-        .select('*')
-        .eq('event_id', eventId)
-        .eq('user_id', user.id)
-        .maybeSingle();
+        .insert({
+          event_id: eventId,
+          user_id: user.id,
+          response: 'attending'
+        })
+        .select()
+        .single();
 
       if (rsvpError) throw rsvpError;
 
-      let rsvpId;
-
-      if (existingRSVP) {
-        // Update existing RSVP
-        const { error: updateError } = await supabase
-          .from('event_rsvps')
-          .update({ response: 'attending' })
-          .eq('id', existingRSVP.id);
-
-        if (updateError) throw updateError;
-        rsvpId = existingRSVP.id;
-
-        // Delete existing guests
-        const { error: deleteGuestsError } = await supabase
-          .from('event_guests')
-          .delete()
-          .eq('rsvp_id', rsvpId);
-
-        if (deleteGuestsError) throw deleteGuestsError;
-      } else {
-        // Create new RSVP
-        const { data: newRSVP, error: insertError } = await supabase
-          .from('event_rsvps')
-          .insert({
-            event_id: eventId,
-            user_id: user.id,
-            response: 'attending'
-          })
-          .select()
-          .single();
-
-        if (insertError) throw insertError;
-        rsvpId = newRSVP.id;
-      }
-
-      // Add guests
+      // Then add guests if there are any
       if (guests.length > 0) {
+        const guestRecords = guests.map(guest => ({
+          rsvp_id: rsvp.id,
+          first_name: guest.firstName
+        }));
+
         const { error: guestError } = await supabase
           .from('event_guests')
-          .insert(
-            guests.map(guest => ({
-              rsvp_id: rsvpId,
-              first_name: guest.firstName
-            }))
-          );
+          .insert(guestRecords);
 
         if (guestError) throw guestError;
       }

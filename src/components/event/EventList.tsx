@@ -1,13 +1,16 @@
 import { Event } from "@/types/event";
 import { EventCard } from "@/components/EventCard";
+import { useRSVPManagement } from "@/hooks/events/useRSVPManagement";
 
 interface EventListProps {
   events: Event[];
-  onRSVP: (eventId: string) => Promise<void>;
+  onRSVP: (eventId: string, guests?: { firstName: string }[]) => Promise<void>;
   onCancelRSVP: (eventId: string) => Promise<void>;
 }
 
 export function EventList({ events, onRSVP, onCancelRSVP }: EventListProps) {
+  const { userRSVPs } = useRSVPManagement();
+
   if (events.length === 0) {
     return (
       <div className="text-center py-8">
@@ -22,8 +25,9 @@ export function EventList({ events, onRSVP, onCancelRSVP }: EventListProps) {
         <EventCard
           key={event.id}
           event={event}
-          onRSVP={() => onRSVP(event.id)}
+          onRSVP={(guests) => onRSVP(event.id, guests)}
           onCancelRSVP={() => onCancelRSVP(event.id)}
+          userRSVPStatus={userRSVPs[event.id]}
         />
       ))}
     </div>
