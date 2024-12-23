@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api';
 import { Event } from '@/types/event';
 import { useGoogleMapsToken } from '@/hooks/useGoogleMapsToken';
@@ -14,6 +14,26 @@ export function EventsMap({ events }: EventsMapProps) {
   const { mapKey, isLoading, error } = useGoogleMapsToken();
   const locations = useEventLocations(events, mapKey);
 
+  const getBoundsForLocations = useCallback(() => {
+    if (locations.length === 0) return null;
+    if (locations.length === 1) {
+      return {
+        center: locations[0],
+        zoom: 12
+      };
+    }
+
+    const bounds = new google.maps.LatLngBounds();
+    locations.forEach(location => {
+      bounds.extend({ lat: location.lat, lng: location.lng });
+    });
+
+    return {
+      bounds,
+      zoom: undefined
+    };
+  }, [locations]);
+
   if (isLoading || error || locations.length === 0) {
     return null;
   }
@@ -23,13 +43,16 @@ export function EventsMap({ events }: EventsMapProps) {
     height: '400px',
   };
 
+  const mapSettings = getBoundsForLocations();
+
   return (
     <div className="w-full rounded-lg overflow-hidden shadow-lg mb-8">
       <LoadScript googleMapsApiKey={mapKey}>
         <GoogleMap
           mapContainerStyle={mapContainerStyle}
-          zoom={12}
-          center={locations[0]}
+          zoom={mapSettings?.zoom}
+          center={mapSettings?.center}
+          bounds={mapSettings?.bounds}
           options={{
             styles: [
               {
