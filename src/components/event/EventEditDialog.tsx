@@ -16,6 +16,9 @@ interface EventEditDialogProps {
 }
 
 export function EventEditDialog({ event, open, onOpenChange, onSuccess }: EventEditDialogProps) {
+  const isPastEvent = new Date(event.date) < new Date(new Date().setHours(0, 0, 0, 0));
+  const isWixEvent = event.description === 'Imported from Wix';
+
   const handleSuccess = () => {
     onSuccess();
     onOpenChange(false);
@@ -31,7 +34,9 @@ export function EventEditDialog({ event, open, onOpenChange, onSuccess }: EventE
         <DialogHeader>
           <DialogTitle>Edit Event</DialogTitle>
           <DialogDescription>
-            Make changes to the event details below.
+            {isPastEvent ? 
+              "You can update event details and attendance numbers for this past event." :
+              "Make changes to the event details below."}
           </DialogDescription>
         </DialogHeader>
         <div className="py-4">
@@ -47,6 +52,8 @@ export function EventEditDialog({ event, open, onOpenChange, onSuccess }: EventE
               image_url: event.image_url || "",
             }}
             onSuccess={handleSuccess}
+            isPastEvent={isPastEvent}
+            isWixEvent={isWixEvent}
           />
         </div>
       </DialogContent>

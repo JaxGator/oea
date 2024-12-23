@@ -9,7 +9,7 @@ import { EventLocationCapacity } from "./EventLocationCapacity";
 import { EventImageUpload } from "./EventImageUpload";
 import { useEventFormSubmit } from "@/hooks/useEventFormSubmit";
 
-export function EventForm({ onSuccess, initialData }: EventFormProps) {
+export function EventForm({ onSuccess, initialData, isPastEvent, isWixEvent }: EventFormProps) {
   const form = useForm<EventFormValues>({
     resolver: zodResolver(eventSchema),
     defaultValues: initialData || {
@@ -36,8 +36,12 @@ export function EventForm({ onSuccess, initialData }: EventFormProps) {
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
         <EventBasicDetails form={form} />
-        <EventScheduling form={form} />
-        <EventLocationCapacity form={form} />
+        <EventScheduling form={form} disabled={isPastEvent} />
+        <EventLocationCapacity 
+          form={form} 
+          disableLocation={isPastEvent}
+          showMaxGuestsHint={isPastEvent}
+        />
         <EventImageUpload form={form} defaultImage={initialData?.image_url} />
         <Button type="submit" className="w-full bg-[#0d97d1] hover:bg-[#0d97d1]/90">
           {initialData ? "Update Event" : "Create Event"}

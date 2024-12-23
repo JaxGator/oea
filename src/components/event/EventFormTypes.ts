@@ -24,4 +24,6 @@ export interface EventFormProps {
     max_guests: number;
     image_url?: string;
   };
+  isPastEvent?: boolean;
+  isWixEvent?: boolean;
 }

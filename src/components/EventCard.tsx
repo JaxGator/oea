@@ -30,7 +30,7 @@ export function EventCard({ event, onRSVP, onCancelRSVP, userRSVPStatus, onUpdat
   const isFullyBooked = rsvpCount >= event.max_guests;
   const isPastEvent = new Date(event.date) < new Date(new Date().setHours(0, 0, 0, 0));
   const isWixEvent = event.description === 'Imported from Wix';
-  const disableRSVP = isPastEvent && isWixEvent;
+  const disableRSVP = isPastEvent || (isPastEvent && isWixEvent);
 
   const attendeeNames = attendees.map(attendee => {
     const fullName = attendee.profile.full_name;

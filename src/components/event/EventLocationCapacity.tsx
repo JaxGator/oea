@@ -5,9 +5,11 @@ import { EventFormValues } from "./EventFormTypes";
 
 interface EventLocationCapacityProps {
   form: UseFormReturn<EventFormValues>;
+  disableLocation?: boolean;
+  showMaxGuestsHint?: boolean;
 }
 
-export function EventLocationCapacity({ form }: EventLocationCapacityProps) {
+export function EventLocationCapacity({ form, disableLocation, showMaxGuestsHint }: EventLocationCapacityProps) {
   return (
     <>
       <FormField
@@ -17,7 +19,11 @@ export function EventLocationCapacity({ form }: EventLocationCapacityProps) {
           <FormItem>
             <FormLabel>Location</FormLabel>
             <FormControl>
-              <Input placeholder="Event location" {...field} />
+              <Input 
+                placeholder="Event location" 
+                {...field} 
+                disabled={disableLocation}
+              />
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -29,6 +35,11 @@ export function EventLocationCapacity({ form }: EventLocationCapacityProps) {
         render={({ field }) => (
           <FormItem>
             <FormLabel>Maximum Guests</FormLabel>
+            {showMaxGuestsHint && (
+              <p className="text-sm text-muted-foreground mb-2">
+                You can adjust this number to match the actual attendance for this past event.
+              </p>
+            )}
             <FormControl>
               <Input 
                 type="number" 
