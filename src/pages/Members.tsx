@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Users, MessageSquare } from "lucide-react";
+import { Users } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -9,8 +9,6 @@ import { MemberList } from "@/components/members/MemberList";
 import { MemberTable } from "@/components/members/MemberTable";
 import { useAuthState } from "@/hooks/useAuthState";
 import { useNavigate } from "react-router-dom";
-import { GroupChat } from "@/components/chat/GroupChat";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function Members() {
   const { user } = useAuthState();
@@ -123,56 +121,35 @@ export default function Members() {
   return (
     <div className="min-h-screen bg-[#222222] py-12 px-4">
       <div className="max-w-6xl mx-auto">
-        <Tabs defaultValue="members" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 mb-6">
-            <TabsTrigger value="members" className="flex items-center gap-2">
-              <Users className="h-4 w-4" />
-              Members
-            </TabsTrigger>
-            <TabsTrigger value="chat" className="flex items-center gap-2">
-              <MessageSquare className="h-4 w-4" />
-              Event Discussion
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="members" className="mt-0">
-            <div className="bg-white rounded-lg p-6 shadow-lg">
-              <div className="flex items-center gap-2 mb-6">
-                <Users className="h-6 w-6" aria-hidden="true" />
-                <h1 className="text-2xl font-bold" id="members-heading">Member Directory</h1>
-              </div>
-              
-              {members.length === 0 ? (
-                <div className="text-center py-8 text-gray-500" role="status">
-                  No members found.
-                </div>
+        <div className="bg-white rounded-lg p-6 shadow-lg">
+          <div className="flex items-center gap-2 mb-6">
+            <Users className="h-6 w-6" aria-hidden="true" />
+            <h1 className="text-2xl font-bold" id="members-heading">Member Directory</h1>
+          </div>
+          
+          {members.length === 0 ? (
+            <div className="text-center py-8 text-gray-500" role="status">
+              No members found.
+            </div>
+          ) : (
+            <div role="region" aria-labelledby="members-heading">
+              {isMobile ? (
+                <MemberList 
+                  members={members}
+                  currentUserIsAdmin={currentUserProfile?.is_admin || false}
+                  isMobile={isMobile}
+                />
               ) : (
-                <div role="region" aria-labelledby="members-heading">
-                  {isMobile ? (
-                    <MemberList 
-                      members={members}
-                      currentUserIsAdmin={currentUserProfile?.is_admin || false}
-                      isMobile={isMobile}
-                    />
-                  ) : (
-                    <ScrollArea className="rounded-md border">
-                      <MemberTable 
-                        members={members}
-                        currentUserIsAdmin={currentUserProfile?.is_admin || false}
-                      />
-                    </ScrollArea>
-                  )}
-                </div>
+                <ScrollArea className="rounded-md border">
+                  <MemberTable 
+                    members={members}
+                    currentUserIsAdmin={currentUserProfile?.is_admin || false}
+                  />
+                </ScrollArea>
               )}
             </div>
-          </TabsContent>
-
-          <TabsContent value="chat" className="mt-0">
-            <div className="bg-white rounded-lg shadow-lg">
-              <GroupChat />
-            </div>
-          </TabsContent>
-        </Tabs>
+          )}
+        </div>
       </div>
     </div>
   );
