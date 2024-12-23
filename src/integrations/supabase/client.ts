@@ -15,29 +15,44 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, 
     flowType: 'pkce',
     storage: typeof window !== 'undefined' ? window.localStorage : undefined,
     storageKey: 'supabase.auth.token',
-    debug: true // Enable debug logs to help troubleshoot
+    debug: true
   },
   global: {
     headers: {
       'X-Client-Info': 'supabase-js-web',
     },
   },
+  // Add retryable fetch configuration
+  retryOnError: {
+    maxRetries: 3,
+    retryInterval: 1000, // 1 second between retries
+  }
 });
 
-// Add error handling to test connection
+// Test connection and log detailed errors
 export const testSupabaseConnection = async () => {
   try {
+    console.log('Testing Supabase connection...');
     const { data: { session }, error } = await supabase.auth.getSession();
     
     if (error) {
-      console.error('Supabase connection test error:', error);
+      console.error('Supabase connection test error:', {
+        message: error.message,
+        status: error.status,
+        name: error.name,
+        details: error
+      });
       return false;
     }
     
     console.log('Supabase connection test successful:', session ? 'Session exists' : 'No session');
     return true;
   } catch (error) {
-    console.error('Supabase connection test failed:', error);
+    console.error('Supabase connection test failed:', {
+      error,
+      url: SUPABASE_URL,
+      timestamp: new Date().toISOString()
+    });
     return false;
   }
 };
@@ -46,7 +61,11 @@ export const testSupabaseConnection = async () => {
 if (typeof window !== 'undefined') {
   testSupabaseConnection().then(isConnected => {
     if (!isConnected) {
-      console.error('Failed to establish initial Supabase connection');
+      console.error('Failed to establish initial Supabase connection. Please check:');
+      console.error('1. Network connectivity to', SUPABASE_URL);
+      console.error('2. Supabase service status');
+      console.error('3. Authentication configuration in Supabase dashboard');
+      console.error('4. Browser console for CORS or other network errors');
     }
   });
 }

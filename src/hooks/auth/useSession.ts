@@ -21,20 +21,26 @@ export function useSession() {
 
   useEffect(() => {
     let mounted = true;
+    let retryCount = 0;
+    const maxRetries = 3;
 
     async function getActiveSession() {
       try {
-        // First try to get the session from storage
+        console.log('Attempting to get session...');
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         
         if (sessionError) {
-          console.error("Session error:", sessionError);
+          console.error("Session error:", {
+            error: sessionError,
+            timestamp: new Date().toISOString()
+          });
           throw sessionError;
         }
 
         if (!mounted) return;
 
         if (session) {
+          console.log('Session found:', session.user.email);
           setState({
             session,
             user: session.user,
@@ -42,6 +48,7 @@ export function useSession() {
             error: null
           });
         } else {
+          console.log('No active session found');
           setState({
             session: null,
             user: null,
@@ -50,9 +57,21 @@ export function useSession() {
           });
         }
       } catch (error) {
-        console.error("Session initialization error:", error);
+        console.error("Session initialization error:", {
+          error,
+          retryCount,
+          timestamp: new Date().toISOString()
+        });
+        
         if (!mounted) return;
         
+        if (retryCount < maxRetries) {
+          retryCount++;
+          console.log(`Retrying session fetch (${retryCount}/${maxRetries})...`);
+          setTimeout(getActiveSession, 1000 * retryCount);
+          return;
+        }
+
         setState({
           session: null,
           user: null,
@@ -74,12 +93,11 @@ export function useSession() {
 
     getActiveSession();
 
-    // Set up auth state change listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         if (!mounted) return;
 
-        console.log("Auth state change:", event, session);
+        console.log("Auth state change:", event, session?.user?.email);
 
         if (event === 'SIGNED_OUT') {
           setState({
