@@ -25,7 +25,7 @@ export function EventList({ events, onRSVP, onCancelRSVP }: EventListProps) {
         <EventCard
           key={event.id}
           event={event}
-          onRSVP={(guests) => onRSVP(event.id, guests)}
+          onRSVP={onRSVP}
           onCancelRSVP={() => onCancelRSVP(event.id)}
           userRSVPStatus={userRSVPs[event.id]}
         />
