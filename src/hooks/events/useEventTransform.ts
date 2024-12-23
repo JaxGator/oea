@@ -6,7 +6,7 @@ type EventWithRsvps = TablesRow<'events'> & {
     id: string;
     event_id: string;
     user_id: string;
-    response: string;
+    response: 'attending' | 'not_attending' | 'maybe';
     created_at: string;
     profiles?: {
       full_name: string | null;
