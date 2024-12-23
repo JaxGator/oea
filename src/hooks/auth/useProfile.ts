@@ -39,7 +39,10 @@ export function useProfile(userId: string | undefined) {
           .eq("id", userId)
           .maybeSingle();
 
-        if (error) throw error;
+        if (error) {
+          console.error("Profile fetch error:", error);
+          throw error;
+        }
 
         if (isMounted) {
           setState({
@@ -54,6 +57,7 @@ export function useProfile(userId: string | undefined) {
         if (retryCount < maxRetries && isMounted) {
           retryCount++;
           const delay = Math.min(1000 * Math.pow(2, retryCount), 10000);
+          console.log(`Retrying profile fetch in ${delay}ms (attempt ${retryCount}/${maxRetries})`);
           setTimeout(fetchProfile, delay);
           return;
         }
