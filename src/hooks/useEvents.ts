@@ -1,7 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { handleQueryResult } from '@/utils/supabase-helpers';
-import type { TablesRow } from '@/utils/supabase-helpers';
 import type { Event } from '@/types/event';
 
 export function useEvents(selectedDate?: Date) {
@@ -28,8 +27,8 @@ export function useEvents(selectedDate?: Date) {
         query = query.eq('date', selectedDate.toISOString().split('T')[0]);
       }
 
-      const data = await handleQueryResult(query);
-      return data as Event[];
+      const result = await query;
+      return handleQueryResult(result) as Event[];
     }
   });
 }

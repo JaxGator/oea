@@ -20,9 +20,9 @@ export function assertData<T>(data: T | null, error: PostgrestError | null): ass
 }
 
 export async function handleQueryResult<T>(
-  promise: Promise<PostgrestResponse<T> | PostgrestSingleResponse<T>>
+  promise: PostgrestResponse<T> | Promise<PostgrestResponse<T>>
 ): Promise<T> {
-  const { data, error } = await promise;
+  const { data, error } = await Promise.resolve(promise);
   handleError(error);
   if (!data) {
     throw new Error('No data returned from query');

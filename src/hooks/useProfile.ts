@@ -8,14 +8,14 @@ export function useProfile(userId: string | undefined) {
     queryKey: ['profile', userId],
     queryFn: async () => {
       if (!userId) return null;
-      const data = await handleQueryResult(
-        supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', userId)
-          .single()
-      );
-      return data as Profile;
+      
+      const result = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
+        
+      return handleQueryResult(result) as Profile;
     },
     enabled: !!userId
   });
