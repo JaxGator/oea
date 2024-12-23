@@ -1,16 +1,16 @@
-import { Card, CardContent } from "@/components/ui/card";
 import { MaintenanceMode } from "./technical/MaintenanceMode";
 import { ImageUploadField } from "./technical/ImageUploadField";
 import { CodeEditor } from "./technical/CodeEditor";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Dispatch, SetStateAction } from "react";
+import { Card, CardContent } from "@/components/ui/card";
 
-type TechnicalSettingsProps = {
-  configs: Record<string, string>;
-  setConfigs: Dispatch<SetStateAction<Record<string, string>>>;
-  isLoading?: boolean;
-};
+interface TechnicalSettingsProps {
+  configs: Record<string, any>;
+  setConfigs: Dispatch<SetStateAction<Record<string, any>>>;
+  isLoading: boolean;
+}
 
 export function TechnicalSettings({ configs, setConfigs, isLoading }: TechnicalSettingsProps) {
   const { toast } = useToast();
@@ -20,7 +20,7 @@ export function TechnicalSettings({ configs, setConfigs, isLoading }: TechnicalS
       const { error } = await supabase
         .from('site_config')
         .upsert({ 
-          key, 
+          key,
           value,
           updated_at: new Date().toISOString()
         }, {
@@ -29,17 +29,15 @@ export function TechnicalSettings({ configs, setConfigs, isLoading }: TechnicalS
 
       if (error) throw error;
 
-      setConfigs((prev) => ({ ...prev, [key]: value }));
-
       toast({
         title: "Success",
         description: "Configuration updated successfully",
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error updating config:', error);
       toast({
         title: "Error",
-        description: "Failed to update configuration. Please try again.",
+        description: error.message || "Failed to update configuration",
         variant: "destructive",
       });
     }
@@ -51,18 +49,16 @@ export function TechnicalSettings({ configs, setConfigs, isLoading }: TechnicalS
         <MaintenanceMode
           enabled={configs.maintenance_mode === 'true'}
           onToggle={(enabled) => {
-            updateConfig('maintenance_mode', String(enabled));
+            setConfigs(prev => ({ ...prev, maintenance_mode: enabled.toString() }));
+            updateConfig('maintenance_mode', enabled.toString());
           }}
-          isLoading={isLoading}
         />
 
         <ImageUploadField
           label="Default Event Image"
-          imageUrl={configs.default_event_image}
-          configKey="default_event_image"
-          updateConfig={updateConfig}
-          setConfigs={setConfigs}
-          imageType="default"
+          value={configs.default_event_image || ''}
+          onChange={(value) => setConfigs(prev => ({ ...prev, default_event_image: value }))}
+          onSave={() => updateConfig('default_event_image', configs.default_event_image || '')}
         />
 
         <CodeEditor
