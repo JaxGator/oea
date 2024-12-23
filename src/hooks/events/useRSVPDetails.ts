@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
 export function useRSVPDetails(eventId: string) {
-  const { data } = useQuery({
+  const { data: rsvpData } = useQuery({
     queryKey: ['event-rsvps', eventId],
     queryFn: async () => {
       // Fetch RSVPs with profiles and guests
@@ -61,7 +61,7 @@ export function useRSVPDetails(eventId: string) {
   });
 
   return {
-    rsvpCount: data?.rsvpCount || 0,
-    attendees: data?.attendees || []
+    rsvpCount: rsvpData?.rsvpCount || 0,
+    attendees: rsvpData?.attendees || []
   };
 }
