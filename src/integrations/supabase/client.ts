@@ -22,11 +22,6 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, 
       'X-Client-Info': 'supabase-js-web',
     },
   },
-  // Add retryable fetch configuration
-  retryOnError: {
-    maxRetries: 3,
-    retryInterval: 1000, // 1 second between retries
-  }
 });
 
 // Test connection and log detailed errors

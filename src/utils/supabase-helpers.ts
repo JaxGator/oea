@@ -1,4 +1,4 @@
-import { PostgrestError } from '@supabase/supabase-js';
+import { PostgrestError, PostgrestResponse, PostgrestSingleResponse } from '@supabase/supabase-js';
 import { Database } from '@/types/database.types';
 
 export type TablesInsert<T extends keyof Database['public']['Tables']> = Database['public']['Tables'][T]['Insert']
@@ -20,12 +20,23 @@ export function assertData<T>(data: T | null, error: PostgrestError | null): ass
 }
 
 export async function handleQueryResult<T>(
-  promise: Promise<{ data: T | null; error: PostgrestError | null }>
+  promise: Promise<PostgrestResponse<T> | PostgrestSingleResponse<T>>
 ): Promise<T> {
   const { data, error } = await promise;
   handleError(error);
   if (!data) {
     throw new Error('No data returned from query');
   }
-  return data;
+  return data as T;
+}
+
+export function isQueryError(result: unknown): result is PostgrestError {
+  return result !== null && typeof result === 'object' && 'code' in result && 'message' in result;
+}
+
+export function ensureQueryResult<T>(result: T | PostgrestError): T {
+  if (isQueryError(result)) {
+    throw new Error(result.message);
+  }
+  return result;
 }
