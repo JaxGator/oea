@@ -15,7 +15,8 @@ export function useProfile(userId: string | undefined) {
         .eq('id', userId)
         .single();
         
-      return handleQueryResult(result) as Profile;
+      const data = await handleQueryResult(result);
+      return data as Profile;
     },
     enabled: !!userId
   });
