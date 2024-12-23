@@ -44,7 +44,8 @@ export const createNavigationItems = (
   {
     icon: ShoppingBag,
     label: "Store",
-    path: "/store",
+    path: "https://outdoorenergyadventures.printful.me/",
+    external: true,
     show: (user) => !!user
   },
   {
