@@ -1,9 +1,7 @@
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { PlusIcon, XIcon } from "lucide-react";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
+import { GuestInput } from "./guest/GuestInput";
+import { GuestListDisplay } from "./guest/GuestListDisplay";
 
 interface Guest {
   firstName: string;
@@ -16,7 +14,6 @@ interface GuestListProps {
 
 export function GuestList({ onGuestsChange, initialGuests = [] }: GuestListProps) {
   const [guests, setGuests] = useState<Guest[]>(initialGuests);
-  const [newGuestName, setNewGuestName] = useState("");
   const [isApproved, setIsApproved] = useState(false);
 
   useEffect(() => {
@@ -36,33 +33,19 @@ export function GuestList({ onGuestsChange, initialGuests = [] }: GuestListProps
     checkApprovalStatus();
   }, []);
 
-  // Initialize guests with initialGuests when component mounts
   useEffect(() => {
     if (initialGuests.length > 0) {
       setGuests(initialGuests);
     }
   }, [initialGuests]);
 
-  const addGuest = () => {
-    if (!isApproved) {
-      toast.error("You need to be approved by an admin before you can add guests to events.");
-      return;
-    }
-
-    if (newGuestName.trim()) {
-      const updatedGuests = [...guests, { firstName: newGuestName.trim() }];
-      setGuests(updatedGuests);
-      onGuestsChange(updatedGuests);
-      setNewGuestName("");
-    }
+  const addGuest = (name: string) => {
+    const updatedGuests = [...guests, { firstName: name }];
+    setGuests(updatedGuests);
+    onGuestsChange(updatedGuests);
   };
 
   const removeGuest = (index: number) => {
-    if (!isApproved) {
-      toast.error("You need to be approved by an admin to manage guests.");
-      return;
-    }
-
     const updatedGuests = guests.filter((_, i) => i !== index);
     setGuests(updatedGuests);
     onGuestsChange(updatedGuests);
@@ -70,49 +53,12 @@ export function GuestList({ onGuestsChange, initialGuests = [] }: GuestListProps
 
   return (
     <div className="space-y-4">
-      <div className="flex gap-2">
-        <Input
-          placeholder="Guest's first name (optional)"
-          value={newGuestName}
-          onChange={(e) => setNewGuestName(e.target.value)}
-          onKeyPress={(e) => {
-            if (e.key === "Enter") {
-              e.preventDefault();
-              addGuest();
-            }
-          }}
-          disabled={!isApproved}
-        />
-        <Button
-          type="button"
-          variant="outline"
-          size="icon"
-          onClick={addGuest}
-          disabled={!isApproved}
-        >
-          <PlusIcon className="h-4 w-4" />
-        </Button>
-      </div>
-      {guests.length > 0 && (
-        <div className="space-y-2">
-          {guests.map((guest, index) => (
-            <div key={index} className="flex items-center gap-2">
-              <div className="flex-1 p-2 bg-gray-50 rounded-md">
-                {guest.firstName}
-              </div>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                onClick={() => removeGuest(index)}
-                disabled={!isApproved}
-              >
-                <XIcon className="h-4 w-4" />
-              </Button>
-            </div>
-          ))}
-        </div>
-      )}
+      <GuestInput onAddGuest={addGuest} isApproved={isApproved} />
+      <GuestListDisplay 
+        guests={guests} 
+        onRemoveGuest={removeGuest}
+        isApproved={isApproved}
+      />
     </div>
   );
 }
