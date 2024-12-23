@@ -1,44 +1,24 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { ImagePreview } from "./components/ImagePreview";
 import { UploadButton } from "./components/UploadButton";
-import { uploadImage, ImageType } from "./utils/imageUpload";
+import { uploadImage } from "./utils/imageUpload";
 
 type ImageUploadFieldProps = {
   label: string;
-  imageUrl: string | undefined;
-  configKey: string;
-  updateConfig: (key: string, value: string) => Promise<void>;
-  setConfigs: React.Dispatch<React.SetStateAction<Record<string, string>>>;
-  imageType: ImageType;
+  value: string;
+  onChange: (value: string) => void;
+  onSave: () => Promise<void>;
 };
 
 export function ImageUploadField({ 
   label, 
-  imageUrl, 
-  configKey, 
-  updateConfig, 
-  setConfigs,
-  imageType 
+  value,
+  onChange,
+  onSave
 }: ImageUploadFieldProps) {
   const { toast } = useToast();
   const [isUploading, setIsUploading] = useState(false);
-
-  // Effect to update favicon when it changes
-  useEffect(() => {
-    if (imageType === 'favicon' && imageUrl) {
-      const faviconLink = document.querySelector("link[rel*='icon']") as HTMLLinkElement;
-      if (faviconLink) {
-        faviconLink.href = imageUrl;
-      } else {
-        const newFaviconLink = document.createElement('link');
-        newFaviconLink.rel = 'icon';
-        newFaviconLink.type = 'image/x-icon';
-        newFaviconLink.href = imageUrl;
-        document.head.appendChild(newFaviconLink);
-      }
-    }
-  }, [imageUrl, imageType]);
 
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     try {
@@ -46,10 +26,10 @@ export function ImageUploadField({
       if (!file) return;
 
       setIsUploading(true);
-      const publicUrl = await uploadImage(file, imageType);
+      const publicUrl = await uploadImage(file, 'default');
       
-      await updateConfig(configKey, publicUrl);
-      setConfigs(prev => ({ ...prev, [configKey]: publicUrl }));
+      onChange(publicUrl);
+      await onSave();
 
       toast({
         title: "Success",
@@ -73,11 +53,11 @@ export function ImageUploadField({
     <div className="space-y-2">
       <label className="text-sm font-medium">{label}</label>
       <div className="space-y-2">
-        {imageUrl && (
+        {value && (
           <ImagePreview
-            imageUrl={imageUrl}
+            imageUrl={value}
             label={label}
-            imageType={imageType}
+            imageType="default"
           />
         )}
         <UploadButton
