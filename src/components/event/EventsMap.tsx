@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api';
 import { Event } from '@/types/event';
 import { useGoogleMapsToken } from '@/hooks/useGoogleMapsToken';
@@ -13,25 +13,24 @@ export function EventsMap({ events }: EventsMapProps) {
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const { mapKey, isLoading, error } = useGoogleMapsToken();
   const locations = useEventLocations(events, mapKey);
+  const mapRef = useRef<google.maps.Map>();
 
-  const getBoundsForLocations = useCallback(() => {
-    if (locations.length === 0) return null;
+  const onMapLoad = useCallback((map: google.maps.Map) => {
+    mapRef.current = map;
+    
+    if (locations.length === 0) return;
+    
     if (locations.length === 1) {
-      return {
-        center: locations[0],
-        zoom: 12
-      };
+      map.setCenter(locations[0]);
+      map.setZoom(12);
+      return;
     }
 
     const bounds = new google.maps.LatLngBounds();
     locations.forEach(location => {
       bounds.extend({ lat: location.lat, lng: location.lng });
     });
-
-    return {
-      bounds,
-      zoom: undefined
-    };
+    map.fitBounds(bounds);
   }, [locations]);
 
   if (isLoading || error || locations.length === 0) {
@@ -43,16 +42,16 @@ export function EventsMap({ events }: EventsMapProps) {
     height: '400px',
   };
 
-  const mapSettings = getBoundsForLocations();
+  const defaultCenter = locations[0] || { lat: 0, lng: 0 };
 
   return (
     <div className="w-full rounded-lg overflow-hidden shadow-lg mb-8">
       <LoadScript googleMapsApiKey={mapKey}>
         <GoogleMap
           mapContainerStyle={mapContainerStyle}
-          zoom={mapSettings?.zoom}
-          center={mapSettings?.center}
-          bounds={mapSettings?.bounds}
+          zoom={12}
+          center={defaultCenter}
+          onLoad={onMapLoad}
           options={{
             styles: [
               {
