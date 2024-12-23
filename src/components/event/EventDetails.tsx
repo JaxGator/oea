@@ -72,7 +72,7 @@ export function EventDetails({
         </span>
       </div>
 
-      {isWixEvent && attendeeNames.length > 0 && (
+      {attendeeNames.length > 0 && (
         <div className="text-sm text-gray-600">
           <p className="font-medium mb-1">Attending:</p>
           <p>{attendeeNames.join(', ')}</p>

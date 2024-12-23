@@ -28,15 +28,24 @@ export const useRSVP = () => {
       let rsvpId;
 
       if (existingRSVP) {
+        // Update existing RSVP
         const { error: updateError } = await supabase
           .from('event_rsvps')
           .update({ response: 'attending' })
-          .eq('event_id', eventId)
-          .eq('user_id', user.id);
+          .eq('id', existingRSVP.id);
 
         if (updateError) throw updateError;
         rsvpId = existingRSVP.id;
+
+        // Delete existing guests
+        const { error: deleteGuestsError } = await supabase
+          .from('event_guests')
+          .delete()
+          .eq('rsvp_id', rsvpId);
+
+        if (deleteGuestsError) throw deleteGuestsError;
       } else {
+        // Create new RSVP
         const { data: newRSVP, error: insertError } = await supabase
           .from('event_rsvps')
           .insert({
@@ -58,7 +67,7 @@ export const useRSVP = () => {
           .insert(
             guests.map(guest => ({
               rsvp_id: rsvpId,
-              first_name: guest.firstName || null
+              first_name: guest.firstName
             }))
           );
 
@@ -70,7 +79,9 @@ export const useRSVP = () => {
         description: "Your RSVP has been recorded",
       });
       
+      // Invalidate both events and event-rsvps queries
       queryClient.invalidateQueries({ queryKey: ['events'] });
+      queryClient.invalidateQueries({ queryKey: ['event-rsvps', eventId] });
     } catch (error: any) {
       toast({
         title: "Error",
@@ -86,19 +97,38 @@ export const useRSVP = () => {
     if (!user) return;
 
     try {
-      const { error } = await supabase
+      // First get the RSVP to get its ID
+      const { data: rsvp } = await supabase
         .from('event_rsvps')
-        .delete()
-        .match({ event_id: eventId, user_id: user.id });
+        .select('id')
+        .eq('event_id', eventId)
+        .eq('user_id', user.id)
+        .single();
 
-      if (error) throw error;
+      if (rsvp) {
+        // Delete associated guests first
+        await supabase
+          .from('event_guests')
+          .delete()
+          .eq('rsvp_id', rsvp.id);
+
+        // Then delete the RSVP
+        const { error } = await supabase
+          .from('event_rsvps')
+          .delete()
+          .eq('id', rsvp.id);
+
+        if (error) throw error;
+      }
 
       toast({
         title: "Success",
         description: "Your RSVP has been cancelled",
       });
 
+      // Invalidate both events and event-rsvps queries
       queryClient.invalidateQueries({ queryKey: ['events'] });
+      queryClient.invalidateQueries({ queryKey: ['event-rsvps', eventId] });
     } catch (error: any) {
       toast({
         title: "Error",
