@@ -1,8 +1,9 @@
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { Event } from "@/types/event";
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { handleQueryResult } from '@/utils/supabase-helpers';
+import type { TablesRow } from '@/utils/supabase-helpers';
 
-export const useEvents = (selectedDate?: Date) => {
+export function useEvents(selectedDate?: Date) {
   return useQuery({
     queryKey: ['events', selectedDate?.toISOString()],
     queryFn: async () => {
@@ -26,14 +27,7 @@ export const useEvents = (selectedDate?: Date) => {
         query = query.eq('date', selectedDate.toISOString().split('T')[0]);
       }
 
-      const { data, error } = await query;
-
-      if (error) {
-        console.error('Error fetching events:', error);
-        throw error;
-      }
-      
-      return data as Event[];
-    },
+      return handleQueryResult(query) as Promise<TablesRow<'events'>[]>;
+    }
   });
-};
+}

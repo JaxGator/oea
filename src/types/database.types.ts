@@ -79,81 +79,13 @@ export interface Database {
           image_url?: string
         }
       }
-      event_rsvps: {
-        Row: {
-          id: string
-          event_id: string
-          user_id: string
-          response: 'attending' | 'not_attending' | 'maybe'
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          event_id: string
-          user_id: string
-          response: 'attending' | 'not_attending' | 'maybe'
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          event_id?: string
-          user_id?: string
-          response?: 'attending' | 'not_attending' | 'maybe'
-          created_at?: string
-        }
-      }
-      event_guests: {
-        Row: {
-          id: string
-          rsvp_id: string
-          first_name: string | null
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          rsvp_id: string
-          first_name?: string | null
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          rsvp_id?: string
-          first_name?: string | null
-          created_at?: string
-        }
-      }
-      page_content: {
-        Row: {
-          id: string
-          page_id: string
-          section_id: string
-          content: string
-          updated_by: string | null
-          updated_at: string | null
-          created_at: string | null
-        }
-        Insert: {
-          id?: string
-          page_id: string
-          section_id: string
-          content: string
-          updated_by?: string | null
-          updated_at?: string | null
-          created_at?: string | null
-        }
-        Update: {
-          id?: string
-          page_id?: string
-          section_id?: string
-          content?: string
-          updated_by?: string | null
-          updated_at?: string | null
-          created_at?: string | null
-        }
-      }
-    }
-    Enums: {
-      rsvp_response: 'attending' | 'not_attending' | 'maybe'
     }
   }
 }
+
+export type Tables<T extends keyof Database['public']['Tables']> = Database['public']['Tables'][T]
+export type DbResult<T> = T extends PromiseLike<infer U> ? U : never
+export type DbResultOk<T> = T extends PromiseLike<{ data: infer U }> ? Exclude<U, null> : never
+export type Row<T extends keyof Database['public']['Tables']> = Database['public']['Tables'][T]['Row']
+export type InsertRow<T extends keyof Database['public']['Tables']> = Database['public']['Tables'][T]['Insert']
+export type UpdateRow<T extends keyof Database['public']['Tables']> = Database['public']['Tables'][T]['Update']
