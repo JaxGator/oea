@@ -11,10 +11,11 @@ interface Guest {
 
 interface GuestListProps {
   onGuestsChange: (guests: Guest[]) => void;
+  initialGuests?: Guest[];
 }
 
-export function GuestList({ onGuestsChange }: GuestListProps) {
-  const [guests, setGuests] = useState<Guest[]>([]);
+export function GuestList({ onGuestsChange, initialGuests = [] }: GuestListProps) {
+  const [guests, setGuests] = useState<Guest[]>(initialGuests);
   const [newGuestName, setNewGuestName] = useState("");
   const [isApproved, setIsApproved] = useState(false);
 
@@ -34,6 +35,13 @@ export function GuestList({ onGuestsChange }: GuestListProps) {
 
     checkApprovalStatus();
   }, []);
+
+  // Initialize guests with initialGuests when component mounts
+  useEffect(() => {
+    if (initialGuests.length > 0) {
+      setGuests(initialGuests);
+    }
+  }, [initialGuests]);
 
   const addGuest = () => {
     if (!isApproved) {

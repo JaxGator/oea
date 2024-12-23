@@ -1,13 +1,25 @@
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { GuestList } from "./GuestList";
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Trash2Icon, Edit2Icon } from "lucide-react";
+
+interface Guest {
+  firstName: string;
+}
 
 interface EventActionsProps {
   isAdmin: boolean;
   userRSVPStatus: string | null;
   isFullyBooked: boolean;
-  onRSVP: (guests?: { firstName: string }[]) => void;
+  onRSVP: (guests?: Guest[]) => void;
   onCancelRSVP: () => void;
   onEdit?: () => void;
   onDelete?: () => void;
@@ -15,6 +27,7 @@ interface EventActionsProps {
   isWixEvent?: boolean;
   showDelete?: boolean;
   canAddGuests?: boolean;
+  currentGuests?: Guest[];
 }
 
 export function EventActions({
@@ -28,80 +41,98 @@ export function EventActions({
   isPastEvent,
   isWixEvent,
   showDelete,
-  canAddGuests
+  canAddGuests,
+  currentGuests = []
 }: EventActionsProps) {
   const [showGuestDialog, setShowGuestDialog] = useState(false);
+  const [guests, setGuests] = useState<Guest[]>([]);
 
-  const handleRSVP = (guests?: { firstName: string }[]) => {
-    onRSVP(guests);
+  const handleRSVP = () => {
+    if (guests.length > 0) {
+      onRSVP(guests);
+    } else {
+      onRSVP();
+    }
     setShowGuestDialog(false);
   };
 
-  if (isPastEvent) {
-    return (
-      <div className="w-full flex justify-end space-x-2">
-        {showDelete && (
-          <Button variant="destructive" onClick={onDelete}>
-            Delete
-          </Button>
-        )}
-      </div>
-    );
-  }
-
   return (
-    <div className="w-full flex flex-wrap gap-2">
-      <div className="flex-1">
-        {userRSVPStatus === "attending" ? (
-          <Button
-            variant="destructive"
-            onClick={onCancelRSVP}
-            className="w-full sm:w-auto"
-          >
-            Cancel RSVP
-          </Button>
-        ) : !isFullyBooked && (
-          <Dialog open={showGuestDialog} onOpenChange={setShowGuestDialog}>
-            <DialogTrigger asChild>
-              <Button className="w-full sm:w-auto">RSVP</Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>RSVP with Guests</DialogTitle>
-              </DialogHeader>
-              <GuestList onGuestsChange={handleRSVP} />
-            </DialogContent>
-          </Dialog>
-        )}
-      </div>
-
-      {canAddGuests && !isPastEvent && (
-        <Dialog>
+    <div className="flex flex-wrap gap-2">
+      {!userRSVPStatus && !isPastEvent && (
+        <Dialog open={showGuestDialog} onOpenChange={setShowGuestDialog}>
           <DialogTrigger asChild>
-            <Button variant="outline" className="w-full sm:w-auto">
-              Add Guests
+            <Button
+              variant="default"
+              className="bg-[#0d97d1] hover:bg-[#0d97d1]/90"
+              disabled={isFullyBooked}
+            >
+              {isFullyBooked ? "Event Full" : "RSVP"}
             </Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Add Guests</DialogTitle>
+              <DialogTitle>RSVP to Event</DialogTitle>
+              <DialogDescription>
+                Add any guests you'd like to bring (optional)
+              </DialogDescription>
             </DialogHeader>
-            <GuestList onGuestsChange={handleRSVP} />
+            <GuestList onGuestsChange={setGuests} />
+            <Button onClick={handleRSVP} className="bg-[#0d97d1] hover:bg-[#0d97d1]/90">
+              Confirm RSVP
+            </Button>
           </DialogContent>
         </Dialog>
       )}
 
-      {isAdmin && (
-        <div className="flex gap-2 w-full sm:w-auto">
-          <Button variant="outline" onClick={onEdit}>
-            Edit
+      {userRSVPStatus === "attending" && !isPastEvent && (
+        <>
+          <Button
+            variant="destructive"
+            onClick={onCancelRSVP}
+          >
+            Cancel RSVP
           </Button>
-          {showDelete && (
-            <Button variant="destructive" onClick={onDelete}>
-              Delete
-            </Button>
+          {canAddGuests && (
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button variant="outline">Add Guests</Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Add Guests</DialogTitle>
+                  <DialogDescription>
+                    Add additional guests to your RSVP
+                  </DialogDescription>
+                </DialogHeader>
+                <GuestList 
+                  onGuestsChange={(newGuests) => onRSVP(newGuests)} 
+                  initialGuests={currentGuests}
+                />
+              </DialogContent>
+            </Dialog>
           )}
-        </div>
+        </>
+      )}
+
+      {isAdmin && !isWixEvent && (
+        <Button
+          variant="outline"
+          onClick={onEdit}
+          className="ml-auto"
+        >
+          <Edit2Icon className="w-4 h-4 mr-2" />
+          Edit
+        </Button>
+      )}
+
+      {showDelete && (
+        <Button
+          variant="destructive"
+          onClick={onDelete}
+        >
+          <Trash2Icon className="w-4 h-4 mr-2" />
+          Delete
+        </Button>
       )}
     </div>
   );
