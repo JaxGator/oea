@@ -31,12 +31,21 @@ export function EventDetails({
   // Parse the date string and create a new Date object in local timezone
   const eventDate = parseISO(date);
 
+  // Convert time from 24-hour to 12-hour format
+  const formatTime = (timeStr: string) => {
+    const [hours, minutes] = timeStr.split(':');
+    const hour = parseInt(hours, 10);
+    const ampm = hour >= 12 ? 'PM' : 'AM';
+    const hour12 = hour % 12 || 12;
+    return `${hour12}:${minutes} ${ampm}`;
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-2 text-gray-600">
         <CalendarIcon className="w-4 h-4" />
         <span className="text-sm">
-          {format(eventDate, "EEEE, MMMM do, yyyy")} at {time}
+          {format(eventDate, "EEEE, MMMM do, yyyy")} at {formatTime(time)}
         </span>
       </div>
       
