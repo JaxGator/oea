@@ -66,8 +66,43 @@ export const useRSVPManagement = () => {
     navigate(`/events?rsvp=${eventId}`);
   };
 
+  const handleCancelRSVP = async (eventId: string) => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      toast({
+        title: "Error",
+        description: "Please log in to cancel RSVP",
+        variant: "destructive",
+      });
+      navigate("/auth");
+      return;
+    }
+
+    const { error } = await supabase
+      .from('event_rsvps')
+      .delete()
+      .eq('event_id', eventId)
+      .eq('user_id', user.id);
+
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to cancel RSVP",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    await fetchUserRSVPs();
+    toast({
+      title: "Success",
+      description: "RSVP cancelled successfully",
+    });
+  };
+
   return {
     userRSVPs,
     handleRSVP,
+    handleCancelRSVP,
   };
 };
