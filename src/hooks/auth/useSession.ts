@@ -24,6 +24,7 @@ export function useSession() {
 
     async function getActiveSession() {
       try {
+        // First try to get the session from storage
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         
         if (sessionError) {
@@ -59,6 +60,7 @@ export function useSession() {
           error: error as Error
         });
 
+        // Only show error toast if it's not a normal session not found error
         if ((error as any)?.message !== "session_not_found") {
           toast({
             title: "Session Error",
@@ -72,6 +74,7 @@ export function useSession() {
 
     getActiveSession();
 
+    // Set up auth state change listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         if (!mounted) return;
