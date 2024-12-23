@@ -19,6 +19,7 @@ interface EventActionsProps {
   onEdit: () => void;
   onDelete: () => void;
   isPastEvent: boolean;
+  isWixEvent: boolean;
   showDelete: boolean;
 }
 
@@ -31,6 +32,7 @@ export function EventActions({
   onEdit,
   onDelete,
   isPastEvent,
+  isWixEvent,
   showDelete,
 }: EventActionsProps) {
   const [guests, setGuests] = useState<Guest[]>([]);
@@ -51,13 +53,15 @@ export function EventActions({
     onRSVP(guests);
   };
 
+  const disableRSVP = isPastEvent && isWixEvent;
+
   return (
     <div className="space-y-4">
-      {!userRSVPStatus && !isFullyBooked && !isPastEvent && (
+      {!userRSVPStatus && !isFullyBooked && !isPastEvent && !disableRSVP && (
         <GuestList onGuestsChange={setGuests} />
       )}
       <div className="flex gap-2">
-        {userRSVPStatus && !isPastEvent ? (
+        {userRSVPStatus && !disableRSVP ? (
           <Button
             onClick={onCancelRSVP}
             variant="outline"
@@ -65,7 +69,7 @@ export function EventActions({
           >
             Cancel RSVP
           </Button>
-        ) : !isPastEvent ? (
+        ) : !disableRSVP ? (
           <Button
             onClick={handleRSVP}
             disabled={isFullyBooked}
