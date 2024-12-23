@@ -27,7 +27,7 @@ export async function handleQueryResult<T>(
   if (!data) {
     throw new Error('No data returned from query');
   }
-  return data;
+  return data as T;
 }
 
 export function isQueryError(result: unknown): result is PostgrestError {

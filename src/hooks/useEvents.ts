@@ -14,8 +14,10 @@ export function useEvents(selectedDate?: Date) {
           *,
           event_rsvps (
             id,
-            response,
+            event_id,
             user_id,
+            response,
+            created_at,
             profiles (
               full_name,
               username
@@ -30,7 +32,7 @@ export function useEvents(selectedDate?: Date) {
 
       const result = await query;
       const data = await handleQueryResult(result);
-      return transformEventData(data);
+      return transformEventData(Array.isArray(data) ? data : [data]);
     }
   });
 }
