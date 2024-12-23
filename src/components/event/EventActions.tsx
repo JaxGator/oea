@@ -1,26 +1,20 @@
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
 import { GuestList } from "./GuestList";
-import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
-import { EventAdminActions } from "./EventAdminActions";
-
-interface Guest {
-  firstName: string;
-}
+import { useState } from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 interface EventActionsProps {
   isAdmin: boolean;
   userRSVPStatus: string | null;
   isFullyBooked: boolean;
-  onRSVP: (guests: Guest[]) => void;
+  onRSVP: (guests?: { firstName: string }[]) => void;
   onCancelRSVP: () => void;
-  onEdit: () => void;
-  onDelete: () => void;
-  isPastEvent: boolean;
-  isWixEvent: boolean;
-  showDelete: boolean;
+  onEdit?: () => void;
+  onDelete?: () => void;
+  isPastEvent?: boolean;
+  isWixEvent?: boolean;
+  showDelete?: boolean;
+  canAddGuests?: boolean;
 }
 
 export function EventActions({
@@ -34,58 +28,81 @@ export function EventActions({
   isPastEvent,
   isWixEvent,
   showDelete,
+  canAddGuests
 }: EventActionsProps) {
-  const [guests, setGuests] = useState<Guest[]>([]);
-  const navigate = useNavigate();
-  const { toast } = useToast();
+  const [showGuestDialog, setShowGuestDialog] = useState(false);
 
-  const handleRSVP = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      toast({
-        title: "Error",
-        description: "Please log in to RSVP",
-        variant: "destructive",
-      });
-      navigate("/auth");
-      return;
-    }
+  const handleRSVP = (guests?: { firstName: string }[]) => {
     onRSVP(guests);
+    setShowGuestDialog(false);
   };
 
-  const disableRSVP = isPastEvent || (isPastEvent && isWixEvent);
+  if (isPastEvent) {
+    return (
+      <div className="w-full flex justify-end space-x-2">
+        {showDelete && (
+          <Button variant="destructive" onClick={onDelete}>
+            Delete
+          </Button>
+        )}
+      </div>
+    );
+  }
 
   return (
-    <div className="space-y-4">
-      {!userRSVPStatus && !isFullyBooked && !disableRSVP && (
-        <GuestList onGuestsChange={setGuests} />
-      )}
-      <div className="flex gap-2">
-        {userRSVPStatus && !disableRSVP ? (
+    <div className="w-full flex flex-wrap gap-2">
+      <div className="flex-1">
+        {userRSVPStatus === "attending" ? (
           <Button
+            variant="destructive"
             onClick={onCancelRSVP}
-            variant="outline"
-            className="flex-1"
+            className="w-full sm:w-auto"
           >
             Cancel RSVP
           </Button>
-        ) : !disableRSVP ? (
-          <Button
-            onClick={handleRSVP}
-            disabled={isFullyBooked}
-            className="flex-1 bg-[#0d97d1] hover:bg-[#0d97d1]/90 text-white"
-          >
-            {isFullyBooked ? "Fully Booked" : "RSVP Now"}
-          </Button>
-        ) : null}
-        
-        <EventAdminActions
-          isAdmin={isAdmin}
-          showDelete={showDelete}
-          onEdit={onEdit}
-          onDelete={onDelete}
-        />
+        ) : !isFullyBooked && (
+          <Dialog open={showGuestDialog} onOpenChange={setShowGuestDialog}>
+            <DialogTrigger asChild>
+              <Button className="w-full sm:w-auto">RSVP</Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>RSVP with Guests</DialogTitle>
+              </DialogHeader>
+              <GuestList onGuestsChange={handleRSVP} />
+            </DialogContent>
+          </Dialog>
+        )}
       </div>
+
+      {canAddGuests && !isPastEvent && (
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button variant="outline" className="w-full sm:w-auto">
+              Add Guests
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Add Guests</DialogTitle>
+            </DialogHeader>
+            <GuestList onGuestsChange={handleRSVP} />
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {isAdmin && (
+        <div className="flex gap-2 w-full sm:w-auto">
+          <Button variant="outline" onClick={onEdit}>
+            Edit
+          </Button>
+          {showDelete && (
+            <Button variant="destructive" onClick={onDelete}>
+              Delete
+            </Button>
+          )}
+        </div>
+      )}
     </div>
   );
 }

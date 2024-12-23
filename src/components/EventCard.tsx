@@ -31,6 +31,7 @@ export function EventCard({ event, onRSVP, onCancelRSVP, userRSVPStatus, onUpdat
   const isPastEvent = new Date(event.date) < new Date(new Date().setHours(0, 0, 0, 0));
   const isWixEvent = event.description === 'Imported from Wix';
   const disableRSVP = isPastEvent || (isPastEvent && isWixEvent);
+  const canAddGuests = isAdmin || userRSVPStatus === 'attending';
 
   const attendeeNames = attendees.map(attendee => {
     const fullName = attendee.profile.full_name;
@@ -56,7 +57,7 @@ export function EventCard({ event, onRSVP, onCancelRSVP, userRSVPStatus, onUpdat
           attendeeNames={attendeeNames}
           userRSVPStatus={userRSVPStatus}
         />
-        {userRSVPStatus === 'attending' && !disableRSVP && (
+        {(userRSVPStatus === 'attending' || isAdmin) && !disableRSVP && (
           <AddToCalendar
             event={{
               title: event.title,
@@ -81,6 +82,7 @@ export function EventCard({ event, onRSVP, onCancelRSVP, userRSVPStatus, onUpdat
           isPastEvent={isPastEvent}
           isWixEvent={isWixEvent}
           showDelete={isAdmin && (isPastEvent || isWixEvent)}
+          canAddGuests={canAddGuests}
         />
       </CardFooter>
 
