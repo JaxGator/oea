@@ -10,6 +10,8 @@ import Auth from "@/pages/Auth";
 import Profile from "@/pages/Profile";
 import Admin from "@/pages/Admin";
 import Store from "@/pages/Store";
+import { TermsAndConditions } from "@/components/legal/TermsAndConditions";
+import { PrivacyPolicy } from "@/components/legal/PrivacyPolicy";
 
 export const router = createBrowserRouter([
   {
@@ -55,6 +57,14 @@ export const router = createBrowserRouter([
       {
         path: "store",
         element: <Store />,
+      },
+      {
+        path: "terms",
+        element: <TermsAndConditions />,
+      },
+      {
+        path: "privacy",
+        element: <PrivacyPolicy />,
       },
     ],
   },
