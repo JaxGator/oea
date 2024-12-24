@@ -22,6 +22,11 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, 
       'X-Client-Info': 'supabase-js-web',
     },
   },
+  // Add CORS configuration
+  headers: {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  },
 });
 
 // Test connection and log detailed errors
