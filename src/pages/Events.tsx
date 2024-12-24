@@ -11,20 +11,18 @@ import { useAuthState } from "@/hooks/useAuthState";
 import { Loader2 } from "lucide-react";
 import { GroupChat } from "@/components/chat/GroupChat";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { EventFilters, defaultFilters } from "@/types/filters";
 
 export default function Events() {
   const { isAuthenticated } = useAuthState();
   const [isCreateEventOpen, setIsCreateEventOpen] = useState(false);
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-  const [filters, setFilters] = useState<EventFilters>(defaultFilters);
+  const [selectedDate, setSelectedDate] = useState<Date>();
   
-  const { data: events = [], isLoading: isEventsLoading, error } = useEvents(filters);
+  const { data: events = [], isLoading: isEventsLoading, error } = useEvents(selectedDate);
   const { handleRSVP, cancelRSVP } = useRSVP();
 
   if (isEventsLoading) {
     return (
-      <div className="min-h-screen bg-[var(--page-background)] flex items-center justify-center">
+      <div className="min-h-screen bg-[#F1F0FB] flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin" />
       </div>
     );
@@ -33,7 +31,7 @@ export default function Events() {
   if (error) {
     toast.error("Failed to load events. Please try again.");
     return (
-      <div className="min-h-screen bg-[var(--page-background)] flex items-center justify-center">
+      <div className="min-h-screen bg-[#F1F0FB] flex items-center justify-center">
         <div className="text-black">Error loading events. Please try again.</div>
       </div>
     );
@@ -50,8 +48,8 @@ export default function Events() {
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
   return (
-    <div className="min-h-screen bg-[var(--page-background)]">
-      <div className="sticky top-0 z-10 bg-[var(--page-background)] border-b border-gray-200 mb-6">
+    <div className="min-h-screen bg-[#F1F0FB]">
+      <div className="sticky top-0 z-10 bg-[#F1F0FB] border-b border-gray-200 mb-6">
         <div className="max-w-7xl mx-auto px-4 py-4 md:py-6 flex justify-center">
           <h1 className="text-2xl md:text-3xl font-bold text-black">Events</h1>
         </div>
@@ -71,8 +69,6 @@ export default function Events() {
                   <DateFilter
                     selectedDate={selectedDate}
                     onDateSelect={setSelectedDate}
-                    filters={filters}
-                    onFiltersChange={setFilters}
                   />
                   {isAuthenticated && (
                     <CreateEventDialog
