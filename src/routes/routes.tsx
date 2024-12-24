@@ -18,7 +18,22 @@ export const router = createBrowserRouter([
   {
     path: "/",
     element: <AppLayout />,
-    errorElement: <ErrorBoundary />,
+    errorElement: (
+      <ErrorBoundary
+        fallback={
+          <div className="min-h-screen flex items-center justify-center px-4">
+            <div className="text-center space-y-6">
+              <h1 className="text-4xl font-bold">Unexpected Error</h1>
+              <p className="text-muted-foreground max-w-md mx-auto">
+                We encountered an unexpected error. Please try again later.
+              </p>
+            </div>
+          </div>
+        }
+      >
+        <div>An error occurred while loading the application.</div>
+      </ErrorBoundary>
+    ),
     children: [
       {
         index: true,
