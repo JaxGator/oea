@@ -12,11 +12,13 @@ import Admin from "@/pages/Admin";
 import Store from "@/pages/Store";
 import { TermsAndConditions } from "@/components/legal/TermsAndConditions";
 import { PrivacyPolicy } from "@/components/legal/PrivacyPolicy";
+import { ErrorBoundary } from "@/components/error/ErrorBoundary";
 
 export const router = createBrowserRouter([
   {
     path: "/",
     element: <AppLayout />,
+    errorElement: <ErrorBoundary />,
     children: [
       {
         index: true,
