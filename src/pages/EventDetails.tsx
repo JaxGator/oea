@@ -6,14 +6,22 @@ import { ArrowLeft, Loader2 } from "lucide-react";
 import { format } from "date-fns";
 import { Event, EventRSVP } from "@/types/event";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useEffect } from "react";
 
 export default function EventDetails() {
   const { eventId } = useParams();
   const navigate = useNavigate();
 
-  // Return early if no eventId is provided
+  // Use useEffect to handle navigation
+  useEffect(() => {
+    if (!eventId) {
+      navigate("/events");
+    }
+  }, [eventId, navigate]);
+
+  // If no eventId, return null while the useEffect handles navigation
   if (!eventId) {
-    return navigate("/events");
+    return null;
   }
 
   const { data: event, isLoading, error } = useQuery({
