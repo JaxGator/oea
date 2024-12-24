@@ -15,7 +15,7 @@ interface DateFilterProps {
   selectedDate: Date | null;
   onDateSelect: (date: Date | null) => void;
   onFiltersChange?: (filters: EventFilters) => void;
-  filters?: EventFilters;
+  filters?: Partial<EventFilters>;
 }
 
 export interface EventFilters {
@@ -25,7 +25,7 @@ export interface EventFilters {
   searchTerm?: string;
 }
 
-export function DateFilter({ selectedDate, onDateSelect, onFiltersChange, filters = {} }: DateFilterProps) {
+export function DateFilter({ selectedDate, onDateSelect, onFiltersChange, filters = { date: null } }: DateFilterProps) {
   const now = new Date();
   const dates = [
     { label: "All", date: null },
