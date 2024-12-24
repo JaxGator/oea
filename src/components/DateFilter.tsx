@@ -1,15 +1,13 @@
 import { Button } from "@/components/ui/button";
-import { format, addDays, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from "date-fns";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Filter, SlidersHorizontal } from "lucide-react";
+import { SlidersHorizontal } from "lucide-react";
+import { AdditionalFilters } from "./event/filters/AdditionalFilters";
+import { EventFilters, defaultFilters } from "@/types/filters";
 
 interface DateFilterProps {
   selectedDate: Date | null;
@@ -18,20 +16,18 @@ interface DateFilterProps {
   filters?: Partial<EventFilters>;
 }
 
-export interface EventFilters {
-  date: Date | null;
-  location?: string;
-  maxGuests?: number;
-  searchTerm?: string;
-}
-
-export function DateFilter({ selectedDate, onDateSelect, onFiltersChange, filters = { date: null } }: DateFilterProps) {
+export function DateFilter({ 
+  selectedDate, 
+  onDateSelect, 
+  onFiltersChange, 
+  filters = defaultFilters 
+}: DateFilterProps) {
   const now = new Date();
   const dates = [
     { label: "All", date: null },
     { label: "Today", date: now },
-    { label: "This Weekend", date: endOfWeek(now, { weekStartsOn: 6 }) },
-    { label: "This Month", date: endOfMonth(now) },
+    { label: "This Weekend", date: new Date(now.getTime() + (6 - now.getDay()) * 24 * 60 * 60 * 1000) },
+    { label: "This Month", date: new Date(now.getFullYear(), now.getMonth() + 1, 0) },
   ];
 
   const handleFilterChange = (key: keyof EventFilters, value: any) => {
@@ -39,7 +35,7 @@ export function DateFilter({ selectedDate, onDateSelect, onFiltersChange, filter
       onFiltersChange({
         ...filters,
         [key]: value,
-      });
+      } as EventFilters);
     }
   };
 
@@ -72,45 +68,10 @@ export function DateFilter({ selectedDate, onDateSelect, onFiltersChange, filter
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-80">
-            <div className="grid gap-4">
-              <div className="space-y-2">
-                <h4 className="font-medium leading-none">Filters</h4>
-                <p className="text-sm text-muted-foreground">
-                  Customize your event search
-                </p>
-              </div>
-              <Separator />
-              <div className="grid gap-2">
-                <div className="grid gap-1">
-                  <Label htmlFor="location">Location</Label>
-                  <Input
-                    id="location"
-                    placeholder="Filter by location..."
-                    value={filters.location || ''}
-                    onChange={(e) => handleFilterChange('location', e.target.value)}
-                  />
-                </div>
-                <div className="grid gap-1">
-                  <Label htmlFor="maxGuests">Maximum Guests</Label>
-                  <Input
-                    id="maxGuests"
-                    type="number"
-                    placeholder="Min capacity..."
-                    value={filters.maxGuests || ''}
-                    onChange={(e) => handleFilterChange('maxGuests', e.target.value ? parseInt(e.target.value) : undefined)}
-                  />
-                </div>
-                <div className="grid gap-1">
-                  <Label htmlFor="search">Search</Label>
-                  <Input
-                    id="search"
-                    placeholder="Search events..."
-                    value={filters.searchTerm || ''}
-                    onChange={(e) => handleFilterChange('searchTerm', e.target.value)}
-                  />
-                </div>
-              </div>
-            </div>
+            <AdditionalFilters
+              filters={filters as EventFilters}
+              onFilterChange={handleFilterChange}
+            />
           </PopoverContent>
         </Popover>
       </div>

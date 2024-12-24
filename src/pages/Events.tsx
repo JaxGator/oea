@@ -16,12 +16,7 @@ export default function Events() {
   const { isAuthenticated } = useAuthState();
   const [isCreateEventOpen, setIsCreateEventOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date>();
-  const [filters, setFilters] = useState<EventFilters>({
-    date: null,
-    location: '',
-    maxGuests: undefined,
-    searchTerm: '',
-  });
+  const [filters, setFilters] = useState<EventFilters>(defaultFilters);
   
   const { data: events = [], isLoading: isEventsLoading, error } = useEvents(filters);
   const { handleRSVP, cancelRSVP } = useRSVP();
