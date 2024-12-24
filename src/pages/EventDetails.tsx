@@ -2,7 +2,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Loader2 } from "lucide-react";
 import { format } from "date-fns";
 import { Event, EventRSVP } from "@/types/event";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -11,16 +11,22 @@ export default function EventDetails() {
   const { eventId } = useParams();
   const navigate = useNavigate();
 
-  const { data: event, isLoading } = useQuery({
+  // Return early if no eventId is provided
+  if (!eventId) {
+    return navigate("/events");
+  }
+
+  const { data: event, isLoading, error } = useQuery({
     queryKey: ['event', eventId],
     queryFn: async () => {
       const { data: eventData, error: eventError } = await supabase
         .from('events')
         .select('*')
         .eq('id', eventId)
-        .single();
+        .maybeSingle();
 
       if (eventError) throw eventError;
+      if (!eventData) throw new Error('Event not found');
 
       const { data: rsvpData, error: rsvpError } = await supabase
         .from('event_rsvps')
@@ -58,13 +64,21 @@ export default function EventDetails() {
         rsvps: rsvpsWithProfiles
       } as Event;
     },
+    enabled: !!eventId // Only run query if eventId exists
   });
+
+  if (error) {
+    throw error; // This will be caught by the ErrorBoundary
+  }
 
   if (isLoading) {
     return (
       <div className="min-h-screen bg-[#222222] p-4">
         <div className="max-w-4xl mx-auto bg-white rounded-lg p-6 space-y-6">
-          <Skeleton className="h-8 w-48" />
+          <div className="flex items-center space-x-2">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            <span className="text-sm text-muted-foreground">Loading event details...</span>
+          </div>
           <Skeleton className="h-64 w-full" />
           <Skeleton className="h-20 w-full" />
         </div>
@@ -73,11 +87,7 @@ export default function EventDetails() {
   }
 
   if (!event) {
-    return (
-      <div className="min-h-screen bg-[#222222] flex items-center justify-center">
-        <div className="text-white">Event not found</div>
-      </div>
-    );
+    throw new Error('Event not found');
   }
 
   return (
