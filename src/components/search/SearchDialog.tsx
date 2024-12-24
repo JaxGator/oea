@@ -33,7 +33,6 @@ export function SearchDialog() {
         search_term: searchTerm
       });
       if (error) throw error;
-      // Strip HTML tags from description
       return (data as SearchResult[]).map(result => ({
         ...result,
         description: result.description ? result.description.replace(/<[^>]*>/g, '') : null
@@ -70,8 +69,9 @@ export function SearchDialog() {
             {results?.map((result) => (
               <button
                 key={result.id}
-                className="w-full text-left p-2 hover:bg-accent rounded-md transition-colors"
+                className="w-full text-left p-2 hover:bg-accent rounded-md transition-colors cursor-pointer"
                 onClick={() => handleSelect(result)}
+                type="button"
               >
                 <div className="flex items-center justify-between">
                   <span className="font-medium">{result.title}</span>
