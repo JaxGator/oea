@@ -27,11 +27,51 @@ export default function AppLayout() {
       }
     };
 
+    const loadThemeSettings = async () => {
+      const { data, error } = await supabase
+        .from('site_config')
+        .select('key, value')
+        .in('key', [
+          'button_primary_color',
+          'button_hover_color',
+          'page_background',
+          'text_primary_color',
+          'accent_color'
+        ]);
+
+      if (data) {
+        const root = document.documentElement;
+        data.forEach(({ key, value }) => {
+          switch (key) {
+            case 'button_primary_color':
+              root.style.setProperty('--button-primary', value);
+              break;
+            case 'button_hover_color':
+              root.style.setProperty('--button-hover', value);
+              break;
+            case 'page_background':
+              root.style.setProperty('--page-background', value);
+              break;
+            case 'text_primary_color':
+              root.style.setProperty('--text-primary', value);
+              break;
+            case 'accent_color':
+              root.style.setProperty('--accent', value);
+              break;
+          }
+        });
+      }
+    };
+
     loadFavicon();
+    loadThemeSettings();
   }, []);
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col" style={{ 
+      backgroundColor: 'var(--page-background, white)',
+      color: 'var(--text-primary, black)'
+    }}>
       <div className="relative">
         <DesktopNavigation />
         {profile?.is_admin && (
