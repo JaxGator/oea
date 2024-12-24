@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { CreateEventDialog } from "@/components/CreateEventDialog";
-import { DateFilter, EventFilters } from "@/components/DateFilter";
+import { DateFilter } from "@/components/DateFilter";
 import { useEvents } from "@/hooks/useEvents";
 import { EventList } from "@/components/event/EventList";
 import { EventsMap } from "@/components/event/EventsMap";
@@ -11,11 +11,12 @@ import { useAuthState } from "@/hooks/useAuthState";
 import { Loader2 } from "lucide-react";
 import { GroupChat } from "@/components/chat/GroupChat";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { EventFilters, defaultFilters } from "@/types/filters";
 
 export default function Events() {
   const { isAuthenticated } = useAuthState();
   const [isCreateEventOpen, setIsCreateEventOpen] = useState(false);
-  const [selectedDate, setSelectedDate] = useState<Date>();
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [filters, setFilters] = useState<EventFilters>(defaultFilters);
   
   const { data: events = [], isLoading: isEventsLoading, error } = useEvents(filters);

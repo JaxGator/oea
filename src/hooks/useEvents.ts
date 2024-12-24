@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { handleQueryResult } from '@/utils/supabase-helpers';
 import { transformEventData } from './events/useEventTransform';
 import type { Event } from '@/types/event';
-import type { EventFilters } from '@/components/DateFilter';
+import type { EventFilters } from '@/types/filters';
 
 export function useEvents(filters?: EventFilters) {
   return useQuery({
