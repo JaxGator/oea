@@ -56,11 +56,11 @@ export default function Events() {
           <div>
             <h2 className="text-xl md:text-2xl font-semibold mb-4">Upcoming Events</h2>
             {upcomingEvents.length > 0 && (
-              <ErrorBoundary>
+              <ErrorBoundary fallback={<div>Error loading map. Please try again later.</div>}>
                 <EventsMap events={upcomingEvents} />
               </ErrorBoundary>
             )}
-            <ErrorBoundary>
+            <ErrorBoundary fallback={<div>Error loading events. Please try again later.</div>}>
               <EventList 
                 events={upcomingEvents}
                 onRSVP={handleRSVP}
@@ -74,7 +74,7 @@ export default function Events() {
               <Separator className="my-8" />
               <div>
                 <h2 className="text-xl md:text-2xl font-semibold mb-4">Past Events</h2>
-                <ErrorBoundary>
+                <ErrorBoundary fallback={<div>Error loading past events. Please try again later.</div>}>
                   <EventList 
                     events={pastEvents}
                     onRSVP={handleRSVP}
@@ -121,14 +121,14 @@ export default function Events() {
                 </div>
               </div>
 
-              <ErrorBoundary>
+              <ErrorBoundary fallback={<div>Error loading content. Please try again later.</div>}>
                 {renderContent()}
               </ErrorBoundary>
             </TabsContent>
 
             <TabsContent value="discussion">
               <div className="bg-white rounded-lg shadow-lg">
-                <ErrorBoundary>
+                <ErrorBoundary fallback={<div>Error loading chat. Please try again later.</div>}>
                   <GroupChat />
                 </ErrorBoundary>
               </div>
