@@ -11,6 +11,7 @@ import { useAuthState } from "@/hooks/useAuthState";
 import { Loader2 } from "lucide-react";
 import { GroupChat } from "@/components/chat/GroupChat";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ErrorBoundary } from "@/components/error/ErrorBoundary";
 
 export default function Events() {
   const { isAuthenticated } = useAuthState();
@@ -20,15 +21,8 @@ export default function Events() {
   const { data: events = [], isLoading: isEventsLoading, error } = useEvents(selectedDate);
   const { handleRSVP, cancelRSVP } = useRSVP();
 
-  if (isEventsLoading) {
-    return (
-      <div className="min-h-screen bg-[#F1F0FB] flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin" />
-      </div>
-    );
-  }
-
   if (error) {
+    console.error("Events loading error:", error);
     toast.error("Failed to load events. Please try again.");
     return (
       <div className="min-h-screen bg-[#F1F0FB] flex items-center justify-center">
@@ -46,6 +40,54 @@ export default function Events() {
   const pastEvents = events
     .filter(event => new Date(event.date) < now)
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+  const renderContent = () => {
+    if (isEventsLoading) {
+      return (
+        <div className="min-h-screen bg-[#F1F0FB] flex items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin" />
+        </div>
+      );
+    }
+
+    return (
+      <div className="bg-white rounded-lg p-4 md:p-6 shadow-lg">
+        <div className="space-y-8">
+          <div>
+            <h2 className="text-xl md:text-2xl font-semibold mb-4">Upcoming Events</h2>
+            {upcomingEvents.length > 0 && (
+              <ErrorBoundary>
+                <EventsMap events={upcomingEvents} />
+              </ErrorBoundary>
+            )}
+            <ErrorBoundary>
+              <EventList 
+                events={upcomingEvents}
+                onRSVP={handleRSVP}
+                onCancelRSVP={cancelRSVP}
+              />
+            </ErrorBoundary>
+          </div>
+
+          {pastEvents.length > 0 && (
+            <>
+              <Separator className="my-8" />
+              <div>
+                <h2 className="text-xl md:text-2xl font-semibold mb-4">Past Events</h2>
+                <ErrorBoundary>
+                  <EventList 
+                    events={pastEvents}
+                    onRSVP={handleRSVP}
+                    onCancelRSVP={cancelRSVP}
+                  />
+                </ErrorBoundary>
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+    );
+  };
 
   return (
     <div className="min-h-screen bg-[#F1F0FB]">
@@ -79,40 +121,16 @@ export default function Events() {
                 </div>
               </div>
 
-              <div className="bg-white rounded-lg p-4 md:p-6 shadow-lg">
-                <div className="space-y-8">
-                  <div>
-                    <h2 className="text-xl md:text-2xl font-semibold mb-4">Upcoming Events</h2>
-                    {upcomingEvents.length > 0 && (
-                      <EventsMap events={upcomingEvents} />
-                    )}
-                    <EventList 
-                      events={upcomingEvents}
-                      onRSVP={handleRSVP}
-                      onCancelRSVP={cancelRSVP}
-                    />
-                  </div>
-
-                  {pastEvents.length > 0 && (
-                    <>
-                      <Separator className="my-8" />
-                      <div>
-                        <h2 className="text-xl md:text-2xl font-semibold mb-4">Past Events</h2>
-                        <EventList 
-                          events={pastEvents}
-                          onRSVP={handleRSVP}
-                          onCancelRSVP={cancelRSVP}
-                        />
-                      </div>
-                    </>
-                  )}
-                </div>
-              </div>
+              <ErrorBoundary>
+                {renderContent()}
+              </ErrorBoundary>
             </TabsContent>
 
             <TabsContent value="discussion">
               <div className="bg-white rounded-lg shadow-lg">
-                <GroupChat />
+                <ErrorBoundary>
+                  <GroupChat />
+                </ErrorBoundary>
               </div>
             </TabsContent>
           </Tabs>
