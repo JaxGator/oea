@@ -40,7 +40,7 @@ export function CookieConsent() {
         <div className="text-sm">
           <p>
             We use cookies to enhance your experience. By continuing to visit this site you agree to our use of cookies.{" "}
-            <Link to="/legal/privacy" className="underline hover:text-primary">
+            <Link to="/privacy" className="underline hover:text-primary">
               Learn more
             </Link>
           </p>
