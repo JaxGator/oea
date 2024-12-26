@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import { Link } from "react-router-dom";
 
 export function CookieConsent() {
   const [showBanner, setShowBanner] = useState(false);
@@ -39,9 +40,9 @@ export function CookieConsent() {
         <div className="text-sm">
           <p>
             We use cookies to enhance your experience. By continuing to visit this site you agree to our use of cookies.{" "}
-            <a href="/privacy" className="underline hover:text-primary">
+            <Link to="/legal/privacy" className="underline hover:text-primary">
               Learn more
-            </a>
+            </Link>
           </p>
         </div>
         <div className="flex gap-4">
