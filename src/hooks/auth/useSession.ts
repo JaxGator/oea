@@ -97,7 +97,7 @@ export function useSession() {
 
         console.log("Auth state change:", event, session?.user?.email);
 
-        if (event === 'SIGNED_OUT' || event === 'USER_DELETED') {
+        if (event === 'SIGNED_OUT') {
           setState({
             session: null,
             user: null,
