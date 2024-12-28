@@ -8,14 +8,18 @@ export function AuthForm() {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Listen for auth errors
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       console.log('Auth event:', event, 'Session:', session);
       
-      if (event === 'USER_DELETED') {
+      if (event === 'SIGNED_OUT') {
         toast({
-          title: "Account deleted",
-          description: "Your account has been successfully deleted",
+          title: "Signed out",
+          description: "You have been signed out successfully",
+        });
+      } else if (event === 'SIGNED_IN') {
+        toast({
+          title: "Signed in",
+          description: "Welcome back!",
         });
       }
     });
@@ -44,18 +48,31 @@ export function AuthForm() {
           input: 'auth-input',
           label: 'text-sm font-medium text-gray-700',
           message: 'text-sm text-red-600',
+          anchor: 'text-gray-700 hover:text-gray-900',
         },
       }}
       providers={[]}
       redirectTo={`${window.location.origin}/auth/callback`}
       magicLink={false}
-      onError={(error) => {
-        console.error('Auth error:', error);
-        toast({
-          title: "Authentication Error",
-          description: error.message || "Please check your credentials and try again",
-          variant: "destructive",
-        });
+      localization={{
+        variables: {
+          sign_in: {
+            email_label: 'Email',
+            password_label: 'Password',
+            button_label: 'Sign in',
+            loading_button_label: 'Signing in...',
+            social_provider_text: 'Sign in with {{provider}}',
+            link_text: "Already have an account? Sign in",
+          },
+          sign_up: {
+            email_label: 'Email',
+            password_label: 'Password',
+            button_label: 'Sign up',
+            loading_button_label: 'Signing up...',
+            social_provider_text: 'Sign up with {{provider}}',
+            link_text: "Don't have an account? Sign up",
+          },
+        },
       }}
     />
   );

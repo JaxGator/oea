@@ -16,12 +16,17 @@ const Auth = () => {
           console.error("Error clearing session:", error);
           toast({
             title: "Error",
-            description: "Failed to clear previous session",
+            description: "Failed to clear previous session. Please try again.",
             variant: "destructive",
           });
         }
       } catch (error) {
         console.error("Error clearing session:", error);
+        toast({
+          title: "Error",
+          description: "An unexpected error occurred. Please try again.",
+          variant: "destructive",
+        });
       }
     };
     
