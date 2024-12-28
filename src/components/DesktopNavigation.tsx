@@ -59,6 +59,7 @@ export function DesktopNavigation() {
           <UserMenu user={user} profile={profile} />
         </div>
       </div>
+      <link rel="robots" type="text/plain" href="/api/rest/v1/robots-txt" />
     </nav>
   );
 }
