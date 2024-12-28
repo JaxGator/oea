@@ -1,15 +1,12 @@
 import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Users } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useQuery } from "@tanstack/react-query";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { MemberList } from "@/components/members/MemberList";
-import { MemberTable } from "@/components/members/MemberTable";
 import { useAuthState } from "@/hooks/useAuthState";
 import { useNavigate } from "react-router-dom";
 import { ErrorBoundary } from "@/components/error/ErrorBoundary";
+import { useMemberQueries } from "@/hooks/members/useMemberQueries";
+import { MemberPageContent } from "@/components/members/MemberPageContent";
 
 const ErrorFallback = () => {
   const { toast } = useToast();
@@ -34,8 +31,9 @@ export default function Members() {
   const { toast } = useToast();
   const isMobile = useIsMobile();
   const navigate = useNavigate();
+  const { profileQuery, membersQuery } = useMemberQueries(user?.id);
 
-  // Add error logging
+  // Global error handler
   useEffect(() => {
     const handleError = (event: ErrorEvent) => {
       console.error('Caught error:', {
@@ -57,66 +55,7 @@ export default function Members() {
     return () => window.removeEventListener('error', handleError);
   }, [toast]);
 
-  const { data: currentUserProfile, isLoading: isLoadingProfile, error: profileError } = useQuery({
-    queryKey: ['profile', user?.id],
-    queryFn: async () => {
-      if (!user?.id) return null;
-      
-      try {
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', user.id)
-          .maybeSingle();
-        
-        if (error) {
-          console.error('Error fetching profile:', {
-            error,
-            userId: user.id,
-            timestamp: new Date().toISOString()
-          });
-          throw error;
-        }
-        
-        return data;
-      } catch (error) {
-        console.error('Query error:', error);
-        throw error;
-      }
-    },
-    enabled: !!user?.id,
-    retry: 3,
-    retryDelay: (attemptIndex) => Math.min(1000 * Math.pow(2, attemptIndex), 10000)
-  });
-
-  const { data: members = [], isLoading: isLoadingMembers, error } = useQuery({
-    queryKey: ['members'],
-    queryFn: async () => {
-      try {
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('*')
-          .order('username');
-        
-        if (error) {
-          console.error('Error fetching members:', {
-            error,
-            timestamp: new Date().toISOString()
-          });
-          throw error;
-        }
-
-        return data || [];
-      } catch (error) {
-        console.error('Query error:', error);
-        throw error;
-      }
-    },
-    retry: 3,
-    retryDelay: (attemptIndex) => Math.min(1000 * Math.pow(2, attemptIndex), 10000),
-    staleTime: 1000 * 60 * 5,
-  });
-
+  // Real-time message notifications
   useEffect(() => {
     if (!user?.id) return;
 
@@ -162,13 +101,7 @@ export default function Members() {
     };
   }, [user?.id, toast, navigate]);
 
-  if (error || profileError) {
-    console.error('Render error:', error || profileError);
-    toast({
-      title: "Error",
-      description: "Failed to load members. Please try again.",
-      variant: "destructive",
-    });
+  if (membersQuery.error || profileQuery.error) {
     return (
       <div className="min-h-screen bg-[#222222] flex items-center justify-center">
         <div className="text-white">Error loading members. Please try again.</div>
@@ -176,7 +109,7 @@ export default function Members() {
     );
   }
 
-  const isLoading = isLoadingMembers || isLoadingProfile;
+  const isLoading = membersQuery.isLoading || profileQuery.isLoading;
 
   if (isLoading) {
     return (
@@ -188,39 +121,11 @@ export default function Members() {
 
   return (
     <ErrorBoundary fallback={<ErrorFallback />}>
-      <div className="min-h-screen bg-[#222222] py-12 px-4">
-        <div className="max-w-6xl mx-auto">
-          <div className="bg-white rounded-lg p-6 shadow-lg">
-            <div className="flex items-center gap-2 mb-6">
-              <Users className="h-6 w-6" aria-hidden="true" />
-              <h1 className="text-2xl font-bold" id="members-heading">Member Directory</h1>
-            </div>
-            
-            {members.length === 0 ? (
-              <div className="text-center py-8 text-gray-500" role="status">
-                No members found.
-              </div>
-            ) : (
-              <div role="region" aria-labelledby="members-heading">
-                {isMobile ? (
-                  <MemberList 
-                    members={members}
-                    currentUserIsAdmin={currentUserProfile?.is_admin || false}
-                    isMobile={isMobile}
-                  />
-                ) : (
-                  <ScrollArea className="rounded-md border">
-                    <MemberTable 
-                      members={members}
-                      currentUserIsAdmin={currentUserProfile?.is_admin || false}
-                    />
-                  </ScrollArea>
-                )}
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
+      <MemberPageContent
+        members={membersQuery.data || []}
+        currentUserIsAdmin={profileQuery.data?.is_admin || false}
+        isMobile={isMobile}
+      />
     </ErrorBoundary>
   );
 }
