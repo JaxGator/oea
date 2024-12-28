@@ -23,16 +23,18 @@ export function useSession() {
     let mounted = true;
     let retryCount = 0;
     const maxRetries = 3;
+    const retryDelay = 1000; // 1 second
 
     async function getActiveSession() {
       try {
-        console.log('Attempting to get session...');
+        console.log('Attempting to get session...', { retryCount });
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         
         if (sessionError) {
           console.error("Session error:", {
             error: sessionError,
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
+            retryCount
           });
           throw sessionError;
         }
@@ -67,8 +69,8 @@ export function useSession() {
         
         if (retryCount < maxRetries) {
           retryCount++;
-          console.log(`Retrying session fetch (${retryCount}/${maxRetries})...`);
-          setTimeout(getActiveSession, 1000 * retryCount);
+          console.log(`Retrying session fetch (${retryCount}/${maxRetries}) in ${retryDelay}ms...`);
+          setTimeout(getActiveSession, retryDelay * retryCount);
           return;
         }
 
@@ -79,15 +81,11 @@ export function useSession() {
           error: error as Error
         });
 
-        // Only show error toast if it's not a normal session not found error
-        if ((error as any)?.message !== "session_not_found") {
-          toast({
-            title: "Session Error",
-            description: "Please sign in again",
-            variant: "destructive",
-          });
-          await supabase.auth.signOut();
-        }
+        toast({
+          title: "Connection Error",
+          description: "Please check your internet connection and try again",
+          variant: "destructive",
+        });
       }
     }
 
@@ -99,7 +97,7 @@ export function useSession() {
 
         console.log("Auth state change:", event, session?.user?.email);
 
-        if (event === 'SIGNED_OUT') {
+        if (event === 'SIGNED_OUT' || event === 'USER_DELETED') {
           setState({
             session: null,
             user: null,
