@@ -25,22 +25,40 @@ export function AppProviders({ children }: AppProvidersProps) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    let mounted = true;
+
+    // Initial session check
+    const checkSession = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (error) {
+          console.error('Session check error:', error);
+          // Clear any stale data if there's a session error
+          queryClient.clear();
+        }
+      } catch (err) {
+        console.error('Session check failed:', err);
+      } finally {
+        if (mounted) {
+          setIsLoading(false);
+        }
+      }
+    };
+
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event) => {
+      console.log('Auth state changed:', event);
+      
       if (event === 'SIGNED_OUT') {
         // Clear any auth-related state
         queryClient.clear();
       }
-      
-      setIsLoading(false);
     });
 
-    // Initial session check
-    supabase.auth.getSession().then(() => {
-      setIsLoading(false);
-    });
+    checkSession();
 
     return () => {
+      mounted = false;
       subscription.unsubscribe();
     };
   }, []);
