@@ -1,6 +1,7 @@
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Check } from "lucide-react";
 
@@ -51,6 +52,29 @@ export function IntegrationsSettings({ configs, setConfigs, updateConfig }: Inte
               Save
             </Button>
           </div>
+        </div>
+
+        <div className="space-y-2">
+          <label className="text-sm font-medium">Google AdSense Snippet</label>
+          <div className="flex gap-2">
+            <Textarea
+              value={configs.google_adsense_snippet}
+              onChange={(e) => setConfigs({ ...configs, google_adsense_snippet: e.target.value })}
+              placeholder="Paste your Google AdSense verification snippet here"
+              className="font-mono text-sm"
+              rows={4}
+            />
+            <Button
+              onClick={() => updateConfig('google_adsense_snippet', configs.google_adsense_snippet)}
+              className="bg-[#0d97d1] hover:bg-[#0d97d1]/90 h-fit"
+            >
+              <Check className="h-4 w-4 mr-1" />
+              Save
+            </Button>
+          </div>
+          <p className="text-sm text-gray-500">
+            Paste the complete AdSense code snippet provided by Google for site verification.
+          </p>
         </div>
       </CardContent>
     </Card>
