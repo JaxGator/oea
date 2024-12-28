@@ -2,21 +2,31 @@ import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { AuthForm } from "@/components/auth/AuthForm";
 import { useAuthRedirect } from "@/hooks/auth/useAuthRedirect";
+import { useToast } from "@/hooks/use-toast";
 
 const Auth = () => {
   useAuthRedirect();
+  const { toast } = useToast();
 
   useEffect(() => {
     const clearSession = async () => {
       try {
-        await supabase.auth.signOut();
+        const { error } = await supabase.auth.signOut();
+        if (error) {
+          console.error("Error clearing session:", error);
+          toast({
+            title: "Error",
+            description: "Failed to clear previous session",
+            variant: "destructive",
+          });
+        }
       } catch (error) {
         console.error("Error clearing session:", error);
       }
     };
     
     clearSession();
-  }, []);
+  }, [toast]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
@@ -30,6 +40,9 @@ const Auth = () => {
           <h2 className="text-center text-3xl font-extrabold text-gray-900">
             Welcome
           </h2>
+          <p className="mt-2 text-center text-sm text-gray-600">
+            Please sign in to continue
+          </p>
         </div>
         <div className="mt-8">
           <AuthForm />
