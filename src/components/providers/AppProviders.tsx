@@ -3,9 +3,10 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { SessionContextProvider, Session } from "@supabase/auth-helpers-react";
+import { SessionContextProvider } from "@supabase/auth-helpers-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 interface AppProvidersProps {
   children: ReactNode;
@@ -22,31 +23,38 @@ const queryClient = new QueryClient({
 });
 
 export function AppProviders({ children }: AppProvidersProps) {
-  const [initialSession, setInitialSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setInitialSession(session);
+    // Set up auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'SIGNED_OUT' || event === 'USER_DELETED') {
+        // Clear any auth-related state
+        queryClient.clear();
+      }
+      
       setIsLoading(false);
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setInitialSession(session);
+    // Initial session check
+    supabase.auth.getSession().then(() => {
+      setIsLoading(false);
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
   if (isLoading) {
-    return <div>Loading...</div>; // Or your loading component
+    return <div>Loading...</div>;
   }
 
   return (
     <QueryClientProvider client={queryClient}>
       <SessionContextProvider 
         supabaseClient={supabase}
-        initialSession={initialSession}
+        initialSession={null}
       >
         <TooltipProvider>
           {children}
