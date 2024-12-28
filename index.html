@@ -14,6 +14,38 @@
     <link rel="icon" type="image/x-icon" href="/favicon.ico" />
     <meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline' 'unsafe-eval'; script-src * 'unsafe-inline' 'unsafe-eval'; connect-src * 'unsafe-inline'; img-src * data: blob: 'unsafe-inline'; frame-src *; style-src * 'unsafe-inline';">
     <script>
+      // Load verified AdSense code from site configuration
+      window.addEventListener('load', async function() {
+        try {
+          const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFlZ3B1cWl0amZvY3l5cml2bGh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzM5MzU4NTMsImV4cCI6MjA0OTUxMTg1M30.o3yD902DFG0PlLD0V8pEvx-IbnVawP3HDhNEp6cMoW4';
+          
+          // Fetch AdSense configuration
+          const adsenseResponse = await fetch('https://qegpuqitjfocyyrivlhv.functions.supabase.co/get-adsense-config', {
+            method: 'GET',
+            headers: {
+              'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+              'Content-Type': 'application/json'
+            }
+          });
+
+          if (!adsenseResponse.ok) {
+            throw new Error(`HTTP error! status: ${adsenseResponse.status}`);
+          }
+
+          const { data } = await adsenseResponse.json();
+          
+          if (data?.snippet && data?.verification_status) {
+            // Create and inject the verified AdSense script
+            const adsenseScript = document.createElement('script');
+            adsenseScript.async = true;
+            adsenseScript.innerHTML = data.snippet;
+            document.head.appendChild(adsenseScript);
+          }
+        } catch (error) {
+          console.error('Error loading AdSense:', error);
+        }
+      });
+
       // Load Google Analytics based on site configuration
       window.addEventListener('load', async function() {
         try {

@@ -360,6 +360,7 @@ export type Database = {
           updated_at: string | null
           updated_by: string | null
           value: string | null
+          verification_status: boolean | null
         }
         Insert: {
           created_at?: string | null
@@ -368,6 +369,7 @@ export type Database = {
           updated_at?: string | null
           updated_by?: string | null
           value?: string | null
+          verification_status?: boolean | null
         }
         Update: {
           created_at?: string | null
@@ -376,6 +378,7 @@ export type Database = {
           updated_at?: string | null
           updated_by?: string | null
           value?: string | null
+          verification_status?: boolean | null
         }
         Relationships: [
           {
