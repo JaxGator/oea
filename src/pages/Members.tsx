@@ -11,6 +11,24 @@ import { useAuthState } from "@/hooks/useAuthState";
 import { useNavigate } from "react-router-dom";
 import { ErrorBoundary } from "@/components/error/ErrorBoundary";
 
+const ErrorFallback = () => {
+  const { toast } = useToast();
+  
+  useEffect(() => {
+    toast({
+      title: "Error",
+      description: "There was a problem loading the members. Please try again.",
+      variant: "destructive",
+    });
+  }, [toast]);
+
+  return (
+    <div className="min-h-screen bg-[#222222] flex items-center justify-center">
+      <div className="text-white">Error loading members. Please try refreshing the page.</div>
+    </div>
+  );
+};
+
 export default function Members() {
   const { user } = useAuthState();
   const { toast } = useToast();
@@ -20,7 +38,14 @@ export default function Members() {
   // Add error logging
   useEffect(() => {
     const handleError = (event: ErrorEvent) => {
-      console.error('Caught error:', event.error);
+      console.error('Caught error:', {
+        error: event.error,
+        message: event.message,
+        filename: event.filename,
+        lineno: event.lineno,
+        colno: event.colno,
+        timestamp: new Date().toISOString()
+      });
       toast({
         title: "Error",
         description: "An error occurred. Please try refreshing the page.",
@@ -32,7 +57,7 @@ export default function Members() {
     return () => window.removeEventListener('error', handleError);
   }, [toast]);
 
-  const { data: currentUserProfile, isLoading: isLoadingProfile } = useQuery({
+  const { data: currentUserProfile, isLoading: isLoadingProfile, error: profileError } = useQuery({
     queryKey: ['profile', user?.id],
     queryFn: async () => {
       if (!user?.id) return null;
@@ -45,7 +70,11 @@ export default function Members() {
           .maybeSingle();
         
         if (error) {
-          console.error('Error fetching profile:', error);
+          console.error('Error fetching profile:', {
+            error,
+            userId: user.id,
+            timestamp: new Date().toISOString()
+          });
           throw error;
         }
         
@@ -70,7 +99,10 @@ export default function Members() {
           .order('username');
         
         if (error) {
-          console.error('Error fetching members:', error);
+          console.error('Error fetching members:', {
+            error,
+            timestamp: new Date().toISOString()
+          });
           throw error;
         }
 
@@ -130,8 +162,8 @@ export default function Members() {
     };
   }, [user?.id, toast, navigate]);
 
-  if (error) {
-    console.error('Render error:', error);
+  if (error || profileError) {
+    console.error('Render error:', error || profileError);
     toast({
       title: "Error",
       description: "Failed to load members. Please try again.",
@@ -155,7 +187,7 @@ export default function Members() {
   }
 
   return (
-    <ErrorBoundary>
+    <ErrorBoundary fallback={<ErrorFallback />}>
       <div className="min-h-screen bg-[#222222] py-12 px-4">
         <div className="max-w-6xl mx-auto">
           <div className="bg-white rounded-lg p-6 shadow-lg">
