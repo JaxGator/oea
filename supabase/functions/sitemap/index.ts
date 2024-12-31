@@ -63,26 +63,22 @@ serve(async (req) => {
     }));
 
     const allRoutes = [...staticRoutes, ...eventRoutes];
-
-    // Get the base URL from the request or environment
     const baseUrl = 'https://www.outdoorenergyadventures.com';
-    console.log('Base URL:', baseUrl);
-
-    // Generate the sitemap XML with proper XML namespace and formatting
+    
+    // Generate XML with proper XML declaration and namespace
     const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${allRoutes.map(route => `
-  <url>
+${allRoutes.map(route => `  <url>
     <loc>${baseUrl}${route.path}</loc>
-    <lastmod>${new Date().toISOString().split('T')[0]}</lastmod>
+    <lastmod>${new Date().toISOString()}</lastmod>
     <changefreq>${route.changefreq}</changefreq>
     <priority>${route.priority}</priority>
-  </url>`).join('')}
+  </url>`).join('\n')}
 </urlset>`;
 
     console.log('Generated sitemap XML');
 
-    return new Response(xml, {
+    return new Response(xml.trim(), {
       headers: {
         ...corsHeaders,
         'Content-Type': 'application/xml',
