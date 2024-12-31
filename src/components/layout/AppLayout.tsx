@@ -8,7 +8,7 @@ import { CookieConsent } from "@/components/CookieConsent";
 import { supabase } from "@/integrations/supabase/client";
 import { Outlet } from "react-router-dom";
 
-export default function AppLayout() {
+export const AppLayout = () => {
   const { profile } = useAuthState();
   
   useEffect(() => {
