@@ -1,3 +1,5 @@
+import { Card } from "@/components/ui/card";
+
 export function ResourcesHero() {
   return (
     <div className="relative w-full min-h-[30vh] sm:min-h-[35vh] md:min-h-[40vh]">
@@ -7,9 +9,9 @@ export function ResourcesHero() {
         className="absolute inset-0 w-full h-full object-cover object-bottom"
       />
       <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center space-y-6">
-        <div className="text-white text-4xl md:text-5xl font-bold">
+        <h1 className="text-4xl md:text-5xl font-bold text-white text-center">
           Resources
-        </div>
+        </h1>
         <img 
           src="/lovable-uploads/609edf01-3169-439a-80f5-f6f15de7a5a6.png"
           alt="OEA Logo"

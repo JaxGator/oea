@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { EditableContent } from '../EditableContent';
 
 export const Hero = () => {
   const [backgroundImage, setBackgroundImage] = useState('https://www.adamsvanlines.com/wp-content/uploads/2021/07/12-Things-You-Should-Know-Before-Moving-To-Jacksonville-FL-Adams-Van-Lines.b197b0.webp');
