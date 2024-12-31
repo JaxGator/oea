@@ -1,8 +1,7 @@
 import { useRouteError, isRouteErrorResponse, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Home, RefreshCcw } from "lucide-react";
-import { ReactNode, useEffect } from "react";
-import { toast } from "@/components/ui/use-toast";
+import { ReactNode } from "react";
 
 interface ErrorBoundaryProps {
   children: ReactNode;
@@ -12,20 +11,6 @@ interface ErrorBoundaryProps {
 export const ErrorBoundary = ({ children, fallback }: ErrorBoundaryProps) => {
   const error = useRouteError();
   const navigate = useNavigate();
-
-  useEffect(() => {
-    const handleError = (event: ErrorEvent) => {
-      console.error("Script error caught:", event);
-      toast({
-        title: "An error occurred",
-        description: "We're working to fix this issue. Please try refreshing the page.",
-        variant: "destructive",
-      });
-    };
-
-    window.addEventListener('error', handleError);
-    return () => window.removeEventListener('error', handleError);
-  }, []);
 
   if (isRouteErrorResponse(error)) {
     return (
@@ -64,7 +49,6 @@ export const ErrorBoundary = ({ children, fallback }: ErrorBoundaryProps) => {
   try {
     return <>{children}</>;
   } catch (err) {
-    console.error("Error in ErrorBoundary:", err);
     return <>{fallback}</>;
   }
 };

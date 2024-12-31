@@ -1,4 +1,3 @@
-import { memo } from "react";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Event } from "@/types/event";
 import { EventDetails } from "./event/EventDetails";
@@ -16,7 +15,7 @@ interface EventCardProps {
   onUpdate?: () => void;
 }
 
-function EventCardComponent({ event, onRSVP, onCancelRSVP, userRSVPStatus, onUpdate }: EventCardProps) {
+export function EventCard({ event, onRSVP, onCancelRSVP, userRSVPStatus, onUpdate }: EventCardProps) {
   const { 
     showEditDialog,
     setShowEditDialog,
@@ -96,6 +95,3 @@ function EventCardComponent({ event, onRSVP, onCancelRSVP, userRSVPStatus, onUpd
     </Card>
   );
 }
-
-// Memoize the component to prevent unnecessary re-renders
-export const EventCard = memo(EventCardComponent);

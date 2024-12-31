@@ -1,36 +1,28 @@
 import { ResourcesHero } from "@/components/resources/ResourcesHero";
 import { ResourceCard } from "@/components/resources/ResourceCard";
 import { resourcesData } from "@/data/resourcesData";
-import { ErrorBoundary } from "@/components/error/ErrorBoundary";
+import { EditableContent } from "@/components/EditableContent";
 
-const ResourcesContent = () => {
+const Resources = () => {
   return (
     <div className="min-h-screen bg-background">
       <ResourcesHero />
       
       <div className="container mx-auto py-12 px-4">
         {resourcesData.map((resource, index) => (
-          <ResourceCard
+          <EditableContent
             key={index}
-            title={resource.section}
-            links={resource.items}
+            content={resource.section}
+            pageId="resources"
+            sectionId={`section-${index}`}
+            onUpdate={(newContent) => {
+              // This will be implemented in the next phase with state management
+              console.log('Content updated:', newContent);
+            }}
           />
         ))}
       </div>
     </div>
-  );
-};
-
-const Resources = () => {
-  return (
-    <ErrorBoundary fallback={
-      <div className="text-center p-4">
-        <h2 className="text-xl font-semibold">Unable to load resources</h2>
-        <p className="text-muted-foreground">Please try refreshing the page</p>
-      </div>
-    }>
-      <ResourcesContent />
-    </ErrorBoundary>
   );
 };
 

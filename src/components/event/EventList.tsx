@@ -1,7 +1,6 @@
 import { Event } from "@/types/event";
 import { EventCard } from "@/components/EventCard";
 import { useRSVPManagement } from "@/hooks/events/useRSVPManagement";
-import { Skeleton } from "@/components/ui/skeleton";
 
 interface EventListProps {
   events: Event[];
@@ -23,27 +22,13 @@ export function EventList({ events, onRSVP, onCancelRSVP }: EventListProps) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {events.map((event) => (
-        <div key={event.id} className="opacity-0 animate-fade-in">
-          <EventCard
-            event={event}
-            onRSVP={onRSVP}
-            onCancelRSVP={() => onCancelRSVP(event.id)}
-            userRSVPStatus={userRSVPs[event.id]}
-          />
-        </div>
-      ))}
-    </div>
-  );
-}
-
-// Add a loading skeleton component for better perceived performance
-export function EventListSkeleton() {
-  return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {[...Array(6)].map((_, i) => (
-        <div key={i} className="w-full">
-          <Skeleton className="h-[400px] w-full rounded-lg" />
-        </div>
+        <EventCard
+          key={event.id}
+          event={event}
+          onRSVP={onRSVP}
+          onCancelRSVP={() => onCancelRSVP(event.id)}
+          userRSVPStatus={userRSVPs[event.id]}
+        />
       ))}
     </div>
   );
