@@ -39,9 +39,9 @@ export function useEvents(selectedDate?: Date) {
         throw error;
       }
     },
+    gcTime: 5 * 60 * 1000, // Data garbage collection after 5 minutes
     staleTime: 5 * 60 * 1000, // Data stays fresh for 5 minutes
-    cacheTime: 30 * 60 * 1000, // Cache persists for 30 minutes
-    refetchOnWindowFocus: false, // Prevent refetch on window focus
-    refetchOnMount: false, // Prevent refetch on component mount
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
   });
 }
