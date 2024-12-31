@@ -52,13 +52,13 @@ export default function Events() {
 
     return (
       <div className="max-w-7xl mx-auto px-4">
-        {/* Events Title */}
+        {/* 1. Events Title */}
         <div className="text-center mb-8">
           <h1 className="text-3xl md:text-4xl font-bold text-black">Events</h1>
         </div>
 
         <div className="bg-white rounded-lg p-4 md:p-6 shadow-lg">
-          {/* Interactive Map */}
+          {/* 2. Interactive Map */}
           {upcomingEvents.length > 0 && (
             <div className="mb-8">
               <ErrorBoundary fallback={<div>Error loading map. Please try again later.</div>}>
@@ -67,7 +67,7 @@ export default function Events() {
             </div>
           )}
 
-          {/* Filter Controls and Create Event Button */}
+          {/* 3. Filter Controls and Create Event Button */}
           <div className="mb-8">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center space-y-4 md:space-y-0">
               <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 w-full md:w-auto">
@@ -97,7 +97,7 @@ export default function Events() {
             </ErrorBoundary>
           </div>
 
-          {/* Past Events Section */}
+          {/* 4. Past Events Section */}
           {pastEvents.length > 0 && (
             <>
               <Separator className="my-8" />
