@@ -16,8 +16,7 @@ export function EditableContent({ content, pageId, sectionId, onUpdate }: Editab
     setEditedContent,
     startEditing,
     handleSave,
-    cancelEditing,
-    isAdmin
+    cancelEditing
   } = useContentEditor({
     initialContent: content,
     pageId,
@@ -31,7 +30,7 @@ export function EditableContent({ content, pageId, sectionId, onUpdate }: Editab
         <ViewContent 
           content={content} 
           onEdit={startEditing}
-          showEditButton={isAdmin}
+          showEditButton={false}
         />
       ) : (
         <EditContent
