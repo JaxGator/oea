@@ -1,11 +1,8 @@
 import { Hero } from '@/components/home/Hero';
 import { FeaturedEvents } from "@/components/home/FeaturedEvents";
 import { PhotoGallery } from "@/components/home/PhotoGallery";
-import { useEvents } from "@/hooks/useEvents";
 
 export default function Index() {
-  const { data: events = [], isLoading } = useEvents();
-  
   return (
     <div className="min-h-screen bg-background">
       <Hero />

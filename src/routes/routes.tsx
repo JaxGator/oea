@@ -12,6 +12,8 @@ import Admin from "@/pages/Admin";
 import Test from "@/pages/Test";
 import Store from "@/pages/Store";
 import Maintenance from "@/pages/Maintenance";
+import { PrivacyPolicy } from "@/components/legal/PrivacyPolicy";
+import { TermsAndConditions } from "@/components/legal/TermsAndConditions";
 
 export const router = createBrowserRouter([
   {
@@ -65,6 +67,14 @@ export const router = createBrowserRouter([
       {
         path: "maintenance",
         element: <Maintenance />,
+      },
+      {
+        path: "privacy-policy",
+        element: <PrivacyPolicy />,
+      },
+      {
+        path: "terms-and-conditions",
+        element: <TermsAndConditions />,
       },
     ],
   },
