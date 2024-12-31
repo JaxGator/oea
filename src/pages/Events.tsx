@@ -52,13 +52,11 @@ export default function Events() {
 
     return (
       <div className="max-w-7xl mx-auto px-4">
-        {/* Title Section */}
         <div className="text-center mb-12">
           <h1 className="text-4xl md:text-5xl font-bold text-black">Events</h1>
         </div>
 
         <div className="bg-white rounded-lg p-6 md:p-8 shadow-lg space-y-12">
-          {/* Map Section */}
           {upcomingEvents.length > 0 && (
             <div>
               <ErrorBoundary fallback={<div>Error loading map. Please try again later.</div>}>
@@ -67,7 +65,6 @@ export default function Events() {
             </div>
           )}
 
-          {/* Filter Controls Section */}
           <div>
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
               <DateFilter
@@ -83,7 +80,6 @@ export default function Events() {
             </div>
           </div>
 
-          {/* Upcoming Events Section */}
           <div>
             <h2 className="text-2xl md:text-3xl font-semibold mb-6">Upcoming Events</h2>
             <ErrorBoundary fallback={<div>Error loading events. Please try again later.</div>}>
@@ -95,7 +91,6 @@ export default function Events() {
             </ErrorBoundary>
           </div>
 
-          {/* Past Events Section */}
           {pastEvents.length > 0 && (
             <>
               <Separator className="my-8" />
