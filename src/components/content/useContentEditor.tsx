@@ -1,19 +1,18 @@
-import { useContentState } from "@/hooks/content/useContentState";
-import { useContentSave } from "@/hooks/content/useContentSave";
+import { useContentState } from "./useContentState";
+import { useContentSave } from "./useContentSave";
+import { useAuthState } from "@/hooks/useAuthState";
 
 interface UseContentEditorProps {
+  initialContent: string;
   pageId: string;
   sectionId: string;
-  initialContent: string;
   onUpdate: (content: string) => void;
 }
 
-export function useContentEditor({
-  pageId,
-  sectionId,
-  initialContent,
-  onUpdate,
-}: UseContentEditorProps) {
+export function useContentEditor({ initialContent, pageId, sectionId, onUpdate }: UseContentEditorProps) {
+  const { profile } = useAuthState();
+  const isAdmin = profile?.is_admin ?? false;
+
   const {
     isEditing,
     setIsEditing,
@@ -41,5 +40,6 @@ export function useContentEditor({
     startEditing,
     handleSave,
     cancelEditing,
+    isAdmin,
   };
 }
