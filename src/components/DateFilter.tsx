@@ -1,5 +1,4 @@
 import { Button } from "@/components/ui/button";
-import { format } from "date-fns";
 
 interface DateFilterProps {
   selectedDate: Date | null;
@@ -13,12 +12,12 @@ export function DateFilter({ selectedDate, onDateSelect }: DateFilterProps) {
   ];
 
   return (
-    <div className="flex gap-2 overflow-x-auto pb-2 mb-4">
+    <div className="flex gap-2">
       {dates.map((item) => (
         <Button
           key={item.label}
           variant={selectedDate === item.date ? "default" : "outline"}
-          className={`whitespace-nowrap ${
+          className={`${
             selectedDate === item.date
               ? "bg-[#0d97d1] hover:bg-[#0d97d1]/90"
               : "hover:bg-[#0d97d1]/10"

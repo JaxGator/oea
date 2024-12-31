@@ -12,6 +12,7 @@ import { Loader2 } from "lucide-react";
 import { GroupChat } from "@/components/chat/GroupChat";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ErrorBoundary } from "@/components/error/ErrorBoundary";
+import { Button } from "@/components/ui/button";
 
 export default function Events() {
   const { isAuthenticated } = useAuthState();
@@ -31,7 +32,6 @@ export default function Events() {
     );
   }
 
-  // Separate past and upcoming events
   const now = new Date();
   const upcomingEvents = events
     .filter(event => new Date(event.date) >= now)
@@ -41,89 +41,83 @@ export default function Events() {
     .filter(event => new Date(event.date) < now)
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
-  const renderContent = () => {
-    if (isEventsLoading) {
-      return (
-        <div className="min-h-screen bg-[#F1F0FB] flex items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin" />
-        </div>
-      );
-    }
-
+  if (isEventsLoading) {
     return (
-      <div className="max-w-7xl mx-auto px-4">
-        <div className="text-center mb-12">
-          <h1 className="text-4xl md:text-5xl font-bold text-black">Events</h1>
-        </div>
-
-        <div className="bg-white rounded-lg p-6 md:p-8 shadow-lg space-y-12">
-          {upcomingEvents.length > 0 && (
-            <div>
-              <ErrorBoundary fallback={<div>Error loading map. Please try again later.</div>}>
-                <EventsMap events={upcomingEvents} />
-              </ErrorBoundary>
-            </div>
-          )}
-
-          <div>
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-              <DateFilter
-                selectedDate={selectedDate}
-                onDateSelect={setSelectedDate}
-              />
-              {isAuthenticated && (
-                <CreateEventDialog
-                  open={isCreateEventOpen}
-                  onOpenChange={setIsCreateEventOpen}
-                />
-              )}
-            </div>
-          </div>
-
-          <div>
-            <h2 className="text-2xl md:text-3xl font-semibold mb-6">Upcoming Events</h2>
-            <ErrorBoundary fallback={<div>Error loading events. Please try again later.</div>}>
-              <EventList 
-                events={upcomingEvents}
-                onRSVP={handleRSVP}
-                onCancelRSVP={cancelRSVP}
-              />
-            </ErrorBoundary>
-          </div>
-
-          {pastEvents.length > 0 && (
-            <>
-              <Separator className="my-8" />
-              <div>
-                <h2 className="text-2xl md:text-3xl font-semibold mb-6">Past Events</h2>
-                <ErrorBoundary fallback={<div>Error loading past events. Please try again later.</div>}>
-                  <EventList 
-                    events={pastEvents}
-                    onRSVP={handleRSVP}
-                    onCancelRSVP={cancelRSVP}
-                  />
-                </ErrorBoundary>
-              </div>
-            </>
-          )}
-        </div>
+      <div className="min-h-screen bg-[#F1F0FB] flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin" />
       </div>
     );
-  };
+  }
 
   return (
     <div className="min-h-screen bg-[#F1F0FB]">
       <div className="px-4 pb-20 md:pb-12">
         <Tabs defaultValue="events" className="w-full">
+          <div className="text-center mb-8">
+            <h1 className="text-3xl font-bold">Events</h1>
+          </div>
+          
           <TabsList className="grid w-full grid-cols-2 mb-8">
             <TabsTrigger value="events">Events</TabsTrigger>
             <TabsTrigger value="discussion">Event Discussion</TabsTrigger>
           </TabsList>
 
           <TabsContent value="events">
-            <ErrorBoundary fallback={<div>Error loading content. Please try again later.</div>}>
-              {renderContent()}
-            </ErrorBoundary>
+            <div className="flex items-center gap-4 mb-8">
+              <DateFilter
+                selectedDate={selectedDate}
+                onDateSelect={setSelectedDate}
+              />
+              {isAuthenticated && (
+                <Button 
+                  onClick={() => setIsCreateEventOpen(true)}
+                  className="bg-[#0d97d1] hover:bg-[#0d97d1]/90"
+                >
+                  Create Event
+                </Button>
+              )}
+            </div>
+
+            <div className="bg-white rounded-lg p-6 space-y-8">
+              <div>
+                <h2 className="text-2xl font-semibold mb-6">Upcoming Events</h2>
+                {upcomingEvents.length > 0 && (
+                  <div className="mb-8">
+                    <ErrorBoundary fallback={<div>Error loading map. Please try again later.</div>}>
+                      <EventsMap events={upcomingEvents} />
+                    </ErrorBoundary>
+                  </div>
+                )}
+                <ErrorBoundary fallback={<div>Error loading events. Please try again later.</div>}>
+                  <EventList 
+                    events={upcomingEvents}
+                    onRSVP={handleRSVP}
+                    onCancelRSVP={cancelRSVP}
+                  />
+                </ErrorBoundary>
+              </div>
+
+              {pastEvents.length > 0 && (
+                <>
+                  <Separator className="my-8" />
+                  <div>
+                    <h2 className="text-2xl font-semibold mb-6">Past Events</h2>
+                    <ErrorBoundary fallback={<div>Error loading past events. Please try again later.</div>}>
+                      <EventList 
+                        events={pastEvents}
+                        onRSVP={handleRSVP}
+                        onCancelRSVP={cancelRSVP}
+                      />
+                    </ErrorBoundary>
+                  </div>
+                </>
+              )}
+            </div>
+
+            <CreateEventDialog
+              open={isCreateEventOpen}
+              onOpenChange={setIsCreateEventOpen}
+            />
           </TabsContent>
 
           <TabsContent value="discussion">
