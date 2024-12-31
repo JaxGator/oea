@@ -52,42 +52,40 @@ export default function Events() {
 
     return (
       <div className="max-w-7xl mx-auto px-4">
-        {/* 1. Events Title */}
-        <div className="text-center mb-8">
-          <h1 className="text-3xl md:text-4xl font-bold text-black">Events</h1>
+        {/* Title Section */}
+        <div className="text-center mb-12">
+          <h1 className="text-4xl md:text-5xl font-bold text-black">Events</h1>
         </div>
 
-        <div className="bg-white rounded-lg p-4 md:p-6 shadow-lg">
-          {/* 2. Interactive Map */}
+        <div className="bg-white rounded-lg p-6 md:p-8 shadow-lg space-y-12">
+          {/* Map Section */}
           {upcomingEvents.length > 0 && (
-            <div className="mb-8">
+            <div>
               <ErrorBoundary fallback={<div>Error loading map. Please try again later.</div>}>
                 <EventsMap events={upcomingEvents} />
               </ErrorBoundary>
             </div>
           )}
 
-          {/* 3. Filter Controls and Create Event Button */}
-          <div className="mb-8">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center space-y-4 md:space-y-0">
-              <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 w-full md:w-auto">
-                <DateFilter
-                  selectedDate={selectedDate}
-                  onDateSelect={setSelectedDate}
+          {/* Filter Controls Section */}
+          <div>
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+              <DateFilter
+                selectedDate={selectedDate}
+                onDateSelect={setSelectedDate}
+              />
+              {isAuthenticated && (
+                <CreateEventDialog
+                  open={isCreateEventOpen}
+                  onOpenChange={setIsCreateEventOpen}
                 />
-                {isAuthenticated && (
-                  <CreateEventDialog
-                    open={isCreateEventOpen}
-                    onOpenChange={setIsCreateEventOpen}
-                  />
-                )}
-              </div>
+              )}
             </div>
           </div>
 
           {/* Upcoming Events Section */}
-          <div className="mb-8">
-            <h2 className="text-xl md:text-2xl font-semibold mb-4">Upcoming Events</h2>
+          <div>
+            <h2 className="text-2xl md:text-3xl font-semibold mb-6">Upcoming Events</h2>
             <ErrorBoundary fallback={<div>Error loading events. Please try again later.</div>}>
               <EventList 
                 events={upcomingEvents}
@@ -97,12 +95,12 @@ export default function Events() {
             </ErrorBoundary>
           </div>
 
-          {/* 4. Past Events Section */}
+          {/* Past Events Section */}
           {pastEvents.length > 0 && (
             <>
               <Separator className="my-8" />
               <div>
-                <h2 className="text-xl md:text-2xl font-semibold mb-4">Past Events</h2>
+                <h2 className="text-2xl md:text-3xl font-semibold mb-6">Past Events</h2>
                 <ErrorBoundary fallback={<div>Error loading past events. Please try again later.</div>}>
                   <EventList 
                     events={pastEvents}
