@@ -53,13 +53,31 @@ export default function Events() {
     return (
       <div className="bg-white rounded-lg p-4 md:p-6 shadow-lg">
         <div className="space-y-8">
+          {/* Interactive Map */}
+          {upcomingEvents.length > 0 && (
+            <ErrorBoundary fallback={<div>Error loading map. Please try again later.</div>}>
+              <EventsMap events={upcomingEvents} />
+            </ErrorBoundary>
+          )}
+
+          {/* Upcoming Events Section */}
           <div>
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 space-y-4 md:space-y-0">
+              <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 w-full md:w-auto">
+                <DateFilter
+                  selectedDate={selectedDate}
+                  onDateSelect={setSelectedDate}
+                />
+                {isAuthenticated && (
+                  <CreateEventDialog
+                    open={isCreateEventOpen}
+                    onOpenChange={setIsCreateEventOpen}
+                  />
+                )}
+              </div>
+            </div>
+
             <h2 className="text-xl md:text-2xl font-semibold mb-4">Upcoming Events</h2>
-            {upcomingEvents.length > 0 && (
-              <ErrorBoundary fallback={<div>Error loading map. Please try again later.</div>}>
-                <EventsMap events={upcomingEvents} />
-              </ErrorBoundary>
-            )}
             <ErrorBoundary fallback={<div>Error loading events. Please try again later.</div>}>
               <EventList 
                 events={upcomingEvents}
@@ -69,6 +87,7 @@ export default function Events() {
             </ErrorBoundary>
           </div>
 
+          {/* Past Events Section */}
           {pastEvents.length > 0 && (
             <>
               <Separator className="my-8" />
@@ -91,6 +110,7 @@ export default function Events() {
 
   return (
     <div className="min-h-screen bg-[#F1F0FB]">
+      {/* Events Title */}
       <div className="sticky top-0 z-10 bg-[#F1F0FB] border-b border-gray-200 mb-6">
         <div className="max-w-7xl mx-auto px-4 py-4 md:py-6 flex justify-center">
           <h1 className="text-2xl md:text-3xl font-bold text-black">Events</h1>
@@ -106,21 +126,6 @@ export default function Events() {
             </TabsList>
 
             <TabsContent value="events">
-              <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 space-y-4 md:space-y-0">
-                <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 w-full md:w-auto">
-                  <DateFilter
-                    selectedDate={selectedDate}
-                    onDateSelect={setSelectedDate}
-                  />
-                  {isAuthenticated && (
-                    <CreateEventDialog
-                      open={isCreateEventOpen}
-                      onOpenChange={setIsCreateEventOpen}
-                    />
-                  )}
-                </div>
-              </div>
-
               <ErrorBoundary fallback={<div>Error loading content. Please try again later.</div>}>
                 {renderContent()}
               </ErrorBoundary>
