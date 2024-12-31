@@ -1,0 +1,16 @@
+# Netlify configuration file
+
+[[redirects]]
+  from = "/sitemap.xml"
+  to = "https://qegpuqitjfocyyrivlhv.supabase.co/functions/v1/sitemap"
+  status = 200
+  force = true
+
+[build]
+  publish = "dist"
+  command = "npm run build"
+
+[[headers]]
+  for = "/sitemap.xml"
+  [headers.values]
+    Content-Type = "application/xml"
