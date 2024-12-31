@@ -64,16 +64,19 @@ serve(async (req) => {
 
     const allRoutes = [...staticRoutes, ...eventRoutes];
     const baseUrl = 'https://www.outdoorenergyadventures.com';
-    
-    // Generate XML with proper XML declaration and namespace
+
+    // Generate sitemap XML with proper formatting and escaping
     const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${allRoutes.map(route => `  <url>
-    <loc>${baseUrl}${route.path}</loc>
+${allRoutes.map(route => {
+  const loc = `${baseUrl}${route.path}`.replace(/&/g, '&amp;');
+  return `  <url>
+    <loc>${loc}</loc>
     <lastmod>${new Date().toISOString()}</lastmod>
     <changefreq>${route.changefreq}</changefreq>
     <priority>${route.priority}</priority>
-  </url>`).join('\n')}
+  </url>`;
+}).join('\n')}
 </urlset>`;
 
     console.log('Generated sitemap XML');
