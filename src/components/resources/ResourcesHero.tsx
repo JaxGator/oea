@@ -1,5 +1,3 @@
-import { Card } from "@/components/ui/card";
-
 export function ResourcesHero() {
   return (
     <div className="relative w-full min-h-[30vh] sm:min-h-[35vh] md:min-h-[40vh]">
