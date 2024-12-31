@@ -40,7 +40,7 @@ export function useEvents(selectedDate?: Date) {
       }
     },
     staleTime: 5 * 60 * 1000, // Data stays fresh for 5 minutes
-    cacheTime: 30 * 60 * 1000, // Cache persists for 30 minutes
+    gcTime: 30 * 60 * 1000, // Cache persists for 30 minutes (renamed from cacheTime)
     refetchOnWindowFocus: false, // Prevent refetch on window focus
     refetchOnMount: false, // Prevent refetch on component mount
   });
