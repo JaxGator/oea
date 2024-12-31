@@ -51,7 +51,20 @@ export function SearchDialog() {
   const handleSelect = (result: SearchResult) => {
     setOpen(false);
     setSearchTerm("");
-    navigate(result.url);
+    
+    // Navigate to the URL and scroll to the content if there's a hash
+    const [path, hash] = result.url.split('#');
+    navigate(path);
+    
+    if (hash) {
+      // Wait for navigation to complete before scrolling
+      setTimeout(() => {
+        const element = document.getElementById(hash);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth' });
+        }
+      }, 100);
+    }
   };
 
   const SearchContent = () => (
