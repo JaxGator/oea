@@ -52,58 +52,59 @@ export default function Events() {
 
     return (
       <div className="bg-white rounded-lg p-4 md:p-6 shadow-lg">
-        <div className="space-y-8">
-          {/* Interactive Map */}
-          {upcomingEvents.length > 0 && (
+        {/* Interactive Map */}
+        {upcomingEvents.length > 0 && (
+          <div className="mb-8">
             <ErrorBoundary fallback={<div>Error loading map. Please try again later.</div>}>
               <EventsMap events={upcomingEvents} />
             </ErrorBoundary>
-          )}
-
-          {/* Upcoming Events Section */}
-          <div>
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 space-y-4 md:space-y-0">
-              <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 w-full md:w-auto">
-                <DateFilter
-                  selectedDate={selectedDate}
-                  onDateSelect={setSelectedDate}
-                />
-                {isAuthenticated && (
-                  <CreateEventDialog
-                    open={isCreateEventOpen}
-                    onOpenChange={setIsCreateEventOpen}
-                  />
-                )}
-              </div>
-            </div>
-
-            <h2 className="text-xl md:text-2xl font-semibold mb-4">Upcoming Events</h2>
-            <ErrorBoundary fallback={<div>Error loading events. Please try again later.</div>}>
-              <EventList 
-                events={upcomingEvents}
-                onRSVP={handleRSVP}
-                onCancelRSVP={cancelRSVP}
-              />
-            </ErrorBoundary>
           </div>
+        )}
 
-          {/* Past Events Section */}
-          {pastEvents.length > 0 && (
-            <>
-              <Separator className="my-8" />
-              <div>
-                <h2 className="text-xl md:text-2xl font-semibold mb-4">Past Events</h2>
-                <ErrorBoundary fallback={<div>Error loading past events. Please try again later.</div>}>
-                  <EventList 
-                    events={pastEvents}
-                    onRSVP={handleRSVP}
-                    onCancelRSVP={cancelRSVP}
-                  />
-                </ErrorBoundary>
-              </div>
-            </>
-          )}
+        {/* Filter and Create Event Controls */}
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 space-y-4 md:space-y-0">
+          <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 w-full md:w-auto">
+            <DateFilter
+              selectedDate={selectedDate}
+              onDateSelect={setSelectedDate}
+            />
+            {isAuthenticated && (
+              <CreateEventDialog
+                open={isCreateEventOpen}
+                onOpenChange={setIsCreateEventOpen}
+              />
+            )}
+          </div>
         </div>
+
+        {/* Upcoming Events Section */}
+        <div className="mb-8">
+          <h2 className="text-xl md:text-2xl font-semibold mb-4">Upcoming Events</h2>
+          <ErrorBoundary fallback={<div>Error loading events. Please try again later.</div>}>
+            <EventList 
+              events={upcomingEvents}
+              onRSVP={handleRSVP}
+              onCancelRSVP={cancelRSVP}
+            />
+          </ErrorBoundary>
+        </div>
+
+        {/* Past Events Section */}
+        {pastEvents.length > 0 && (
+          <>
+            <Separator className="my-8" />
+            <div>
+              <h2 className="text-xl md:text-2xl font-semibold mb-4">Past Events</h2>
+              <ErrorBoundary fallback={<div>Error loading past events. Please try again later.</div>}>
+                <EventList 
+                  events={pastEvents}
+                  onRSVP={handleRSVP}
+                  onCancelRSVP={cancelRSVP}
+                />
+              </ErrorBoundary>
+            </div>
+          </>
+        )}
       </div>
     );
   };
