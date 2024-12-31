@@ -3,7 +3,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { handleQueryResult } from '@/utils/supabase-helpers';
 import { transformEventData } from './events/useEventTransform';
 import type { Event } from '@/types/event';
-import { toast } from 'sonner';
 
 export function useEvents(selectedDate?: Date) {
   return useQuery({
@@ -37,11 +36,12 @@ export function useEvents(selectedDate?: Date) {
         return transformEventData(Array.isArray(data) ? data : [data]);
       } catch (error) {
         console.error('Error fetching events:', error);
-        toast.error('Failed to load events. Please try again.');
         throw error;
       }
     },
-    retry: 1,
-    refetchOnWindowFocus: false,
+    staleTime: 5 * 60 * 1000, // Data stays fresh for 5 minutes
+    cacheTime: 30 * 60 * 1000, // Cache persists for 30 minutes
+    refetchOnWindowFocus: false, // Prevent refetch on window focus
+    refetchOnMount: false, // Prevent refetch on component mount
   });
 }

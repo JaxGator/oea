@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import { CreateEventDialog } from "@/components/CreateEventDialog";
 import { DateFilter } from "@/components/DateFilter";
 import { useEvents } from "@/hooks/useEvents";
-import { EventList } from "@/components/event/EventList";
+import { EventList, EventListSkeleton } from "@/components/event/EventList";
 import { EventsMap } from "@/components/event/EventsMap";
 import { useRSVP } from "@/hooks/useRSVP";
 import { toast } from "sonner";
@@ -43,11 +43,7 @@ export default function Events() {
 
   const renderContent = () => {
     if (isEventsLoading) {
-      return (
-        <div className="min-h-screen bg-[#F1F0FB] flex items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin" />
-        </div>
-      );
+      return <EventListSkeleton />;
     }
 
     return (
@@ -57,15 +53,19 @@ export default function Events() {
             <h2 className="text-xl md:text-2xl font-semibold mb-4">Upcoming Events</h2>
             {upcomingEvents.length > 0 && (
               <ErrorBoundary fallback={<div>Error loading map. Please try again later.</div>}>
-                <EventsMap events={upcomingEvents} />
+                <Suspense fallback={<div className="h-[400px] animate-pulse bg-gray-100 rounded-lg" />}>
+                  <EventsMap events={upcomingEvents} />
+                </Suspense>
               </ErrorBoundary>
             )}
             <ErrorBoundary fallback={<div>Error loading events. Please try again later.</div>}>
-              <EventList 
-                events={upcomingEvents}
-                onRSVP={handleRSVP}
-                onCancelRSVP={cancelRSVP}
-              />
+              <Suspense fallback={<EventListSkeleton />}>
+                <EventList 
+                  events={upcomingEvents}
+                  onRSVP={handleRSVP}
+                  onCancelRSVP={cancelRSVP}
+                />
+              </Suspense>
             </ErrorBoundary>
           </div>
 
@@ -75,11 +75,13 @@ export default function Events() {
               <div>
                 <h2 className="text-xl md:text-2xl font-semibold mb-4">Past Events</h2>
                 <ErrorBoundary fallback={<div>Error loading past events. Please try again later.</div>}>
-                  <EventList 
-                    events={pastEvents}
-                    onRSVP={handleRSVP}
-                    onCancelRSVP={cancelRSVP}
-                  />
+                  <Suspense fallback={<EventListSkeleton />}>
+                    <EventList 
+                      events={pastEvents}
+                      onRSVP={handleRSVP}
+                      onCancelRSVP={cancelRSVP}
+                    />
+                  </Suspense>
                 </ErrorBoundary>
               </div>
             </>
@@ -129,7 +131,9 @@ export default function Events() {
             <TabsContent value="discussion">
               <div className="bg-white rounded-lg shadow-lg">
                 <ErrorBoundary fallback={<div>Error loading chat. Please try again later.</div>}>
-                  <GroupChat />
+                  <Suspense fallback={<div className="h-[400px] animate-pulse bg-gray-100 rounded-lg" />}>
+                    <GroupChat />
+                  </Suspense>
                 </ErrorBoundary>
               </div>
             </TabsContent>
