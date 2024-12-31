@@ -31,35 +31,54 @@ serve(async (req) => {
       throw eventsError;
     }
 
-    // Static routes that should always be in the sitemap
+    // Static routes with their specific configurations
     const staticRoutes = [
-      '/',
-      '/events',
-      '/about',
-      '/resources',
-      '/members',
-      '/auth'
+      {
+        path: '/',
+        changefreq: 'daily',
+        priority: '1.0'
+      },
+      {
+        path: '/events',
+        changefreq: 'weekly',
+        priority: '0.9'
+      },
+      {
+        path: '/about',
+        changefreq: 'monthly',
+        priority: '0.8'
+      },
+      {
+        path: '/resources',
+        changefreq: 'weekly',
+        priority: '0.8'
+      }
     ];
 
     // Add dynamic event routes
-    const eventRoutes = events.map(event => `/events/${event.id}`);
+    const eventRoutes = events.map(event => ({
+      path: `/events/${event.id}`,
+      changefreq: 'weekly',
+      priority: '0.7'
+    }));
+
     const allRoutes = [...staticRoutes, ...eventRoutes];
 
     // Get the base URL from the request or environment
-    const baseUrl = req.headers.get('origin') || Deno.env.get('PUBLIC_SITE_URL') || '';
+    const baseUrl = 'https://www.outdoorenergyadventures.com';
     console.log('Base URL:', baseUrl);
 
-    // Generate the sitemap XML
+    // Generate the sitemap XML with proper XML namespace and formatting
     const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${allRoutes.map((route) => `
+${allRoutes.map(route => `
   <url>
-    <loc>${baseUrl}${route}</loc>
+    <loc>${baseUrl}${route.path}</loc>
     <lastmod>${new Date().toISOString().split('T')[0]}</lastmod>
-    <changefreq>${route === '/' ? 'daily' : 'weekly'}</changefreq>
-    <priority>${route === '/' ? '1.0' : '0.8'}</priority>
+    <changefreq>${route.changefreq}</changefreq>
+    <priority>${route.priority}</priority>
   </url>`).join('')}
-</urlset>`
+</urlset>`;
 
     console.log('Generated sitemap XML');
 
