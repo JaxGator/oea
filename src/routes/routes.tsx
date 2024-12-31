@@ -73,7 +73,7 @@ export const router = createBrowserRouter([
         element: <Maintenance />,
       },
       {
-        path: "privacy-policy",
+        path: "privacy",
         element: <PrivacyPolicy />,
       },
       {
