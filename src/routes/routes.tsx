@@ -14,11 +14,15 @@ import Store from "@/pages/Store";
 import Maintenance from "@/pages/Maintenance";
 import { PrivacyPolicy } from "@/components/legal/PrivacyPolicy";
 import { TermsAndConditions } from "@/components/legal/TermsAndConditions";
+import { ErrorBoundary } from "@/components/error/ErrorBoundary";
 
 export const router = createBrowserRouter([
   {
     path: "/",
     element: <AppLayout />,
+    errorElement: <ErrorBoundary fallback={<div>Something went wrong</div>}>
+      <AppLayout />
+    </ErrorBoundary>,
     children: [
       {
         index: true,
@@ -73,7 +77,7 @@ export const router = createBrowserRouter([
         element: <PrivacyPolicy />,
       },
       {
-        path: "terms-and-conditions",
+        path: "terms",
         element: <TermsAndConditions />,
       },
     ],
