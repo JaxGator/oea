@@ -1,5 +1,4 @@
 import { Card } from "@/components/ui/card";
-import { EditableContent } from "@/components/EditableContent";
 
 export function ResourcesHero() {
   return (
@@ -11,14 +10,7 @@ export function ResourcesHero() {
       />
       <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center space-y-6">
         <div className="text-white text-4xl md:text-5xl font-bold">
-          <EditableContent
-            content="Resources"
-            pageId="resources"
-            sectionId="hero-title"
-            onUpdate={(newContent) => {
-              console.log('Hero title updated:', newContent);
-            }}
-          />
+          Resources
         </div>
         <img 
           src="/lovable-uploads/609edf01-3169-439a-80f5-f6f15de7a5a6.png"

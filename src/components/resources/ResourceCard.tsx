@@ -1,5 +1,4 @@
 import { Card } from "@/components/ui/card";
-import { EditableContent } from "@/components/EditableContent";
 
 interface ResourceLink {
   label: string;
@@ -14,16 +13,7 @@ interface ResourceCardProps {
 export function ResourceCard({ title, links }: ResourceCardProps) {
   return (
     <Card className="mb-8 p-6">
-      <div className="text-2xl font-semibold mb-4">
-        <EditableContent
-          content={title}
-          pageId="resources"
-          sectionId={`card-title-${title}`}
-          onUpdate={(newContent) => {
-            console.log('Card title updated:', newContent);
-          }}
-        />
-      </div>
+      <div className="text-2xl font-semibold mb-4">{title}</div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {links.map((item, idx) => (
           <a
