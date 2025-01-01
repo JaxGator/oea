@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useAuthState } from "@/hooks/useAuthState";
+import { ArrowRight } from "lucide-react";
 
 export const FeaturedEvents = () => {
   const navigate = useNavigate();
@@ -67,10 +68,11 @@ export const FeaturedEvents = () => {
           <h2 className="text-2xl font-bold text-gray-900">Upcoming Events</h2>
           <Button 
             onClick={() => navigate("/events")}
-            variant="outline"
-            className="bg-[#0d97d1] hover:bg-[#0d97d1]/90 text-white border-[#0d97d1] hover:border-[#0d97d1]/90"
+            variant="ghost"
+            className="flex items-center gap-2 hover:bg-gray-100"
           >
             View All Events
+            <ArrowRight className="h-4 w-4" />
           </Button>
         </div>
         
