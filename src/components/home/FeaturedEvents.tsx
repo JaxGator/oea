@@ -63,7 +63,7 @@ export const FeaturedEvents = () => {
   return (
     <section className="py-16 bg-[#F1F0FB]">
       <div className="container mx-auto px-4">
-        <div className="flex justify-between items-center mb-8">
+        <div className="flex justify-between items-center mb-8 gap-4">
           <h2 className="text-2xl font-bold text-gray-900">Upcoming Events</h2>
           <Button 
             onClick={() => navigate("/events")}
