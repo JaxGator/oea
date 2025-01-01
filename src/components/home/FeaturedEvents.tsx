@@ -7,15 +7,16 @@ import { Card, CardContent } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useAuthState } from "@/hooks/useAuthState";
-import { ArrowRight } from "lucide-react";
 
 export const FeaturedEvents = () => {
   const navigate = useNavigate();
   const { events, isLoading, userRSVPs, handleRSVP, handleCancelRSVP } = useFeaturedEvents();
+  const [galleryImages, setGalleryImages] = useState<string[]>([]);
+  const [isLoadingImages, setIsLoadingImages] = useState(true);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const { user } = useAuthState();
 
-  // Filter out past events and limit to 2 upcoming events as shown in mockup
+  // Filter out past events and limit to 4 upcoming events
   const upcomingEvents = events
     .filter(event => {
       const eventDate = new Date(event.date);
@@ -23,20 +24,53 @@ export const FeaturedEvents = () => {
       today.setHours(0, 0, 0, 0);
       return eventDate >= today;
     })
-    .slice(0, 2);
+    .slice(0, 4);
+
+  useEffect(() => {
+    fetchGalleryImages();
+  }, []);
+
+  const fetchGalleryImages = async () => {
+    try {
+      const { data: files, error } = await supabase
+        .storage
+        .from('gallery')
+        .list();
+
+      if (error) {
+        console.error('Error fetching gallery images:', error);
+        return;
+      }
+
+      const imageUrls = files
+        ?.filter(file => file.name.match(/\.(jpg|jpeg|png|gif)$/i))
+        .map(file => {
+          const { data: { publicUrl } } = supabase
+            .storage
+            .from('gallery')
+            .getPublicUrl(file.name);
+          return publicUrl;
+        }) || [];
+
+      setGalleryImages(imageUrls);
+    } catch (error) {
+      console.error('Error processing gallery images:', error);
+    } finally {
+      setIsLoadingImages(false);
+    }
+  };
 
   return (
-    <section className="py-8 bg-[#F8F7FD]">
+    <section className="py-16 bg-[#F1F0FB]">
       <div className="container mx-auto px-4">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-semibold text-gray-900">Upcoming Events</h2>
+        <div className="flex justify-between items-center mb-8">
+          <h2 className="text-2xl font-bold text-gray-900">Upcoming Events</h2>
           <Button 
             onClick={() => navigate("/events")}
-            variant="ghost"
-            className="flex items-center gap-2 hover:bg-gray-100"
+            variant="outline"
+            className="bg-[#0d97d1] hover:bg-[#0d97d1]/90 text-white border-[#0d97d1] hover:border-[#0d97d1]/90"
           >
             View All Events
-            <ArrowRight className="h-4 w-4" />
           </Button>
         </div>
         
@@ -47,7 +81,7 @@ export const FeaturedEvents = () => {
             No upcoming events found.
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {upcomingEvents.map((event) => (
               <EventCard 
                 key={event.id} 
@@ -61,25 +95,31 @@ export const FeaturedEvents = () => {
         )}
 
         {/* Photo Gallery Section */}
-        <div className="mt-8">
-          <h2 className="text-xl font-semibold text-gray-900 mb-6">Photo Gallery</h2>
+        <div className="mt-16 space-y-4">
+          <h2 className="text-2xl font-bold text-gray-900">Photo Gallery</h2>
           <Card>
             <CardContent className="p-4">
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                {Array.from({ length: 16 }).map((_, index) => (
-                  <div 
-                    key={index} 
-                    className="aspect-square overflow-hidden rounded-lg cursor-pointer group"
-                    onClick={() => setSelectedImage(`gallery-image-${index + 1}`)}
-                  >
-                    <img
-                      src={`/gallery/image-${index + 1}.jpg`}
-                      alt={`Gallery image ${index + 1}`}
-                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                    />
-                  </div>
-                ))}
-              </div>
+              {isLoadingImages ? (
+                <div className="text-center py-8 text-gray-600">Loading gallery...</div>
+              ) : galleryImages.length === 0 ? (
+                <div className="text-center py-8 text-gray-500">No images found in the gallery.</div>
+              ) : (
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {galleryImages.map((imageUrl, index) => (
+                    <div 
+                      key={index} 
+                      className="aspect-square overflow-hidden rounded-lg cursor-pointer"
+                      onClick={() => setSelectedImage(imageUrl)}
+                    >
+                      <img
+                        src={imageUrl}
+                        alt={`Gallery image ${index + 1}`}
+                        className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                      />
+                    </div>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
