@@ -1,27 +1,33 @@
-import React, { useState } from 'react';
+import React from 'react';
 
 export const Hero = () => {
-  const [backgroundImage] = useState('https://www.adamsvanlines.com/wp-content/uploads/2021/07/12-Things-You-Should-Know-Before-Moving-To-Jacksonville-FL-Adams-Van-Lines.b197b0.webp');
+  const backgroundImage = 'https://www.adamsvanlines.com/wp-content/uploads/2021/07/12-Things-You-Should-Know-Before-Moving-To-Jacksonville-FL-Adams-Van-Lines.b197b0.webp';
 
   return (
-    <div 
-      className="relative min-h-[30vh] sm:min-h-[35vh] md:min-h-[40vh] flex items-center justify-center px-4 sm:px-6 lg:px-8"
-    >
-      {/* Background Image with loading optimization */}
+    <div className="relative w-full min-h-[30vh] sm:min-h-[35vh] md:min-h-[40vh]">
+      {/* Low-quality placeholder */}
       <div 
         className="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat blur-sm scale-105"
-        style={{ backgroundImage: `url('${backgroundImage}')` }}
-      />
-      <div 
-        className="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat transition-opacity duration-500"
-        style={{ backgroundImage: `url('${backgroundImage}')` }}
+        style={{ 
+          backgroundImage: `url('${backgroundImage}?quality=1&width=100')`
+        }}
       />
       
-      <div className="container mx-auto text-center relative z-10">
+      {/* Main image */}
+      <img
+        src={backgroundImage}
+        alt="Jacksonville cityscape"
+        className="absolute inset-0 w-full h-full object-cover object-bottom transition-opacity duration-500"
+        loading="eager"
+        decoding="async"
+        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1200px"
+      />
+      
+      <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center space-y-6">
         <img 
           src="/lovable-uploads/609edf01-3169-439a-80f5-f6f15de7a5a6.png"
           alt="Outdoor Energy Adventures Logo"
-          className="w-48 sm:w-56 md:w-64 lg:w-80 mx-auto mb-6 sm:mb-8 animate-fade-in"
+          className="w-48 h-48 md:w-64 md:h-64 object-contain animate-fade-in"
           loading="eager"
           decoding="async"
         />
