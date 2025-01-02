@@ -23,23 +23,24 @@ export function EditContent({
       [{ 'header': [1, 2, 3, false] }],
       ['bold', 'italic', 'underline', 'strike'],
       [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-      ['link'],
+      ['link', 'image'],
       ['clean']
     ],
   };
 
   return (
-    <div className="space-y-2">
-      <div className="min-h-[200px]">
+    <div className="flex flex-col space-y-4">
+      <div className="min-h-[200px] flex-grow">
         <ReactQuill
           theme="snow"
           value={editedContent}
           onChange={onContentChange}
           modules={modules}
-          className="bg-white"
+          className="bg-white h-full"
+          style={{ minHeight: '200px' }}
         />
       </div>
-      <div className="flex justify-end gap-2 mt-14">
+      <div className="flex justify-end gap-2 pt-14 sticky bottom-0 bg-white z-50 mt-4">
         <Button
           variant="outline"
           size="sm"
