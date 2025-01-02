@@ -49,7 +49,6 @@ export function CreateEventDialog({ open, onOpenChange, onSuccess }: CreateEvent
           return;
         }
 
-        // Check if user is admin by querying the profiles table
         const { data: profile, error: profileError } = await supabase
           .from('profiles')
           .select('is_admin')
@@ -75,7 +74,6 @@ export function CreateEventDialog({ open, onOpenChange, onSuccess }: CreateEvent
 
     checkUserPermissions();
 
-    // Listen for auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
       checkUserPermissions();
     });
@@ -93,7 +91,7 @@ export function CreateEventDialog({ open, onOpenChange, onSuccess }: CreateEvent
           Create Event
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Create New Event</DialogTitle>
         </DialogHeader>

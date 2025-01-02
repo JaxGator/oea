@@ -46,18 +46,20 @@ export function EventBasicDetails({ form }: EventBasicDetailsProps) {
         control={form.control}
         name="description"
         render={({ field }) => (
-          <FormItem>
+          <FormItem className="flex-grow">
             <FormLabel>Description</FormLabel>
             <FormControl>
-              <ReactQuill 
-                theme="snow"
-                modules={modules}
-                formats={formats}
-                value={field.value || ''}
-                onChange={field.onChange}
-                className="bg-white"
-                style={{ minHeight: '200px', maxHeight: '300px' }}
-              />
+              <div className="min-h-[300px]">
+                <ReactQuill 
+                  theme="snow"
+                  modules={modules}
+                  formats={formats}
+                  value={field.value || ''}
+                  onChange={field.onChange}
+                  className="bg-white h-full"
+                  style={{ minHeight: '250px' }}
+                />
+              </div>
             </FormControl>
             <FormMessage />
           </FormItem>

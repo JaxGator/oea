@@ -22,7 +22,6 @@ export function EventEditDialog({ event, open, onOpenChange, onSuccess }: EventE
   const handleSuccess = () => {
     onSuccess();
     onOpenChange(false);
-    // Add a small delay before refreshing to ensure the dialog closes smoothly
     setTimeout(() => {
       window.location.reload();
     }, 100);
@@ -30,7 +29,7 @@ export function EventEditDialog({ event, open, onOpenChange, onSuccess }: EventE
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Edit Event</DialogTitle>
           <DialogDescription>
