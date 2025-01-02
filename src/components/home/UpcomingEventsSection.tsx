@@ -6,7 +6,7 @@ import { Event } from "@/types/event";
 
 interface UpcomingEventsSectionProps {
   events: Event[];
-  userRSVPs: Record<string, boolean>;
+  userRSVPs: Record<string, string | null>;
   handleRSVP: (eventId: string) => void;
   handleCancelRSVP: (eventId: string) => void;
   isLoading: boolean;
