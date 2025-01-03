@@ -1,4 +1,4 @@
-import { LucideIcon, Home, Calendar, BookOpen, Info, Users, ShoppingBag, LayoutDashboard, LogIn, LogOut } from "lucide-react";
+import { LucideIcon, Home, Calendar, BookOpen, Info, Users, ShoppingBag, LayoutDashboard, LogIn, LogOut, MessageSquare } from "lucide-react";
 import { Profile } from "@/types/auth";
 
 export interface NavigationItem {
@@ -35,6 +35,12 @@ export const createNavigationItems = (
     label: "Members", 
     path: "/members",
     show: (user) => !!user 
+  },
+  {
+    icon: MessageSquare,
+    label: "Messages",
+    path: "/messages",
+    show: (user, profile) => !!user && !!profile?.is_approved
   },
   { 
     icon: Info, 
