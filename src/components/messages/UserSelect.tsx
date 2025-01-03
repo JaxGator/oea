@@ -9,6 +9,7 @@ interface UserSelectProps {
   selectedUsers: string[];
   onSelectUser: (userId: string) => void;
   onRemoveUser: (userId: string) => void;
+  disabled?: boolean;  // Added this prop
 }
 
 interface User {
@@ -18,7 +19,7 @@ interface User {
   avatar_url: string | null;
 }
 
-export function UserSelect({ selectedUsers, onSelectUser, onRemoveUser }: UserSelectProps) {
+export function UserSelect({ selectedUsers, onSelectUser, onRemoveUser, disabled = false }: UserSelectProps) {
   const [users, setUsers] = useState<User[]>([]);
 
   useEffect(() => {
@@ -53,6 +54,7 @@ export function UserSelect({ selectedUsers, onSelectUser, onRemoveUser }: UserSe
               <button
                 onClick={() => onRemoveUser(userId)}
                 className="ml-1 hover:text-destructive"
+                disabled={disabled}
               >
                 <X className="h-3 w-3" />
               </button>
@@ -68,6 +70,7 @@ export function UserSelect({ selectedUsers, onSelectUser, onRemoveUser }: UserSe
               key={user.id}
               onClick={() => onSelectUser(user.id)}
               className="w-full p-2 flex items-center gap-2 hover:bg-accent rounded-md"
+              disabled={disabled}
             >
               <Avatar className="h-6 w-6">
                 <AvatarImage src={user.avatar_url || undefined} />
