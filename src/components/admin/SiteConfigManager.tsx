@@ -4,6 +4,7 @@ import { GeneralSettings } from "./site-config/GeneralSettings";
 import { IntegrationsSettings } from "./site-config/IntegrationsSettings";
 import { LegalSettings } from "./site-config/LegalSettings";
 import { TechnicalSettings } from "./site-config/TechnicalSettings";
+import { SocialMediaSettings } from "./site-config/SocialMediaSettings";
 import { useConfigManager } from "./site-config/useConfigManager";
 
 export function SiteConfigManager() {
@@ -48,6 +49,10 @@ export function SiteConfigManager() {
             setConfigs={setConfigs}
             isLoading={isLoading}
           />
+        </TabsContent>
+
+        <TabsContent value="social">
+          <SocialMediaSettings />
         </TabsContent>
       </Tabs>
     </div>

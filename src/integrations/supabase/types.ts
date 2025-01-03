@@ -510,6 +510,47 @@ export type Database = {
           },
         ]
       }
+      social_media_feeds: {
+        Row: {
+          created_at: string
+          display_order: number
+          feed_url: string
+          id: string
+          is_enabled: boolean | null
+          platform: Database["public"]["Enums"]["social_media_platform"]
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          display_order?: number
+          feed_url: string
+          id?: string
+          is_enabled?: boolean | null
+          platform: Database["public"]["Enums"]["social_media_platform"]
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          display_order?: number
+          feed_url?: string
+          id?: string
+          is_enabled?: boolean | null
+          platform?: Database["public"]["Enums"]["social_media_platform"]
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "social_media_feeds_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_blocks: {
         Row: {
           blocked_id: string | null
@@ -626,6 +667,7 @@ export type Database = {
     }
     Enums: {
       rsvp_response: "attending" | "not_attending" | "maybe"
+      social_media_platform: "instagram" | "facebook" | "twitter"
     }
     CompositeTypes: {
       [_ in never]: never
