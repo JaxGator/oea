@@ -7,24 +7,22 @@ export const Hero = () => {
     <div 
       className="relative min-h-[30vh] sm:min-h-[35vh] md:min-h-[40vh] flex items-center justify-center px-4 sm:px-6 lg:px-8"
     >
-      {/* Background Image with loading optimization */}
-      <div 
-        className="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat blur-sm scale-105"
-        style={{ backgroundImage: `url('${backgroundImage}')` }}
-      />
-      <div 
-        className="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat transition-opacity duration-500"
-        style={{ backgroundImage: `url('${backgroundImage}')` }}
+      <img 
+        src={backgroundImage}
+        alt="Jacksonville Skyline"
+        className="absolute inset-0 w-full h-full object-cover object-center"
       />
       
-      <div className="container mx-auto text-center relative z-10">
-        <img 
-          src="/lovable-uploads/609edf01-3169-439a-80f5-f6f15de7a5a6.png"
-          alt="Outdoor Energy Adventures Logo"
-          className="w-48 sm:w-56 md:w-64 lg:w-80 mx-auto mb-6 sm:mb-8 animate-fade-in"
-          loading="eager"
-          decoding="async"
-        />
+      <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+        <div className="container mx-auto text-center relative z-10">
+          <img 
+            src="/lovable-uploads/609edf01-3169-439a-80f5-f6f15de7a5a6.png"
+            alt="Outdoor Energy Adventures Logo"
+            className="w-48 sm:w-56 md:w-64 lg:w-80 mx-auto mb-6 sm:mb-8 animate-fade-in"
+            loading="eager"
+            decoding="async"
+          />
+        </div>
       </div>
     </div>
   );
