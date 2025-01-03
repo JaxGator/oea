@@ -69,26 +69,38 @@ export function CreateGroupChatDialog() {
       <DialogTrigger asChild>
         <Button variant="outline">Create Group Chat</Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[600px] p-6">
         <DialogHeader>
-          <DialogTitle>Create Group Chat</DialogTitle>
+          <DialogTitle className="text-2xl mb-4">Create Group Chat</DialogTitle>
         </DialogHeader>
-        <div className="grid gap-4 py-4">
+        <div className="grid gap-6 py-4">
           <div className="grid gap-2">
+            <label htmlFor="chat-name" className="text-sm font-medium">
+              Chat Name
+            </label>
             <Input
-              placeholder="Chat name"
+              id="chat-name"
+              placeholder="Enter chat name"
               value={chatName}
               onChange={(e) => setChatName(e.target.value)}
+              className="h-12"
             />
           </div>
           <div className="grid gap-2">
+            <label className="text-sm font-medium">
+              Select Participants
+            </label>
             <UserSelect
               selectedUsers={selectedUsers}
               onSelectUser={(userId) => setSelectedUsers(prev => [...prev, userId])}
               onRemoveUser={(userId) => setSelectedUsers(prev => prev.filter(id => id !== userId))}
             />
           </div>
-          <Button onClick={handleCreateChat} disabled={!chatName.trim() || selectedUsers.length === 0}>
+          <Button 
+            onClick={handleCreateChat} 
+            disabled={!chatName.trim() || selectedUsers.length === 0}
+            className="h-12 mt-4"
+          >
             Create Chat
           </Button>
         </div>
