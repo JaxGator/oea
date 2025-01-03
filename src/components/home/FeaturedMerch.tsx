@@ -1,10 +1,11 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { useAuthState } from "@/hooks/useAuthState";
 
 export const FeaturedMerch = () => {
-  const navigate = useNavigate();
+  const { profile } = useAuthState();
+  const canAccessStore = profile?.is_member || profile?.is_admin;
 
   const featuredItems = [
     {
@@ -28,9 +29,14 @@ export const FeaturedMerch = () => {
     <div className="mt-16 space-y-4">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold text-gray-900">Featured Merchandise</h2>
-        <Button onClick={() => navigate('/store')} variant="outline">
-          Visit Store
-        </Button>
+        {canAccessStore && (
+          <Button
+            variant="outline"
+            onClick={() => window.open('https://outdoorenergyadventures.printful.me/', '_blank')}
+          >
+            Visit Store
+          </Button>
+        )}
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
