@@ -2,70 +2,13 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Outdoor Energy Adventures</title>
-    <meta name="description" content="Home for our group of outdoor energy adventurers in the greater Jacksonville FL area." />
-    <meta name="author" content="Outdoor Energy Adventures" />
-    <meta property="og:title" content="Outdoor Energy Adventures" />
-    <meta property="og:description" content="Home for our group of outdoor energy adventurers in the greater Jacksonville FL area." />
-    <meta property="og:image" content="/lovable-uploads/609edf01-3169-439a-80f5-f6f15de7a5a6.png" />
-    <meta property="og:url" content="https://www.outdoorenergyadventures.com" />
-    <meta property="og:type" content="website" />
-    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
-    <link rel="sitemap" type="application/xml" href="/api/rest/v1/sitemap" />
-    <meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline' 'unsafe-eval'; script-src * 'unsafe-inline' 'unsafe-eval'; connect-src * 'unsafe-inline'; img-src * data: blob: 'unsafe-inline'; frame-src *; style-src * 'unsafe-inline';">
-    <!-- Google AdSense -->
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2176740677854884" crossorigin="anonymous"></script>
-    <script>
-      window.addEventListener('load', async function() {
-        try {
-          const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFlZ3B1cWl0amZvY3l5cml2bGh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzM5MzU4NTMsImV4cCI6MjA0OTUxMTg1M30.o3yD902DFG0PlLD0V8pEvx-IbnVawP3HDhNEp6cMoW4';
-          
-          // Load Google Analytics based on site configuration
-          const response = await fetch('https://qegpuqitjfocyyrivlhv.functions.supabase.co/get-google-analytics-id', {
-            method: 'GET',
-            headers: {
-              'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-              'Content-Type': 'application/json'
-            }
-          });
-
-          if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-          }
-
-          const { data } = await response.json();
-          
-          if (data?.value) {
-            // Create and load the Google Analytics script
-            const script = document.createElement('script');
-            script.async = true;
-            script.src = `https://www.googletagmanager.com/gtag/js?id=${data.value}`;
-            document.head.appendChild(script);
-
-            // Initialize Google Analytics
-            window.dataLayer = window.dataLayer || [];
-            function gtag() {
-              dataLayer.push(arguments);
-            }
-            gtag('js', new Date());
-            gtag('config', data.value);
-          }
-        } catch (error) {
-          console.error('Error loading Google Analytics:', error);
-        }
-      });
-    </script>
+    <title>OEA</title>
+    <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
   </head>
-
   <body>
     <div id="root"></div>
-    <script>
-      window.VITE_SUPABASE_URL = 'https://qegpuqitjfocyyrivlhv.supabase.co';
-      window.VITE_SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFlZ3B1cWl0amZvY3l5cml2bGh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzM5MzU4NTMsImV4cCI6MjA0OTUxMTg1M30.o3yD902DFG0PlLD0V8pEvx-IbnVawP3HDhNEp6cMoW4';
-    </script>
-    <!-- GPT Engineer script must be loaded before the main application script -->
-    <script src="https://cdn.gpteng.co/gptengineer.js" type="module" crossorigin="anonymous"></script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
