@@ -4,7 +4,9 @@ import { useAuthState } from "@/hooks/useAuthState";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { Send } from "lucide-react";
+import { Send, Loader2 } from "lucide-react";
+import { ManageParticipantsDialog } from "./ManageParticipantsDialog";
+import { useGroupChatRealtime } from "@/hooks/useGroupChatRealtime";
 
 interface ChatWindowProps {
   selectedUserId: string | null;
@@ -20,52 +22,62 @@ interface Message {
 export function ChatWindow({ selectedUserId }: ChatWindowProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [participants, setParticipants] = useState<string[]>([]);
   const { user } = useAuthState();
   const { toast } = useToast();
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  useGroupChatRealtime({
+    chatId: selectedUserId || '',
+    onParticipantAdded: (payload) => {
+      setParticipants(prev => [...prev, payload.new.user_id]);
+    },
+    onParticipantRemoved: (payload) => {
+      setParticipants(prev => prev.filter(id => id !== payload.old.user_id));
+    },
+    onMessageReceived: (payload) => {
+      setMessages(prev => [...prev, payload.new]);
+    },
+  });
 
   useEffect(() => {
     if (!selectedUserId || !user) return;
 
     const fetchMessages = async () => {
-      const { data, error } = await supabase
-        .from("messages")
-        .select("*")
-        .or(`sender_id.eq.${user.id},receiver_id.eq.${user.id}`)
-        .or(`sender_id.eq.${selectedUserId},receiver_id.eq.${selectedUserId}`)
-        .order("created_at");
+      setIsLoading(true);
+      try {
+        const { data: messagesData, error: messagesError } = await supabase
+          .from("messages")
+          .select("*")
+          .or(`sender_id.eq.${user.id},receiver_id.eq.${user.id}`)
+          .or(`sender_id.eq.${selectedUserId},receiver_id.eq.${selectedUserId}`)
+          .order("created_at");
 
-      if (error) {
-        console.error("Error fetching messages:", error);
-        return;
+        if (messagesError) throw messagesError;
+        setMessages(messagesData || []);
+
+        const { data: participantsData, error: participantsError } = await supabase
+          .from("group_chat_participants")
+          .select("user_id")
+          .eq("chat_id", selectedUserId);
+
+        if (participantsError) throw participantsError;
+        setParticipants(participantsData.map(p => p.user_id));
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        toast({
+          title: "Error",
+          description: "Failed to load chat data",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
       }
-
-      setMessages(data || []);
     };
 
     fetchMessages();
-
-    // Subscribe to new messages
-    const channel = supabase
-      .channel("messages")
-      .on(
-        "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "messages",
-          filter: `sender_id=eq.${selectedUserId},receiver_id=eq.${user.id}`,
-        },
-        (payload) => {
-          setMessages((prev) => [...prev, payload.new as Message]);
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [selectedUserId, user]);
+  }, [selectedUserId, user, toast]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -104,8 +116,23 @@ export function ChatWindow({ selectedUserId }: ChatWindowProps) {
     );
   }
 
+  if (isLoading) {
+    return (
+      <div className="h-full flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col h-full">
+      <div className="p-4 border-b flex justify-between items-center">
+        <h2 className="font-semibold">Chat</h2>
+        <ManageParticipantsDialog
+          chatId={selectedUserId}
+          currentParticipants={participants}
+        />
+      </div>
       <div className="flex-1 p-4 overflow-y-auto">
         <div className="space-y-4">
           {messages.map((message) => (
