@@ -25,7 +25,7 @@ export function UserList({ onSelectUser, selectedUserId }: UserListProps) {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        if (!user?.id) return; // Don't fetch if there's no user ID
+        if (!user?.id) return;
 
         const { data: profilesData, error: profilesError } = await supabase
           .from('profiles')
@@ -47,7 +47,7 @@ export function UserList({ onSelectUser, selectedUserId }: UserListProps) {
     };
 
     fetchUsers();
-  }, [user?.id]); // Only re-run when user ID changes
+  }, [user?.id]);
 
   if (isLoading) {
     return (
@@ -58,7 +58,7 @@ export function UserList({ onSelectUser, selectedUserId }: UserListProps) {
   }
 
   return (
-    <ScrollArea className="h-[600px]">
+    <ScrollArea className="h-full">
       <div className="space-y-2 p-4">
         {users.map((user) => (
           <Button
