@@ -28,7 +28,7 @@ export const FeaturedMerch = () => {
   return (
     <div className="mt-16 space-y-4">
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-gray-900">Featured Merchandise</h2>
+        <h2 className="text-2xl font-bold text-gray-900">Member-Only Merch</h2>
         {canAccessStore && (
           <Button
             variant="outline"
