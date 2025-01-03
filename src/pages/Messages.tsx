@@ -32,6 +32,7 @@ export default function Messages() {
 
   return (
     <div className="container mx-auto p-4">
+      <h1 className="text-2xl font-bold mb-4">Messages</h1>
       <div className="flex h-[600px] gap-4">
         <div className="w-1/3 border rounded-lg bg-white">
           <UserList onSelectUser={setSelectedUserId} selectedUserId={selectedUserId} />
