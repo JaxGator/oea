@@ -8,19 +8,19 @@ export const FeaturedMerch = () => {
 
   const featuredItems = [
     {
-      name: "OEA Classic T-Shirt",
-      image: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&q=80",
-      price: "$24.99"
+      name: "Embroidered Hat",
+      image: "https://cdn.printful.me/t/quick-stores/products/w168/15064221-206-67709c96c7922__360",
+      price: "$14.50"
     },
     {
-      name: "Adventure Hoodie",
-      image: "https://images.unsplash.com/photo-1556821840-3a63f95609a7?auto=format&fit=crop&q=80",
-      price: "$49.99"
+      name: "Unisex Two-Sided Cotton T-Shirt",
+      image: "https://cdn.printful.me/t/quick-stores/products/w168/15064221-438-67604fc7efd6c__360",
+      price: "$15.50"
     },
     {
-      name: "Outdoor Cap",
-      image: "https://images.unsplash.com/photo-1588850561407-ed78c282e89b?auto=format&fit=crop&q=80",
-      price: "$19.99"
+      name: "Short Sleeve Jersey - Solid",
+      image: "https://cdn.printful.me/t/quick-stores/products/w168/15064221-644-676032870e1bf__360",
+      price: "$30.00"
     }
   ];
 
