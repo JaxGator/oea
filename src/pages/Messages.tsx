@@ -35,9 +35,17 @@ export default function Messages() {
       <h1 className="text-2xl font-bold mb-4">Messages</h1>
       <div className="flex h-[600px] gap-4">
         <div className="w-1/3 border rounded-lg bg-white">
+          <div className="p-3 border-b bg-gray-50">
+            <h2 className="font-semibold text-gray-700">Users</h2>
+          </div>
           <UserList onSelectUser={setSelectedUserId} selectedUserId={selectedUserId} />
         </div>
         <div className="w-2/3 border rounded-lg bg-white">
+          <div className="p-3 border-b bg-gray-50">
+            <h2 className="font-semibold text-gray-700">
+              {selectedUserId ? "Chat" : "Select a user to start messaging"}
+            </h2>
+          </div>
           <ChatWindow selectedUserId={selectedUserId} />
         </div>
       </div>
