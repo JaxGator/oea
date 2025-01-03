@@ -14,6 +14,7 @@ interface UserSelectProps {
 interface User {
   id: string;
   username: string;
+  full_name: string | null;
   avatar_url: string | null;
 }
 
@@ -24,9 +25,9 @@ export function UserSelect({ selectedUsers, onSelectUser, onRemoveUser }: UserSe
     const fetchUsers = async () => {
       const { data, error } = await supabase
         .from('profiles')
-        .select('id, username, avatar_url')
+        .select('id, username, full_name, avatar_url')
         .eq('is_approved', true)
-        .order('username');
+        .order('full_name');
 
       if (error) {
         console.error('Error fetching users:', error);
@@ -48,7 +49,7 @@ export function UserSelect({ selectedUsers, onSelectUser, onRemoveUser }: UserSe
 
           return (
             <Badge key={userId} variant="secondary" className="flex items-center gap-1">
-              {user.username}
+              {user.full_name || user.username}
               <button
                 onClick={() => onRemoveUser(userId)}
                 className="ml-1 hover:text-destructive"
@@ -74,7 +75,12 @@ export function UserSelect({ selectedUsers, onSelectUser, onRemoveUser }: UserSe
                   {user.username.slice(0, 2).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
-              <span>{user.username}</span>
+              <div className="text-left">
+                <div className="font-medium">{user.full_name || user.username}</div>
+                {user.full_name && (
+                  <div className="text-sm text-muted-foreground">@{user.username}</div>
+                )}
+              </div>
             </button>
           ))}
       </ScrollArea>
