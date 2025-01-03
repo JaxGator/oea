@@ -7,25 +7,12 @@ export default function About() {
   return (
     <div className="min-h-screen bg-[#F1F0FB]">
       <div className="relative w-full min-h-[30vh] sm:min-h-[35vh] md:min-h-[40vh]">
-        {/* Low-quality placeholder */}
-        <div 
-          className="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat blur-sm scale-105"
-          style={{ 
-            backgroundImage: `url('https://images.unsplash.com/photo-1605723517503-3cadb5818a0c?quality=1&width=100')`
-          }}
-        />
-        
-        {/* Main image */}
         <img
           src="https://images.unsplash.com/photo-1605723517503-3cadb5818a0c"
-          alt="Jacksonville, Florida skyline at sunset"
-          className="absolute inset-0 w-full h-full object-cover object-bottom transition-opacity duration-500"
-          loading="eager"
-          decoding="async"
-          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1200px"
+          alt="Downtown Jacksonville Skyline"
+          className="absolute inset-0 w-full h-full object-cover object-bottom"
         />
-        
-        <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center space-y-6">
+        <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center space-y-6">
           <h1 className="text-4xl md:text-5xl font-bold text-white">About Us</h1>
           <img 
             src="/lovable-uploads/609edf01-3169-439a-80f5-f6f15de7a5a6.png"
