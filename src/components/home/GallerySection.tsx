@@ -18,7 +18,7 @@ export const GallerySection = ({
   onImageDeselect,
 }: GallerySectionProps) => {
   return (
-    <div className="mt-16 space-y-4">
+    <div className="space-y-4">
       <h2 className="text-2xl font-bold text-gray-900">Photo Gallery</h2>
       <Card>
         <CardContent className="p-4">

@@ -7,6 +7,7 @@ import { supabase } from '@/integrations/supabase/client';
 
 export const GalleryPreview = () => {
   const [showFullGallery, setShowFullGallery] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   const { data: images = [], isLoading } = useQuery({
     queryKey: ['gallery-images'],
@@ -36,9 +37,13 @@ export const GalleryPreview = () => {
         </Button>
       </div>
       
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         {previewImages.map((imageUrl, index) => (
-          <div key={index} className="aspect-square overflow-hidden rounded-lg">
+          <div 
+            key={index} 
+            className="aspect-square overflow-hidden rounded-lg cursor-pointer"
+            onClick={() => setSelectedImage(imageUrl)}
+          >
             <img
               src={imageUrl}
               alt={`Gallery preview ${index + 1}`}
@@ -48,15 +53,29 @@ export const GalleryPreview = () => {
         ))}
       </div>
 
+      {/* Full Gallery Modal */}
       <Dialog open={showFullGallery} onOpenChange={setShowFullGallery}>
         <DialogContent className="max-w-[90vw] max-h-[90vh]">
           <GallerySection
             images={images}
             isLoading={isLoading}
-            selectedImage={null}
-            onImageSelect={() => {}}
-            onImageDeselect={() => {}}
+            selectedImage={selectedImage}
+            onImageSelect={setSelectedImage}
+            onImageDeselect={() => setSelectedImage(null)}
           />
+        </DialogContent>
+      </Dialog>
+
+      {/* Selected Image Modal */}
+      <Dialog open={!!selectedImage} onOpenChange={() => setSelectedImage(null)}>
+        <DialogContent className="max-w-[90vw] max-h-[90vh] p-0">
+          {selectedImage && (
+            <img
+              src={selectedImage}
+              alt="Selected gallery image"
+              className="w-full h-full object-contain"
+            />
+          )}
         </DialogContent>
       </Dialog>
     </div>
