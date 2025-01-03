@@ -5,30 +5,36 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { UserSelect } from "./UserSelect";
+import { useAuthState } from "@/hooks/useAuthState";
 
 export function CreateGroupChatDialog() {
   const [isOpen, setIsOpen] = useState(false);
   const [chatName, setChatName] = useState("");
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
   const { toast } = useToast();
+  const { user } = useAuthState();
 
   const handleCreateChat = async () => {
-    if (!chatName.trim() || selectedUsers.length === 0) return;
+    if (!chatName.trim() || selectedUsers.length === 0 || !user?.id) return;
 
     try {
       // Create the group chat
       const { data: chatData, error: chatError } = await supabase
         .from('group_chats')
-        .insert([{ name: chatName.trim() }])
+        .insert([{ 
+          name: chatName.trim(),
+          created_by: user.id
+        }])
         .select()
         .single();
 
       if (chatError) throw chatError;
 
-      // Add participants
-      const participants = selectedUsers.map(userId => ({
+      // Add participants including the creator
+      const participants = [...selectedUsers, user.id].map(userId => ({
         chat_id: chatData.id,
-        user_id: userId
+        user_id: userId,
+        added_by: user.id
       }));
 
       const { error: participantsError } = await supabase
