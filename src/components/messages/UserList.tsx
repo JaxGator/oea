@@ -25,13 +25,19 @@ export function UserList({ onSelectUser, selectedUserId }: UserListProps) {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
+        if (!user?.id) return; // Don't fetch if there's no user ID
+
         const { data: profilesData, error: profilesError } = await supabase
           .from('profiles')
           .select('id, username, avatar_url')
-          .neq('id', user?.id)
+          .neq('id', user.id)
           .eq('is_approved', true);
 
-        if (profilesError) throw profilesError;
+        if (profilesError) {
+          console.error('Error fetching users:', profilesError);
+          throw profilesError;
+        }
+        
         setUsers(profilesData || []);
       } catch (error) {
         console.error('Error fetching users:', error);
@@ -41,7 +47,7 @@ export function UserList({ onSelectUser, selectedUserId }: UserListProps) {
     };
 
     fetchUsers();
-  }, [user?.id]);
+  }, [user?.id]); // Only re-run when user ID changes
 
   if (isLoading) {
     return (
