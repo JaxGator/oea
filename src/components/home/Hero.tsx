@@ -13,8 +13,8 @@ export const Hero = () => {
         className="absolute inset-0 w-full h-full object-cover object-center"
       />
       
-      <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-        <div className="container mx-auto text-center relative z-10">
+      <div className="relative z-10 flex items-center justify-center">
+        <div className="container mx-auto text-center">
           <img 
             src="/lovable-uploads/609edf01-3169-439a-80f5-f6f15de7a5a6.png"
             alt="Outdoor Energy Adventures Logo"
