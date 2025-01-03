@@ -24,19 +24,29 @@ export function UserList({ onSelectUser, selectedUserId }: UserListProps) {
 
   useEffect(() => {
     const fetchUsers = async () => {
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("id, username, avatar_url, full_name")
-        .eq("is_approved", true)
-        .neq("id", currentUser?.id)
-        .order("username");
+      try {
+        let query = supabase
+          .from("profiles")
+          .select("id, username, avatar_url, full_name")
+          .eq("is_approved", true)
+          .order("username");
 
-      if (error) {
-        console.error("Error fetching users:", error);
-        return;
+        // Only exclude current user if we have one
+        if (currentUser?.id) {
+          query = query.neq("id", currentUser.id);
+        }
+
+        const { data, error } = await query;
+
+        if (error) {
+          console.error("Error fetching users:", error);
+          return;
+        }
+
+        setUsers(data || []);
+      } catch (error) {
+        console.error("Error in fetchUsers:", error);
       }
-
-      setUsers(data || []);
     };
 
     fetchUsers();
