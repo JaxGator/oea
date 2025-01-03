@@ -5,17 +5,6 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>OEA</title>
-    <script>
-      // Check if user is a paying member before loading GPT Engineer
-      window.addEventListener('load', function() {
-        if (!window.location.hostname.includes('lovableproject.com')) {
-          const script = document.createElement('script');
-          script.src = "https://cdn.gpteng.co/gptengineer.js";
-          script.type = "module";
-          document.head.appendChild(script);
-        }
-      });
-    </script>
   </head>
   <body>
     <div id="root"></div>
