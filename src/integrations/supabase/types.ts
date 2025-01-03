@@ -247,6 +247,48 @@ export type Database = {
           },
         ]
       }
+      message_reports: {
+        Row: {
+          created_at: string
+          id: string
+          message_id: string | null
+          reason: string
+          reporter_id: string | null
+          status: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message_id?: string | null
+          reason: string
+          reporter_id?: string | null
+          status?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message_id?: string | null
+          reason?: string
+          reporter_id?: string | null
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "message_reports_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "messages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "message_reports_reporter_id_fkey"
+            columns: ["reporter_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       messages: {
         Row: {
           content: string
@@ -323,8 +365,10 @@ export type Database = {
         Row: {
           avatar_url: string | null
           created_at: string
+          email_notifications: boolean | null
           full_name: string | null
           id: string
+          in_app_notifications: boolean | null
           is_admin: boolean | null
           is_approved: boolean | null
           is_member: boolean | null
@@ -333,8 +377,10 @@ export type Database = {
         Insert: {
           avatar_url?: string | null
           created_at?: string
+          email_notifications?: boolean | null
           full_name?: string | null
           id: string
+          in_app_notifications?: boolean | null
           is_admin?: boolean | null
           is_approved?: boolean | null
           is_member?: boolean | null
@@ -343,8 +389,10 @@ export type Database = {
         Update: {
           avatar_url?: string | null
           created_at?: string
+          email_notifications?: boolean | null
           full_name?: string | null
           id?: string
+          in_app_notifications?: boolean | null
           is_admin?: boolean | null
           is_approved?: boolean | null
           is_member?: boolean | null
@@ -390,6 +438,42 @@ export type Database = {
           },
         ]
       }
+      user_blocks: {
+        Row: {
+          blocked_id: string | null
+          blocker_id: string | null
+          created_at: string
+          id: string
+        }
+        Insert: {
+          blocked_id?: string | null
+          blocker_id?: string | null
+          created_at?: string
+          id?: string
+        }
+        Update: {
+          blocked_id?: string | null
+          blocker_id?: string | null
+          created_at?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_blocks_blocked_id_fkey"
+            columns: ["blocked_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_blocks_blocker_id_fkey"
+            columns: ["blocker_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -407,6 +491,12 @@ export type Database = {
           new_is_member: boolean
         }
         Returns: undefined
+      }
+      can_message_user: {
+        Args: {
+          target_user_id: string
+        }
+        Returns: boolean
       }
       create_profile: {
         Args: {
