@@ -21,19 +21,24 @@ export function useGroupChat() {
 
   useEffect(() => {
     const fetchChatTitle = async () => {
-      const { data, error } = await supabase
-        .from('site_config')
-        .select('value')
-        .eq('key', 'group_chat_title')
-        .single();
-      
-      if (!error && data) {
-        setChatTitle(data.value || "Event Discussion");
+      try {
+        const { data, error } = await supabase
+          .from('site_config')
+          .select('value')
+          .eq('key', 'group_chat_title')
+          .single();
+        
+        if (!error && data) {
+          setChatTitle(data.value || "Event Discussion");
+        }
+      } catch (error) {
+        console.error('Error fetching chat title:', error);
       }
     };
 
     const fetchMessages = async () => {
       try {
+        console.log('Fetching messages...');
         const { data, error } = await supabase
           .from('group_chat_messages')
           .select(`
@@ -58,6 +63,7 @@ export function useGroupChat() {
           return;
         }
         
+        console.log('Messages fetched:', data);
         setMessages(data || []);
         setIsLoading(false);
       } catch (error) {
@@ -84,27 +90,38 @@ export function useGroupChat() {
           table: 'group_chat_messages'
         },
         async (payload) => {
+          console.log('Received message update:', payload);
+          
           if (payload.eventType === 'DELETE') {
             setMessages(prev => prev.filter(msg => msg.id !== payload.old.id));
           } else if (payload.eventType === 'INSERT') {
-            const { data: senderData } = await supabase
-              .from('profiles')
-              .select('username, avatar_url')
-              .eq('id', payload.new.sender_id)
-              .single();
+            try {
+              const { data: senderData } = await supabase
+                .from('profiles')
+                .select('username, avatar_url')
+                .eq('id', payload.new.sender_id)
+                .single();
 
-            const newMessage = {
-              ...payload.new,
-              sender: senderData
-            } as Message;
+              if (senderData) {
+                const newMessage = {
+                  ...payload.new,
+                  sender: senderData
+                } as Message;
 
-            setMessages(prev => [...prev, newMessage]);
+                setMessages(prev => [...prev, newMessage]);
+              }
+            } catch (error) {
+              console.error('Error fetching sender data:', error);
+            }
           }
         }
       )
-      .subscribe();
+      .subscribe(status => {
+        console.log('Subscription status:', status);
+      });
 
     return () => {
+      console.log('Cleaning up subscription...');
       supabase.removeChannel(channel);
     };
   }, [toast]);
