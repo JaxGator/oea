@@ -1,25 +1,13 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useAuthState } from "@/hooks/useAuthState";
-import { supabase } from "@/integrations/supabase/client";
 import { UserList } from "@/components/messages/UserList";
 import { ChatWindow } from "@/components/messages/ChatWindow";
-import { CreateGroupChatDialog } from "@/components/messages/CreateGroupChatDialog";
 import { useToast } from "@/hooks/use-toast";
 
 export default function Messages() {
-  const { user, profile } = useAuthState();
+  const { profile } = useAuthState();
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const { toast } = useToast();
-
-  useEffect(() => {
-    if (profile && !profile.is_approved) {
-      toast({
-        title: "Access Restricted",
-        description: "Your account needs to be approved to use the messaging system.",
-        variant: "destructive",
-      });
-    }
-  }, [profile, toast]);
 
   if (!profile?.is_approved) {
     return (
@@ -44,10 +32,6 @@ export default function Messages() {
 
   return (
     <div className="container mx-auto p-4">
-      <div className="flex justify-between items-center mb-4">
-        <h1 className="text-2xl font-bold">Messages</h1>
-        {(profile.is_member || profile.is_admin) && <CreateGroupChatDialog />}
-      </div>
       <div className="flex h-[600px] gap-4">
         <div className="w-1/3 border rounded-lg bg-white">
           <UserList onSelectUser={setSelectedUserId} selectedUserId={selectedUserId} />

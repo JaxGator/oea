@@ -1,9 +1,10 @@
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuthState } from "@/hooks/useAuthState";
+import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Input } from "@/components/ui/input";
-import { Search } from "lucide-react";
+import { Loader2 } from "lucide-react";
 
 interface UserListProps {
   onSelectUser: (userId: string) => void;
@@ -14,87 +15,62 @@ interface User {
   id: string;
   username: string;
   avatar_url: string | null;
-  full_name: string | null;
 }
 
 export function UserList({ onSelectUser, selectedUserId }: UserListProps) {
   const [users, setUsers] = useState<User[]>([]);
-  const [searchQuery, setSearchQuery] = useState("");
-  const { user: currentUser } = useAuthState();
+  const [isLoading, setIsLoading] = useState(true);
+  const { user } = useAuthState();
 
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        let query = supabase
-          .from("profiles")
-          .select("id, username, avatar_url, full_name")
-          .eq("is_approved", true)
-          .order("username");
+        const { data: profilesData, error: profilesError } = await supabase
+          .from('profiles')
+          .select('id, username, avatar_url')
+          .neq('id', user?.id)
+          .eq('is_approved', true);
 
-        // Only exclude current user if we have one
-        if (currentUser?.id) {
-          query = query.neq("id", currentUser.id);
-        }
-
-        const { data, error } = await query;
-
-        if (error) {
-          console.error("Error fetching users:", error);
-          return;
-        }
-
-        setUsers(data || []);
+        if (profilesError) throw profilesError;
+        setUsers(profilesData || []);
       } catch (error) {
-        console.error("Error in fetchUsers:", error);
+        console.error('Error fetching users:', error);
+      } finally {
+        setIsLoading(false);
       }
     };
 
     fetchUsers();
-  }, [currentUser?.id]);
+  }, [user?.id]);
 
-  const filteredUsers = users.filter(
-    (user) =>
-      user.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.full_name?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
 
   return (
-    <div className="flex flex-col h-full">
-      <div className="p-4 border-b">
-        <div className="relative">
-          <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search users..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-8"
-          />
-        </div>
-      </div>
-      <div className="flex-1 overflow-y-auto">
-        {filteredUsers.map((user) => (
-          <button
+    <ScrollArea className="h-[600px]">
+      <div className="space-y-2 p-4">
+        {users.map((user) => (
+          <Button
             key={user.id}
+            variant={selectedUserId === user.id ? "default" : "ghost"}
+            className="w-full justify-start gap-2"
             onClick={() => onSelectUser(user.id)}
-            className={`w-full p-4 flex items-center gap-3 hover:bg-gray-50 ${
-              selectedUserId === user.id ? "bg-gray-100" : ""
-            }`}
           >
-            <Avatar>
+            <Avatar className="h-8 w-8">
               <AvatarImage src={user.avatar_url || undefined} />
               <AvatarFallback>
                 {user.username.slice(0, 2).toUpperCase()}
               </AvatarFallback>
             </Avatar>
-            <div className="text-left">
-              <div className="font-medium">{user.username}</div>
-              {user.full_name && (
-                <div className="text-sm text-gray-500">{user.full_name}</div>
-              )}
-            </div>
-          </button>
+            <span className="truncate">{user.username}</span>
+          </Button>
         ))}
       </div>
-    </div>
+    </ScrollArea>
   );
 }
