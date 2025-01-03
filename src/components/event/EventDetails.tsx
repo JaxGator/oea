@@ -79,11 +79,6 @@ export function EventDetails({
         </div>
       )}
       
-      <div 
-        className="text-gray-600 prose prose-sm max-w-none"
-        dangerouslySetInnerHTML={{ __html: description }}
-      />
-      
       {userRSVPStatus && (
         <Badge variant="secondary" className="mt-2">
           Your RSVP: {userRSVPStatus}
