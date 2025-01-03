@@ -1,51 +1,28 @@
-import { useRef } from "react";
-import { useAuthState } from "@/hooks/useAuthState";
+import { useGroupChat } from "./useGroupChat";
 import { ChatHeader } from "./ChatHeader";
+import { ChatMessageList } from "./ChatMessageList";
 import { ChatInput } from "./ChatInput";
 import { ChatSkeleton } from "./ChatSkeleton";
 import { UnauthorizedMessage } from "./UnauthorizedMessage";
-import { ChatMessageList } from "./ChatMessageList";
-import { ChatContainer } from "./ChatContainer";
-import { useGroupChat } from "./useGroupChat";
+import { useAuthState } from "@/hooks/useAuthState";
 
 export function GroupChat() {
-  const { user, profile, isLoading: isAuthLoading } = useAuthState();
-  const { messages, isLoading, chatTitle, setChatTitle } = useGroupChat();
-  const scrollRef = useRef<HTMLDivElement>(null);
+  const { messages, isLoading, chatTitle } = useGroupChat();
+  const { profile } = useAuthState();
 
-  const scrollToBottom = () => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }
-  };
-
-  // Show loading state while checking auth
-  if (isAuthLoading) {
-    return <ChatSkeleton />;
-  }
-
-  // Check for approval status after loading is complete
-  if (!profile?.is_approved && !profile?.is_admin) {
+  if (!profile?.is_approved) {
     return <UnauthorizedMessage />;
   }
 
-  return (
-    <ChatContainer>
-      <ChatHeader 
-        chatTitle={chatTitle}
-        setChatTitle={setChatTitle}
-        isAdmin={profile?.is_admin || false}
-      />
-      
-      <ChatMessageList
-        ref={scrollRef}
-        messages={messages}
-        isLoading={isLoading}
-        currentUserId={user?.id}
-        isAdmin={profile?.is_admin || false}
-      />
+  if (isLoading) {
+    return <ChatSkeleton />;
+  }
 
-      <ChatInput userId={user?.id} />
-    </ChatContainer>
+  return (
+    <div className="flex flex-col h-full">
+      <ChatHeader title={chatTitle} />
+      <ChatMessageList messages={messages} />
+      <ChatInput />
+    </div>
   );
 }

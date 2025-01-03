@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 interface Message {
   id: string;
@@ -16,6 +17,7 @@ export function useGroupChat() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [chatTitle, setChatTitle] = useState("Event Discussion");
+  const { toast } = useToast();
 
   useEffect(() => {
     const fetchChatTitle = async () => {
@@ -35,7 +37,10 @@ export function useGroupChat() {
         const { data, error } = await supabase
           .from('group_chat_messages')
           .select(`
-            *,
+            id,
+            content,
+            created_at,
+            sender_id,
             sender:profiles!group_chat_messages_sender_id_fkey (
               username,
               avatar_url
@@ -43,19 +48,34 @@ export function useGroupChat() {
           `)
           .order('created_at', { ascending: true });
 
-        if (error) throw error;
+        if (error) {
+          console.error('Error fetching messages:', error);
+          toast({
+            title: "Error",
+            description: "Failed to load messages. Please try again.",
+            variant: "destructive",
+          });
+          return;
+        }
+        
         setMessages(data || []);
         setIsLoading(false);
       } catch (error) {
-        console.error('Error fetching messages:', error);
+        console.error('Error in fetchMessages:', error);
+        toast({
+          title: "Error",
+          description: "An unexpected error occurred. Please try again.",
+          variant: "destructive",
+        });
       }
     };
 
     fetchChatTitle();
     fetchMessages();
 
+    // Subscribe to new messages
     const channel = supabase
-      .channel('group-chat')
+      .channel('group-chat-messages')
       .on(
         'postgres_changes',
         {
@@ -87,7 +107,7 @@ export function useGroupChat() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, []);
+  }, [toast]);
 
   return {
     messages,
