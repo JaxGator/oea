@@ -21,14 +21,18 @@ export function CreateGroupChatDialog() {
       // Create the group chat
       const { data: chatData, error: chatError } = await supabase
         .from('group_chats')
-        .insert([{ 
+        .insert({
           name: chatName.trim(),
           created_by: user.id
-        }])
-        .select()
+        })
+        .select('id')
         .single();
 
       if (chatError) throw chatError;
+
+      if (!chatData?.id) {
+        throw new Error('Failed to create chat - no chat ID returned');
+      }
 
       // Add participants including the creator
       const participants = [...selectedUsers, user.id].map(userId => ({
