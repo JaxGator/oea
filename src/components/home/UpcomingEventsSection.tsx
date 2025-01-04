@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { EventCard } from "@/components/EventCard";
 import { Event } from "@/types/event";
+import { CalendarDays } from "lucide-react";
 
 interface UpcomingEventsSectionProps {
   events: Event[];
@@ -24,7 +25,10 @@ export const UpcomingEventsSection = ({
   return (
     <div className="py-1">
       <div className="flex justify-between items-center mb-4 gap-4">
-        <h2 className="text-2xl font-bold text-gray-900">Upcoming Events</h2>
+        <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+          <CalendarDays className="h-6 w-6" />
+          Upcoming Events
+        </h2>
         <Button 
           onClick={() => navigate("/events")}
           variant="outline"
