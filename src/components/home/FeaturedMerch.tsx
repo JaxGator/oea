@@ -2,6 +2,7 @@ import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useAuthState } from "@/hooks/useAuthState";
+import { ShoppingBag } from "lucide-react";
 
 export const FeaturedMerch = () => {
   const { profile } = useAuthState();
@@ -28,7 +29,10 @@ export const FeaturedMerch = () => {
   return (
     <div className="mt-16 space-y-4">
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-gray-900">Member-Only Merch</h2>
+        <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+          <ShoppingBag className="h-6 w-6" />
+          Member-Only Merch
+        </h2>
         {canAccessStore && (
           <Button
             variant="outline"
