@@ -80,7 +80,7 @@ export const GalleryPreview = () => {
 
       {/* Selected Image Modal */}
       <Dialog open={!!selectedImage} onOpenChange={() => setSelectedImage(null)}>
-        <DialogContent className="max-w-[95vw] max-h-[95vh] p-2">
+        <DialogContent className="max-w-[95vw] max-h-[95vh] p-2 bg-[#8E9196]">
           <div className="relative w-full h-full flex items-center justify-center">
             {selectedImage && (
               <img
