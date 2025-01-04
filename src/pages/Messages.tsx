@@ -35,39 +35,43 @@ export default function Messages() {
 
   return (
     <div className="container mx-auto p-4">
-      <div className="flex justify-between items-center mb-4">
-        <h1 className="text-2xl font-bold flex items-center gap-2">
-          <MessagesSquare className="h-6 w-6" />
-          Messages
-        </h1>
-        <div className="flex gap-2">
-          <CreateGroupChatDialog />
-          <Button variant="outline" className="flex items-center gap-2">
-            <MessageSquare className="h-4 w-4" />
-            Direct Messages
-          </Button>
-        </div>
-      </div>
-      <div className="flex h-[600px] gap-4">
-        <div className="w-1/3 border rounded-lg bg-white flex flex-col overflow-hidden">
-          <div className="p-3 border-b bg-gray-50">
-            <h2 className="font-semibold text-gray-700 flex items-center gap-2">
-              <Users className="h-4 w-4" />
-              Users
-            </h2>
-          </div>
-          <div className="flex-1 overflow-hidden">
-            <UserList onSelectUser={setSelectedUserId} selectedUserId={selectedUserId} />
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <h1 className="text-2xl font-bold flex items-center gap-2">
+            <MessagesSquare className="h-6 w-6" />
+            Messages
+          </h1>
+          <div className="flex flex-wrap gap-2 w-full sm:w-auto">
+            <CreateGroupChatDialog />
+            <Button variant="outline" className="flex items-center gap-2 w-full sm:w-auto">
+              <MessageSquare className="h-4 w-4" />
+              Direct Messages
+            </Button>
           </div>
         </div>
-        <div className="w-2/3 border rounded-lg bg-white flex flex-col overflow-hidden">
-          <div className="p-3 border-b bg-gray-50">
-            <h2 className="font-semibold text-gray-700">
-              {selectedUserId ? "Chat" : "Select a user to start messaging"}
-            </h2>
+        
+        <div className="flex flex-col lg:flex-row gap-4 h-[calc(100vh-12rem)]">
+          <div className="w-full lg:w-1/3 border rounded-lg bg-white flex flex-col overflow-hidden min-h-[300px] lg:min-h-0">
+            <div className="p-3 border-b bg-gray-50">
+              <h2 className="font-semibold text-gray-700 flex items-center gap-2">
+                <Users className="h-4 w-4" />
+                Users
+              </h2>
+            </div>
+            <div className="flex-1 overflow-hidden">
+              <UserList onSelectUser={setSelectedUserId} selectedUserId={selectedUserId} />
+            </div>
           </div>
-          <div className="flex-1 overflow-hidden">
-            <ChatWindow selectedUserId={selectedUserId} />
+          
+          <div className="w-full lg:w-2/3 border rounded-lg bg-white flex flex-col overflow-hidden min-h-[400px] lg:min-h-0">
+            <div className="p-3 border-b bg-gray-50">
+              <h2 className="font-semibold text-gray-700">
+                {selectedUserId ? "Chat" : "Select a user to start messaging"}
+              </h2>
+            </div>
+            <div className="flex-1 overflow-hidden">
+              <ChatWindow selectedUserId={selectedUserId} />
+            </div>
           </div>
         </div>
       </div>
