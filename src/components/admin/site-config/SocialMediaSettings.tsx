@@ -7,7 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, Plus, Trash2 } from "lucide-react";
+import { Loader2, Plus, Trash2, Check } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
 
 interface SocialFeed {
   id: string;
@@ -20,22 +21,26 @@ interface SocialFeed {
 export function SocialMediaSettings() {
   const [feeds, setFeeds] = useState<SocialFeed[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [socialLinks, setSocialLinks] = useState<Record<string, string>>({});
   const { toast } = useToast();
 
   const fetchFeeds = async () => {
     try {
-      const { data, error } = await supabase
-        .from('social_media_feeds')
-        .select('*')
-        .order('display_order');
+      const [feedsResponse, configResponse] = await Promise.all([
+        supabase.from('social_media_feeds').select('*').order('display_order'),
+        supabase.from('site_config').select('value').eq('key', 'social_links').single()
+      ]);
 
-      if (error) throw error;
-      setFeeds(data || []);
+      if (feedsResponse.error) throw feedsResponse.error;
+      if (configResponse.error) throw configResponse.error;
+
+      setFeeds(feedsResponse.data || []);
+      setSocialLinks(JSON.parse(configResponse.data?.value || '{"facebook":"","instagram":"","youtube":""}'));
     } catch (error) {
-      console.error('Error fetching feeds:', error);
+      console.error('Error fetching data:', error);
       toast({
         title: "Error",
-        description: "Failed to load social media feeds",
+        description: "Failed to load social media settings",
         variant: "destructive",
       });
     } finally {
@@ -118,6 +123,34 @@ export function SocialMediaSettings() {
     }
   };
 
+  const updateSocialLinks = async () => {
+    try {
+      const { error } = await supabase
+        .from('site_config')
+        .upsert({ 
+          key: 'social_links',
+          value: JSON.stringify(socialLinks),
+          updated_at: new Date().toISOString()
+        }, {
+          onConflict: 'key'
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Social links updated successfully",
+      });
+    } catch (error) {
+      console.error('Error updating social links:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update social links",
+        variant: "destructive",
+      });
+    }
+  };
+
   useEffect(() => {
     fetchFeeds();
   }, []);
@@ -127,15 +160,45 @@ export function SocialMediaSettings() {
   }
 
   return (
-    <Card>
-      <CardContent className="space-y-6 pt-6">
-        <div className="flex justify-between items-center">
-          <h3 className="text-lg font-medium">Social Media Feeds</h3>
-          <Button onClick={addFeed} size="sm">
-            <Plus className="h-4 w-4 mr-2" />
-            Add Feed
-          </Button>
-        </div>
+    <div className="space-y-6">
+      <Card>
+        <CardContent className="space-y-6 pt-6">
+          <div className="space-y-4">
+            <h3 className="text-lg font-medium">Social Links</h3>
+            <div className="space-y-4">
+              {Object.entries(socialLinks).map(([platform, url]) => (
+                <div key={platform} className="flex gap-2">
+                  <Input
+                    value={url}
+                    onChange={(e) => {
+                      setSocialLinks(prev => ({
+                        ...prev,
+                        [platform]: e.target.value
+                      }));
+                    }}
+                    placeholder={`Enter ${platform} URL`}
+                  />
+                </div>
+              ))}
+              <Button
+                onClick={updateSocialLinks}
+                className="bg-[#0d97d1] hover:bg-[#0d97d1]/90"
+              >
+                <Check className="h-4 w-4 mr-1" />
+                Save Social Links
+              </Button>
+            </div>
+          </div>
+
+          <Separator className="my-6" />
+
+          <div className="flex justify-between items-center">
+            <h3 className="text-lg font-medium">Social Media Feeds</h3>
+            <Button onClick={addFeed} size="sm">
+              <Plus className="h-4 w-4 mr-2" />
+              Add Feed
+            </Button>
+          </div>
 
         <div className="space-y-4">
           {feeds.map((feed) => (
@@ -192,7 +255,8 @@ export function SocialMediaSettings() {
             </div>
           ))}
         </div>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+    </div>
   );
 }
