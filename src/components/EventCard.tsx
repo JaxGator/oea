@@ -7,6 +7,9 @@ import { EventEditDialog } from "./event/EventEditDialog";
 import { EventActions } from "./event/actions/EventActions";
 import { useEventCard } from "@/hooks/useEventCard";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { useAuthState } from "@/hooks/useAuthState";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 interface EventCardProps {
   event: Event;
@@ -35,6 +38,9 @@ export function EventCard({
     setShowDetailsDialog
   } = useEventCard(event.id, onUpdate);
 
+  const { user, profile, isAuthenticated } = useAuthState();
+  const navigate = useNavigate();
+
   const isPastEvent = new Date(event.date) < new Date(new Date().setHours(0, 0, 0, 0));
   const isWixEvent = event.description === 'Imported from Wix';
   const canAddGuests = isAdmin || userRSVPStatus === 'attending';
@@ -44,6 +50,21 @@ export function EventCard({
     const firstName = fullName ? fullName.split(' ')[0] : attendee.profile.username;
     return firstName;
   });
+
+  const handleRSVP = (guests?: { firstName: string }[]) => {
+    if (!isAuthenticated) {
+      toast.error("Please sign in to RSVP for events");
+      navigate("/auth");
+      return;
+    }
+
+    if (!profile?.is_approved) {
+      toast.error("Your account needs to be approved before you can RSVP for events");
+      return;
+    }
+
+    onRSVP(event.id, guests);
+  };
 
   return (
     <>
@@ -68,7 +89,7 @@ export function EventCard({
             isAdmin={isAdmin}
             userRSVPStatus={userRSVPStatus || null}
             isFullyBooked={rsvpCount >= event.max_guests}
-            onRSVP={(guests) => onRSVP(event.id, guests)}
+            onRSVP={handleRSVP}
             onCancelRSVP={() => onCancelRSVP(event.id)}
             onEdit={() => setShowEditDialog(true)}
             onDelete={handleDelete}
@@ -91,7 +112,7 @@ export function EventCard({
             isPastEvent={isPastEvent}
             isWixEvent={isWixEvent}
             canAddGuests={canAddGuests}
-            onRSVP={(guests) => onRSVP(event.id, guests)}
+            onRSVP={handleRSVP}
             onCancelRSVP={() => onCancelRSVP(event.id)}
             onEdit={() => setShowEditDialog(true)}
             onDelete={handleDelete}
