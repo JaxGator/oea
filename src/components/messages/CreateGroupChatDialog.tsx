@@ -17,11 +17,10 @@ export function CreateGroupChatDialog() {
   const { user } = useAuthState();
 
   const handleCreateChat = async () => {
-    if (!chatName.trim() || selectedUsers.length === 0 || !user?.id) return;
-    if (selectedUsers.length < 1) {
+    if (!chatName.trim() || selectedUsers.length === 0 || !user?.id) {
       toast({
         title: "Error",
-        description: "Please select at least one participant",
+        description: "Please fill in all required fields",
         variant: "destructive",
       });
       return;
@@ -29,7 +28,7 @@ export function CreateGroupChatDialog() {
 
     setIsLoading(true);
     try {
-      // Create the group chat in a single transaction
+      // Create the group chat
       const { data: chatData, error: chatError } = await supabase
         .from('group_chats')
         .insert({
@@ -41,12 +40,11 @@ export function CreateGroupChatDialog() {
 
       if (chatError) {
         console.error('Error creating chat:', chatError);
-        throw chatError;
+        throw new Error(chatError.message);
       }
 
       if (!chatData?.id) {
-        console.error('No chat ID returned');
-        throw new Error('Failed to create chat - no chat ID returned');
+        throw new Error('No chat ID returned');
       }
 
       // Add participants including the creator
@@ -62,7 +60,12 @@ export function CreateGroupChatDialog() {
 
       if (participantsError) {
         console.error('Error adding participants:', participantsError);
-        throw participantsError;
+        // Attempt to clean up the created chat
+        await supabase
+          .from('group_chats')
+          .delete()
+          .eq('id', chatData.id);
+        throw new Error(participantsError.message);
       }
 
       toast({
@@ -74,10 +77,10 @@ export function CreateGroupChatDialog() {
       setChatName("");
       setSelectedUsers([]);
     } catch (error) {
-      console.error('Error creating group chat:', error);
+      console.error('Error in handleCreateChat:', error);
       toast({
         title: "Error",
-        description: "Failed to create group chat",
+        description: error instanceof Error ? error.message : "Failed to create group chat",
         variant: "destructive",
       });
     } finally {
