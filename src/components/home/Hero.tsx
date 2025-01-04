@@ -18,12 +18,17 @@ export const Hero = () => {
       
       <div className="relative z-10 flex items-center justify-center">
         <div className="container mx-auto text-center">
-          <h1 className="sr-only">Outdoor Energy Adventures - Jacksonville's Premier Adventure Community</h1>
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 drop-shadow-lg">
+            Outdoor Energy Adventures
+          </h1>
+          <p className="text-xl md:text-2xl text-white mb-8 drop-shadow-md">
+            Jacksonville's Premier Adventure Community
+          </p>
           <figure role="none" className="mx-auto">
             <img 
               src="/lovable-uploads/609edf01-3169-439a-80f5-f6f15de7a5a6.png"
               alt="Outdoor Energy Adventures Logo - A vibrant emblem representing outdoor activities and community spirit"
-              className="w-48 sm:w-56 md:w-64 lg:w-80 mx-auto mb-6 sm:mb-8 animate-fade-in"
+              className="w-48 sm:w-56 md:w-64 lg:w-80 mx-auto animate-fade-in"
               loading="eager"
               decoding="async"
             />
