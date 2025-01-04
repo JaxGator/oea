@@ -7,6 +7,8 @@ import { EventCardHeader } from "./event/EventCardHeader";
 import { EventEditDialog } from "./event/EventEditDialog";
 import { useEventCard } from "@/hooks/useEventCard";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { format, parseISO } from "date-fns";
+import { CalendarIcon } from "lucide-react";
 
 interface EventCardProps {
   event: Event;
@@ -42,6 +44,10 @@ export function EventCard({ event, onRSVP, onCancelRSVP, userRSVPStatus, onUpdat
     return firstName;
   });
 
+  // Format the date for the card view
+  const eventDate = parseISO(event.date);
+  const formattedDate = format(eventDate, "EEEE, MMMM do");
+
   return (
     <>
       <Card 
@@ -50,31 +56,14 @@ export function EventCard({ event, onRSVP, onCancelRSVP, userRSVPStatus, onUpdat
       >
         <EventCardHeader imageUrl={event.image_url} title={event.title} />
         
-        <CardContent className="p-4" data-interactive="true">
-          <EventDetails
-            date={event.date}
-            time={event.time}
-            location={event.location}
-            rsvpCount={rsvpCount}
-            maxGuests={event.max_guests}
-            description={event.description || ""}
-            attendeeNames={attendeeNames}
-            userRSVPStatus={userRSVPStatus}
-          />
-          {(userRSVPStatus === 'attending' || isAdmin) && !disableRSVP && (
-            <AddToCalendar
-              event={{
-                title: event.title,
-                description: event.description,
-                date: event.date,
-                time: event.time,
-                location: event.location,
-              }}
-            />
-          )}
+        <CardContent className="p-4">
+          <div className="flex items-center gap-2 text-gray-600 mb-4">
+            <CalendarIcon className="w-4 h-4" />
+            <span className="text-sm">{formattedDate}</span>
+          </div>
         </CardContent>
 
-        <CardFooter className="p-4 pt-0" data-interactive="true">
+        <CardFooter className="p-4 pt-0">
           <EventActions
             isAdmin={isAdmin}
             userRSVPStatus={userRSVPStatus || null}
@@ -115,6 +104,18 @@ export function EventCard({ event, onRSVP, onCancelRSVP, userRSVPStatus, onUpdat
             showFullDescription
           />
           
+          {(userRSVPStatus === 'attending' || isAdmin) && !disableRSVP && (
+            <AddToCalendar
+              event={{
+                title: event.title,
+                description: event.description,
+                date: event.date,
+                time: event.time,
+                location: event.location,
+              }}
+            />
+          )}
+
           <div className="mt-6">
             <EventActions
               isAdmin={isAdmin}
