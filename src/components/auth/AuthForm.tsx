@@ -51,7 +51,7 @@ export function AuthForm() {
           anchor: 'text-gray-700 hover:text-gray-900',
         },
       }}
-      providers={[]}
+      providers={['google', 'facebook']}
       redirectTo={`${window.location.origin}/auth/callback`}
       magicLink={false}
       localization={{
