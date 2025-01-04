@@ -60,13 +60,17 @@ export function ChatWindow({ selectedUserId }: ChatWindowProps) {
       .on(
         'postgres_changes',
         {
-          event: 'INSERT',
+          event: '*',
           schema: 'public',
           table: 'messages',
           filter: `sender_id=eq.${user.id},receiver_id=eq.${selectedUserId}`
         },
         (payload) => {
-          setMessages(prev => [...prev, payload.new as Message]);
+          if (payload.eventType === 'INSERT') {
+            setMessages(prev => [...prev, payload.new as Message]);
+          } else if (payload.eventType === 'DELETE') {
+            setMessages(prev => prev.filter(msg => msg.id !== payload.old.id));
+          }
         }
       )
       .subscribe();
