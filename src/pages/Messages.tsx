@@ -5,7 +5,7 @@ import { ChatWindow } from "@/components/messages/ChatWindow";
 import { CreateGroupChatDialog } from "@/components/messages/CreateGroupChatDialog";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
-import { MessageSquare, MessagesSquare } from "lucide-react";
+import { MessageSquare, MessagesSquare, Users } from "lucide-react";
 
 export default function Messages() {
   const { profile } = useAuthState();
@@ -51,7 +51,10 @@ export default function Messages() {
       <div className="flex h-[600px] gap-4">
         <div className="w-1/3 border rounded-lg bg-white flex flex-col overflow-hidden">
           <div className="p-3 border-b bg-gray-50">
-            <h2 className="font-semibold text-gray-700">Users</h2>
+            <h2 className="font-semibold text-gray-700 flex items-center gap-2">
+              <Users className="h-4 w-4" />
+              Users
+            </h2>
           </div>
           <div className="flex-1 overflow-hidden">
             <UserList onSelectUser={setSelectedUserId} selectedUserId={selectedUserId} />
