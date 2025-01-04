@@ -112,7 +112,7 @@ export function SearchDialog() {
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetTrigger asChild>
           <Button variant="ghost" className="w-9 px-0">
-            <Search className="h-4 w-4" />
+            <Search className="h-4 w-4" role="presentation" />
             <span className="sr-only">Search</span>
           </Button>
         </SheetTrigger>
@@ -127,7 +127,7 @@ export function SearchDialog() {
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button variant="ghost" className="w-9 px-0">
-          <Search className="h-4 w-4" />
+          <Search className="h-4 w-4" role="presentation" />
           <span className="sr-only">Search</span>
         </Button>
       </PopoverTrigger>

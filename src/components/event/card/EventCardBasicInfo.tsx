@@ -22,17 +22,17 @@ export function EventCardBasicInfo({
   return (
     <div className="space-y-3">
       <div className="flex items-center gap-2 text-gray-600">
-        <CalendarIcon className="w-4 h-4" />
+        <CalendarIcon className="w-4 h-4" role="presentation" />
         <span className="text-sm">{formattedDate}</span>
       </div>
       
       <div className="flex items-center gap-2 text-gray-600">
-        <MapPinIcon className="w-4 h-4" />
+        <MapPinIcon className="w-4 h-4" role="presentation" />
         <span className="text-sm">{location}</span>
       </div>
 
       <div className="flex items-center gap-2 text-gray-600">
-        <UsersIcon className="w-4 h-4" />
+        <UsersIcon className="w-4 h-4" role="presentation" />
         <span className="text-sm">
           {isWixEvent ? (
             `${rsvpCount} attendees`

@@ -33,7 +33,7 @@ export const GalleryPreview = () => {
     <div className="mt-16 space-y-4">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-          <Camera className="h-6 w-6" />
+          <Camera className="h-6 w-6" role="presentation" />
           Photo Gallery
         </h2>
         <Button onClick={() => setShowFullGallery(true)} variant="outline">

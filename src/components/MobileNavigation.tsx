@@ -26,7 +26,8 @@ export function MobileNavigation() {
             size="icon"
             className="h-12 w-12 rounded-full shadow-lg bg-primary hover:bg-primary/90"
           >
-            <Menu className="h-6 w-6" />
+            <Menu className="h-6 w-6" role="presentation" />
+            <span className="sr-only">Open menu</span>
           </Button>
         </SheetTrigger>
         <SheetContent side="right" className="w-[250px] p-0">
