@@ -7,7 +7,7 @@ import { EventsMap } from "@/components/event/EventsMap";
 import { useRSVP } from "@/hooks/useRSVP";
 import { toast } from "sonner";
 import { useAuthState } from "@/hooks/useAuthState";
-import { Loader2, CalendarDays } from "lucide-react";
+import { Loader2, CalendarDays, CalendarRange } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ErrorBoundary } from "@/components/error/ErrorBoundary";
 
@@ -49,7 +49,10 @@ export default function Events() {
   return (
     <div className="min-h-screen bg-white">
       <div className="max-w-7xl mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold text-center mb-8">Events</h1>
+        <h1 className="text-3xl font-bold text-center mb-8 flex items-center justify-center gap-2">
+          <CalendarRange className="h-8 w-8" />
+          Events
+        </h1>
         
         <div className="bg-white rounded-lg shadow-sm">
           <div className="p-6">
