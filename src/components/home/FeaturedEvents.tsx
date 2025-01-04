@@ -1,6 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useFeaturedEvents } from "@/hooks/useFeaturedEvents";
-import { supabase } from "@/integrations/supabase/client";
 import { UpcomingEventsSection } from "./UpcomingEventsSection";
 
 export const FeaturedEvents = () => {
@@ -17,8 +16,9 @@ export const FeaturedEvents = () => {
     .slice(0, 4);
 
   return (
-    <section className="py-4 bg-[#F1F0FB]" aria-labelledby="upcoming-events-heading">
+    <section className="py-4 bg-[#F1F0FB]" aria-labelledby="featured-events-heading">
       <div className="container mx-auto px-4">
+        <h2 id="featured-events-heading" className="sr-only">Featured Events</h2>
         <UpcomingEventsSection 
           events={upcomingEvents}
           userRSVPs={userRSVPs}
