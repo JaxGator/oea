@@ -4,7 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { UserCircle } from "lucide-react";
 import { Profile } from "@/types/auth";
 import { supabase } from "@/integrations/supabase/client";
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 
 interface UserMenuProps {
   user: any;
@@ -12,6 +12,7 @@ interface UserMenuProps {
 }
 
 export function UserMenu({ user, profile }: UserMenuProps) {
+  const [isOpen, setIsOpen] = useState(false);
   const handleSignOut = useCallback(async () => {
     await supabase.auth.signOut();
   }, []);
@@ -19,7 +20,12 @@ export function UserMenu({ user, profile }: UserMenuProps) {
   if (!user) {
     return (
       <Link to="/auth">
-        <Button variant="ghost" className="text-white hover:text-primary-100 hover:bg-gray-800">
+        <Button 
+          variant="ghost" 
+          className="text-white hover:text-primary-100 hover:bg-gray-800"
+          role="menuitem"
+          tabIndex={0}
+        >
           Sign In
         </Button>
       </Link>
@@ -27,10 +33,18 @@ export function UserMenu({ user, profile }: UserMenuProps) {
   }
 
   return (
-    <div className="flex items-center space-x-4">
+    <div className="flex items-center space-x-4" role="menu">
       <Link
         to="/profile"
         className="flex items-center space-x-2 hover:opacity-80"
+        role="menuitem"
+        tabIndex={0}
+        aria-haspopup="true"
+        aria-expanded={isOpen}
+        onMouseEnter={() => setIsOpen(true)}
+        onMouseLeave={() => setIsOpen(false)}
+        onFocus={() => setIsOpen(true)}
+        onBlur={() => setIsOpen(false)}
       >
         <Avatar className="h-8 w-8">
           <AvatarImage
@@ -49,6 +63,8 @@ export function UserMenu({ user, profile }: UserMenuProps) {
         variant="ghost"
         className="text-white hover:text-primary-100 hover:bg-gray-800"
         onClick={handleSignOut}
+        role="menuitem"
+        tabIndex={0}
       >
         Sign Out
       </Button>

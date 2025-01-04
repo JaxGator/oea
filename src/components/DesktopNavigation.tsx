@@ -15,7 +15,7 @@ export function DesktopNavigation() {
   const navigationItems = createNavigationItems(user, profile, handleSignOut);
 
   return (
-    <nav className="hidden md:block bg-gray-900 text-white p-4">
+    <nav className="hidden md:block bg-gray-900 text-white p-4" role="navigation" aria-label="Main navigation">
       <div className="container mx-auto flex justify-between items-center">
         <div className="flex items-center space-x-8">
           <Link to="/">
@@ -26,7 +26,7 @@ export function DesktopNavigation() {
             />
           </Link>
           
-          <div className="flex space-x-8">
+          <div className="flex space-x-8" role="menubar">
             {navigationItems
               .filter(item => !item.onClick && (!item.show || item.show(user, profile)))
               .filter(item => item.path !== '/auth' && item.path !== '#' && item.path !== '/')
@@ -38,6 +38,8 @@ export function DesktopNavigation() {
                     target="_blank"
                     rel="noopener noreferrer"
                     className="hover:text-primary-100 transition-colors"
+                    role="menuitem"
+                    tabIndex={0}
                   >
                     {label}
                   </a>
@@ -46,6 +48,8 @@ export function DesktopNavigation() {
                     key={path}
                     to={path}
                     className="hover:text-primary-100 transition-colors"
+                    role="menuitem"
+                    tabIndex={0}
                   >
                     {label}
                   </Link>

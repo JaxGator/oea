@@ -6,10 +6,12 @@ import { useAuthState } from "@/hooks/useAuthState";
 import { supabase } from "@/integrations/supabase/client";
 import { SearchDialog } from "./search/SearchDialog";
 import { createNavigationItems } from "@/utils/navigation";
+import { useState } from "react";
 
 export function MobileNavigation() {
   const location = useLocation();
   const { user, profile } = useAuthState();
+  const [isOpen, setIsOpen] = useState(false);
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
@@ -19,12 +21,15 @@ export function MobileNavigation() {
 
   return (
     <div className="fixed bottom-4 right-4 md:hidden z-50">
-      <Sheet>
+      <Sheet open={isOpen} onOpenChange={setIsOpen}>
         <SheetTrigger asChild>
           <Button
             variant="default"
             size="icon"
             className="h-12 w-12 rounded-full shadow-lg bg-primary hover:bg-primary/90"
+            aria-haspopup="true"
+            aria-expanded={isOpen}
+            aria-label="Open navigation menu"
           >
             <Menu className="h-6 w-6" role="presentation" />
             <span className="sr-only">Open menu</span>
@@ -34,7 +39,7 @@ export function MobileNavigation() {
           <div className="p-4">
             <SearchDialog />
           </div>
-          <nav className="flex flex-col p-4">
+          <nav className="flex flex-col p-4" role="navigation" aria-label="Mobile navigation">
             {navigationItems
               .filter(item => !item.show || item.show(user, profile))
               .map(({ icon: Icon, label, path, external, onClick }) => 
@@ -45,6 +50,8 @@ export function MobileNavigation() {
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center gap-3 rounded-lg px-3 py-2 transition-colors hover:bg-primary/10"
+                    role="menuitem"
+                    tabIndex={isOpen ? 0 : -1}
                   >
                     <Icon className="h-5 w-5" />
                     <span className="font-medium">{label}</span>
@@ -54,6 +61,8 @@ export function MobileNavigation() {
                     key={path}
                     onClick={onClick}
                     className="flex items-center gap-3 rounded-lg px-3 py-2 transition-colors hover:bg-primary/10 w-full text-left"
+                    role="menuitem"
+                    tabIndex={isOpen ? 0 : -1}
                   >
                     <Icon className="h-5 w-5" />
                     <span className="font-medium">{label}</span>
@@ -67,6 +76,8 @@ export function MobileNavigation() {
                         ? "bg-primary text-primary-foreground"
                         : "hover:bg-primary/10"
                     }`}
+                    role="menuitem"
+                    tabIndex={isOpen ? 0 : -1}
                   >
                     <Icon className="h-5 w-5" />
                     <span className="font-medium">{label}</span>
