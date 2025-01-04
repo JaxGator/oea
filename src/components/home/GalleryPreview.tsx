@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { GallerySection } from './GallerySection';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { Camera } from "lucide-react";
 
 export const GalleryPreview = () => {
   const [showFullGallery, setShowFullGallery] = useState(false);
@@ -31,7 +32,10 @@ export const GalleryPreview = () => {
   return (
     <div className="mt-16 space-y-4">
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-gray-900">Photo Gallery</h2>
+        <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+          <Camera className="h-6 w-6" />
+          Photo Gallery
+        </h2>
         <Button onClick={() => setShowFullGallery(true)} variant="outline">
           View All Photos
         </Button>
