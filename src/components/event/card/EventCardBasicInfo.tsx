@@ -1,4 +1,4 @@
-import { CalendarIcon, MapPinIcon, UsersIcon } from "lucide-react";
+import { CalendarDays, MapPin, Users } from "lucide-react";
 import { format, parseISO } from "date-fns";
 
 interface EventCardBasicInfoProps {
@@ -9,35 +9,47 @@ interface EventCardBasicInfoProps {
   isWixEvent: boolean;
 }
 
-export function EventCardBasicInfo({ 
-  date, 
-  location, 
-  rsvpCount, 
-  maxGuests, 
-  isWixEvent 
+export function EventCardBasicInfo({
+  date,
+  location,
+  rsvpCount,
+  maxGuests,
+  isWixEvent,
 }: EventCardBasicInfoProps) {
-  const eventDate = parseISO(date);
-  const formattedDate = format(eventDate, "EEEE, MMMM do");
-
   return (
-    <div className="space-y-3">
-      <div className="flex items-center gap-2 text-gray-600">
-        <CalendarIcon className="w-4 h-4" role="presentation" />
-        <span className="text-sm">{formattedDate}</span>
+    <div className="space-y-2">
+      <div 
+        className="flex items-center gap-2 text-gray-600"
+        role="group"
+        aria-label="Event date"
+        tabIndex={0}
+      >
+        <CalendarDays className="h-4 w-4" aria-hidden="true" />
+        <span>{format(parseISO(date), "MMMM d, yyyy")}</span>
       </div>
       
-      <div className="flex items-center gap-2 text-gray-600">
-        <MapPinIcon className="w-4 h-4" role="presentation" />
-        <span className="text-sm">{location}</span>
+      <div 
+        className="flex items-center gap-2 text-gray-600"
+        role="group"
+        aria-label="Event location"
+        tabIndex={0}
+      >
+        <MapPin className="h-4 w-4" aria-hidden="true" />
+        <span>{location}</span>
       </div>
-
-      <div className="flex items-center gap-2 text-gray-600">
-        <UsersIcon className="w-4 h-4" role="presentation" />
-        <span className="text-sm">
+      
+      <div 
+        className="flex items-center gap-2 text-gray-600"
+        role="group"
+        aria-label="Event attendance"
+        tabIndex={0}
+      >
+        <Users className="h-4 w-4" aria-hidden="true" />
+        <span>
           {isWixEvent ? (
-            `${rsvpCount} attendees`
+            "RSVPs from previous platform"
           ) : (
-            `${rsvpCount} / ${maxGuests} attendees`
+            `${rsvpCount} / ${maxGuests} attending`
           )}
         </span>
       </div>
