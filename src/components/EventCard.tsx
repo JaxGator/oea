@@ -44,11 +44,7 @@ export function EventCard({ event, onRSVP, onCancelRSVP, userRSVPStatus, onUpdat
       className="w-full transition-all duration-300 hover:shadow-lg animate-fade-in bg-white"
       onClick={handleCardClick}
     >
-      <EventCardHeader 
-        imageUrl={event.image_url} 
-        title={event.title} 
-        isFeatured={event.is_featured}
-      />
+      <EventCardHeader imageUrl={event.image_url} title={event.title} />
       
       <CardContent className="p-4" data-interactive="true">
         <EventDetails
