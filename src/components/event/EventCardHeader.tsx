@@ -10,14 +10,15 @@ export function EventCardHeader({ imageUrl, title }: EventCardHeaderProps) {
     <div 
       className="flex flex-col space-y-1.5 relative p-0"
       role="img"
-      aria-label={`Image for ${title}`}
-      tabIndex={0}
+      aria-label={`Featured image for event: ${title}`}
     >
-      <img
-        src={imageUrl}
-        alt={title}
-        className="w-full h-48 object-cover rounded-t-lg"
-      />
+      <figure role="none" className="w-full h-48">
+        <img
+          src={imageUrl}
+          alt={`Event image for ${title}`}
+          className="w-full h-full object-cover rounded-t-lg"
+        />
+      </figure>
       <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-4">
         <h3 className="text-lg font-semibold text-white">{title}</h3>
       </div>
