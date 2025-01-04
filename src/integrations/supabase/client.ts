@@ -15,7 +15,6 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, 
     flowType: 'pkce',
     storage: typeof window !== 'undefined' ? window.localStorage : undefined,
     storageKey: 'supabase.auth.token',
-    debug: true
   },
   global: {
     headers: {
@@ -25,11 +24,6 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, 
   db: {
     schema: 'public'
   },
-  realtime: {
-    params: {
-      eventsPerSecond: 2
-    }
-  }
 });
 
 // Test connection and log detailed errors
