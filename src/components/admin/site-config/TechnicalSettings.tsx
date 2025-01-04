@@ -1,6 +1,7 @@
 import { MaintenanceMode } from "./technical/MaintenanceMode";
 import { ImageUploadField } from "./technical/ImageUploadField";
 import { CodeEditor } from "./technical/CodeEditor";
+import { FaviconConfig } from "./technical/FaviconConfig";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Dispatch, SetStateAction } from "react";
@@ -52,6 +53,12 @@ export function TechnicalSettings({ configs, setConfigs, isLoading }: TechnicalS
             setConfigs(prev => ({ ...prev, maintenance_mode: enabled.toString() }));
             updateConfig('maintenance_mode', enabled.toString());
           }}
+        />
+
+        <FaviconConfig
+          value={configs.favicon_url || ''}
+          onChange={(value) => setConfigs(prev => ({ ...prev, favicon_url: value }))}
+          onSave={() => updateConfig('favicon_url', configs.favicon_url || '')}
         />
 
         <ImageUploadField
