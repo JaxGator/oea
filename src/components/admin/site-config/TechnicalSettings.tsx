@@ -1,6 +1,7 @@
 import { MaintenanceMode } from "./technical/MaintenanceMode";
 import { ImageUploadField } from "./technical/ImageUploadField";
 import { CodeEditor } from "./technical/CodeEditor";
+import { GallerySettings } from "./technical/GallerySettings";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Dispatch, SetStateAction } from "react";
@@ -43,6 +44,16 @@ export function TechnicalSettings({ configs, setConfigs, isLoading }: TechnicalS
     }
   };
 
+  const handleGallerySettingsSave = async (settings: { carouselEnabled: boolean; carouselInterval: number }) => {
+    await updateConfig('gallery_carousel_enabled', settings.carouselEnabled.toString());
+    await updateConfig('gallery_carousel_interval', settings.carouselInterval.toString());
+    setConfigs(prev => ({
+      ...prev,
+      gallery_carousel_enabled: settings.carouselEnabled.toString(),
+      gallery_carousel_interval: settings.carouselInterval.toString()
+    }));
+  };
+
   return (
     <Card>
       <CardContent className="space-y-6 pt-6">
@@ -52,6 +63,12 @@ export function TechnicalSettings({ configs, setConfigs, isLoading }: TechnicalS
             setConfigs(prev => ({ ...prev, maintenance_mode: enabled.toString() }));
             updateConfig('maintenance_mode', enabled.toString());
           }}
+        />
+
+        <GallerySettings
+          carouselEnabled={configs.gallery_carousel_enabled === 'true'}
+          carouselInterval={parseInt(configs.gallery_carousel_interval || '5000')}
+          onSave={handleGallerySettingsSave}
         />
 
         <ImageUploadField

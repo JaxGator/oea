@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { GallerySection } from './GallerySection';
@@ -8,6 +8,23 @@ import { supabase } from '@/integrations/supabase/client';
 export const GalleryPreview = () => {
   const [showFullGallery, setShowFullGallery] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+  const { data: configs } = useQuery({
+    queryKey: ['site-config'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('site_config')
+        .select('key, value');
+      
+      if (error) throw error;
+      
+      return data.reduce((acc: Record<string, string>, curr) => {
+        acc[curr.key] = curr.value;
+        return acc;
+      }, {});
+    }
+  });
 
   const { data: images = [], isLoading } = useQuery({
     queryKey: ['gallery-images'],
@@ -27,6 +44,26 @@ export const GalleryPreview = () => {
   });
 
   const previewImages = images.slice(0, 4);
+  const carouselEnabled = configs?.gallery_carousel_enabled === 'true';
+  const carouselInterval = parseInt(configs?.gallery_carousel_interval || '5000');
+
+  useEffect(() => {
+    let intervalId: NodeJS.Timeout;
+    
+    if (carouselEnabled && previewImages.length > 0) {
+      intervalId = setInterval(() => {
+        setCurrentImageIndex((prevIndex) => 
+          prevIndex === previewImages.length - 1 ? 0 : prevIndex + 1
+        );
+      }, carouselInterval);
+    }
+
+    return () => {
+      if (intervalId) {
+        clearInterval(intervalId);
+      }
+    };
+  }, [carouselEnabled, carouselInterval, previewImages.length]);
 
   return (
     <div className="mt-16 space-y-4">
@@ -41,7 +78,9 @@ export const GalleryPreview = () => {
         {previewImages.map((imageUrl, index) => (
           <div 
             key={index} 
-            className="aspect-square overflow-hidden rounded-lg cursor-pointer"
+            className={`aspect-square overflow-hidden rounded-lg cursor-pointer transition-opacity duration-500 ${
+              carouselEnabled ? (index === currentImageIndex ? 'opacity-100' : 'opacity-40') : ''
+            }`}
             onClick={() => setSelectedImage(imageUrl)}
           >
             <img
@@ -53,7 +92,6 @@ export const GalleryPreview = () => {
         ))}
       </div>
 
-      {/* Full Gallery Modal */}
       <Dialog open={showFullGallery} onOpenChange={setShowFullGallery}>
         <DialogContent className="max-w-[90vw] max-h-[90vh]">
           <GallerySection
@@ -66,7 +104,6 @@ export const GalleryPreview = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Selected Image Modal */}
       <Dialog open={!!selectedImage} onOpenChange={() => setSelectedImage(null)}>
         <DialogContent className="max-w-[90vw] max-h-[90vh] p-0">
           {selectedImage && (
