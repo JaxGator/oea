@@ -9,6 +9,13 @@ import { Toaster } from "@/components/ui/sonner";
 import { CookieConsent } from "@/components/CookieConsent";
 import { Footer } from "@/components/home/Footer";
 
+// Add styles for the skip links
+const skipLinkStyles = `
+  sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 
+  bg-primary text-primary-foreground px-4 py-2 rounded-md 
+  z-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary
+`;
+
 export function AppLayout() {
   const { isMaintenanceMode } = useMaintenanceMode();
 
@@ -45,12 +52,35 @@ export function AppLayout() {
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
-      <DesktopNavigation />
-      <MobileNavigation />
-      <main className="flex-1">
+      {/* Skip Links */}
+      <div className="flex gap-4 absolute top-0 left-0">
+        <a href="#main-content" className={skipLinkStyles}>
+          Skip to main content
+        </a>
+        <a href="#main-navigation" className={skipLinkStyles}>
+          Skip to main navigation
+        </a>
+        <a href="#footer" className={skipLinkStyles}>
+          Skip to footer
+        </a>
+      </div>
+
+      {/* Main Navigation */}
+      <nav id="main-navigation" aria-label="Main navigation">
+        <DesktopNavigation />
+        <MobileNavigation />
+      </nav>
+
+      {/* Main Content */}
+      <main id="main-content" className="flex-1" tabIndex={-1}>
         <Outlet />
       </main>
-      <Footer />
+
+      {/* Footer */}
+      <footer id="footer" tabIndex={-1}>
+        <Footer />
+      </footer>
+
       <Toaster />
       <CookieConsent />
     </div>
