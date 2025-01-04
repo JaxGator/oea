@@ -5,7 +5,7 @@ import { ChatWindow } from "@/components/messages/ChatWindow";
 import { CreateGroupChatDialog } from "@/components/messages/CreateGroupChatDialog";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
-import { MessageSquare } from "lucide-react";
+import { MessageSquare, MessagesSquare } from "lucide-react";
 
 export default function Messages() {
   const { profile } = useAuthState();
@@ -36,7 +36,10 @@ export default function Messages() {
   return (
     <div className="container mx-auto p-4">
       <div className="flex justify-between items-center mb-4">
-        <h1 className="text-2xl font-bold">Messages</h1>
+        <h1 className="text-2xl font-bold flex items-center gap-2">
+          <MessagesSquare className="h-6 w-6" />
+          Messages
+        </h1>
         <div className="flex gap-2">
           <CreateGroupChatDialog />
           <Button variant="outline" className="flex items-center gap-2">
