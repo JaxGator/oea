@@ -67,7 +67,7 @@ export const GalleryPreview = () => {
 
       {/* Full Gallery Modal */}
       <Dialog open={showFullGallery} onOpenChange={setShowFullGallery}>
-        <DialogContent className="max-w-[90vw] max-h-[90vh]">
+        <DialogContent className="max-w-[90vw] max-h-[90vh] overflow-y-auto">
           <GallerySection
             images={images}
             isLoading={isLoading}
@@ -80,14 +80,17 @@ export const GalleryPreview = () => {
 
       {/* Selected Image Modal */}
       <Dialog open={!!selectedImage} onOpenChange={() => setSelectedImage(null)}>
-        <DialogContent className="max-w-[90vw] max-h-[90vh] p-0">
-          {selectedImage && (
-            <img
-              src={selectedImage}
-              alt="Selected gallery image"
-              className="w-full h-full object-contain"
-            />
-          )}
+        <DialogContent className="max-w-[95vw] max-h-[95vh] p-2">
+          <div className="relative w-full h-full flex items-center justify-center">
+            {selectedImage && (
+              <img
+                src={selectedImage}
+                alt="Selected gallery image"
+                className="max-w-full max-h-[90vh] object-contain rounded-lg"
+                style={{ margin: 'auto' }}
+              />
+            )}
+          </div>
         </DialogContent>
       </Dialog>
     </div>
