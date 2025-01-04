@@ -4,6 +4,7 @@ import { EventCardHeader } from "./event/EventCardHeader";
 import { EventCardBasicInfo } from "./event/card/EventCardBasicInfo";
 import { EventCardDetailedView } from "./event/card/EventCardDetailedView";
 import { EventEditDialog } from "./event/EventEditDialog";
+import { EventActions } from "./event/actions/EventActions";
 import { useEventCard } from "@/hooks/useEventCard";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 
