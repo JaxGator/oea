@@ -7,7 +7,7 @@ import { EventsMap } from "@/components/event/EventsMap";
 import { useRSVP } from "@/hooks/useRSVP";
 import { toast } from "sonner";
 import { useAuthState } from "@/hooks/useAuthState";
-import { Loader2 } from "lucide-react";
+import { Loader2, CalendarDays } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ErrorBoundary } from "@/components/error/ErrorBoundary";
 
@@ -54,7 +54,10 @@ export default function Events() {
         <div className="bg-white rounded-lg shadow-sm">
           <div className="p-6">
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-semibold">Upcoming Events</h2>
+              <h2 className="text-2xl font-semibold flex items-center gap-2">
+                <CalendarDays className="h-6 w-6" />
+                Upcoming Events
+              </h2>
               <div className="flex gap-4">
                 <DateFilter
                   selectedDate={selectedDate}
