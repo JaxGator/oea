@@ -37,8 +37,8 @@ export function AuthForm() {
         variables: {
           default: {
             colors: {
-              brand: '#0EA5E9',
-              brandAccent: '#0284C7',
+              brand: '#404040',
+              brandAccent: '#262626',
             },
           },
         },
@@ -51,17 +51,27 @@ export function AuthForm() {
           anchor: 'text-gray-700 hover:text-gray-900',
         },
       }}
-      providers={['google']}
-      redirectTo={window.location.origin + '/auth/callback'}
-      view="sign_in"
-      showLinks={true}
-      appearance={{
-        extend: true,
-        className: {
-          container: 'w-full',
-          label: 'text-gray-700',
-          input: 'rounded border-gray-300 focus:border-blue-500 focus:ring-blue-500',
-          button: 'w-full',
+      providers={[]}
+      redirectTo={`${window.location.origin}/auth/callback`}
+      magicLink={false}
+      localization={{
+        variables: {
+          sign_in: {
+            email_label: 'Email',
+            password_label: 'Password',
+            button_label: 'Sign in',
+            loading_button_label: 'Signing in...',
+            social_provider_text: 'Sign in with {{provider}}',
+            link_text: "Already have an account? Sign in",
+          },
+          sign_up: {
+            email_label: 'Email',
+            password_label: 'Password',
+            button_label: 'Sign up',
+            loading_button_label: 'Signing up...',
+            social_provider_text: 'Sign up with {{provider}}',
+            link_text: "Don't have an account? Sign up",
+          },
         },
       }}
     />
