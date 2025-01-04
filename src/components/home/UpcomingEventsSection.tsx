@@ -1,3 +1,4 @@
+import React from 'react';
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { EventCard } from "@/components/EventCard";
@@ -5,24 +6,24 @@ import { Event } from "@/types/event";
 
 interface UpcomingEventsSectionProps {
   events: Event[];
-  isLoading: boolean;
   userRSVPs: Record<string, string | null>;
   handleRSVP: (eventId: string) => void;
   handleCancelRSVP: (eventId: string) => void;
+  isLoading: boolean;
 }
 
 export const UpcomingEventsSection = ({
   events,
-  isLoading,
   userRSVPs,
   handleRSVP,
   handleCancelRSVP,
+  isLoading,
 }: UpcomingEventsSectionProps) => {
   const navigate = useNavigate();
 
   return (
     <div>
-      <div className="flex justify-between items-center mb-1 gap-1">
+      <div className="flex justify-between items-center mb-4 gap-4">
         <h2 className="text-2xl font-bold text-gray-900">Upcoming Events</h2>
         <Button 
           onClick={() => navigate("/events")}
@@ -34,17 +35,17 @@ export const UpcomingEventsSection = ({
       </div>
       
       {isLoading ? (
-        <div className="text-center py-1 text-gray-600">Loading events...</div>
+        <div className="text-center py-4 text-gray-600">Loading events...</div>
       ) : events.length === 0 ? (
-        <div className="text-center py-1 text-gray-500">
+        <div className="text-center py-4 text-gray-500">
           No upcoming events found.
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {events.slice(0, 3).map((event) => (
             <EventCard 
-              key={event.id}
-              event={event}
+              key={event.id} 
+              event={event} 
               onRSVP={handleRSVP}
               onCancelRSVP={handleCancelRSVP}
               userRSVPStatus={userRSVPs[event.id]}
