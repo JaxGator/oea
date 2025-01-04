@@ -40,10 +40,7 @@ export function CreateGroupChatDialog() {
         .single();
 
       if (chatError) throw chatError;
-
-      if (!chatData?.id) {
-        throw new Error('Failed to create chat - no chat ID returned');
-      }
+      if (!chatData?.id) throw new Error('Failed to create chat - no chat ID returned');
 
       // Add participants including the creator
       const participants = [...selectedUsers, user.id].map(userId => ({
