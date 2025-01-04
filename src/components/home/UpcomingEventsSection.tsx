@@ -23,7 +23,7 @@ export const UpcomingEventsSection = ({
 
   return (
     <div className="py-1">
-      <div className="flex justify-between items-center mb-2 gap-4">
+      <div className="flex justify-between items-center mb-4 gap-4">
         <h2 className="text-2xl font-bold text-gray-900">Upcoming Events</h2>
         <Button 
           onClick={() => navigate("/events")}
