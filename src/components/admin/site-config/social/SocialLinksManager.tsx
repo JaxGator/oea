@@ -1,14 +1,13 @@
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Check } from "lucide-react";
 
 interface SocialLinksManagerProps {
   socialLinks: Record<string, string>;
-  setSocialLinks: (links: Record<string, string>) => void;
+  setSocialLinks: (links: Record<string, string> | ((prev: Record<string, string>) => Record<string, string>)) => void;
 }
 
 export function SocialLinksManager({ socialLinks, setSocialLinks }: SocialLinksManagerProps) {
@@ -51,7 +50,7 @@ export function SocialLinksManager({ socialLinks, setSocialLinks }: SocialLinksM
             <Input
               value={url}
               onChange={(e) => {
-                setSocialLinks(prev => ({
+                setSocialLinks((prev) => ({
                   ...prev,
                   [platform]: e.target.value
                 }));
