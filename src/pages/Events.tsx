@@ -7,7 +7,7 @@ import { EventsMap } from "@/components/event/EventsMap";
 import { useRSVP } from "@/hooks/useRSVP";
 import { toast } from "sonner";
 import { useAuthState } from "@/hooks/useAuthState";
-import { Loader2, CalendarDays, CalendarRange } from "lucide-react";
+import { Loader2, CalendarDays, CalendarRange, CalendarFold } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ErrorBoundary } from "@/components/error/ErrorBoundary";
 
@@ -96,7 +96,10 @@ export default function Events() {
 
           {pastEvents.length > 0 && (
             <div className="border-t p-6">
-              <h2 className="text-2xl font-semibold mb-6">Past Events</h2>
+              <h2 className="text-2xl font-semibold mb-6 flex items-center gap-2">
+                <CalendarFold className="h-6 w-6" />
+                Past Events
+              </h2>
               <ErrorBoundary fallback={<div>Error loading past events. Please try again later.</div>}>
                 <EventList 
                   events={pastEvents}
