@@ -55,7 +55,7 @@ export const FeaturedMerch = () => {
                 />
               </div>
               <h3 className="font-semibold text-lg mb-2">{item.name}</h3>
-              <p className="text-primary">{item.price}</p>
+              <p className="text-blue-700 font-medium">{item.price}</p>
             </CardContent>
           </Card>
         ))}
