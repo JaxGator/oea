@@ -56,12 +56,12 @@ export default function Events() {
         
         <div className="bg-white rounded-lg shadow-sm">
           <div className="p-6">
-            <div className="flex justify-between items-center mb-6">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
               <h2 className="text-2xl font-semibold flex items-center gap-2">
                 <CalendarDays className="h-6 w-6" />
                 Upcoming Events
               </h2>
-              <div className="flex gap-4">
+              <div className="flex flex-wrap gap-4 w-full sm:w-auto">
                 <DateFilter
                   selectedDate={selectedDate}
                   onDateSelect={setSelectedDate}
@@ -69,7 +69,7 @@ export default function Events() {
                 {isAuthenticated && (
                   <Button 
                     onClick={() => setIsCreateEventOpen(true)}
-                    className="bg-[#0d97d1] hover:bg-[#0d97d1]/90"
+                    className="bg-[#0d97d1] hover:bg-[#0d97d1]/90 w-full sm:w-auto"
                   >
                     Create Event
                   </Button>
