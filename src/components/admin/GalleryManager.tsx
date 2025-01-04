@@ -1,84 +1,52 @@
-import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { useState } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ImageUploadForm } from "./gallery/ImageUploadForm";
 import { ImageGrid } from "./gallery/ImageGrid";
-import { useToast } from "@/hooks/use-toast";
+import { GallerySettings } from "./site-config/technical/GallerySettings";
+import { useConfigManager } from "./site-config/useConfigManager";
 
 export function GalleryManager() {
-  const [images, setImages] = useState<Array<{ url: string; id: string }>>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const { toast } = useToast();
+  const [selectedTab, setSelectedTab] = useState("upload");
+  const { configs, setConfigs, updateConfig } = useConfigManager();
 
-  useEffect(() => {
-    fetchImages();
-  }, []);
-
-  const fetchImages = async () => {
-    try {
-      const { data: storageData, error: storageError } = await supabase.storage
-        .from('gallery')
-        .list();
-
-      if (storageError) throw storageError;
-
-      const imageUrls = storageData
-        .filter(file => file.name.match(/\.(jpg|jpeg|png|gif)$/i))
-        .map(file => ({
-          id: file.name,
-          url: supabase.storage.from('gallery').getPublicUrl(file.name).data.publicUrl
-        }));
-
-      setImages(imageUrls);
-    } catch (error) {
-      console.error('Error fetching images:', error);
-      toast({
-        title: "Error",
-        description: "Failed to fetch images",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
+  const handleGallerySettingsSave = async (settings: { carouselEnabled: boolean; carouselInterval: number }) => {
+    await updateConfig('gallery_carousel_enabled', settings.carouselEnabled.toString());
+    await updateConfig('gallery_carousel_interval', settings.carouselInterval.toString());
+    setConfigs(prev => ({
+      ...prev,
+      gallery_carousel_enabled: settings.carouselEnabled.toString(),
+      gallery_carousel_interval: settings.carouselInterval.toString()
+    }));
   };
-
-  const handleImageDelete = async (imageUrl: string) => {
-    try {
-      const fileName = imageUrl.split('/').pop()?.split('?')[0];
-      if (!fileName) return;
-
-      const { error: storageError } = await supabase.storage
-        .from('gallery')
-        .remove([fileName]);
-
-      if (storageError) throw storageError;
-
-      toast({
-        title: "Success",
-        description: "Image deleted successfully",
-      });
-      
-      fetchImages();
-    } catch (error) {
-      console.error('Error deleting image:', error);
-      toast({
-        title: "Error",
-        description: "Failed to delete image",
-        variant: "destructive",
-      });
-    }
-  };
-
-  if (isLoading) {
-    return <div>Loading...</div>;
-  }
 
   return (
-    <div className="space-y-6">
-      <ImageUploadForm onUploadSuccess={fetchImages} />
-      <ImageGrid 
-        images={images} 
-        onImageDelete={handleImageDelete}
-      />
-    </div>
+    <Card>
+      <CardContent className="p-6">
+        <Tabs value={selectedTab} onValueChange={setSelectedTab}>
+          <TabsList className="mb-4">
+            <TabsTrigger value="upload">Upload Images</TabsTrigger>
+            <TabsTrigger value="manage">Manage Images</TabsTrigger>
+            <TabsTrigger value="settings">Gallery Settings</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="upload">
+            <ImageUploadForm />
+          </TabsContent>
+
+          <TabsContent value="manage">
+            <ImageGrid />
+          </TabsContent>
+
+          <TabsContent value="settings">
+            <GallerySettings
+              carouselEnabled={configs.gallery_carousel_enabled === 'true'}
+              carouselInterval={parseInt(configs.gallery_carousel_interval || '5000')}
+              onSave={handleGallerySettingsSave}
+            />
+          </TabsContent>
+        </Tabs>
+      </CardContent>
+    </Card>
   );
 }
