@@ -12,6 +12,7 @@ interface EventDetailsProps {
   description: string;
   attendeeNames: string[];
   userRSVPStatus?: string | null;
+  showFullDescription?: boolean;
 }
 
 export function EventDetails({
@@ -23,6 +24,7 @@ export function EventDetails({
   description,
   attendeeNames,
   userRSVPStatus,
+  showFullDescription = false,
 }: EventDetailsProps) {
   const { user, profile } = useAuthState();
   const showLocation = user && profile?.is_approved;
@@ -76,6 +78,12 @@ export function EventDetails({
         <div className="text-sm text-gray-600">
           <p className="font-medium mb-1">Attending:</p>
           <p>{attendeeNames.join(', ')}</p>
+        </div>
+      )}
+      
+      {description && (
+        <div className={`prose prose-sm max-w-none ${showFullDescription ? '' : 'line-clamp-3'}`}>
+          <div dangerouslySetInnerHTML={{ __html: description }} />
         </div>
       )}
       

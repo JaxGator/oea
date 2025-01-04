@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useAdminStatus } from "./events/useAdminStatus";
 import { useRSVPDetails } from "./events/useRSVPDetails";
 import { useEventActions } from "./events/useEventActions";
@@ -13,6 +14,8 @@ export function useEventCard(eventId: string, onUpdate?: () => void) {
     handleCardClick
   } = useEventActions(eventId, onUpdate);
 
+  const [showDetailsDialog, setShowDetailsDialog] = useState(false);
+
   return {
     showEditDialog,
     setShowEditDialog,
@@ -21,6 +24,8 @@ export function useEventCard(eventId: string, onUpdate?: () => void) {
     attendees,
     handleEditSuccess,
     handleCardClick,
-    handleDelete
+    handleDelete,
+    showDetailsDialog,
+    setShowDetailsDialog
   };
 }

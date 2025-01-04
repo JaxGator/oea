@@ -116,6 +116,7 @@ export type Database = {
           id: string
           image_url: string
           imported_rsvp_count: number | null
+          is_featured: boolean | null
           location: string
           max_guests: number
           time: string
@@ -129,6 +130,7 @@ export type Database = {
           id?: string
           image_url: string
           imported_rsvp_count?: number | null
+          is_featured?: boolean | null
           location: string
           max_guests: number
           time: string
@@ -142,6 +144,7 @@ export type Database = {
           id?: string
           image_url?: string
           imported_rsvp_count?: number | null
+          is_featured?: boolean | null
           location?: string
           max_guests?: number
           time?: string
