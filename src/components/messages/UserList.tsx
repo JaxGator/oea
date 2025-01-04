@@ -14,6 +14,7 @@ interface UserListProps {
 interface User {
   id: string;
   username: string;
+  full_name: string | null;
   avatar_url: string | null;
 }
 
@@ -29,7 +30,7 @@ export function UserList({ onSelectUser, selectedUserId }: UserListProps) {
 
         const { data: profilesData, error: profilesError } = await supabase
           .from('profiles')
-          .select('id, username, avatar_url')
+          .select('id, username, full_name, avatar_url')
           .neq('id', user.id)
           .eq('is_approved', true);
 
@@ -70,10 +71,12 @@ export function UserList({ onSelectUser, selectedUserId }: UserListProps) {
             <Avatar className="h-8 w-8">
               <AvatarImage src={user.avatar_url || undefined} />
               <AvatarFallback>
-                {user.username.slice(0, 2).toUpperCase()}
+                {(user.full_name || user.username).slice(0, 2).toUpperCase()}
               </AvatarFallback>
             </Avatar>
-            <span className="truncate">{user.username}</span>
+            <span className="truncate">
+              {user.full_name || user.username}
+            </span>
           </Button>
         ))}
       </div>
