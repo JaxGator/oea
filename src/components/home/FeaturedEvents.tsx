@@ -17,7 +17,7 @@ export const FeaturedEvents = () => {
     .slice(0, 4);
 
   return (
-    <section className="py-16 bg-[#F1F0FB]">
+    <section className="py-8 bg-[#F1F0FB]">
       <div className="container mx-auto px-4">
         <UpcomingEventsSection 
           events={upcomingEvents}
