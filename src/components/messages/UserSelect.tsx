@@ -9,7 +9,7 @@ interface UserSelectProps {
   selectedUsers: string[];
   onSelectUser: (userId: string) => void;
   onRemoveUser: (userId: string) => void;
-  disabled?: boolean;  // Added this prop
+  disabled?: boolean;
 }
 
 interface User {
