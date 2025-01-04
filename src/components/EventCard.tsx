@@ -66,11 +66,21 @@ export function EventCard({
     onRSVP(event.id, guests);
   };
 
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      setShowDetailsDialog(true);
+    }
+  };
+
   return (
     <>
       <Card 
         className="w-full transition-all duration-300 hover:shadow-lg animate-fade-in bg-white cursor-pointer"
         onClick={() => setShowDetailsDialog(true)}
+        onKeyDown={handleKeyPress}
+        tabIndex={0}
+        role="button"
+        aria-label={`View details for ${event.title}`}
       >
         <EventCardHeader imageUrl={event.image_url} title={event.title} />
         

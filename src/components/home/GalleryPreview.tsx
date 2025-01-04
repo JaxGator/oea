@@ -29,6 +29,12 @@ export const GalleryPreview = () => {
 
   const previewImages = images.slice(0, 4);
 
+  const handleKeyPress = (imageUrl: string) => (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      setSelectedImage(imageUrl);
+    }
+  };
+
   return (
     <div className="mt-16 space-y-4">
       <div className="flex justify-between items-center mb-6">
@@ -43,17 +49,19 @@ export const GalleryPreview = () => {
       
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         {previewImages.map((imageUrl, index) => (
-          <div 
-            key={index} 
-            className="aspect-square overflow-hidden rounded-lg cursor-pointer"
+          <button
+            key={index}
+            className="aspect-square overflow-hidden rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
             onClick={() => setSelectedImage(imageUrl)}
+            onKeyDown={handleKeyPress(imageUrl)}
+            aria-label={`View gallery image ${index + 1}`}
           >
             <img
               src={imageUrl}
               alt={`Gallery preview ${index + 1}`}
               className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
             />
-          </div>
+          </button>
         ))}
       </div>
 
