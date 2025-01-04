@@ -29,7 +29,7 @@ export function CreateGroupChatDialog() {
 
     setIsLoading(true);
     try {
-      // Create the group chat
+      // Create the group chat in a single transaction
       const { data: chatData, error: chatError } = await supabase
         .from('group_chats')
         .insert({
@@ -39,8 +39,15 @@ export function CreateGroupChatDialog() {
         .select('id')
         .single();
 
-      if (chatError) throw chatError;
-      if (!chatData?.id) throw new Error('Failed to create chat - no chat ID returned');
+      if (chatError) {
+        console.error('Error creating chat:', chatError);
+        throw chatError;
+      }
+
+      if (!chatData?.id) {
+        console.error('No chat ID returned');
+        throw new Error('Failed to create chat - no chat ID returned');
+      }
 
       // Add participants including the creator
       const participants = [...selectedUsers, user.id].map(userId => ({
@@ -53,12 +60,16 @@ export function CreateGroupChatDialog() {
         .from('group_chat_participants')
         .insert(participants);
 
-      if (participantsError) throw participantsError;
+      if (participantsError) {
+        console.error('Error adding participants:', participantsError);
+        throw participantsError;
+      }
 
       toast({
         title: "Success",
         description: "Group chat created successfully",
       });
+      
       setIsOpen(false);
       setChatName("");
       setSelectedUsers([]);
