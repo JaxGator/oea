@@ -1,13 +1,11 @@
 import { useState } from "react";
 import { Search } from "lucide-react";
-import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Input } from "@/components/ui/input";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -16,6 +14,7 @@ import {
   SheetContent,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { SearchContent } from "./SearchContent";
 
 type SearchResult = {
   type: string;
@@ -29,7 +28,6 @@ type SearchResult = {
 export function SearchDialog() {
   const [open, setOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const navigate = useNavigate();
   const isMobile = useIsMobile();
 
   const { data: results, isLoading } = useQuery({
@@ -48,49 +46,6 @@ export function SearchDialog() {
     enabled: searchTerm.length > 2
   });
 
-  const SearchContent = () => (
-    <div className="space-y-2">
-      <Input
-        placeholder="Search events and pages..."
-        value={searchTerm}
-        onChange={(e) => setSearchTerm(e.target.value)}
-        className="w-full"
-        autoFocus
-      />
-      <div className="max-h-[300px] overflow-y-auto space-y-1">
-        {isLoading && <div className="text-sm p-2" aria-hidden={!isLoading}>Loading...</div>}
-        {results?.map((result) => (
-          <button
-            key={result.id}
-            className="w-full text-left p-2 hover:bg-accent rounded-md transition-colors cursor-pointer active:bg-accent/80"
-            onClick={() => {
-              setOpen(false);
-              navigate(result.url);
-            }}
-            type="button"
-          >
-            <div className="flex items-center justify-between">
-              <span className="font-medium">{result.title}</span>
-              <span className="text-xs text-muted-foreground capitalize">
-                {result.type}
-              </span>
-            </div>
-            {result.description && (
-              <span className="text-sm text-muted-foreground line-clamp-1">
-                {result.description}
-              </span>
-            )}
-          </button>
-        ))}
-        {results?.length === 0 && searchTerm.length > 2 && (
-          <div className="text-sm text-muted-foreground p-2" aria-hidden={!(results?.length === 0 && searchTerm.length > 2)}>
-            No results found
-          </div>
-        )}
-      </div>
-    </div>
-  );
-
   if (isMobile) {
     return (
       <Sheet open={open} onOpenChange={setOpen}>
@@ -101,7 +56,13 @@ export function SearchDialog() {
           </Button>
         </SheetTrigger>
         <SheetContent side="top" className="w-full max-w-lg mx-auto">
-          <SearchContent />
+          <SearchContent
+            searchTerm={searchTerm}
+            onSearchChange={setSearchTerm}
+            results={results}
+            isLoading={isLoading}
+            onResultClick={() => setOpen(false)}
+          />
         </SheetContent>
       </Sheet>
     );
@@ -116,7 +77,13 @@ export function SearchDialog() {
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[300px] sm:w-[400px] p-2" align="end">
-        <SearchContent />
+        <SearchContent
+          searchTerm={searchTerm}
+          onSearchChange={setSearchTerm}
+          results={results}
+          isLoading={isLoading}
+          onResultClick={() => setOpen(false)}
+        />
       </PopoverContent>
     </Popover>
   );
