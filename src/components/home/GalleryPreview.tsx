@@ -53,6 +53,9 @@ export const GalleryPreview = () => {
   const carouselEnabled = configs?.gallery_carousel_enabled === 'true';
   const carouselInterval = parseInt(configs?.gallery_carousel_interval || '5000');
 
+  // Move previewImages declaration before its usage
+  const previewImages = images.slice(0, 4);
+
   useEffect(() => {
     let intervalId: NodeJS.Timeout;
     
@@ -76,7 +79,6 @@ export const GalleryPreview = () => {
     return null;
   }
 
-  const previewImages = images.slice(0, 4);
   console.log('Preview images:', previewImages);
 
   return (
