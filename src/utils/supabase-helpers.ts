@@ -27,7 +27,7 @@ export async function handleQueryResult<T>(
   if (!data) {
     throw new Error('No data returned from query');
   }
-  return data as T;
+  return data;
 }
 
 export function isQueryError(result: unknown): result is PostgrestError {
@@ -39,4 +39,16 @@ export function ensureQueryResult<T>(result: T | PostgrestError): T {
     throw new Error(result.message);
   }
   return result;
+}
+
+export function handleSupabaseError(error: Error | PostgrestError | null) {
+  if (!error) return;
+  
+  console.error('Supabase error:', {
+    error,
+    message: error.message,
+    timestamp: new Date().toISOString()
+  });
+  
+  throw error;
 }

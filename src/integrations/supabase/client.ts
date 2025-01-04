@@ -1,50 +1,33 @@
-import { createClient } from '@supabase/supabase-js';
-import type { Database } from './types';
+import { createClient } from '@supabase/supabase-js'
+import type { Database } from '@/types/database.types'
 
-const SUPABASE_URL = "https://qegpuqitjfocyyrivlhv.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFlZ3B1cWl0amZvY3l5cml2bGh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzM5MzU4NTMsImV4cCI6MjA0OTUxMTg1M30.o3yD902DFG0PlLD0V8pEvx-IbnVawP3HDhNEp6cMoW4";
-
-if (!SUPABASE_URL) throw new Error('Missing SUPABASE_URL');
-if (!SUPABASE_ANON_KEY) throw new Error('Missing SUPABASE_ANON_KEY');
+const SUPABASE_URL = 'https://qegpuqitjfocyyrivlhv.supabase.co'
+const SUPABASE_ANON_KEY = 'your-anon-key'
 
 export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, {
   auth: {
-    persistSession: true,
     autoRefreshToken: true,
+    persistSession: true,
     detectSessionInUrl: true,
     flowType: 'pkce',
     storage: typeof window !== 'undefined' ? window.localStorage : undefined,
     storageKey: 'supabase.auth.token',
-    debug: true,
-    cookieOptions: {
-      sameSite: 'Lax',
-      secure: true,
-      domain: window.location.hostname
-    }
+    debug: true
   },
   global: {
     headers: {
-      'X-Client-Info': 'supabase-js-web',
-    },
-  },
-  db: {
-    schema: 'public'
-  },
-  realtime: {
-    params: {
-      eventsPerSecond: 2
+      'x-application-name': 'lovable'
     }
   }
-});
+})
 
-// Test connection and log detailed errors
-export const testSupabaseConnection = async () => {
+export async function testSupabaseConnection() {
   try {
-    console.log('Testing Supabase connection...');
     const { data: { session }, error } = await supabase.auth.getSession();
     
     if (error) {
-      console.error('Supabase connection test error:', {
+      console.error('Supabase connection test failed:', {
+        error,
         message: error.message,
         status: error.status,
         name: error.name,
@@ -70,9 +53,8 @@ export const testSupabaseConnection = async () => {
     });
     return false;
   }
-};
+}
 
-// Call test connection on init and log the result
 if (typeof window !== 'undefined') {
   testSupabaseConnection().then(isConnected => {
     if (!isConnected) {
