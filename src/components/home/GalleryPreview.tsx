@@ -37,10 +37,7 @@ export const GalleryPreview = () => {
       if (error) throw error;
 
       return galleryImages.map(img => {
-        const { data: { publicUrl } } = supabase.storage
-          .from('gallery')
-          .getPublicUrl(img.file_name);
-        return publicUrl;
+        return `${supabase.storage.from('gallery').getPublicUrl(img.file_name).data.publicUrl}`;
       });
     }
   });
@@ -123,4 +120,4 @@ export const GalleryPreview = () => {
       </Dialog>
     </div>
   );
-};
+}
