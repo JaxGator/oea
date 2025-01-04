@@ -8,7 +8,7 @@ import { EventEditDialog } from "./event/EventEditDialog";
 import { useEventCard } from "@/hooks/useEventCard";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { format, parseISO } from "date-fns";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, MapPinIcon, UsersIcon } from "lucide-react";
 
 interface EventCardProps {
   event: Event;
@@ -56,10 +56,26 @@ export function EventCard({ event, onRSVP, onCancelRSVP, userRSVPStatus, onUpdat
       >
         <EventCardHeader imageUrl={event.image_url} title={event.title} />
         
-        <CardContent className="p-4">
-          <div className="flex items-center gap-2 text-gray-600 mb-4">
+        <CardContent className="p-4 space-y-3">
+          <div className="flex items-center gap-2 text-gray-600">
             <CalendarIcon className="w-4 h-4" />
             <span className="text-sm">{formattedDate}</span>
+          </div>
+          
+          <div className="flex items-center gap-2 text-gray-600">
+            <MapPinIcon className="w-4 h-4" />
+            <span className="text-sm">{event.location}</span>
+          </div>
+
+          <div className="flex items-center gap-2 text-gray-600">
+            <UsersIcon className="w-4 h-4" />
+            <span className="text-sm">
+              {isWixEvent ? (
+                `${rsvpCount} attendees`
+              ) : (
+                `${rsvpCount} / ${event.max_guests} attendees`
+              )}
+            </span>
           </div>
         </CardContent>
 
