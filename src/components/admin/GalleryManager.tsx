@@ -28,7 +28,7 @@ export function GalleryManager() {
     if (galleryImages) {
       const formattedImages = galleryImages.map(img => ({
         id: img.id,
-        url: `${supabase.storage.from('gallery').getPublicUrl(img.file_name).data.publicUrl}`,
+        url: supabase.storage.from('gallery').getPublicUrl(img.file_name).data.publicUrl,
       }));
       setImages(formattedImages);
     }

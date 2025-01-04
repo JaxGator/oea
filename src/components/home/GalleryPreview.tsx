@@ -36,16 +36,12 @@ export const GalleryPreview = () => {
 
       if (error) throw error;
 
-      const imageUrls = await Promise.all(
-        galleryImages.map(async (img) => {
-          const { data: { publicUrl } } = supabase.storage
-            .from('gallery')
-            .getPublicUrl(img.file_name);
-          return publicUrl;
-        })
-      );
-
-      return imageUrls;
+      return galleryImages.map(img => {
+        const { data: { publicUrl } } = supabase.storage
+          .from('gallery')
+          .getPublicUrl(img.file_name);
+        return publicUrl;
+      });
     }
   });
 
