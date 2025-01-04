@@ -3,8 +3,11 @@ import { Outlet } from "react-router-dom";
 import { DesktopNavigation } from "../DesktopNavigation";
 import { MobileNavigation } from "../MobileNavigation";
 import { useMaintenanceMode } from "@/hooks/useMaintenanceMode";
-import { Maintenance } from "@/pages/Maintenance";
+import Maintenance from "@/pages/Maintenance";
 import { supabase } from "@/integrations/supabase/client";
+import { Toaster } from "@/components/ui/sonner";
+import { CookieConsent } from "@/components/CookieConsent";
+import { Footer } from "@/components/home/Footer";
 
 export function AppLayout() {
   const { isMaintenanceMode } = useMaintenanceMode();
@@ -18,11 +21,18 @@ export function AppLayout() {
         .single();
 
       if (data?.value) {
-        const link = document.querySelector("link[rel*='icon']") || document.createElement('link');
-        link.type = 'image/x-icon';
-        link.rel = 'shortcut icon';
-        link.href = data.value;
-        document.getElementsByTagName('head')[0].appendChild(link);
+        // Remove any existing favicon
+        const existingFavicon = document.querySelector("link[rel*='icon']");
+        if (existingFavicon) {
+          existingFavicon.remove();
+        }
+
+        // Create and append new favicon
+        const link = document.createElement('link');
+        link.setAttribute('type', 'image/x-icon');
+        link.setAttribute('rel', 'shortcut icon');
+        link.setAttribute('href', data.value);
+        document.head.appendChild(link);
       }
     };
 
@@ -34,12 +44,15 @@ export function AppLayout() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen flex flex-col bg-background">
       <DesktopNavigation />
       <MobileNavigation />
-      <main>
+      <main className="flex-1">
         <Outlet />
       </main>
+      <Footer />
+      <Toaster />
+      <CookieConsent />
     </div>
   );
 }
