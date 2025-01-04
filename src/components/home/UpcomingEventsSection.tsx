@@ -23,7 +23,7 @@ export const UpcomingEventsSection = ({
 
   return (
     <div>
-      <div className="flex justify-between items-center mb-4 gap-4">
+      <div className="flex justify-between items-center mb-2 gap-2">
         <h2 className="text-2xl font-bold text-gray-900">Upcoming Events</h2>
         <Button 
           onClick={() => navigate("/events")}
@@ -35,13 +35,13 @@ export const UpcomingEventsSection = ({
       </div>
       
       {isLoading ? (
-        <div className="text-center py-4 text-gray-600">Loading events...</div>
+        <div className="text-center py-2 text-gray-600">Loading events...</div>
       ) : events.length === 0 ? (
-        <div className="text-center py-4 text-gray-500">
+        <div className="text-center py-2 text-gray-500">
           No upcoming events found.
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {events.slice(0, 3).map((event) => (
             <EventCard 
               key={event.id} 
