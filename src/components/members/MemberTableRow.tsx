@@ -9,18 +9,30 @@ interface MemberTableRowProps {
   isCurrentUserAdmin: boolean;
   onEdit: (member: Member) => void;
   onDelete: (memberId: string) => void;
+  onView: (member: Member) => void;
 }
 
 export function MemberTableRow({ 
   member, 
   isCurrentUserAdmin, 
   onEdit, 
-  onDelete 
+  onDelete,
+  onView
 }: MemberTableRowProps) {
   return (
     <tr className="bg-white border-b dark:bg-gray-900 dark:border-gray-700">
       <td className="px-6 py-4">
-        <div className="flex items-center space-x-3">
+        <div 
+          className="flex items-center space-x-3 cursor-pointer hover:opacity-80"
+          onClick={() => onView(member)}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              onView(member);
+            }
+          }}
+        >
           <Avatar className="h-8 w-8">
             <AvatarImage 
               src={member.avatar_url || ''} 

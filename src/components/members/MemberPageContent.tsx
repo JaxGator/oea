@@ -2,6 +2,9 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { MemberList } from "./MemberList";
 import { MemberTable } from "./MemberTable";
 import { Users } from "lucide-react";
+import { useState } from "react";
+import { ViewMemberDialog } from "./ViewMemberDialog";
+import { Member } from "./types";
 
 interface MemberPageContentProps {
   members: any[];
@@ -10,6 +13,8 @@ interface MemberPageContentProps {
 }
 
 export function MemberPageContent({ members, currentUserIsAdmin, isMobile }: MemberPageContentProps) {
+  const [viewingMember, setViewingMember] = useState<Member | null>(null);
+
   return (
     <div className="min-h-screen bg-[#222222] py-12 px-4">
       <div className="max-w-6xl mx-auto">
@@ -30,12 +35,14 @@ export function MemberPageContent({ members, currentUserIsAdmin, isMobile }: Mem
                   members={members}
                   currentUserIsAdmin={currentUserIsAdmin}
                   isMobile={isMobile}
+                  onViewMember={setViewingMember}
                 />
               ) : (
                 <ScrollArea className="rounded-md border">
                   <MemberTable 
                     members={members}
                     currentUserIsAdmin={currentUserIsAdmin}
+                    onViewMember={setViewingMember}
                   />
                 </ScrollArea>
               )}
@@ -43,6 +50,12 @@ export function MemberPageContent({ members, currentUserIsAdmin, isMobile }: Mem
           )}
         </div>
       </div>
+
+      <ViewMemberDialog
+        member={viewingMember}
+        open={!!viewingMember}
+        onOpenChange={(open) => !open && setViewingMember(null)}
+      />
     </div>
   );
 }
