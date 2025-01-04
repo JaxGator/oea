@@ -1,12 +1,10 @@
-import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Event } from "@/types/event";
 import { EventCardHeader } from "./event/EventCardHeader";
-import { EventCardBasicInfo } from "./event/card/EventCardBasicInfo";
-import { EventCardDetailedView } from "./event/card/EventCardDetailedView";
-import { EventEditDialog } from "./event/EventEditDialog";
-import { EventActions } from "./event/actions/EventActions";
+import { EventCardContent } from "./event/card/EventCardContent";
+import { EventDialogs } from "./event/dialogs/EventDialogs";
 import { useEventCard } from "@/hooks/useEventCard";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { useEventDialogs } from "@/hooks/useEventDialogs";
 import { useAuthState } from "@/hooks/useAuthState";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -27,18 +25,21 @@ export function EventCard({
   onUpdate 
 }: EventCardProps) {
   const { 
-    showEditDialog,
-    setShowEditDialog,
     isAdmin,
     rsvpCount,
     attendees,
     handleEditSuccess,
     handleDelete,
-    showDetailsDialog,
-    setShowDetailsDialog
   } = useEventCard(event.id, onUpdate);
 
-  const { user, profile, isAuthenticated } = useAuthState();
+  const {
+    showEditDialog,
+    setShowEditDialog,
+    showDetailsDialog,
+    setShowDetailsDialog
+  } = useEventDialogs();
+
+  const { isAuthenticated, profile } = useAuthState();
   const navigate = useNavigate();
 
   const isPastEvent = new Date(event.date) < new Date(new Date().setHours(0, 0, 0, 0));
@@ -84,57 +85,40 @@ export function EventCard({
       >
         <EventCardHeader imageUrl={event.image_url} title={event.title} />
         
-        <CardContent className="p-4">
-          <EventCardBasicInfo
-            date={event.date}
-            location={event.location}
-            rsvpCount={rsvpCount}
-            maxGuests={event.max_guests}
-            isWixEvent={isWixEvent}
-          />
-        </CardContent>
-
-        <CardFooter className="p-4 pt-0">
-          <EventActions
-            isAdmin={isAdmin}
-            userRSVPStatus={userRSVPStatus || null}
-            isFullyBooked={rsvpCount >= event.max_guests}
-            onRSVP={handleRSVP}
-            onCancelRSVP={() => onCancelRSVP(event.id)}
-            onEdit={() => setShowEditDialog(true)}
-            onDelete={handleDelete}
-            isPastEvent={isPastEvent}
-            isWixEvent={isWixEvent}
-            showDelete={isAdmin && (isPastEvent || isWixEvent)}
-            canAddGuests={canAddGuests}
-          />
-        </CardFooter>
+        <EventCardContent
+          date={event.date}
+          location={event.location}
+          rsvpCount={rsvpCount}
+          maxGuests={event.max_guests}
+          isWixEvent={isWixEvent}
+          isAdmin={isAdmin}
+          userRSVPStatus={userRSVPStatus || null}
+          isPastEvent={isPastEvent}
+          canAddGuests={canAddGuests}
+          onRSVP={handleRSVP}
+          onCancelRSVP={() => onCancelRSVP(event.id)}
+          onEdit={() => setShowEditDialog(true)}
+          onDelete={handleDelete}
+        />
       </Card>
 
-      <Dialog open={showDetailsDialog} onOpenChange={setShowDetailsDialog}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-          <EventCardDetailedView
-            event={event}
-            rsvpCount={rsvpCount}
-            attendeeNames={attendeeNames}
-            userRSVPStatus={userRSVPStatus || null}
-            isAdmin={isAdmin}
-            isPastEvent={isPastEvent}
-            isWixEvent={isWixEvent}
-            canAddGuests={canAddGuests}
-            onRSVP={handleRSVP}
-            onCancelRSVP={() => onCancelRSVP(event.id)}
-            onEdit={() => setShowEditDialog(true)}
-            onDelete={handleDelete}
-          />
-        </DialogContent>
-      </Dialog>
-
-      <EventEditDialog
+      <EventDialogs
         event={event}
-        open={showEditDialog}
-        onOpenChange={setShowEditDialog}
-        onSuccess={handleEditSuccess}
+        showDetailsDialog={showDetailsDialog}
+        setShowDetailsDialog={setShowDetailsDialog}
+        showEditDialog={showEditDialog}
+        setShowEditDialog={setShowEditDialog}
+        rsvpCount={rsvpCount}
+        attendeeNames={attendeeNames}
+        userRSVPStatus={userRSVPStatus || null}
+        isAdmin={isAdmin}
+        isPastEvent={isPastEvent}
+        isWixEvent={isWixEvent}
+        canAddGuests={canAddGuests}
+        onRSVP={handleRSVP}
+        onCancelRSVP={() => onCancelRSVP(event.id)}
+        onDelete={handleDelete}
+        handleEditSuccess={handleEditSuccess}
       />
     </>
   );
