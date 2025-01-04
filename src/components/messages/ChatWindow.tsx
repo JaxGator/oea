@@ -54,7 +54,7 @@ export function ChatWindow({ selectedUserId }: ChatWindowProps) {
 
     fetchMessages();
 
-    // Subscribe to new messages
+    // Subscribe to messages between these two users
     const channel = supabase
       .channel('messages')
       .on(
@@ -63,9 +63,10 @@ export function ChatWindow({ selectedUserId }: ChatWindowProps) {
           event: '*',
           schema: 'public',
           table: 'messages',
-          filter: `sender_id=eq.${user.id},receiver_id=eq.${selectedUserId}`
+          filter: `or=(and(sender_id.eq.${user.id},receiver_id.eq.${selectedUserId}),and(sender_id.eq.${selectedUserId},receiver_id.eq.${user.id}))`,
         },
         (payload) => {
+          console.log('Received message update:', payload);
           if (payload.eventType === 'INSERT') {
             setMessages(prev => [...prev, payload.new as Message]);
           } else if (payload.eventType === 'DELETE') {
@@ -73,9 +74,12 @@ export function ChatWindow({ selectedUserId }: ChatWindowProps) {
           }
         }
       )
-      .subscribe();
+      .subscribe(status => {
+        console.log('Subscription status:', status);
+      });
 
     return () => {
+      console.log('Cleaning up subscription...');
       supabase.removeChannel(channel);
     };
   }, [selectedUserId, user, toast]);
