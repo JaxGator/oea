@@ -15,6 +15,7 @@ export function GalleryManager() {
   const { toast } = useToast();
 
   const fetchImages = async () => {
+    console.log('Fetching images from gallery_images table...');
     const { data: galleryImages, error } = await supabase
       .from('gallery_images')
       .select('*')
@@ -25,11 +26,21 @@ export function GalleryManager() {
       return;
     }
 
+    console.log('Retrieved gallery images:', galleryImages);
+
     if (galleryImages) {
-      const formattedImages = galleryImages.map(img => ({
-        id: img.id,
-        url: `${supabase.storage.from('gallery').getPublicUrl(img.file_name).data.publicUrl}`,
-      }));
+      const formattedImages = galleryImages.map(img => {
+        const publicUrl = supabase.storage.from('gallery').getPublicUrl(img.file_name).data.publicUrl;
+        console.log(`Formatting image ${img.id}:`, {
+          fileName: img.file_name,
+          publicUrl: publicUrl
+        });
+        return {
+          id: img.id,
+          url: publicUrl,
+        };
+      });
+      console.log('Formatted images:', formattedImages);
       setImages(formattedImages);
     }
   };

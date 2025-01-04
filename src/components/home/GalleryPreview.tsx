@@ -29,20 +29,27 @@ export const GalleryPreview = () => {
   const { data: images = [], isLoading } = useQuery({
     queryKey: ['gallery-images'],
     queryFn: async () => {
+      console.log('Fetching gallery images for preview...');
       const { data: galleryImages, error } = await supabase
         .from('gallery_images')
         .select('*')
         .order('display_order', { ascending: true });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching gallery images:', error);
+        throw error;
+      }
+
+      console.log('Retrieved gallery images:', galleryImages);
 
       return galleryImages.map(img => {
-        return `${supabase.storage.from('gallery').getPublicUrl(img.file_name).data.publicUrl}`;
+        const publicUrl = supabase.storage.from('gallery').getPublicUrl(img.file_name).data.publicUrl;
+        console.log(`Generated public URL for ${img.file_name}:`, publicUrl);
+        return publicUrl;
       });
     }
   });
 
-  const previewImages = images.slice(0, 4);
   const carouselEnabled = configs?.gallery_carousel_enabled === 'true';
   const carouselInterval = parseInt(configs?.gallery_carousel_interval || '5000');
 
@@ -64,9 +71,13 @@ export const GalleryPreview = () => {
     };
   }, [carouselEnabled, carouselInterval, previewImages.length]);
 
-  if (isLoading || previewImages.length === 0) {
+  if (isLoading || !images || images.length === 0) {
+    console.log('Gallery preview state:', { isLoading, imagesLength: images?.length });
     return null;
   }
+
+  const previewImages = images.slice(0, 4);
+  console.log('Preview images:', previewImages);
 
   return (
     <div className="mt-16 space-y-4">
@@ -120,4 +131,3 @@ export const GalleryPreview = () => {
       </Dialog>
     </div>
   );
-}
