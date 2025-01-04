@@ -33,19 +33,25 @@ export function ImageUploadForm({ onUploadSuccess }: ImageUploadFormProps) {
       const fileExt = file.name.split('.').pop();
       const fileName = `${timestamp}.${fileExt}`;
 
-      // Convert file to ArrayBuffer
-      const arrayBuffer = await file.arrayBuffer();
-      const fileData = new Uint8Array(arrayBuffer);
-
+      // Upload to storage
       const { error: uploadError } = await supabase.storage
         .from('gallery')
-        .upload(fileName, fileData, {
+        .upload(fileName, file, {
           contentType: file.type,
-          duplex: 'half',
           cacheControl: '3600'
         });
 
       if (uploadError) throw uploadError;
+
+      // Add record to gallery_images table
+      const { error: dbError } = await supabase
+        .from('gallery_images')
+        .insert({
+          file_name: fileName,
+          display_order: 0 // Default order
+        });
+
+      if (dbError) throw dbError;
 
       toast({
         title: "Success",

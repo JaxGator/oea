@@ -29,15 +29,21 @@ export const GalleryPreview = () => {
   const { data: images = [], isLoading } = useQuery({
     queryKey: ['gallery-images'],
     queryFn: async () => {
-      const { data: storageData, error } = await supabase.storage
-        .from('gallery')
-        .list();
+      const { data: galleryImages, error } = await supabase
+        .from('gallery_images')
+        .select('*')
+        .order('display_order', { ascending: true });
 
       if (error) throw error;
 
-      const imageUrls = storageData
-        .filter(file => file.name.match(/\.(jpg|jpeg|png|gif)$/i))
-        .map(file => supabase.storage.from('gallery').getPublicUrl(file.name).data.publicUrl);
+      const imageUrls = await Promise.all(
+        galleryImages.map(async (img) => {
+          const { data: { publicUrl } } = supabase.storage
+            .from('gallery')
+            .getPublicUrl(img.file_name);
+          return publicUrl;
+        })
+      );
 
       return imageUrls;
     }
@@ -65,6 +71,10 @@ export const GalleryPreview = () => {
     };
   }, [carouselEnabled, carouselInterval, previewImages.length]);
 
+  if (isLoading || previewImages.length === 0) {
+    return null;
+  }
+
   return (
     <div className="mt-16 space-y-4">
       <div className="flex justify-between items-center mb-6">
@@ -78,8 +88,8 @@ export const GalleryPreview = () => {
         {previewImages.map((imageUrl, index) => (
           <div 
             key={index} 
-            className={`aspect-square overflow-hidden rounded-lg cursor-pointer transition-opacity duration-500 ${
-              carouselEnabled ? (index === currentImageIndex ? 'opacity-100' : 'opacity-40') : ''
+            className={`aspect-square overflow-hidden rounded-lg cursor-pointer transition-all duration-500 ${
+              carouselEnabled ? (index === currentImageIndex ? 'opacity-100 scale-105' : 'opacity-40 scale-100') : ''
             }`}
             onClick={() => setSelectedImage(imageUrl)}
           >
