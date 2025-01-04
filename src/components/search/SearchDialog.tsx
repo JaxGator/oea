@@ -48,25 +48,6 @@ export function SearchDialog() {
     enabled: searchTerm.length > 2
   });
 
-  const handleSelect = (result: SearchResult) => {
-    setOpen(false);
-    setSearchTerm("");
-    
-    // Navigate to the URL and scroll to the content if there's a hash
-    const [path, hash] = result.url.split('#');
-    navigate(path);
-    
-    if (hash) {
-      // Wait for navigation to complete before scrolling
-      setTimeout(() => {
-        const element = document.getElementById(hash);
-        if (element) {
-          element.scrollIntoView({ behavior: 'smooth' });
-        }
-      }, 100);
-    }
-  };
-
   const SearchContent = () => (
     <div className="space-y-2">
       <Input
@@ -77,12 +58,15 @@ export function SearchDialog() {
         autoFocus
       />
       <div className="max-h-[300px] overflow-y-auto space-y-1">
-        {isLoading && <div className="text-sm p-2">Loading...</div>}
+        {isLoading && <div className="text-sm p-2" aria-hidden={!isLoading}>Loading...</div>}
         {results?.map((result) => (
           <button
             key={result.id}
             className="w-full text-left p-2 hover:bg-accent rounded-md transition-colors cursor-pointer active:bg-accent/80"
-            onClick={() => handleSelect(result)}
+            onClick={() => {
+              setOpen(false);
+              navigate(result.url);
+            }}
             type="button"
           >
             <div className="flex items-center justify-between">
@@ -99,7 +83,7 @@ export function SearchDialog() {
           </button>
         ))}
         {results?.length === 0 && searchTerm.length > 2 && (
-          <div className="text-sm text-muted-foreground p-2">
+          <div className="text-sm text-muted-foreground p-2" aria-hidden={!(results?.length === 0 && searchTerm.length > 2)}>
             No results found
           </div>
         )}
