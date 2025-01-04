@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { GallerySection } from './GallerySection';
@@ -8,78 +8,25 @@ import { supabase } from '@/integrations/supabase/client';
 export const GalleryPreview = () => {
   const [showFullGallery, setShowFullGallery] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
-
-  const { data: configs } = useQuery({
-    queryKey: ['site-config'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('site_config')
-        .select('key, value');
-      
-      if (error) throw error;
-      
-      return data.reduce((acc: Record<string, string>, curr) => {
-        acc[curr.key] = curr.value;
-        return acc;
-      }, {});
-    }
-  });
 
   const { data: images = [], isLoading } = useQuery({
     queryKey: ['gallery-images'],
     queryFn: async () => {
-      console.log('Fetching gallery images for preview...');
-      const { data: galleryImages, error } = await supabase
-        .from('gallery_images')
-        .select('*')
-        .order('display_order', { ascending: true });
+      const { data: storageData, error } = await supabase.storage
+        .from('gallery')
+        .list();
 
-      if (error) {
-        console.error('Error fetching gallery images:', error);
-        throw error;
-      }
+      if (error) throw error;
 
-      console.log('Retrieved gallery images:', galleryImages);
+      const imageUrls = storageData
+        .filter(file => file.name.match(/\.(jpg|jpeg|png|gif)$/i))
+        .map(file => supabase.storage.from('gallery').getPublicUrl(file.name).data.publicUrl);
 
-      return galleryImages.map(img => {
-        const publicUrl = supabase.storage.from('gallery').getPublicUrl(img.file_name).data.publicUrl;
-        console.log(`Generated public URL for ${img.file_name}:`, publicUrl);
-        return publicUrl;
-      });
+      return imageUrls;
     }
   });
 
-  const carouselEnabled = configs?.gallery_carousel_enabled === 'true';
-  const carouselInterval = parseInt(configs?.gallery_carousel_interval || '5000');
-
-  // Move previewImages declaration before its usage
   const previewImages = images.slice(0, 4);
-
-  useEffect(() => {
-    let intervalId: NodeJS.Timeout;
-    
-    if (carouselEnabled && previewImages.length > 0) {
-      intervalId = setInterval(() => {
-        setCurrentImageIndex((prevIndex) => 
-          prevIndex === previewImages.length - 1 ? 0 : prevIndex + 1
-        );
-      }, carouselInterval);
-    }
-
-    return () => {
-      if (intervalId) {
-        clearInterval(intervalId);
-      }
-    };
-  }, [carouselEnabled, carouselInterval, previewImages.length]);
-
-  if (isLoading || !images || images.length === 0) {
-    console.log('Gallery preview state:', { isLoading, imagesLength: images?.length });
-    return null;
-  }
-
-  console.log('Preview images:', previewImages);
 
   return (
     <div className="mt-16 space-y-4">
@@ -94,9 +41,7 @@ export const GalleryPreview = () => {
         {previewImages.map((imageUrl, index) => (
           <div 
             key={index} 
-            className={`aspect-square overflow-hidden rounded-lg cursor-pointer transition-all duration-500 ${
-              carouselEnabled ? (index === currentImageIndex ? 'opacity-100 scale-105' : 'opacity-40 scale-100') : ''
-            }`}
+            className="aspect-square overflow-hidden rounded-lg cursor-pointer"
             onClick={() => setSelectedImage(imageUrl)}
           >
             <img
@@ -108,6 +53,7 @@ export const GalleryPreview = () => {
         ))}
       </div>
 
+      {/* Full Gallery Modal */}
       <Dialog open={showFullGallery} onOpenChange={setShowFullGallery}>
         <DialogContent className="max-w-[90vw] max-h-[90vh]">
           <GallerySection
@@ -120,6 +66,7 @@ export const GalleryPreview = () => {
         </DialogContent>
       </Dialog>
 
+      {/* Selected Image Modal */}
       <Dialog open={!!selectedImage} onOpenChange={() => setSelectedImage(null)}>
         <DialogContent className="max-w-[90vw] max-h-[90vh] p-0">
           {selectedImage && (
