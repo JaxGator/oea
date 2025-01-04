@@ -35,7 +35,6 @@ export function MemberPageContent({ members, currentUserIsAdmin, isMobile }: Mem
                   members={members}
                   currentUserIsAdmin={currentUserIsAdmin}
                   isMobile={isMobile}
-                  onViewMember={setViewingMember}
                 />
               ) : (
                 <ScrollArea className="rounded-md border">

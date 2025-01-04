@@ -11,4 +11,5 @@ export interface Member {
 export interface MemberTableProps {
   members: Member[];
   currentUserIsAdmin: boolean;
+  onViewMember: (member: Member) => void;
 }

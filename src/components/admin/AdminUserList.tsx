@@ -6,9 +6,12 @@ import { AdminUserTableWrapper } from "./user-management/AdminUserTableWrapper";
 import { CreateUserDialog } from "./user-management/CreateUserDialog";
 import { BulkUserCreation } from "./user-management/BulkUserCreation";
 import { useToast } from "@/hooks/use-toast";
+import { useState } from "react";
+import { ViewMemberDialog } from "@/components/members/ViewMemberDialog";
 
 export function AdminUserList() {
   const { toast } = useToast();
+  const [viewingMember, setViewingMember] = useState<Member | null>(null);
 
   const { data: members, isLoading, error, refetch } = useQuery({
     queryKey: ['members'],
@@ -50,8 +53,18 @@ export function AdminUserList() {
         </div>
       </div>
       <AdminUserTableWrapper>
-        <MemberTable members={members || []} currentUserIsAdmin={true} />
+        <MemberTable 
+          members={members || []} 
+          currentUserIsAdmin={true} 
+          onViewMember={setViewingMember}
+        />
       </AdminUserTableWrapper>
+
+      <ViewMemberDialog
+        member={viewingMember}
+        open={!!viewingMember}
+        onOpenChange={(open) => !open && setViewingMember(null)}
+      />
     </div>
   );
 }
