@@ -8,6 +8,8 @@ import { EventScheduling } from "./EventScheduling";
 import { EventLocationCapacity } from "./EventLocationCapacity";
 import { EventImageUpload } from "./EventImageUpload";
 import { useEventFormSubmit } from "@/hooks/useEventFormSubmit";
+import { FormField, FormItem, FormLabel, FormControl } from "@/components/ui/form";
+import { Checkbox } from "@/components/ui/checkbox";
 
 export function EventForm({ onSuccess, initialData, isPastEvent, isWixEvent }: EventFormProps) {
   const form = useForm<EventFormValues>({
@@ -20,6 +22,7 @@ export function EventForm({ onSuccess, initialData, isPastEvent, isWixEvent }: E
       location: "",
       max_guests: 50,
       image_url: "/lovable-uploads/609edf01-3169-439a-80f5-f6f15de7a5a6.png",
+      is_featured: false,
     },
   });
 
@@ -43,6 +46,25 @@ export function EventForm({ onSuccess, initialData, isPastEvent, isWixEvent }: E
           showMaxGuestsHint={isPastEvent}
         />
         <EventImageUpload form={form} defaultImage={initialData?.image_url} />
+        
+        <FormField
+          control={form.control}
+          name="is_featured"
+          render={({ field }) => (
+            <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+              <FormControl>
+                <Checkbox
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                />
+              </FormControl>
+              <div className="space-y-1 leading-none">
+                <FormLabel>Featured Event</FormLabel>
+              </div>
+            </FormItem>
+          )}
+        />
+
         <Button type="submit" className="w-full bg-[#0d97d1] hover:bg-[#0d97d1]/90">
           {initialData ? "Update Event" : "Create Event"}
         </Button>

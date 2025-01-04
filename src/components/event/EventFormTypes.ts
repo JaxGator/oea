@@ -8,6 +8,7 @@ export const eventSchema = z.object({
   location: z.string().min(1, "Location is required"),
   max_guests: z.number().min(1, "At least one guest is required"),
   image_url: z.string().url("Please enter a valid image URL"),
+  is_featured: z.boolean().optional(),
 });
 
 export type EventFormValues = z.infer<typeof eventSchema>;
@@ -23,6 +24,7 @@ export interface EventFormProps {
     location: string;
     max_guests: number;
     image_url?: string;
+    is_featured?: boolean;
   };
   isPastEvent?: boolean;
   isWixEvent?: boolean;

@@ -9,6 +9,7 @@ export interface Event {
   created_by: string;
   created_at: string;
   image_url: string;
+  is_featured?: boolean;
   rsvps?: EventRSVP[];
 }
 
@@ -34,4 +35,5 @@ export interface EventFormData {
   location: string;
   max_guests: number;
   image_url: string;
+  is_featured?: boolean;
 }
