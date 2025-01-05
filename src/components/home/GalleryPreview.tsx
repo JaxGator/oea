@@ -1,17 +1,12 @@
 import React, { useState } from 'react';
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { GallerySection } from './GallerySection';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { Camera } from "lucide-react";
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from "@/components/ui/carousel";
+import { GallerySection } from './GallerySection';
+import { GalleryModal } from './gallery/GalleryModal';
+import { GalleryCarousel } from './gallery/GalleryCarousel';
+import { GalleryGrid } from './gallery/GalleryGrid';
+import { GalleryHeader } from './gallery/GalleryHeader';
 
 export const GalleryPreview = () => {
   const [showFullGallery, setShowFullGallery] = useState(false);
@@ -54,68 +49,23 @@ export const GalleryPreview = () => {
     }
   };
 
-  const renderGalleryPreview = () => {
-    if (config) {
-      return (
-        <Carousel className="w-full">
-          <CarouselContent>
-            {images.map((imageUrl, index) => (
-              <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/4">
-                <button
-                  className="w-full aspect-square overflow-hidden rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-                  onClick={() => setSelectedImage(imageUrl)}
-                  onKeyDown={handleKeyPress(imageUrl)}
-                  aria-label={`View gallery image ${index + 1}`}
-                >
-                  <img
-                    src={imageUrl}
-                    alt={`Gallery preview ${index + 1}`}
-                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                  />
-                </button>
-              </CarouselItem>
-            ))}
-          </CarouselContent>
-          <CarouselPrevious className="hidden md:flex" />
-          <CarouselNext className="hidden md:flex" />
-        </Carousel>
-      );
-    }
-
-    return (
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        {images.slice(0, 4).map((imageUrl, index) => (
-          <button
-            key={index}
-            className="aspect-square overflow-hidden rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-            onClick={() => setSelectedImage(imageUrl)}
-            onKeyDown={handleKeyPress(imageUrl)}
-            aria-label={`View gallery image ${index + 1}`}
-          >
-            <img
-              src={imageUrl}
-              alt={`Gallery preview ${index + 1}`}
-              className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-            />
-          </button>
-        ))}
-      </div>
-    );
-  };
-
   return (
     <div className="mt-16 space-y-4">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-          <Camera className="h-6 w-6" role="presentation" />
-          Photo Gallery
-        </h2>
-        <Button onClick={() => setShowFullGallery(true)} variant="outline">
-          View All Photos
-        </Button>
-      </div>
+      <GalleryHeader onViewAllClick={() => setShowFullGallery(true)} />
       
-      {renderGalleryPreview()}
+      {config ? (
+        <GalleryCarousel 
+          images={images}
+          onImageSelect={setSelectedImage}
+          onKeyPress={handleKeyPress}
+        />
+      ) : (
+        <GalleryGrid 
+          images={images}
+          onImageSelect={setSelectedImage}
+          onKeyPress={handleKeyPress}
+        />
+      )}
 
       {/* Full Gallery Modal */}
       <Dialog open={showFullGallery} onOpenChange={setShowFullGallery}>
@@ -131,20 +81,10 @@ export const GalleryPreview = () => {
       </Dialog>
 
       {/* Selected Image Modal */}
-      <Dialog open={!!selectedImage} onOpenChange={() => setSelectedImage(null)}>
-        <DialogContent className="max-w-[95vw] max-h-[95vh] p-2 bg-[#F1F1F1]">
-          <div className="relative w-full h-full flex items-center justify-center">
-            {selectedImage && (
-              <img
-                src={selectedImage}
-                alt="Selected gallery image"
-                className="max-w-full max-h-[90vh] object-contain rounded-lg"
-                style={{ margin: 'auto' }}
-              />
-            )}
-          </div>
-        </DialogContent>
-      </Dialog>
+      <GalleryModal 
+        selectedImage={selectedImage}
+        onClose={() => setSelectedImage(null)}
+      />
     </div>
   );
 };
