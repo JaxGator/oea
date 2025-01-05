@@ -25,7 +25,7 @@ export function EventCardBasicInfo({
         tabIndex={0}
       >
         <CalendarDays className="h-4 w-4" aria-hidden="true" />
-        <span>{format(parseISO(date), "MMMM d, yyyy")}</span>
+        <span tabIndex={0}>{format(parseISO(date), "MMMM d, yyyy")}</span>
       </div>
       
       <div 
@@ -35,7 +35,7 @@ export function EventCardBasicInfo({
         tabIndex={0}
       >
         <MapPin className="h-4 w-4" aria-hidden="true" />
-        <span>{location}</span>
+        <span tabIndex={0}>{location}</span>
       </div>
       
       <div 
@@ -45,7 +45,7 @@ export function EventCardBasicInfo({
         tabIndex={0}
       >
         <Users className="h-4 w-4" aria-hidden="true" />
-        <span>
+        <span tabIndex={0}>
           {isWixEvent ? (
             "RSVPs from previous platform"
           ) : (

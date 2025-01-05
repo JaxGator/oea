@@ -7,12 +7,8 @@ interface EventCardHeaderProps {
 
 export function EventCardHeader({ imageUrl, title }: EventCardHeaderProps) {
   return (
-    <div 
-      className="flex flex-col space-y-1.5 relative p-0"
-      role="img"
-      aria-label={`Featured image for event: ${title}`}
-    >
-      <figure role="none" className="w-full h-48">
+    <div className="flex flex-col space-y-1.5 relative p-0">
+      <figure className="w-full h-48">
         <img
           src={imageUrl}
           alt={`Event image for ${title}`}
