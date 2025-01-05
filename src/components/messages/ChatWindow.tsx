@@ -63,7 +63,7 @@ export function ChatWindow({ selectedUserId }: ChatWindowProps) {
           event: '*',
           schema: 'public',
           table: 'messages',
-          filter: `or=(and(sender_id.eq.${user.id},receiver_id.eq.${selectedUserId}),and(sender_id.eq.${selectedUserId},receiver_id.eq.${user.id}))`,
+          filter: `sender_id=eq.${user.id},receiver_id=eq.${selectedUserId}`,
         },
         (payload) => {
           console.log('Received message update:', payload);
