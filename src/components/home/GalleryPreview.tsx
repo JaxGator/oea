@@ -5,6 +5,13 @@ import { GallerySection } from './GallerySection';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Camera } from "lucide-react";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
 
 export const GalleryPreview = () => {
   const [showFullGallery, setShowFullGallery] = useState(false);
@@ -27,6 +34,20 @@ export const GalleryPreview = () => {
     }
   });
 
+  const { data: config } = useQuery({
+    queryKey: ['site-config', 'gallery_carousel_enabled'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('site_config')
+        .select('value')
+        .eq('key', 'gallery_carousel_enabled')
+        .single();
+      
+      if (error) throw error;
+      return data?.value === 'true';
+    }
+  });
+
   const previewImages = images.slice(0, 4);
 
   const handleKeyPress = (imageUrl: string) => (e: React.KeyboardEvent) => {
@@ -35,18 +56,35 @@ export const GalleryPreview = () => {
     }
   };
 
-  return (
-    <div className="mt-16 space-y-4">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-          <Camera className="h-6 w-6" role="presentation" />
-          Photo Gallery
-        </h2>
-        <Button onClick={() => setShowFullGallery(true)} variant="outline">
-          View All Photos
-        </Button>
-      </div>
-      
+  const renderGalleryPreview = () => {
+    if (config) {
+      return (
+        <Carousel className="w-full">
+          <CarouselContent>
+            {previewImages.map((imageUrl, index) => (
+              <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/4">
+                <button
+                  className="w-full aspect-square overflow-hidden rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                  onClick={() => setSelectedImage(imageUrl)}
+                  onKeyDown={handleKeyPress(imageUrl)}
+                  aria-label={`View gallery image ${index + 1}`}
+                >
+                  <img
+                    src={imageUrl}
+                    alt={`Gallery preview ${index + 1}`}
+                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                  />
+                </button>
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+          <CarouselPrevious />
+          <CarouselNext />
+        </Carousel>
+      );
+    }
+
+    return (
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         {previewImages.map((imageUrl, index) => (
           <button
@@ -64,6 +102,22 @@ export const GalleryPreview = () => {
           </button>
         ))}
       </div>
+    );
+  };
+
+  return (
+    <div className="mt-16 space-y-4">
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+          <Camera className="h-6 w-6" role="presentation" />
+          Photo Gallery
+        </h2>
+        <Button onClick={() => setShowFullGallery(true)} variant="outline">
+          View All Photos
+        </Button>
+      </div>
+      
+      {renderGalleryPreview()}
 
       {/* Full Gallery Modal */}
       <Dialog open={showFullGallery} onOpenChange={setShowFullGallery}>

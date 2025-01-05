@@ -6,6 +6,8 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Dispatch, SetStateAction } from "react";
 import { Card, CardContent } from "@/components/ui/card";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 
 interface TechnicalSettingsProps {
   configs: Record<string, any>;
@@ -54,6 +56,18 @@ export function TechnicalSettings({ configs, setConfigs, isLoading }: TechnicalS
             updateConfig('maintenance_mode', enabled.toString());
           }}
         />
+
+        <div className="flex items-center justify-between space-x-2">
+          <Label htmlFor="gallery-carousel">Enable Gallery Carousel</Label>
+          <Switch
+            id="gallery-carousel"
+            checked={configs.gallery_carousel_enabled === 'true'}
+            onCheckedChange={(checked) => {
+              setConfigs(prev => ({ ...prev, gallery_carousel_enabled: checked.toString() }));
+              updateConfig('gallery_carousel_enabled', checked.toString());
+            }}
+          />
+        </div>
 
         <FaviconConfig
           value={configs.favicon_url || ''}
