@@ -48,8 +48,6 @@ export const GalleryPreview = () => {
     }
   });
 
-  const previewImages = images.slice(0, 4);
-
   const handleKeyPress = (imageUrl: string) => (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' || e.key === ' ') {
       setSelectedImage(imageUrl);
@@ -61,7 +59,7 @@ export const GalleryPreview = () => {
       return (
         <Carousel className="w-full">
           <CarouselContent>
-            {previewImages.map((imageUrl, index) => (
+            {images.map((imageUrl, index) => (
               <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/4">
                 <button
                   className="w-full aspect-square overflow-hidden rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
@@ -78,15 +76,15 @@ export const GalleryPreview = () => {
               </CarouselItem>
             ))}
           </CarouselContent>
-          <CarouselPrevious />
-          <CarouselNext />
+          <CarouselPrevious className="hidden md:flex" />
+          <CarouselNext className="hidden md:flex" />
         </Carousel>
       );
     }
 
     return (
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        {previewImages.map((imageUrl, index) => (
+        {images.slice(0, 4).map((imageUrl, index) => (
           <button
             key={index}
             className="aspect-square overflow-hidden rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
