@@ -1,11 +1,12 @@
+import { ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
-import { toast } from "sonner";
 import { useAuthState } from "@/hooks/useAuthState";
+import { toast } from "sonner";
 
 interface EventRSVPHandlerProps {
   eventId: string;
   onRSVP: (eventId: string, guests?: { firstName: string }[]) => void;
-  children: (handleRSVP: (guests?: { firstName: string }[]) => void) => React.ReactNode;
+  children: (handleRSVP: (guests?: { firstName: string }[]) => void) => ReactNode;
 }
 
 export function EventRSVPHandler({ eventId, onRSVP, children }: EventRSVPHandlerProps) {
