@@ -67,9 +67,26 @@ export function EventCard({
     onRSVP(event.id, guests);
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
+  const handleInteraction = (e: React.KeyboardEvent | React.MouseEvent) => {
+    // Prevent event bubbling for interactive elements
+    const target = e.target as HTMLElement;
+    if (
+      target.tagName === 'BUTTON' ||
+      target.tagName === 'A' ||
+      target.closest('button') ||
+      target.closest('a') ||
+      target.closest('[role="button"]') ||
+      target.closest('[data-interactive="true"]')
+    ) {
+      return;
+    }
+
+    setShowDetailsDialog(true);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' || e.key === ' ') {
-      setShowDetailsDialog(true);
+      handleInteraction(e);
     }
   };
 
@@ -77,8 +94,8 @@ export function EventCard({
     <>
       <Card 
         className="w-full transition-all duration-300 hover:shadow-lg animate-fade-in bg-white cursor-pointer"
-        onClick={() => setShowDetailsDialog(true)}
-        onKeyDown={handleKeyPress}
+        onClick={handleInteraction}
+        onKeyDown={handleKeyDown}
         tabIndex={0}
         role="button"
         aria-label={`View details for ${event.title}`}
