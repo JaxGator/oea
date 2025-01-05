@@ -38,14 +38,8 @@ export function CreateGroupChatDialog() {
         .select('id')
         .single();
 
-      if (chatError) {
-        console.error('Error creating chat:', chatError);
-        throw new Error(chatError.message);
-      }
-
-      if (!chatData?.id) {
-        throw new Error('No chat ID returned');
-      }
+      if (chatError) throw chatError;
+      if (!chatData?.id) throw new Error('No chat ID returned');
 
       // Add participants including the creator
       const participants = [...selectedUsers, user.id].map(userId => ({
@@ -59,13 +53,12 @@ export function CreateGroupChatDialog() {
         .insert(participants);
 
       if (participantsError) {
-        console.error('Error adding participants:', participantsError);
         // Attempt to clean up the created chat
         await supabase
           .from('group_chats')
           .delete()
           .eq('id', chatData.id);
-        throw new Error(participantsError.message);
+        throw participantsError;
       }
 
       toast({
