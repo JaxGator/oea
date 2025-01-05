@@ -10,12 +10,7 @@ export const GalleryModal = ({ selectedImage, onClose }: GalleryModalProps) => {
 
   return (
     <Dialog open={!!selectedImage} onOpenChange={onClose}>
-      <DialogContent 
-        className="max-w-[95vw] max-h-[95vh] p-2 bg-[#F1F1F1]"
-        role="dialog"
-        aria-modal="true"
-        aria-label="Image Preview"
-      >
+      <DialogContent className="max-w-[95vw] max-h-[95vh] p-2 bg-[#F1F1F1]">
         <div className="relative w-full h-full flex items-center justify-center">
           <img
             src={selectedImage}
