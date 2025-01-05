@@ -35,7 +35,7 @@ export function CreateGroupChatDialog() {
           name: chatName.trim(),
           created_by: user.id
         })
-        .select('id')
+        .select()
         .single();
 
       if (chatError) {
@@ -43,8 +43,8 @@ export function CreateGroupChatDialog() {
         throw new Error(chatError.message);
       }
 
-      if (!chatData?.id) {
-        throw new Error('No chat ID returned');
+      if (!chatData) {
+        throw new Error('No chat data returned');
       }
 
       // Add participants including the creator
