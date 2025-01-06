@@ -54,7 +54,7 @@ export function ChatWindow({ selectedUserId }: ChatWindowProps) {
 
     fetchMessages();
 
-    // Subscribe to new messages between these two users
+    // Subscribe to messages between these two users
     const channel = supabase
       .channel('messages')
       .on(
