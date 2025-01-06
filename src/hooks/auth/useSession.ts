@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Session, User, AuthError, AuthApiError } from "@supabase/supabase-js";
+import { Session, User, AuthError } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -29,12 +29,6 @@ export function useSession() {
       try {
         console.log('Attempting to get session...', { retryCount });
         
-        // First try to get the session from storage
-        const storedSession = window.localStorage.getItem('supabase.auth.token');
-        if (storedSession) {
-          console.log('Found stored session token');
-        }
-        
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         
         if (sessionError) {
@@ -44,8 +38,6 @@ export function useSession() {
             retryCount
           });
           
-          // Clear stored session if there's an error
-          window.localStorage.removeItem('supabase.auth.token');
           throw sessionError;
         }
 
@@ -107,9 +99,7 @@ export function useSession() {
 
         console.log("Auth state change:", event, session?.user?.email);
 
-        if (event === 'SIGNED_OUT' || event === 'USER_DELETED') {
-          // Clear any stored session data
-          window.localStorage.removeItem('supabase.auth.token');
+        if (event === 'SIGNED_OUT') {
           setState({
             session: null,
             user: null,

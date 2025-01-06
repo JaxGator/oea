@@ -5,6 +5,7 @@ import { UserCircle } from "lucide-react";
 import { Profile } from "@/types/auth";
 import { supabase } from "@/integrations/supabase/client";
 import { useCallback, useState } from "react";
+import { useToast } from "@/hooks/use-toast";
 
 interface UserMenuProps {
   user: any;
@@ -13,9 +14,26 @@ interface UserMenuProps {
 
 export function UserMenu({ user, profile }: UserMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const { toast } = useToast();
+  
   const handleSignOut = useCallback(async () => {
-    await supabase.auth.signOut();
-  }, []);
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      
+      toast({
+        title: "Signed out successfully",
+        description: "You have been logged out",
+      });
+    } catch (error) {
+      console.error('Sign out error:', error);
+      toast({
+        title: "Error signing out",
+        description: "Please try again",
+        variant: "destructive",
+      });
+    }
+  }, [toast]);
 
   if (!user) {
     return (

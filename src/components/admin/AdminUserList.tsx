@@ -30,48 +30,52 @@ export function AdminUserList() {
   const { data: members, isLoading, error, refetch } = useQuery({
     queryKey: ['members'],
     queryFn: async () => {
-      // First, get all profiles
-      const { data: profiles, error: profilesError } = await supabase
-        .from('profiles')
-        .select('*')
-        .order('username');
+      try {
+        // First, get all profiles
+        const { data: profiles, error: profilesError } = await supabase
+          .from('profiles')
+          .select('*')
+          .order('username');
 
-      if (profilesError) {
-        console.error('Error fetching profiles:', profilesError);
+        if (profilesError) {
+          console.error('Error fetching profiles:', profilesError);
+          throw profilesError;
+        }
+
+        // Then, fetch emails using the Edge Function
+        const { data: emailData, error: emailError } = await supabase.functions.invoke('get-user-emails');
+        
+        if (emailError) {
+          console.error('Error fetching user emails:', emailError);
+          // Don't throw here, just return profiles without emails
+          return profiles.map(profile => ({
+            ...profile,
+            email: null
+          }));
+        }
+
+        // Create a map of user IDs to emails from the Edge Function response
+        const emailMap = new Map(
+          (emailData || []).map((user: { id: string; email: string }) => [user.id, user.email])
+        );
+
+        // Combine the data
+        return profiles.map(profile => ({
+          ...profile,
+          email: emailMap.get(profile.id) || null,
+        })) as ProfileWithEmail[];
+      } catch (error) {
+        console.error('Error in members query:', error);
         toast({
           title: "Error",
-          description: "Failed to fetch members",
+          description: "Failed to load members. Please try again.",
           variant: "destructive",
         });
-        throw profilesError;
+        throw error;
       }
-
-      // Then, fetch emails using the Edge Function
-      const { data: emailData, error: emailError } = await supabase.functions.invoke('get-user-emails');
-      
-      if (emailError) {
-        console.error('Error fetching user emails:', emailError);
-        toast({
-          title: "Error",
-          description: "Failed to fetch user emails",
-          variant: "destructive",
-        });
-        throw emailError;
-      }
-
-      // Create a map of user IDs to emails from the Edge Function response
-      const emailMap = new Map(
-        (emailData || []).map((user: { id: string; email: string }) => [user.id, user.email])
-      );
-
-      // Combine the data
-      const membersWithEmail = profiles.map(profile => ({
-        ...profile,
-        email: emailMap.get(profile.id) || null,
-      })) as ProfileWithEmail[];
-
-      return membersWithEmail;
     },
+    retry: 1,
+    staleTime: 1000 * 60 * 5, // Consider data fresh for 5 minutes
   });
 
   const handleEditComplete = () => {
