@@ -23,19 +23,19 @@ export function DesktopNavigation({ user, profile }: DesktopNavigationProps) {
     <nav className="hidden md:block bg-gray-900 text-white p-4" role="navigation" aria-label="Main navigation">
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center justify-between">
-          <div className="flex-1 flex items-center justify-center space-x-8">
-            <Link 
-              to="/" 
-              className="text-xl font-bold text-white hover:text-primary-100 transition-colors"
-              role="menuitem"
-            >
-              <img 
-                src="/lovable-uploads/609edf01-3169-439a-80f5-f6f15de7a5a6.png"
-                alt="OEA Logo"
-                className="h-12 w-auto"
-              />
-            </Link>
-            
+          <Link 
+            to="/" 
+            className="text-xl font-bold text-white hover:text-primary-100 transition-colors"
+            role="menuitem"
+          >
+            <img 
+              src="/lovable-uploads/609edf01-3169-439a-80f5-f6f15de7a5a6.png"
+              alt="OEA Logo"
+              className="h-12 w-auto"
+            />
+          </Link>
+          
+          <div className="flex-1 flex items-center justify-center space-x-8 ml-8">
             {navigationItems.map(({ label, path, external }) => 
               external ? (
                 <a
