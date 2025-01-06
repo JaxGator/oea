@@ -5,7 +5,8 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-serve(async (req) => {
+Deno.serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
@@ -50,6 +51,8 @@ serve(async (req) => {
     // Get request body
     const { userId, username, fullName, email, password, isAdmin, isApproved, isMember, avatarUrl } = await req.json()
 
+    console.log('Updating user:', { userId, username, email, isAdmin, isApproved, isMember }) // Log for debugging
+
     // Update auth user if email or password changed
     if (email || password) {
       const { error: updateAuthError } = await supabaseAdmin.auth.admin.updateUserById(
@@ -62,7 +65,10 @@ serve(async (req) => {
 
       if (updateAuthError) {
         console.error('Error updating auth user:', updateAuthError)
-        throw updateAuthError
+        return new Response(
+          JSON.stringify({ error: `Failed to update auth user: ${updateAuthError.message}` }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
       }
     }
 
@@ -81,7 +87,10 @@ serve(async (req) => {
 
     if (updateProfileError) {
       console.error('Error updating profile:', updateProfileError)
-      throw updateProfileError
+      return new Response(
+        JSON.stringify({ error: `Failed to update profile: ${updateProfileError.message}` }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
     }
 
     // Log the admin action
