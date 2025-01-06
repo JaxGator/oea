@@ -15,66 +15,54 @@ export const GalleryPreview = () => {
   const { data: images = [], isLoading, error } = useQuery({
     queryKey: ['gallery-images'],
     queryFn: async () => {
-      try {
-        const { data: storageData, error: storageError } = await supabase.storage
-          .from('gallery')
-          .list('', {
-            limit: 100,
-            offset: 0,
-            sortBy: { column: 'name', order: 'asc' },
-          });
-
-        if (storageError) {
-          console.error('Error fetching gallery images:', storageError);
-          return [];
-        }
-
-        if (!storageData || !Array.isArray(storageData)) {
-          console.log('No gallery data found or invalid data format');
-          return [];
-        }
-
-        const imageFiles = storageData.filter(file => 
-          file.name.match(/\.(jpg|jpeg|png|gif)$/i)
-        );
-
-        return imageFiles.map(file => {
-          const { data } = supabase.storage
-            .from('gallery')
-            .getPublicUrl(file.name);
-          return data.publicUrl;
+      const { data: storageData, error: storageError } = await supabase.storage
+        .from('gallery')
+        .list('', {
+          limit: 100,
+          sortBy: { column: 'name', order: 'asc' },
         });
-      } catch (err) {
-        console.error('Unexpected error in gallery fetch:', err);
+
+      if (storageError) {
+        console.error('Error fetching gallery images:', storageError);
+        throw storageError;
+      }
+
+      if (!storageData || !Array.isArray(storageData)) {
         return [];
       }
+
+      const imageFiles = storageData.filter(file => 
+        file.name.match(/\.(jpg|jpeg|png|gif)$/i)
+      );
+
+      return imageFiles.map(file => {
+        const { data } = supabase.storage
+          .from('gallery')
+          .getPublicUrl(file.name);
+        return data.publicUrl;
+      });
     },
-    retry: false,
+    retry: 1,
     refetchOnWindowFocus: false
   });
 
   const { data: carouselEnabled = false } = useQuery({
     queryKey: ['site-config', 'gallery_carousel_enabled'],
     queryFn: async () => {
-      try {
-        const { data, error: configError } = await supabase
-          .from('site_config')
-          .select('value')
-          .eq('key', 'gallery_carousel_enabled')
-          .single();
-        
-        if (configError) {
-          console.error('Error fetching gallery config:', configError);
-          return false;
-        }
-        
-        return data?.value === 'true';
-      } catch (err) {
-        console.error('Unexpected error in config fetch:', err);
+      const { data, error: configError } = await supabase
+        .from('site_config')
+        .select('value')
+        .eq('key', 'gallery_carousel_enabled')
+        .maybeSingle();
+      
+      if (configError) {
+        console.error('Error fetching gallery config:', configError);
         return false;
       }
+      
+      return data?.value === 'true';
     },
-    retry: false,
+    retry: 1,
     refetchOnWindowFocus: false
   });
 
@@ -105,11 +93,13 @@ export const GalleryPreview = () => {
     );
   }
 
+  const hasImages = Array.isArray(images) && images.length > 0;
+
   return (
     <div className="mt-16 space-y-4">
       <GalleryHeader onViewAllClick={() => setShowFullGallery(true)} />
       
-      {images.length > 0 ? (
+      {hasImages ? (
         carouselEnabled ? (
           <GalleryCarousel 
             images={images}
@@ -146,10 +136,12 @@ export const GalleryPreview = () => {
         </Dialog>
       )}
 
-      <GalleryModal 
-        selectedImage={selectedImage}
-        onClose={() => setSelectedImage(null)}
-      />
+      {selectedImage && (
+        <GalleryModal 
+          selectedImage={selectedImage}
+          onClose={() => setSelectedImage(null)}
+        />
+      )}
     </div>
   );
 };
