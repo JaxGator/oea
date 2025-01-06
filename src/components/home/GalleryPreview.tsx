@@ -1,135 +1,124 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { GallerySection } from './GallerySection';
-import { GalleryModal } from './gallery/GalleryModal';
 import { GalleryCarousel } from './gallery/GalleryCarousel';
 import { GalleryGrid } from './gallery/GalleryGrid';
 import { GalleryHeader } from './gallery/GalleryHeader';
-import { toast } from 'sonner';
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Loader2 } from "lucide-react";
+import { GalleryContainer } from './gallery/GalleryContainer';
+import { GalleryModalContent } from './gallery/GalleryModalContent';
+import { useGalleryState } from './gallery/useGalleryState';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuthState } from '@/hooks/useAuthState';
 
 export const GalleryPreview = () => {
-  const [showFullGallery, setShowFullGallery] = useState(false);
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
-
-  const { data: images = [], isLoading, error } = useQuery({
-    queryKey: ['gallery-images'],
-    queryFn: async () => {
-      try {
-        const { data: storageData, error: storageError } = await supabase.storage
-          .from('gallery')
-          .list();
-
-        if (storageError) {
-          console.error('Storage error:', storageError);
-          throw storageError;
-        }
-
-        if (!storageData) {
-          console.log('No storage data found');
-          return [];
-        }
-
-        const imageUrls = storageData
-          .filter(file => file.name.match(/\.(jpg|jpeg|png|gif)$/i))
-          .map(file => {
-            const { data } = supabase.storage.from('gallery').getPublicUrl(file.name);
-            return data.publicUrl;
-          });
-
-        return imageUrls;
-      } catch (err) {
-        console.error('Failed to fetch gallery images:', err);
-        toast.error('Failed to load gallery images');
-        return [];
-      }
-    },
-    refetchOnWindowFocus: false,
-    retry: 1
-  });
+  const { profile } = useAuthState();
+  const isAdmin = profile?.is_admin;
 
   const { data: config } = useQuery({
     queryKey: ['site-config', 'gallery_carousel_enabled'],
     queryFn: async () => {
-      try {
-        const { data, error } = await supabase
-          .from('site_config')
-          .select('value')
-          .eq('key', 'gallery_carousel_enabled')
-          .single();
-        
-        if (error) throw error;
-        return data?.value === 'true';
-      } catch (err) {
-        console.error('Failed to fetch gallery config:', err);
-        return false;
-      }
+      const { data, error } = await supabase
+        .from('site_config')
+        .select('value')
+        .eq('key', 'gallery_carousel_enabled')
+        .single();
+      
+      if (error) throw error;
+      return data?.value === 'true';
     },
     refetchOnWindowFocus: false
   });
 
-  const handleKeyPress = (imageUrl: string) => (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      setSelectedImage(imageUrl);
-    }
-  };
-
   return (
     <div className="mt-16 space-y-4">
-      <GalleryHeader 
-        onViewAllClick={() => setShowFullGallery(true)} 
-        totalImages={images.length}
-      />
-      
-      {error ? (
-        <Alert variant="destructive">
-          <AlertDescription>
-            Failed to load gallery images. Please try again later.
-          </AlertDescription>
-        </Alert>
-      ) : config ? (
-        <GalleryCarousel 
-          images={images}
-          onImageSelect={setSelectedImage}
-          onKeyPress={handleKeyPress}
-          isLoading={isLoading}
-        />
-      ) : (
-        <GalleryGrid 
-          images={images}
-          onImageSelect={setSelectedImage}
-          onKeyPress={handleKeyPress}
-          isLoading={isLoading}
-        />
-      )}
+      <GalleryContainer>
+        {({ images, isLoading, error }) => {
+          const {
+            showFullGallery,
+            setShowFullGallery,
+            selectedImage,
+            setSelectedImage,
+            handlePrevious,
+            handleNext,
+            isFirstImage,
+            isLastImage,
+            handleKeyPress,
+          } = useGalleryState(images);
 
-      {/* Full Gallery Modal */}
-      <Dialog 
-        open={showFullGallery} 
-        onOpenChange={(open) => {
-          setShowFullGallery(open);
-          if (!open) setSelectedImage(null);
+          return (
+            <>
+              <GalleryHeader 
+                onViewAllClick={() => setShowFullGallery(true)} 
+                totalImages={images.length}
+                isAdmin={isAdmin}
+              />
+              
+              {error ? (
+                <Alert variant="destructive">
+                  <AlertDescription>
+                    Failed to load gallery images. Please try again later.
+                  </AlertDescription>
+                </Alert>
+              ) : config ? (
+                <GalleryCarousel 
+                  images={images}
+                  onImageSelect={setSelectedImage}
+                  onKeyPress={handleKeyPress}
+                  isLoading={isLoading}
+                  isAdmin={isAdmin}
+                />
+              ) : (
+                <GalleryGrid 
+                  images={images}
+                  onImageSelect={setSelectedImage}
+                  onKeyPress={handleKeyPress}
+                  isLoading={isLoading}
+                  isAdmin={isAdmin}
+                />
+              )}
+
+              <Dialog 
+                open={showFullGallery} 
+                onOpenChange={(open) => {
+                  setShowFullGallery(open);
+                  if (!open) setSelectedImage(null);
+                }}
+              >
+                <DialogContent className="max-w-[90vw] max-h-[90vh] overflow-y-auto">
+                  <GallerySection
+                    images={images}
+                    isLoading={isLoading}
+                    selectedImage={selectedImage}
+                    onImageSelect={setSelectedImage}
+                    onImageDeselect={() => setSelectedImage(null)}
+                    isAdmin={isAdmin}
+                  />
+                </DialogContent>
+              </Dialog>
+
+              <Dialog 
+                open={!!selectedImage} 
+                onOpenChange={(open) => !open && setSelectedImage(null)}
+              >
+                <DialogContent className="max-w-[95vw] max-h-[95vh] p-2 bg-[#F1F1F1] relative">
+                  {selectedImage && (
+                    <GalleryModalContent
+                      selectedImage={selectedImage}
+                      onClose={() => setSelectedImage(null)}
+                      onPrevious={handlePrevious}
+                      onNext={handleNext}
+                      isFirstImage={isFirstImage}
+                      isLastImage={isLastImage}
+                    />
+                  )}
+                </DialogContent>
+              </Dialog>
+            </>
+          );
         }}
-      >
-        <DialogContent className="max-w-[90vw] max-h-[90vh] overflow-y-auto">
-          <GallerySection
-            images={images}
-            isLoading={isLoading}
-            selectedImage={selectedImage}
-            onImageSelect={setSelectedImage}
-            onImageDeselect={() => setSelectedImage(null)}
-          />
-        </DialogContent>
-      </Dialog>
-
-      {/* Selected Image Modal */}
-      <GalleryModal 
-        selectedImage={selectedImage}
-        onClose={() => setSelectedImage(null)}
-      />
+      </GalleryContainer>
     </div>
   );
 };
