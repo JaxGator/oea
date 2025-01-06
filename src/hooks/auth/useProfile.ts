@@ -33,15 +33,24 @@ export function useProfile(userId: string | undefined) {
       setState(prev => ({ ...prev, isLoading: true, error: null }));
 
       try {
+        console.log('Fetching profile for user:', userId);
         const { data: profile, error } = await supabase
           .from("profiles")
           .select("*")
           .eq("id", userId)
           .maybeSingle();
 
-        if (error) throw error;
+        if (error) {
+          console.error('Profile fetch error:', {
+            error,
+            userId,
+            timestamp: new Date().toISOString()
+          });
+          throw error;
+        }
 
         if (isMounted) {
+          console.log('Profile fetch successful:', profile);
           setState({
             profile,
             isLoading: false,
@@ -53,6 +62,7 @@ export function useProfile(userId: string | undefined) {
         
         if (retryCount < maxRetries && isMounted) {
           retryCount++;
+          console.log(`Retrying profile fetch (${retryCount}/${maxRetries})...`);
           const delay = Math.min(1000 * Math.pow(2, retryCount), 10000);
           setTimeout(fetchProfile, delay);
           return;
