@@ -3,7 +3,6 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { GallerySection } from './GallerySection';
-import { GalleryModal } from './gallery/GalleryModal';
 import { GalleryCarousel } from './gallery/GalleryCarousel';
 import { GalleryGrid } from './gallery/GalleryGrid';
 import { GalleryHeader } from './gallery/GalleryHeader';
@@ -18,6 +17,7 @@ export const GalleryPreview = () => {
     queryKey: ['gallery-images'],
     queryFn: async () => {
       try {
+        console.log('Fetching gallery images...');
         const { data: storageData, error: storageError } = await supabase.storage
           .from('gallery')
           .list('', {
@@ -27,7 +27,8 @@ export const GalleryPreview = () => {
 
         if (storageError) {
           console.error('Storage error:', storageError);
-          throw storageError;
+          toast.error('Failed to load gallery images');
+          return [];
         }
 
         if (!storageData || storageData.length === 0) {
@@ -38,6 +39,8 @@ export const GalleryPreview = () => {
         const imageFiles = storageData.filter(file => 
           file.name.match(/\.(jpg|jpeg|png|gif)$/i)
         );
+
+        console.log('Found image files:', imageFiles.length);
 
         return imageFiles.map(file => {
           const { data } = supabase.storage
@@ -50,13 +53,15 @@ export const GalleryPreview = () => {
         toast.error('Failed to load gallery images');
         return [];
       }
-    }
+    },
+    retry: 1
   });
 
   const { data: carouselEnabled = false } = useQuery({
     queryKey: ['site-config', 'gallery_carousel_enabled'],
     queryFn: async () => {
       try {
+        console.log('Fetching carousel config...');
         const { data, error: configError } = await supabase
           .from('site_config')
           .select('value')
@@ -65,7 +70,7 @@ export const GalleryPreview = () => {
         
         if (configError) {
           console.error('Config error:', configError);
-          throw configError;
+          return false;
         }
         
         return data?.value === 'true';
@@ -73,7 +78,8 @@ export const GalleryPreview = () => {
         console.error('Error in carousel config query:', error);
         return false;
       }
-    }
+    },
+    retry: 1
   });
 
   const handleKeyPress = (imageUrl: string) => (e: React.KeyboardEvent) => {
@@ -82,15 +88,12 @@ export const GalleryPreview = () => {
     }
   };
 
-  const handleCloseGallery = () => {
-    setShowFullGallery(false);
-  };
-
   const handleCloseModal = () => {
     setSelectedImage(null);
   };
 
   if (error) {
+    console.error('Gallery error:', error);
     return (
       <div className="mt-16 text-center text-red-500">
         Unable to load gallery. Please try again later.
@@ -127,27 +130,31 @@ export const GalleryPreview = () => {
         />
       )}
 
-      <Dialog 
-        open={showFullGallery} 
-        onOpenChange={setShowFullGallery}
-      >
-        <DialogContent className="max-w-[90vw] max-h-[90vh] overflow-y-auto">
-          <GallerySection
-            images={images}
-            isLoading={isLoading}
-            selectedImage={selectedImage}
-            onImageSelect={setSelectedImage}
-            onImageDeselect={handleCloseModal}
-          />
-        </DialogContent>
-      </Dialog>
+      {/* Full Gallery Dialog */}
+      {showFullGallery && (
+        <Dialog 
+          open={showFullGallery} 
+          onOpenChange={setShowFullGallery}
+        >
+          <DialogContent className="max-w-[90vw] max-h-[90vh] overflow-y-auto">
+            <GallerySection
+              images={images}
+              isLoading={isLoading}
+              selectedImage={selectedImage}
+              onImageSelect={setSelectedImage}
+              onImageDeselect={handleCloseModal}
+            />
+          </DialogContent>
+        </Dialog>
+      )}
 
-      <Dialog 
-        open={!!selectedImage} 
-        onOpenChange={(open) => !open && handleCloseModal()}
-      >
-        <DialogContent className="max-w-[95vw] max-h-[95vh] p-2">
-          {selectedImage && (
+      {/* Image Preview Dialog */}
+      {selectedImage && (
+        <Dialog 
+          open={!!selectedImage} 
+          onOpenChange={(open) => !open && handleCloseModal()}
+        >
+          <DialogContent className="max-w-[95vw] max-h-[95vh] p-2">
             <div className="relative w-full h-full flex items-center justify-center bg-background">
               <img
                 src={selectedImage}
@@ -155,9 +162,9 @@ export const GalleryPreview = () => {
                 className="max-w-full max-h-[90vh] object-contain rounded-lg"
               />
             </div>
-          )}
-        </DialogContent>
-      </Dialog>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 };
