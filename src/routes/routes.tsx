@@ -12,7 +12,6 @@ import Admin from "@/pages/Admin";
 import Test from "@/pages/Test";
 import Store from "@/pages/Store";
 import Maintenance from "@/pages/Maintenance";
-import Messages from "@/pages/Messages";
 import { PrivacyPolicy } from "@/components/legal/PrivacyPolicy";
 import { TermsAndConditions } from "@/components/legal/TermsAndConditions";
 import { ErrorBoundary } from "@/components/error/ErrorBoundary";
@@ -48,10 +47,6 @@ export const router = createBrowserRouter([
       {
         path: "members",
         element: <Members />,
-      },
-      {
-        path: "messages",
-        element: <Messages />,
       },
       {
         path: "profile",
