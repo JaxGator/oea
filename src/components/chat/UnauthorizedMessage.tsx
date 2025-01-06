@@ -1,10 +1,8 @@
 export function UnauthorizedMessage() {
   return (
-    <div className="h-full flex items-center justify-center p-4 bg-gray-50">
-      <div className="text-center">
-        <p className="text-gray-500">
-          You are not authorized to view this conversation.
-        </p>
+    <div className="flex flex-col h-[600px] border rounded-lg bg-white">
+      <div className="p-4 text-center text-gray-500">
+        Your account needs to be approved to participate in group chat.
       </div>
     </div>
   );

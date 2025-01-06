@@ -220,34 +220,27 @@ export type Database = {
       }
       group_chat_messages: {
         Row: {
-          chat_id: string
           content: string
           created_at: string
           id: string
+          read_by: string[] | null
           sender_id: string
         }
         Insert: {
-          chat_id: string
           content: string
           created_at?: string
           id?: string
+          read_by?: string[] | null
           sender_id: string
         }
         Update: {
-          chat_id?: string
           content?: string
           created_at?: string
           id?: string
+          read_by?: string[] | null
           sender_id?: string
         }
         Relationships: [
-          {
-            foreignKeyName: "group_chat_messages_chat_id_fkey"
-            columns: ["chat_id"]
-            isOneToOne: false
-            referencedRelation: "group_chats"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "group_chat_messages_sender_id_fkey"
             columns: ["sender_id"]
@@ -259,24 +252,21 @@ export type Database = {
       }
       group_chat_participants: {
         Row: {
-          added_by: string
+          added_at: string
+          added_by: string | null
           chat_id: string
-          created_at: string
-          id: string
           user_id: string
         }
         Insert: {
-          added_by: string
+          added_at?: string
+          added_by?: string | null
           chat_id: string
-          created_at?: string
-          id?: string
           user_id: string
         }
         Update: {
-          added_by?: string
+          added_at?: string
+          added_by?: string | null
           chat_id?: string
-          created_at?: string
-          id?: string
           user_id?: string
         }
         Relationships: [
@@ -623,14 +613,6 @@ export type Database = {
           target_user_id: string
         }
         Returns: boolean
-      }
-      create_group_chat_with_participants: {
-        Args: {
-          p_chat_name: string
-          p_creator_id: string
-          p_participant_ids: string[]
-        }
-        Returns: string
       }
       create_profile: {
         Args: {
