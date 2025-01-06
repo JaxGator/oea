@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { GallerySection } from './GallerySection';
+import { GallerySection } from '../GallerySection';
 import { GalleryModal } from './GalleryModal';
 import { GalleryCarousel } from './GalleryCarousel';
 import { GalleryGrid } from './GalleryGrid';
