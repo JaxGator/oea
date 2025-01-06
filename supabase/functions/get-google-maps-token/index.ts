@@ -8,15 +8,16 @@ const corsHeaders = {
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders })
+    return new Response(null, { headers: corsHeaders })
   }
 
   try {
     const token = Deno.env.get('GOOGLE_MAPS_API_KEY')
-    
+    console.log('Attempting to retrieve Google Maps API key...')
+    console.log('Token exists:', !!token)
+
     if (!token) {
-      console.error('Google Maps API key not found in environment variables')
-      throw new Error('Google Maps API key not configured')
+      throw new Error('Google Maps API key not found')
     }
 
     console.log('Successfully retrieved Google Maps API key')
@@ -26,26 +27,26 @@ serve(async (req) => {
       { 
         headers: { 
           ...corsHeaders, 
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json' 
         },
-        status: 200,
-      },
+        status: 200 
+      }
     )
   } catch (error) {
-    console.error('Error in get-google-maps-token function:', error.message)
+    console.error('Error in get-google-maps-token function:', error)
     
     return new Response(
       JSON.stringify({ 
-        error: error.message,
-        hint: 'Please ensure the GOOGLE_MAPS_API_KEY secret is set in the Supabase dashboard'
+        error: 'Failed to retrieve Google Maps API key',
+        details: error.message 
       }),
       { 
         headers: { 
           ...corsHeaders, 
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json' 
         },
-        status: 500,
-      },
+        status: 500 
+      }
     )
   }
 })
