@@ -46,7 +46,7 @@ export function ProfileForm({
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             className="pl-10"
-            placeholder="Enter your username"
+            placeholder={username || "Enter your username"}
           />
         </div>
       </div>
@@ -58,7 +58,7 @@ export function ProfileForm({
           type="text"
           value={fullName}
           onChange={(e) => setFullName(e.target.value)}
-          placeholder="Enter your full name"
+          placeholder={fullName || "Enter your full name"}
         />
       </div>
 
@@ -69,7 +69,7 @@ export function ProfileForm({
           type="text"
           value={avatarUrl}
           onChange={(e) => setAvatarUrl(e.target.value)}
-          placeholder="Enter your avatar URL"
+          placeholder={avatarUrl || "Enter your avatar URL"}
         />
       </div>
 
@@ -95,7 +95,7 @@ export function ProfileForm({
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="pl-10"
-                placeholder="Enter your email"
+                placeholder={email || "Enter your email"}
               />
             </div>
             <Button

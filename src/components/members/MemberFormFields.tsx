@@ -47,6 +47,7 @@ export function MemberFormFields({
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
+          placeholder={email || "Enter email"}
         />
       </div>
       <div className="space-y-2">
@@ -65,6 +66,7 @@ export function MemberFormFields({
           id="username"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
+          placeholder={username || "Enter username"}
         />
       </div>
       <div className="space-y-2">
@@ -73,6 +75,7 @@ export function MemberFormFields({
           id="fullName"
           value={fullName}
           onChange={(e) => setFullName(e.target.value)}
+          placeholder={fullName || "Enter full name"}
         />
       </div>
       <div className="flex items-center space-x-2">
