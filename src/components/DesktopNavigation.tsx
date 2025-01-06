@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Profile } from "@/types/auth";
 import { createNavigationItems } from "@/utils/navigation";
 import { UserMenu } from "@/components/navigation/UserMenu";
+import { SearchDialog } from "@/components/search/SearchDialog";
 
 interface DesktopNavigationProps {
   user: User | null;
@@ -63,7 +64,8 @@ export function DesktopNavigation({ user, profile }: DesktopNavigationProps) {
             )}
           </div>
           
-          <div className="flex-shrink-0">
+          <div className="flex-shrink-0 flex items-center gap-2">
+            <SearchDialog />
             <UserMenu user={user} profile={profile} />
           </div>
         </div>
