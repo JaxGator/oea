@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
+import { useToast } from "@/hooks/use-toast";
 
 export function useAdminStatus() {
   const [state, setState] = useState({
@@ -8,6 +8,7 @@ export function useAdminStatus() {
     isLoading: true,
     error: null as Error | null
   });
+  const { toast } = useToast();
 
   useEffect(() => {
     let isMounted = true;
@@ -31,7 +32,10 @@ export function useAdminStatus() {
           .eq('id', user.id)
           .maybeSingle();
 
-        if (profileError) throw profileError;
+        if (profileError) {
+          console.error("Profile fetch error:", profileError);
+          throw profileError;
+        }
 
         if (isMounted) {
           setState(prev => ({
@@ -46,7 +50,11 @@ export function useAdminStatus() {
         // Only show toast for logged-in users
         const { data: { user } } = await supabase.auth.getUser();
         if (user && isMounted) {
-          toast.error("Failed to verify admin status. Please try again.");
+          toast({
+            title: "Error",
+            description: "Failed to verify admin status. Please try again.",
+            variant: "destructive",
+          });
         }
         if (isMounted) {
           setState(prev => ({
@@ -87,7 +95,7 @@ export function useAdminStatus() {
       isMounted = false;
       subscription.unsubscribe();
     };
-  }, []);
+  }, [toast]);
 
   return { 
     isAdmin: state.isAdmin, 
