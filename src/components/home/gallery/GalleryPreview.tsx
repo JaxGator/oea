@@ -6,6 +6,8 @@ import { GalleryCarousel } from './GalleryCarousel';
 import { GalleryGrid } from './GalleryGrid';
 import { GalleryHeader } from './GalleryHeader';
 import { GalleryContainer } from './GalleryContainer';
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Loader2 } from "lucide-react";
 
 export const GalleryPreview = () => {
   const [showFullGallery, setShowFullGallery] = useState(false);
@@ -22,11 +24,24 @@ export const GalleryPreview = () => {
       <GalleryContainer>
         {({ images, isLoading, error, isCarouselEnabled }) => (
           <>
-            <GalleryHeader onViewAllClick={() => setShowFullGallery(true)} />
+            <GalleryHeader 
+              onViewAllClick={() => setShowFullGallery(true)} 
+              totalImages={images.length}
+            />
             
             {error ? (
-              <div className="text-center py-8 text-red-600">
-                Failed to load gallery. Please try again later.
+              <Alert variant="destructive">
+                <AlertDescription>
+                  Failed to load gallery images. Please try again later.
+                </AlertDescription>
+              </Alert>
+            ) : isLoading ? (
+              <div className="flex justify-center items-center min-h-[200px]">
+                <Loader2 className="h-8 w-8 animate-spin" />
+              </div>
+            ) : images.length === 0 ? (
+              <div className="text-center py-8 text-gray-500">
+                No images available in the gallery yet.
               </div>
             ) : isCarouselEnabled ? (
               <GalleryCarousel 
