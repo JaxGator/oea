@@ -25,9 +25,15 @@ export const GalleryPreview = () => {
             sortBy: { column: 'name', order: 'asc' },
           });
 
-        if (storageError) throw storageError;
+        if (storageError) {
+          console.error('Storage error:', storageError);
+          throw storageError;
+        }
 
-        if (!storageData?.length) return [];
+        if (!storageData || storageData.length === 0) {
+          console.log('No images found in gallery');
+          return [];
+        }
 
         const imageFiles = storageData.filter(file => 
           file.name.match(/\.(jpg|jpeg|png|gif)$/i)
@@ -57,7 +63,10 @@ export const GalleryPreview = () => {
           .eq('key', 'gallery_carousel_enabled')
           .maybeSingle();
         
-        if (configError) throw configError;
+        if (configError) {
+          console.error('Config error:', configError);
+          throw configError;
+        }
         
         return data?.value === 'true';
       } catch (error) {
@@ -75,7 +84,6 @@ export const GalleryPreview = () => {
 
   const handleCloseGallery = () => {
     setShowFullGallery(false);
-    setSelectedImage(null);
   };
 
   const handleCloseModal = () => {
@@ -119,27 +127,37 @@ export const GalleryPreview = () => {
         />
       )}
 
-      {showFullGallery && (
-        <Dialog 
-          open={showFullGallery} 
-          onOpenChange={handleCloseGallery}
-        >
-          <DialogContent className="max-w-[90vw] max-h-[90vh] overflow-y-auto">
-            <GallerySection
-              images={images}
-              isLoading={isLoading}
-              selectedImage={selectedImage}
-              onImageSelect={setSelectedImage}
-              onImageDeselect={handleCloseModal}
-            />
-          </DialogContent>
-        </Dialog>
-      )}
+      <Dialog 
+        open={showFullGallery} 
+        onOpenChange={setShowFullGallery}
+      >
+        <DialogContent className="max-w-[90vw] max-h-[90vh] overflow-y-auto">
+          <GallerySection
+            images={images}
+            isLoading={isLoading}
+            selectedImage={selectedImage}
+            onImageSelect={setSelectedImage}
+            onImageDeselect={handleCloseModal}
+          />
+        </DialogContent>
+      </Dialog>
 
-      <GalleryModal 
-        selectedImage={selectedImage}
-        onClose={handleCloseModal}
-      />
+      <Dialog 
+        open={!!selectedImage} 
+        onOpenChange={(open) => !open && handleCloseModal()}
+      >
+        <DialogContent className="max-w-[95vw] max-h-[95vh] p-2">
+          {selectedImage && (
+            <div className="relative w-full h-full flex items-center justify-center bg-background">
+              <img
+                src={selectedImage}
+                alt="Selected gallery image"
+                className="max-w-full max-h-[90vh] object-contain rounded-lg"
+              />
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
