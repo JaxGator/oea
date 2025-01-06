@@ -6,6 +6,7 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
@@ -15,22 +16,34 @@ serve(async (req) => {
     
     if (!token) {
       console.error('Google Maps API key not found in environment variables')
-      throw new Error('Google Maps API key not configured. Please set the GOOGLE_MAPS_API_KEY secret in the Supabase dashboard.')
+      throw new Error('Google Maps API key not configured')
     }
 
+    console.log('Successfully retrieved Google Maps API key')
+    
     return new Response(
       JSON.stringify({ token }),
       { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { 
+          ...corsHeaders, 
+          'Content-Type': 'application/json'
+        },
         status: 200,
       },
     )
   } catch (error) {
     console.error('Error in get-google-maps-token function:', error.message)
+    
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        error: error.message,
+        hint: 'Please ensure the GOOGLE_MAPS_API_KEY secret is set in the Supabase dashboard'
+      }),
       { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { 
+          ...corsHeaders, 
+          'Content-Type': 'application/json'
+        },
         status: 500,
       },
     )
