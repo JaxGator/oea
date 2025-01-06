@@ -12,30 +12,33 @@ export const GalleryPreview = () => {
   const [showFullGallery, setShowFullGallery] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
-  const { data: images = [], isLoading } = useQuery({
+  const { data: images = [], isLoading, error } = useQuery({
     queryKey: ['gallery-images'],
     queryFn: async () => {
-      const { data: storageData, error } = await supabase.storage
-        .from('gallery')
-        .list();
+      try {
+        const { data: storageData, error } = await supabase.storage
+          .from('gallery')
+          .list();
 
-      if (error) {
-        console.error('Error fetching gallery images:', error);
+        if (error) {
+          console.error('Error fetching gallery images:', error);
+          return [];
+        }
+
+        if (!storageData) {
+          return [];
+        }
+
+        return storageData
+          .filter(file => file.name.match(/\.(jpg|jpeg|png|gif)$/i))
+          .map(file => {
+            const { data } = supabase.storage.from('gallery').getPublicUrl(file.name);
+            return data.publicUrl;
+          });
+      } catch (err) {
+        console.error('Unexpected error fetching images:', err);
         return [];
       }
-
-      if (!storageData) {
-        return [];
-      }
-
-      const imageUrls = storageData
-        .filter(file => file.name.match(/\.(jpg|jpeg|png|gif)$/i))
-        .map(file => {
-          const { data } = supabase.storage.from('gallery').getPublicUrl(file.name);
-          return data.publicUrl;
-        });
-
-      return imageUrls;
     },
     retry: false
   });
@@ -50,10 +53,14 @@ export const GalleryPreview = () => {
           .eq('key', 'gallery_carousel_enabled')
           .single();
         
-        if (error) throw error;
+        if (error) {
+          console.error('Error fetching gallery config:', error);
+          return false;
+        }
+        
         return data?.value === 'true';
-      } catch (error) {
-        console.error('Error fetching gallery config:', error);
+      } catch (err) {
+        console.error('Unexpected error fetching config:', err);
         return false;
       }
     },
@@ -66,8 +73,12 @@ export const GalleryPreview = () => {
     }
   };
 
+  if (error) {
+    return <div className="mt-16 text-center text-red-500">Error loading gallery</div>;
+  }
+
   if (isLoading) {
-    return <div className="mt-16 space-y-4">Loading gallery...</div>;
+    return <div className="mt-16 text-center">Loading gallery...</div>;
   }
 
   return (
@@ -95,7 +106,13 @@ export const GalleryPreview = () => {
       )}
 
       {showFullGallery && (
-        <Dialog open={showFullGallery} onOpenChange={setShowFullGallery}>
+        <Dialog 
+          open={showFullGallery} 
+          onOpenChange={(open) => {
+            setShowFullGallery(open);
+            if (!open) setSelectedImage(null);
+          }}
+        >
           <DialogContent className="max-w-[90vw] max-h-[90vh] overflow-y-auto">
             <GallerySection
               images={images}
