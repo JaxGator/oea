@@ -21,20 +21,16 @@ export function useSession() {
 
   useEffect(() => {
     let mounted = true;
-    let retryCount = 0;
-    const maxRetries = 3;
-    const retryDelay = 1000; // 1 second
 
     async function getActiveSession() {
       try {
-        console.log('Attempting to get session...', { retryCount });
+        console.log('Fetching session...');
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         
         if (sessionError) {
           console.error("Session error:", {
             error: sessionError,
-            timestamp: new Date().toISOString(),
-            retryCount
+            timestamp: new Date().toISOString()
           });
           throw sessionError;
         }
@@ -42,7 +38,10 @@ export function useSession() {
         if (!mounted) return;
 
         if (session) {
-          console.log('Session found:', session.user.email);
+          console.log('Session found:', {
+            user: session.user.email,
+            timestamp: new Date().toISOString()
+          });
           setState({
             session,
             user: session.user,
@@ -50,7 +49,7 @@ export function useSession() {
             error: null
           });
         } else {
-          console.log('No active session found');
+          console.log('No active session');
           setState({
             session: null,
             user: null,
@@ -61,18 +60,10 @@ export function useSession() {
       } catch (error) {
         console.error("Session initialization error:", {
           error,
-          retryCount,
           timestamp: new Date().toISOString()
         });
         
         if (!mounted) return;
-        
-        if (retryCount < maxRetries) {
-          retryCount++;
-          console.log(`Retrying session fetch (${retryCount}/${maxRetries}) in ${retryDelay}ms...`);
-          setTimeout(getActiveSession, retryDelay * retryCount);
-          return;
-        }
 
         setState({
           session: null,
@@ -95,7 +86,11 @@ export function useSession() {
       async (event, session) => {
         if (!mounted) return;
 
-        console.log("Auth state change:", event, session?.user?.email);
+        console.log("Auth state change:", {
+          event,
+          user: session?.user?.email,
+          timestamp: new Date().toISOString()
+        });
 
         if (event === 'SIGNED_OUT') {
           setState({

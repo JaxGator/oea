@@ -19,6 +19,18 @@ export function useAuthState() {
     }
   }, [sessionError, toast]);
 
+  // Add debug logging
+  useEffect(() => {
+    console.log('Auth State:', {
+      user,
+      profile,
+      isSessionLoading,
+      isProfileLoading,
+      sessionError,
+      profileError
+    });
+  }, [user, profile, isSessionLoading, isProfileLoading, sessionError, profileError]);
+
   return {
     user,
     profile,
