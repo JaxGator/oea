@@ -1,85 +1,42 @@
-import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Profile } from "@/types/auth";
 
-interface ProfileState {
-  profile: Profile | null;
-  isLoading: boolean;
-  error: Error | null;
-}
-
 export function useProfile(userId: string | undefined) {
-  const [state, setState] = useState<ProfileState>({
-    profile: null,
-    isLoading: false,
-    error: null
-  });
   const { toast } = useToast();
 
-  useEffect(() => {
-    if (!userId) {
-      setState({ profile: null, isLoading: false, error: null });
-      return;
-    }
-
-    let isMounted = true;
-    const maxRetries = 3;
-    let retryCount = 0;
-
-    const fetchProfile = async (): Promise<void> => {
-      if (!isMounted) return;
+  return useQuery({
+    queryKey: ['profile', userId],
+    queryFn: async () => {
+      if (!userId) return null;
       
-      setState(prev => ({ ...prev, isLoading: true, error: null }));
-
       try {
-        const { data: profile, error } = await supabase
-          .from("profiles")
-          .select("*")
-          .eq("id", userId)
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', userId)
           .maybeSingle();
-
-        if (error) throw error;
-
-        if (isMounted) {
-          setState({
-            profile,
-            isLoading: false,
-            error: null
-          });
-        }
-      } catch (error) {
-        console.error("Error fetching profile:", error);
         
-        if (retryCount < maxRetries && isMounted) {
-          retryCount++;
-          const delay = Math.min(1000 * Math.pow(2, retryCount), 10000);
-          setTimeout(fetchProfile, delay);
-          return;
-        }
-
-        if (isMounted) {
-          setState(prev => ({
-            ...prev,
-            isLoading: false,
-            error: error as Error
-          }));
-
+        if (error) {
+          console.error('Error fetching profile:', error);
           toast({
             title: "Error",
-            description: "Failed to load profile. Please try refreshing the page.",
+            description: "Failed to load profile data",
             variant: "destructive",
           });
+          throw error;
         }
+        
+        return data as Profile;
+      } catch (error) {
+        console.error('Profile fetch error:', error);
+        throw error;
       }
-    };
-
-    fetchProfile();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [userId, toast]);
-
-  return state;
+    },
+    enabled: !!userId,
+    staleTime: 1000 * 60 * 5, // Consider data fresh for 5 minutes
+    retry: 3,
+    retryDelay: (attemptIndex) => Math.min(1000 * Math.pow(2, attemptIndex), 10000),
+  });
 }
