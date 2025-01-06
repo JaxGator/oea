@@ -10,13 +10,14 @@ interface Member {
   is_admin: boolean;
   is_approved: boolean;
   is_member: boolean;
+  email?: string;
 }
 
 export function useMemberForm(member: Member | null, onUpdate: () => void, onClose: () => void) {
-  // Default values if member is null
+  // Initialize state with member's current values or defaults
   const [username, setUsername] = useState(member?.username || "");
   const [fullName, setFullName] = useState(member?.full_name || "");
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(member?.email || "");
   const [password, setPassword] = useState("");
   const [isAdmin, setIsAdmin] = useState(member?.is_admin || false);
   const [isApproved, setIsApproved] = useState(member?.is_approved || false);
@@ -40,8 +41,8 @@ export function useMemberForm(member: Member | null, onUpdate: () => void, onClo
           userId: member.id,
           username,
           fullName,
-          email,
-          password,
+          email: email || undefined, // Only send if not empty
+          password: password || undefined, // Only send if not empty
           isAdmin,
           isApproved,
           isMember,
