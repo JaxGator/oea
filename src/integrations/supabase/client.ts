@@ -29,6 +29,28 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, 
     params: {
       eventsPerSecond: 2
     }
+  },
+  // Add retries for network issues
+  fetch: (url, options) => {
+    return fetch(url, {
+      ...options,
+      credentials: 'include',
+      headers: {
+        ...options?.headers,
+        'Cache-Control': 'no-cache',
+      },
+    }).then(async (response) => {
+      if (!response.ok) {
+        console.error('Supabase fetch error:', {
+          status: response.status,
+          statusText: response.statusText,
+          url: response.url,
+        });
+        const error = await response.text();
+        throw new Error(`HTTP error! status: ${response.status}, message: ${error}`);
+      }
+      return response;
+    });
   }
 });
 

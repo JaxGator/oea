@@ -26,6 +26,7 @@ export function useProfile(userId: string | undefined) {
     let isMounted = true;
     const maxRetries = 3;
     let retryCount = 0;
+    let retryTimeout: NodeJS.Timeout;
 
     const fetchProfile = async (): Promise<void> => {
       if (!isMounted) return;
@@ -33,15 +34,20 @@ export function useProfile(userId: string | undefined) {
       setState(prev => ({ ...prev, isLoading: true, error: null }));
 
       try {
+        console.log('Fetching profile for user:', userId);
         const { data: profile, error } = await supabase
           .from("profiles")
           .select("*")
           .eq("id", userId)
           .maybeSingle();
 
-        if (error) throw error;
+        if (error) {
+          console.error('Profile fetch error:', error);
+          throw error;
+        }
 
         if (isMounted) {
+          console.log('Profile fetch successful:', profile);
           setState({
             profile,
             isLoading: false,
@@ -54,7 +60,8 @@ export function useProfile(userId: string | undefined) {
         if (retryCount < maxRetries && isMounted) {
           retryCount++;
           const delay = Math.min(1000 * Math.pow(2, retryCount), 10000);
-          setTimeout(fetchProfile, delay);
+          console.log(`Retrying profile fetch (${retryCount}/${maxRetries}) in ${delay}ms...`);
+          retryTimeout = setTimeout(fetchProfile, delay);
           return;
         }
 
@@ -66,8 +73,8 @@ export function useProfile(userId: string | undefined) {
           }));
 
           toast({
-            title: "Error",
-            description: "Failed to load profile. Please try refreshing the page.",
+            title: "Error loading profile",
+            description: "Please try refreshing the page.",
             variant: "destructive",
           });
         }
@@ -78,6 +85,9 @@ export function useProfile(userId: string | undefined) {
 
     return () => {
       isMounted = false;
+      if (retryTimeout) {
+        clearTimeout(retryTimeout);
+      }
     };
   }, [userId, toast]);
 
