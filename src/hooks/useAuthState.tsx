@@ -5,7 +5,11 @@ import { useQueryClient } from "@tanstack/react-query";
 
 export function useAuthState() {
   const { user, isLoading: isSessionLoading, error: sessionError } = useSession();
-  const { profile, isLoading: isProfileLoading, error: profileError } = useProfile(user?.id);
+  const { 
+    data: profile, 
+    isLoading: isProfileLoading, 
+    error: profileError 
+  } = useProfile(user?.id);
   const queryClient = useQueryClient();
 
   // Prefetch profile data when user is authenticated

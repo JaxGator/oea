@@ -28,7 +28,7 @@ export function useProfile(userId: string | undefined) {
           throw error;
         }
         
-        return data as Profile;
+        return data as Profile | null;
       } catch (error) {
         console.error('Profile fetch error:', error);
         throw error;
