@@ -46,24 +46,22 @@ export function AdminUserList() {
         throw profilesError;
       }
 
-      // Then, get all user emails from auth.users
-      const { data: authUsers, error: authError } = await supabase
-        .from('auth.users')
-        .select('id, email');
-
-      if (authError) {
-        console.error('Error fetching auth users:', authError);
+      // Then, fetch emails using the Edge Function
+      const { data: emailData, error: emailError } = await supabase.functions.invoke('get-user-emails');
+      
+      if (emailError) {
+        console.error('Error fetching user emails:', emailError);
         toast({
           title: "Error",
           description: "Failed to fetch user emails",
           variant: "destructive",
         });
-        throw authError;
+        throw emailError;
       }
 
-      // Create a map of user IDs to emails
+      // Create a map of user IDs to emails from the Edge Function response
       const emailMap = new Map(
-        (authUsers || []).map(user => [user.id, user.email])
+        (emailData || []).map((user: { id: string; email: string }) => [user.id, user.email])
       );
 
       // Combine the data
