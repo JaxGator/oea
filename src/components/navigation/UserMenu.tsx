@@ -2,14 +2,21 @@ import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { UserCircle } from "lucide-react";
-import { Profile } from "@/types/auth";
-import { supabase } from "@/integrations/supabase/client";
-import { useCallback, useState } from "react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { useState, useCallback } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import type { User } from "@supabase/supabase-js";
+import type { Profile } from "@/types/auth";
 
 interface UserMenuProps {
-  user: any;
-  profile: Profile | null;
+  user: User | null;
+  profile?: Profile | null;
 }
 
 export function UserMenu({ user, profile }: UserMenuProps) {
@@ -21,25 +28,29 @@ export function UserMenu({ user, profile }: UserMenuProps) {
   const handleSignOut = useCallback(async () => {
     if (isSigningOut) return;
     
-    setIsSigningOut(true);
     try {
-      // Clear any stored session data first
-      localStorage.removeItem('supabase.auth.token');
-      
+      setIsSigningOut(true);
       const { error } = await supabase.auth.signOut();
+      
       if (error) {
         console.error('Sign out error:', error);
         throw error;
       }
-      
-      // Navigate to auth page with state indicating user-initiated sign-out
-      navigate('/auth', { state: { isUserInitiatedSignOut: true } });
+
+      toast({
+        title: "Signed out successfully",
+        description: "You have been logged out",
+      });
+
+      // Navigate to auth page and reload to ensure clean state
+      navigate('/auth');
+      window.location.reload();
       
     } catch (error) {
       console.error('Sign out error:', error);
       toast({
         title: "Error signing out",
-        description: "Please try again or refresh the page",
+        description: "Please try again",
         variant: "destructive",
       });
     } finally {
@@ -50,12 +61,8 @@ export function UserMenu({ user, profile }: UserMenuProps) {
   if (!user) {
     return (
       <Link to="/auth">
-        <Button 
-          variant="ghost" 
-          className="text-white hover:text-primary-100 hover:bg-gray-800"
-          role="menuitem"
-          tabIndex={0}
-        >
+        <Button variant="outline" className="gap-2">
+          <UserCircle className="h-5 w-5" />
           Sign In
         </Button>
       </Link>
@@ -63,42 +70,40 @@ export function UserMenu({ user, profile }: UserMenuProps) {
   }
 
   return (
-    <div className="flex items-center space-x-4" role="menu">
-      <Link
-        to="/profile"
-        className="flex items-center space-x-2 hover:opacity-80"
-        role="menuitem"
-        tabIndex={0}
-        aria-haspopup="true"
-        aria-expanded={isOpen}
-        onMouseEnter={() => setIsOpen(true)}
-        onMouseLeave={() => setIsOpen(false)}
-        onFocus={() => setIsOpen(true)}
-        onBlur={() => setIsOpen(false)}
-      >
-        <Avatar className="h-8 w-8">
-          <AvatarImage
-            src={profile?.avatar_url}
-            alt={profile?.full_name || profile?.username || "User Avatar"}
-          />
-          <AvatarFallback>
-            <UserCircle className="h-8 w-8 text-[#0d97d1]" />
-          </AvatarFallback>
-        </Avatar>
-        <span className="text-sm">
-          {profile?.full_name || profile?.username}
-        </span>
-      </Link>
-      <Button
-        variant="ghost"
-        className="text-white hover:text-primary-100 hover:bg-gray-800"
-        onClick={handleSignOut}
-        disabled={isSigningOut}
-        role="menuitem"
-        tabIndex={0}
-      >
-        {isSigningOut ? "Signing out..." : "Sign Out"}
-      </Button>
-    </div>
+    <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
+      <DropdownMenuTrigger asChild>
+        <Button
+          variant="ghost"
+          className="relative h-10 w-10 rounded-full"
+          aria-label="User menu"
+        >
+          <Avatar className="h-10 w-10">
+            <AvatarImage
+              src={profile?.avatar_url || undefined}
+              alt={profile?.full_name || user.email || "User avatar"}
+            />
+            <AvatarFallback>
+              {profile?.full_name?.[0]?.toUpperCase() ||
+                user.email?.[0]?.toUpperCase() ||
+                "U"}
+            </AvatarFallback>
+          </Avatar>
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent className="w-56" align="end">
+        <DropdownMenuItem asChild>
+          <Link to="/profile" className="w-full cursor-pointer">
+            Profile
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          onClick={handleSignOut}
+          disabled={isSigningOut}
+          className="cursor-pointer"
+        >
+          {isSigningOut ? "Signing out..." : "Sign out"}
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
