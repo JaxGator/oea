@@ -8,6 +8,7 @@ import { GalleryCarousel } from './gallery/GalleryCarousel';
 import { GalleryGrid } from './gallery/GalleryGrid';
 import { GalleryHeader } from './gallery/GalleryHeader';
 import { LoaderCircle } from 'lucide-react';
+import { toast } from 'sonner';
 
 export const GalleryPreview = () => {
   const [showFullGallery, setShowFullGallery] = useState(false);
@@ -16,51 +17,62 @@ export const GalleryPreview = () => {
   const { data: images = [], isLoading, error } = useQuery({
     queryKey: ['gallery-images'],
     queryFn: async () => {
-      const { data: storageData, error: storageError } = await supabase.storage
-        .from('gallery')
-        .list('', {
-          limit: 100,
-          sortBy: { column: 'name', order: 'asc' },
+      try {
+        const { data: storageData, error: storageError } = await supabase.storage
+          .from('gallery')
+          .list('', {
+            limit: 100,
+            sortBy: { column: 'name', order: 'asc' },
+          });
+
+        if (storageError) {
+          console.error('Error fetching gallery images:', storageError);
+          throw storageError;
+        }
+
+        if (!storageData) {
+          console.warn('No gallery data found');
+          return [];
+        }
+
+        const imageFiles = storageData.filter(file => 
+          file.name.match(/\.(jpg|jpeg|png|gif)$/i)
+        );
+
+        return imageFiles.map(file => {
+          const { data } = supabase.storage
+            .from('gallery')
+            .getPublicUrl(file.name);
+          return data.publicUrl;
         });
-
-      if (storageError) {
-        console.error('Error fetching gallery images:', storageError);
-        throw storageError;
-      }
-
-      if (!storageData) {
-        console.warn('No gallery data found');
+      } catch (error) {
+        console.error('Error in gallery images query:', error);
+        toast.error('Failed to load gallery images');
         return [];
       }
-
-      const imageFiles = storageData.filter(file => 
-        file.name.match(/\.(jpg|jpeg|png|gif)$/i)
-      );
-
-      return imageFiles.map(file => {
-        const { data } = supabase.storage
-          .from('gallery')
-          .getPublicUrl(file.name);
-        return data.publicUrl;
-      });
     }
   });
 
   const { data: carouselEnabled = false } = useQuery({
     queryKey: ['site-config', 'gallery_carousel_enabled'],
     queryFn: async () => {
-      const { data, error: configError } = await supabase
-        .from('site_config')
-        .select('value')
-        .eq('key', 'gallery_carousel_enabled')
-        .maybeSingle();
-      
-      if (configError) {
-        console.error('Error fetching gallery config:', configError);
+      try {
+        const { data, error: configError } = await supabase
+          .from('site_config')
+          .select('value')
+          .eq('key', 'gallery_carousel_enabled')
+          .maybeSingle();
+        
+        if (configError) {
+          console.error('Error fetching gallery config:', configError);
+          return false;
+        }
+        
+        return data?.value === 'true';
+      } catch (error) {
+        console.error('Error in carousel config query:', error);
         return false;
       }
-      
-      return data?.value === 'true';
     }
   });
 
