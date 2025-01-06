@@ -13,14 +13,13 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, 
     autoRefreshToken: true,
     detectSessionInUrl: true,
     flowType: 'pkce',
+    storage: localStorage,
+    storageKey: 'supabase.auth.token',
   },
   global: {
     headers: {
       'X-Client-Info': 'supabase-js-web',
     },
-  },
-  db: {
-    schema: 'public'
   },
 });
 
