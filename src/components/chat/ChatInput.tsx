@@ -6,9 +6,10 @@ import { useToast } from "@/hooks/use-toast";
 
 interface ChatInputProps {
   userId: string | undefined;
+  chatId: string;
 }
 
-export function ChatInput({ userId }: ChatInputProps) {
+export function ChatInput({ userId, chatId }: ChatInputProps) {
   const [newMessage, setNewMessage] = useState("");
   const { toast } = useToast();
 
@@ -19,12 +20,11 @@ export function ChatInput({ userId }: ChatInputProps) {
     try {
       const { error } = await supabase
         .from('group_chat_messages')
-        .insert([
-          {
-            content: newMessage.trim(),
-            sender_id: userId,
-          }
-        ]);
+        .insert({
+          content: newMessage.trim(),
+          sender_id: userId,
+          chat_id: chatId
+        });
 
       if (error) throw error;
       setNewMessage("");

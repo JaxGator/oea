@@ -4,7 +4,6 @@ import { UserList } from "@/components/messages/UserList";
 import { ChatWindow } from "@/components/messages/ChatWindow";
 import { CreateGroupChatDialog } from "@/components/messages/CreateGroupChatDialog";
 import { useToast } from "@/hooks/use-toast";
-import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MessageSquare, MessagesSquare, Users } from "lucide-react";
 import { GroupChatList } from "@/components/messages/GroupChatList";
