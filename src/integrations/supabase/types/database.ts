@@ -1,14 +1,9 @@
-import {
-  AdminLog,
-  EventRSVP,
-  Event,
-  MediaAlbum,
-  MediaItem,
-  Message,
-  PageContent,
-  Profile,
-  Json
-} from './tables';
+import { AdminLog, Json } from './admin';
+import { Profile } from './auth';
+import { Event, EventRSVP, EventGuest } from './events';
+import { GalleryAlbum, GalleryImage } from './gallery';
+import { PageContent, SiteConfig, SocialMediaFeed } from './site';
+import { UserBlock } from './user';
 
 export type Database = {
   public: {
@@ -21,13 +16,12 @@ export type Database = {
         };
         Update: Partial<AdminLog>;
       };
-      event_rsvps: {
-        Row: EventRSVP;
-        Insert: Omit<EventRSVP, 'id' | 'created_at'> & {
-          id?: string;
+      profiles: {
+        Row: Profile;
+        Insert: Omit<Profile, 'created_at'> & {
           created_at?: string;
         };
-        Update: Partial<EventRSVP>;
+        Update: Partial<Profile>;
       };
       events: {
         Row: Event;
@@ -37,29 +31,37 @@ export type Database = {
         };
         Update: Partial<Event>;
       };
-      media_albums: {
-        Row: MediaAlbum;
-        Insert: Omit<MediaAlbum, 'id' | 'created_at'> & {
+      event_rsvps: {
+        Row: EventRSVP;
+        Insert: Omit<EventRSVP, 'id' | 'created_at'> & {
           id?: string;
           created_at?: string;
         };
-        Update: Partial<MediaAlbum>;
+        Update: Partial<EventRSVP>;
       };
-      media_items: {
-        Row: MediaItem;
-        Insert: Omit<MediaItem, 'id' | 'created_at'> & {
+      event_guests: {
+        Row: EventGuest;
+        Insert: Omit<EventGuest, 'id' | 'created_at'> & {
           id?: string;
           created_at?: string;
         };
-        Update: Partial<MediaItem>;
+        Update: Partial<EventGuest>;
       };
-      messages: {
-        Row: Message;
-        Insert: Omit<Message, 'id' | 'created_at'> & {
+      gallery_albums: {
+        Row: GalleryAlbum;
+        Insert: Omit<GalleryAlbum, 'id' | 'created_at'> & {
           id?: string;
           created_at?: string;
         };
-        Update: Partial<Message>;
+        Update: Partial<GalleryAlbum>;
+      };
+      gallery_images: {
+        Row: GalleryImage;
+        Insert: Omit<GalleryImage, 'id' | 'created_at'> & {
+          id?: string;
+          created_at?: string;
+        };
+        Update: Partial<GalleryImage>;
       };
       page_content: {
         Row: PageContent;
@@ -70,12 +72,31 @@ export type Database = {
         };
         Update: Partial<PageContent>;
       };
-      profiles: {
-        Row: Profile;
-        Insert: Omit<Profile, 'created_at'> & {
+      site_config: {
+        Row: SiteConfig;
+        Insert: Omit<SiteConfig, 'id' | 'created_at' | 'updated_at'> & {
+          id?: string;
+          created_at?: string | null;
+          updated_at?: string | null;
+        };
+        Update: Partial<SiteConfig>;
+      };
+      social_media_feeds: {
+        Row: SocialMediaFeed;
+        Insert: Omit<SocialMediaFeed, 'id' | 'created_at' | 'updated_at'> & {
+          id?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<SocialMediaFeed>;
+      };
+      user_blocks: {
+        Row: UserBlock;
+        Insert: Omit<UserBlock, 'id' | 'created_at'> & {
+          id?: string;
           created_at?: string;
         };
-        Update: Partial<Profile>;
+        Update: Partial<UserBlock>;
       };
     };
     Views: {
@@ -101,3 +122,10 @@ export type Database = {
     };
   };
 };
+
+export type Tables<T extends keyof Database['public']['Tables']> = Database['public']['Tables'][T];
+export type DbResult<T> = T extends PromiseLike<infer U> ? U : never;
+export type DbResultOk<T> = T extends PromiseLike<{ data: infer U }> ? Exclude<U, null> : never;
+export type Row<T extends keyof Database['public']['Tables']> = Database['public']['Tables'][T]['Row'];
+export type InsertRow<T extends keyof Database['public']['Tables']> = Database['public']['Tables'][T]['Insert'];
+export type UpdateRow<T extends keyof Database['public']['Tables']> = Database['public']['Tables'][T]['Update'];
