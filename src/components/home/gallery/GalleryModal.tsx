@@ -1,7 +1,7 @@
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 
 interface GalleryModalProps {
-  selectedImage: string;
+  selectedImage: string | null;
   onClose: () => void;
 }
 

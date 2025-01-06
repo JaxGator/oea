@@ -25,15 +25,9 @@ export const GalleryPreview = () => {
             sortBy: { column: 'name', order: 'asc' },
           });
 
-        if (storageError) {
-          console.error('Error fetching gallery images:', storageError);
-          throw storageError;
-        }
+        if (storageError) throw storageError;
 
-        if (!storageData) {
-          console.warn('No gallery data found');
-          return [];
-        }
+        if (!storageData?.length) return [];
 
         const imageFiles = storageData.filter(file => 
           file.name.match(/\.(jpg|jpeg|png|gif)$/i)
@@ -63,10 +57,7 @@ export const GalleryPreview = () => {
           .eq('key', 'gallery_carousel_enabled')
           .maybeSingle();
         
-        if (configError) {
-          console.error('Error fetching gallery config:', configError);
-          return false;
-        }
+        if (configError) throw configError;
         
         return data?.value === 'true';
       } catch (error) {
@@ -84,6 +75,7 @@ export const GalleryPreview = () => {
 
   const handleCloseGallery = () => {
     setShowFullGallery(false);
+    setSelectedImage(null);
   };
 
   const handleCloseModal = () => {
@@ -144,12 +136,10 @@ export const GalleryPreview = () => {
         </Dialog>
       )}
 
-      {selectedImage && (
-        <GalleryModal 
-          selectedImage={selectedImage}
-          onClose={handleCloseModal}
-        />
-      )}
+      <GalleryModal 
+        selectedImage={selectedImage}
+        onClose={handleCloseModal}
+      />
     </div>
   );
 };
