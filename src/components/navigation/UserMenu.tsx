@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { UserCircle } from "lucide-react";
@@ -16,6 +16,7 @@ export function UserMenu({ user, profile }: UserMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
   
   const handleSignOut = useCallback(async () => {
     if (isSigningOut) return;
@@ -31,13 +32,9 @@ export function UserMenu({ user, profile }: UserMenuProps) {
         throw error;
       }
       
-      toast({
-        title: "Signed out successfully",
-        description: "You have been logged out",
-      });
+      // Navigate to auth page with state indicating user-initiated sign-out
+      navigate('/auth', { state: { isUserInitiatedSignOut: true } });
       
-      // Force reload the page to clear any remaining state
-      window.location.href = '/';
     } catch (error) {
       console.error('Sign out error:', error);
       toast({
@@ -48,7 +45,7 @@ export function UserMenu({ user, profile }: UserMenuProps) {
     } finally {
       setIsSigningOut(false);
     }
-  }, [toast, isSigningOut]);
+  }, [toast, navigate, isSigningOut]);
 
   if (!user) {
     return (

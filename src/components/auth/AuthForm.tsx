@@ -3,15 +3,18 @@ import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useEffect } from "react";
+import { useLocation } from "react-router-dom";
 
 export function AuthForm() {
   const { toast } = useToast();
+  const location = useLocation();
+  const isUserInitiatedSignOut = location.state?.isUserInitiatedSignOut;
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       console.log('Auth event:', event, 'Session:', session);
       
-      if (event === 'SIGNED_OUT') {
+      if (event === 'SIGNED_OUT' && isUserInitiatedSignOut) {
         toast({
           title: "Signed out",
           description: "You have been signed out successfully",
@@ -27,7 +30,7 @@ export function AuthForm() {
     return () => {
       subscription.unsubscribe();
     };
-  }, [toast]);
+  }, [toast, isUserInitiatedSignOut]);
 
   return (
     <SupabaseAuth
