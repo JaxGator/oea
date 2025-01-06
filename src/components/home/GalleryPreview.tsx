@@ -19,28 +19,45 @@ export const GalleryPreview = () => {
         .from('gallery')
         .list();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching gallery images:', error);
+        return [];
+      }
+
+      if (!storageData) {
+        return [];
+      }
 
       const imageUrls = storageData
         .filter(file => file.name.match(/\.(jpg|jpeg|png|gif)$/i))
-        .map(file => supabase.storage.from('gallery').getPublicUrl(file.name).data.publicUrl);
+        .map(file => {
+          const { data } = supabase.storage.from('gallery').getPublicUrl(file.name);
+          return data.publicUrl;
+        });
 
       return imageUrls;
-    }
+    },
+    retry: false
   });
 
-  const { data: config } = useQuery({
+  const { data: config = false } = useQuery({
     queryKey: ['site-config', 'gallery_carousel_enabled'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('site_config')
-        .select('value')
-        .eq('key', 'gallery_carousel_enabled')
-        .single();
-      
-      if (error) throw error;
-      return data?.value === 'true';
-    }
+      try {
+        const { data, error } = await supabase
+          .from('site_config')
+          .select('value')
+          .eq('key', 'gallery_carousel_enabled')
+          .single();
+        
+        if (error) throw error;
+        return data?.value === 'true';
+      } catch (error) {
+        console.error('Error fetching gallery config:', error);
+        return false;
+      }
+    },
+    retry: false
   });
 
   const handleKeyPress = (imageUrl: string) => (e: React.KeyboardEvent) => {
@@ -49,38 +66,48 @@ export const GalleryPreview = () => {
     }
   };
 
+  if (isLoading) {
+    return <div className="mt-16 space-y-4">Loading gallery...</div>;
+  }
+
   return (
     <div className="mt-16 space-y-4">
       <GalleryHeader onViewAllClick={() => setShowFullGallery(true)} />
       
-      {config ? (
-        <GalleryCarousel 
-          images={images}
-          onImageSelect={setSelectedImage}
-          onKeyPress={handleKeyPress}
-        />
+      {images.length > 0 ? (
+        config ? (
+          <GalleryCarousel 
+            images={images}
+            onImageSelect={setSelectedImage}
+            onKeyPress={handleKeyPress}
+          />
+        ) : (
+          <GalleryGrid 
+            images={images}
+            onImageSelect={setSelectedImage}
+            onKeyPress={handleKeyPress}
+          />
+        )
       ) : (
-        <GalleryGrid 
-          images={images}
-          onImageSelect={setSelectedImage}
-          onKeyPress={handleKeyPress}
-        />
+        <div className="text-center py-8 text-gray-500">
+          No images available in the gallery.
+        </div>
       )}
 
-      {/* Full Gallery Modal */}
-      <Dialog open={showFullGallery} onOpenChange={setShowFullGallery}>
-        <DialogContent className="max-w-[90vw] max-h-[90vh] overflow-y-auto">
-          <GallerySection
-            images={images}
-            isLoading={isLoading}
-            selectedImage={selectedImage}
-            onImageSelect={setSelectedImage}
-            onImageDeselect={() => setSelectedImage(null)}
-          />
-        </DialogContent>
-      </Dialog>
+      {showFullGallery && (
+        <Dialog open={showFullGallery} onOpenChange={setShowFullGallery}>
+          <DialogContent className="max-w-[90vw] max-h-[90vh] overflow-y-auto">
+            <GallerySection
+              images={images}
+              isLoading={isLoading}
+              selectedImage={selectedImage}
+              onImageSelect={setSelectedImage}
+              onImageDeselect={() => setSelectedImage(null)}
+            />
+          </DialogContent>
+        </Dialog>
+      )}
 
-      {/* Selected Image Modal */}
       <GalleryModal 
         selectedImage={selectedImage}
         onClose={() => setSelectedImage(null)}
