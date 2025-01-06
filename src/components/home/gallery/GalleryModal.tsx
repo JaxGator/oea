@@ -1,15 +1,13 @@
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 
 interface GalleryModalProps {
-  selectedImage: string | null;
+  selectedImage: string;
   onClose: () => void;
 }
 
 export const GalleryModal = ({ selectedImage, onClose }: GalleryModalProps) => {
-  if (!selectedImage) return null;
-
   return (
-    <Dialog open={!!selectedImage} onOpenChange={onClose}>
+    <Dialog open={true} onOpenChange={onClose}>
       <DialogContent className="max-w-[95vw] max-h-[95vh] p-2 bg-[#F1F1F1]">
         <div className="relative w-full h-full flex items-center justify-center">
           <img
