@@ -1,4 +1,5 @@
-import { SupabaseAuth } from "@/components/auth/SupabaseAuth";
+import { Auth } from "@supabase/auth-ui-react";
+import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useEffect } from "react";
@@ -24,11 +25,16 @@ export function AuthForm() {
   }, [toast]);
 
   return (
-    <SupabaseAuth
+    <Auth
+      supabaseClient={supabase}
       providers={["google"]}
       redirectTo={`${window.location.origin}/auth/callback`}
       appearance={{
-        theme: "default",
+        theme: ThemeSupa,
+        style: {
+          button: { background: 'rgb(59 130 246)', color: 'white' },
+          anchor: { color: 'rgb(59 130 246)' },
+        },
       }}
     />
   );
