@@ -53,22 +53,26 @@ Deno.serve(async (req) => {
 
     console.log('Updating user:', { userId, username, email, isAdmin, isApproved, isMember }) // Log for debugging
 
-    // Update auth user if email or password changed
+    // Only update auth user if email or password is provided and valid
     if (email || password) {
-      const { error: updateAuthError } = await supabaseAdmin.auth.admin.updateUserById(
-        userId,
-        {
-          email: email,
-          password: password,
-        }
-      )
+      const updateData: { email?: string; password?: string } = {}
+      if (email) updateData.email = email
+      if (password && password.length >= 6) updateData.password = password
 
-      if (updateAuthError) {
-        console.error('Error updating auth user:', updateAuthError)
-        return new Response(
-          JSON.stringify({ error: `Failed to update auth user: ${updateAuthError.message}` }),
-          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      // Only call updateUserById if there are fields to update
+      if (Object.keys(updateData).length > 0) {
+        const { error: updateAuthError } = await supabaseAdmin.auth.admin.updateUserById(
+          userId,
+          updateData
         )
+
+        if (updateAuthError) {
+          console.error('Error updating auth user:', updateAuthError)
+          return new Response(
+            JSON.stringify({ error: `Failed to update auth user: ${updateAuthError.message}` }),
+            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          )
+        }
       }
     }
 
