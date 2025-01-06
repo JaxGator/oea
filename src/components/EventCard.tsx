@@ -9,6 +9,25 @@ interface EventCardProps {
   onUpdate?: () => void;
 }
 
-export function EventCard(props: EventCardProps) {
-  return <EventCardContainer {...props} />;
+export function EventCard({ 
+  event,
+  onRSVP,
+  onCancelRSVP,
+  userRSVPStatus = null,
+  onUpdate
+}: EventCardProps) {
+  if (!event) {
+    console.error("Event object is undefined");
+    return null;
+  }
+
+  return (
+    <EventCardContainer 
+      event={event}
+      onRSVP={onRSVP}
+      onCancelRSVP={onCancelRSVP}
+      userRSVPStatus={userRSVPStatus}
+      onUpdate={onUpdate}
+    />
+  );
 }

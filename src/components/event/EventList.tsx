@@ -8,8 +8,17 @@ interface EventListProps {
   onCancelRSVP: (eventId: string) => Promise<void>;
 }
 
-export function EventList({ events, onRSVP, onCancelRSVP }: EventListProps) {
+export function EventList({ events = [], onRSVP, onCancelRSVP }: EventListProps) {
   const { userRSVPs } = useRSVPManagement();
+
+  if (!Array.isArray(events)) {
+    console.error("Events is not an array:", events);
+    return (
+      <div className="text-center py-8">
+        <p className="text-gray-500">Error loading events. Please try again.</p>
+      </div>
+    );
+  }
 
   if (events.length === 0) {
     return (
