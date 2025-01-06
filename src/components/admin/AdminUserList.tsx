@@ -8,10 +8,12 @@ import { BulkUserCreation } from "./user-management/BulkUserCreation";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
 import { ViewMemberDialog } from "@/components/members/ViewMemberDialog";
+import { EditMemberDialog } from "@/components/members/EditMemberDialog";
 
 export function AdminUserList() {
   const { toast } = useToast();
   const [viewingMember, setViewingMember] = useState<Member | null>(null);
+  const [editingMember, setEditingMember] = useState<Member | null>(null);
 
   const { data: members, isLoading, error, refetch } = useQuery({
     queryKey: ['members'],
@@ -57,6 +59,7 @@ export function AdminUserList() {
           members={members || []} 
           currentUserIsAdmin={true} 
           onViewMember={setViewingMember}
+          onEditMember={setEditingMember}
         />
       </AdminUserTableWrapper>
 
@@ -64,6 +67,13 @@ export function AdminUserList() {
         member={viewingMember}
         open={!!viewingMember}
         onOpenChange={(open) => !open && setViewingMember(null)}
+      />
+
+      <EditMemberDialog
+        member={editingMember}
+        open={!!editingMember}
+        onOpenChange={(open) => !open && setEditingMember(null)}
+        onUpdate={refetch}
       />
     </div>
   );

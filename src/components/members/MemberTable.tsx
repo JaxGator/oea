@@ -6,10 +6,11 @@ interface MemberTableProps {
   members: Member[];
   currentUserIsAdmin: boolean;
   onViewMember: (member: Member) => void;
+  onEditMember: (member: Member) => void;
 }
 
-export function MemberTable({ members, currentUserIsAdmin, onViewMember }: MemberTableProps) {
-  const { editingMember, setEditingMember, handleDeleteMember } = useMembers();
+export function MemberTable({ members, currentUserIsAdmin, onViewMember, onEditMember }: MemberTableProps) {
+  const { handleDeleteMember } = useMembers();
 
   return (
     <div className="relative overflow-x-auto">
@@ -28,7 +29,7 @@ export function MemberTable({ members, currentUserIsAdmin, onViewMember }: Membe
               key={member.id}
               member={member}
               isCurrentUserAdmin={currentUserIsAdmin}
-              onEdit={setEditingMember}
+              onEdit={onEditMember}
               onDelete={handleDeleteMember}
               onView={onViewMember}
             />
