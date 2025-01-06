@@ -7,6 +7,7 @@ import { GalleryModal } from './gallery/GalleryModal';
 import { GalleryCarousel } from './gallery/GalleryCarousel';
 import { GalleryGrid } from './gallery/GalleryGrid';
 import { GalleryHeader } from './gallery/GalleryHeader';
+import { LoaderCircle } from 'lucide-react';
 
 export const GalleryPreview = () => {
   const [showFullGallery, setShowFullGallery] = useState(false);
@@ -15,66 +16,52 @@ export const GalleryPreview = () => {
   const { data: images = [], isLoading, error } = useQuery({
     queryKey: ['gallery-images'],
     queryFn: async () => {
-      try {
-        const { data: storageData, error: storageError } = await supabase.storage
-          .from('gallery')
-          .list('', {
-            limit: 100,
-            sortBy: { column: 'name', order: 'asc' },
-          });
-
-        if (storageError) {
-          console.error('Error fetching gallery images:', storageError);
-          return [];
-        }
-
-        if (!storageData || !Array.isArray(storageData)) {
-          console.warn('No gallery data found or invalid data format');
-          return [];
-        }
-
-        const imageFiles = storageData.filter(file => 
-          file.name.match(/\.(jpg|jpeg|png|gif)$/i)
-        );
-
-        return imageFiles.map(file => {
-          const { data } = supabase.storage
-            .from('gallery')
-            .getPublicUrl(file.name);
-          return data.publicUrl;
+      const { data: storageData, error: storageError } = await supabase.storage
+        .from('gallery')
+        .list('', {
+          limit: 100,
+          sortBy: { column: 'name', order: 'asc' },
         });
-      } catch (error) {
-        console.error('Unexpected error fetching gallery images:', error);
+
+      if (storageError) {
+        console.error('Error fetching gallery images:', storageError);
+        throw storageError;
+      }
+
+      if (!storageData) {
+        console.warn('No gallery data found');
         return [];
       }
-    },
-    retry: 1,
-    refetchOnWindowFocus: false
+
+      const imageFiles = storageData.filter(file => 
+        file.name.match(/\.(jpg|jpeg|png|gif)$/i)
+      );
+
+      return imageFiles.map(file => {
+        const { data } = supabase.storage
+          .from('gallery')
+          .getPublicUrl(file.name);
+        return data.publicUrl;
+      });
+    }
   });
 
   const { data: carouselEnabled = false } = useQuery({
     queryKey: ['site-config', 'gallery_carousel_enabled'],
     queryFn: async () => {
-      try {
-        const { data, error: configError } = await supabase
-          .from('site_config')
-          .select('value')
-          .eq('key', 'gallery_carousel_enabled')
-          .maybeSingle();
-        
-        if (configError) {
-          console.error('Error fetching gallery config:', configError);
-          return false;
-        }
-        
-        return data?.value === 'true';
-      } catch (error) {
-        console.error('Unexpected error fetching gallery config:', error);
+      const { data, error: configError } = await supabase
+        .from('site_config')
+        .select('value')
+        .eq('key', 'gallery_carousel_enabled')
+        .maybeSingle();
+      
+      if (configError) {
+        console.error('Error fetching gallery config:', configError);
         return false;
       }
-    },
-    retry: 1,
-    refetchOnWindowFocus: false
+      
+      return data?.value === 'true';
+    }
   });
 
   const handleKeyPress = (imageUrl: string) => (e: React.KeyboardEvent) => {
@@ -85,6 +72,9 @@ export const GalleryPreview = () => {
 
   const handleCloseGallery = () => {
     setShowFullGallery(false);
+  };
+
+  const handleCloseModal = () => {
     setSelectedImage(null);
   };
 
@@ -104,6 +94,7 @@ export const GalleryPreview = () => {
       
       {isLoading ? (
         <div className="text-center py-8 text-gray-600">
+          <LoaderCircle className="h-6 w-6 animate-spin mx-auto mb-2" />
           Loading gallery...
         </div>
       ) : !hasImages ? (
@@ -135,7 +126,7 @@ export const GalleryPreview = () => {
               isLoading={isLoading}
               selectedImage={selectedImage}
               onImageSelect={setSelectedImage}
-              onImageDeselect={() => setSelectedImage(null)}
+              onImageDeselect={handleCloseModal}
             />
           </DialogContent>
         </Dialog>
@@ -144,7 +135,7 @@ export const GalleryPreview = () => {
       {selectedImage && (
         <GalleryModal 
           selectedImage={selectedImage}
-          onClose={() => setSelectedImage(null)}
+          onClose={handleCloseModal}
         />
       )}
     </div>
