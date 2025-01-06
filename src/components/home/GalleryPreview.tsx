@@ -16,55 +16,66 @@ export const GalleryPreview = () => {
     queryKey: ['gallery-images'],
     queryFn: async () => {
       try {
-        const { data: storageData, error } = await supabase.storage
+        const { data: storageData, error: storageError } = await supabase.storage
           .from('gallery')
-          .list();
-
-        if (error) {
-          console.error('Error fetching gallery images:', error);
-          return [];
-        }
-
-        if (!storageData) {
-          return [];
-        }
-
-        return storageData
-          .filter(file => file.name.match(/\.(jpg|jpeg|png|gif)$/i))
-          .map(file => {
-            const { data } = supabase.storage.from('gallery').getPublicUrl(file.name);
-            return data.publicUrl;
+          .list('', {
+            limit: 100,
+            offset: 0,
+            sortBy: { column: 'name', order: 'asc' },
           });
+
+        if (storageError) {
+          console.error('Error fetching gallery images:', storageError);
+          return [];
+        }
+
+        if (!storageData || !Array.isArray(storageData)) {
+          console.log('No gallery data found or invalid data format');
+          return [];
+        }
+
+        const imageFiles = storageData.filter(file => 
+          file.name.match(/\.(jpg|jpeg|png|gif)$/i)
+        );
+
+        return imageFiles.map(file => {
+          const { data } = supabase.storage
+            .from('gallery')
+            .getPublicUrl(file.name);
+          return data.publicUrl;
+        });
       } catch (err) {
-        console.error('Unexpected error fetching images:', err);
+        console.error('Unexpected error in gallery fetch:', err);
         return [];
       }
     },
-    retry: false
+    retry: false,
+    refetchOnWindowFocus: false
   });
 
-  const { data: config = false } = useQuery({
+  const { data: carouselEnabled = false } = useQuery({
     queryKey: ['site-config', 'gallery_carousel_enabled'],
     queryFn: async () => {
       try {
-        const { data, error } = await supabase
+        const { data, error: configError } = await supabase
           .from('site_config')
           .select('value')
           .eq('key', 'gallery_carousel_enabled')
           .single();
         
-        if (error) {
-          console.error('Error fetching gallery config:', error);
+        if (configError) {
+          console.error('Error fetching gallery config:', configError);
           return false;
         }
         
         return data?.value === 'true';
       } catch (err) {
-        console.error('Unexpected error fetching config:', err);
+        console.error('Unexpected error in config fetch:', err);
         return false;
       }
     },
-    retry: false
+    retry: false,
+    refetchOnWindowFocus: false
   });
 
   const handleKeyPress = (imageUrl: string) => (e: React.KeyboardEvent) => {
@@ -73,12 +84,25 @@ export const GalleryPreview = () => {
     }
   };
 
+  const handleCloseGallery = () => {
+    setShowFullGallery(false);
+    setSelectedImage(null);
+  };
+
   if (error) {
-    return <div className="mt-16 text-center text-red-500">Error loading gallery</div>;
+    return (
+      <div className="mt-16 text-center text-red-500">
+        Unable to load gallery. Please try again later.
+      </div>
+    );
   }
 
   if (isLoading) {
-    return <div className="mt-16 text-center">Loading gallery...</div>;
+    return (
+      <div className="mt-16 text-center text-gray-600">
+        Loading gallery...
+      </div>
+    );
   }
 
   return (
@@ -86,7 +110,7 @@ export const GalleryPreview = () => {
       <GalleryHeader onViewAllClick={() => setShowFullGallery(true)} />
       
       {images.length > 0 ? (
-        config ? (
+        carouselEnabled ? (
           <GalleryCarousel 
             images={images}
             onImageSelect={setSelectedImage}
@@ -108,10 +132,7 @@ export const GalleryPreview = () => {
       {showFullGallery && (
         <Dialog 
           open={showFullGallery} 
-          onOpenChange={(open) => {
-            setShowFullGallery(open);
-            if (!open) setSelectedImage(null);
-          }}
+          onOpenChange={handleCloseGallery}
         >
           <DialogContent className="max-w-[90vw] max-h-[90vh] overflow-y-auto">
             <GallerySection
