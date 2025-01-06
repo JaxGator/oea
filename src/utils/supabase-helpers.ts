@@ -1,6 +1,6 @@
 import { PostgrestError, PostgrestResponse, PostgrestSingleResponse } from '@supabase/supabase-js';
 import { Database } from '@/types/database.types';
-import { isSupabaseError } from '@/integrations/supabase/types/helpers';
+import { isSupabaseError } from '@/integrations/supabase/types';
 
 export type TablesInsert<T extends keyof Database['public']['Tables']> = Database['public']['Tables'][T]['Insert']
 export type TablesUpdate<T extends keyof Database['public']['Tables']> = Database['public']['Tables'][T]['Update']

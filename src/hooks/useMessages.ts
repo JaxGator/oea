@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Message } from "@/integrations/supabase/types";
+import { Message } from "@/integrations/supabase/types/messages";
 import { useAuthState } from "@/hooks/useAuthState";
 
 export function useMessages(selectedUserId: string | null) {
