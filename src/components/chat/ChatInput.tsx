@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuthState } from "@/hooks/useAuthState";
 
 interface ChatInputProps {
   receiverId: string;
@@ -13,16 +14,18 @@ export function ChatInput({ receiverId }: ChatInputProps) {
   const [message, setMessage] = useState("");
   const [isSending, setIsSending] = useState(false);
   const { toast } = useToast();
+  const { user } = useAuthState();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!message.trim()) return;
+    if (!message.trim() || !user) return;
 
     setIsSending(true);
     try {
       const { error } = await supabase.from("messages").insert({
         content: message.trim(),
         receiver_id: receiverId,
+        sender_id: user.id
       });
 
       if (error) throw error;
