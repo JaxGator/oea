@@ -10,6 +10,22 @@ import { useState } from "react";
 import { ViewMemberDialog } from "@/components/members/ViewMemberDialog";
 import { EditMemberDialog } from "@/components/members/EditMemberDialog";
 
+interface ProfileWithEmail {
+  id: string;
+  username: string;
+  full_name: string | null;
+  avatar_url: string | null;
+  is_admin: boolean;
+  is_approved: boolean;
+  is_member: boolean;
+  created_at: string;
+  auth: {
+    users: {
+      email: string;
+    } | null;
+  } | null;
+}
+
 export function AdminUserList() {
   const { toast } = useToast();
   const [viewingMember, setViewingMember] = useState<Member | null>(null);
@@ -20,7 +36,7 @@ export function AdminUserList() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('profiles')
-        .select('*, auth.users(email)')
+        .select('*, auth:auth.users(email)')
         .order('username');
 
       if (error) {
@@ -34,9 +50,10 @@ export function AdminUserList() {
       }
 
       // Transform the data to include email from the joined users table
-      const transformedData = data.map(profile => ({
+      const transformedData = (data as ProfileWithEmail[]).map(profile => ({
         ...profile,
-        email: profile.auth.users?.email || 'No email found'
+        email: profile.auth?.users?.email || 'No email found',
+        auth: undefined // Remove the auth object from the final member data
       }));
 
       return transformedData as Member[];
