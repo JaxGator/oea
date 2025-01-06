@@ -33,7 +33,10 @@ export function GroupChat() {
         currentUserId={user?.id}
         isAdmin={isAdmin}
       />
-      <ChatInput userId={user?.id} />
+      <ChatInput 
+        userId={user?.id} 
+        chatId={messages[0]?.chat_id || ''} // Get chatId from the first message, or empty string if no messages
+      />
     </div>
   );
 }
