@@ -20,7 +20,7 @@ export function AdminUserList() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('profiles')
-        .select('*')
+        .select('*, auth.users(email)')
         .order('username');
 
       if (error) {
@@ -33,9 +33,20 @@ export function AdminUserList() {
         throw error;
       }
 
-      return data as Member[];
+      // Transform the data to include email from the joined users table
+      const transformedData = data.map(profile => ({
+        ...profile,
+        email: profile.auth.users?.email || 'No email found'
+      }));
+
+      return transformedData as Member[];
     },
   });
+
+  const handleEditComplete = () => {
+    setEditingMember(null);
+    refetch();
+  };
 
   if (isLoading) {
     return <div>Loading...</div>;
@@ -73,7 +84,7 @@ export function AdminUserList() {
         member={editingMember}
         open={!!editingMember}
         onOpenChange={(open) => !open && setEditingMember(null)}
-        onUpdate={refetch}
+        onUpdate={handleEditComplete}
       />
     </div>
   );

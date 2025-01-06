@@ -6,11 +6,6 @@ export interface Member {
   is_admin: boolean;
   is_approved: boolean;
   is_member: boolean;
-}
-
-export interface MemberTableProps {
-  members: Member[];
-  currentUserIsAdmin: boolean;
-  onViewMember: (member: Member) => void;
-  onEditMember: (member: Member) => void;
+  email?: string;
+  created_at: string;
 }

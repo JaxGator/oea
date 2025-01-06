@@ -17,7 +17,8 @@ interface Profile {
   is_admin: boolean;
   is_approved: boolean;
   is_member: boolean;
-  created_at: string;  // Added this field to match the type
+  email: string;
+  created_at: string;
 }
 
 interface AdminUserTableRowProps {
@@ -39,6 +40,7 @@ export function AdminUserTableRow({
         <div className="flex flex-col gap-1">
           <span className="font-medium">{profile.username}</span>
           <span className="text-sm text-gray-500">{profile.full_name || '-'}</span>
+          <span className="text-sm text-gray-500">{profile.email}</span>
           <div className="flex flex-wrap gap-1 md:hidden mt-2">
             <StatusBadges profile={profile} />
           </div>
