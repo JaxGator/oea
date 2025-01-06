@@ -12,7 +12,9 @@ export function DesktopNavigation() {
     await supabase.auth.signOut();
   };
 
-  const navigationItems = createNavigationItems(user, profile, handleSignOut);
+  const navigationItems = createNavigationItems(user, profile, handleSignOut)
+    .filter(item => !item.onClick && (!item.show || item.show(user, profile)))
+    .filter(item => item.path !== '/auth' && item.path !== '#' && item.path !== '/' && item.path !== '/messages');
 
   return (
     <nav className="hidden md:block bg-gray-900 text-white p-4" role="navigation" aria-label="Main navigation">
@@ -27,34 +29,31 @@ export function DesktopNavigation() {
           </Link>
           
           <div className="flex space-x-8" role="menubar">
-            {navigationItems
-              .filter(item => !item.onClick && (!item.show || item.show(user, profile)))
-              .filter(item => item.path !== '/auth' && item.path !== '#' && item.path !== '/')
-              .map(({ label, path, external }) => 
-                external ? (
-                  <a
-                    key={path}
-                    href={path}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="hover:text-primary-100 transition-colors"
-                    role="menuitem"
-                    tabIndex={0}
-                  >
-                    {label}
-                  </a>
-                ) : (
-                  <Link
-                    key={path}
-                    to={path}
-                    className="hover:text-primary-100 transition-colors"
-                    role="menuitem"
-                    tabIndex={0}
-                  >
-                    {label}
-                  </Link>
-                )
-              )}
+            {navigationItems.map(({ label, path, external }) => 
+              external ? (
+                <a
+                  key={path}
+                  href={path}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-primary-100 transition-colors"
+                  role="menuitem"
+                  tabIndex={0}
+                >
+                  {label}
+                </a>
+              ) : (
+                <Link
+                  key={path}
+                  to={path}
+                  className="hover:text-primary-100 transition-colors"
+                  role="menuitem"
+                  tabIndex={0}
+                >
+                  {label}
+                </Link>
+              )
+            )}
           </div>
         </div>
 
