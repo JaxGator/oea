@@ -1,5 +1,5 @@
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { Loader2, X } from "lucide-react";
+import { Loader2, X, ZoomIn } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 
@@ -32,14 +32,21 @@ export const GalleryModal = ({ selectedImage, onClose }: GalleryModalProps) => {
               <Loader2 className="h-8 w-8 animate-spin" />
             </div>
           )}
-          <img
-            src={selectedImage}
-            alt="Selected gallery image"
-            className="max-w-full max-h-[90vh] object-contain rounded-lg"
-            style={{ margin: 'auto' }}
-            onLoad={() => setIsLoading(false)}
-            loading="eager"
-          />
+          <div className="group relative">
+            <img
+              src={selectedImage}
+              alt="Selected gallery image"
+              className="max-w-full max-h-[90vh] object-contain rounded-lg"
+              style={{ margin: 'auto' }}
+              onLoad={() => setIsLoading(false)}
+              loading="eager"
+            />
+            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+              <div className="bg-black/50 p-2 rounded-full">
+                <ZoomIn className="w-6 h-6 text-white" />
+              </div>
+            </div>
+          </div>
         </div>
       </DialogContent>
     </Dialog>
