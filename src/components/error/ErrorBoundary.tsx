@@ -1,14 +1,46 @@
 import { useRouteError, isRouteErrorResponse, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Home, RefreshCcw } from "lucide-react";
-import { ReactNode } from "react";
+import { ReactNode, Component, ErrorInfo } from "react";
+import { toast } from "@/components/ui/use-toast";
 
-interface ErrorBoundaryProps {
+interface Props {
   children: ReactNode;
   fallback: ReactNode;
 }
 
-export const ErrorBoundary = ({ children, fallback }: ErrorBoundaryProps) => {
+interface State {
+  hasError: boolean;
+}
+
+export class ErrorBoundary extends Component<Props, State> {
+  public state: State = {
+    hasError: false
+  };
+
+  public static getDerivedStateFromError(_: Error): State {
+    return { hasError: true };
+  }
+
+  public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    console.error('Uncaught error:', error, errorInfo);
+    toast({
+      title: "An error occurred",
+      description: "We're sorry, something went wrong. Please try refreshing the page.",
+      variant: "destructive",
+    });
+  }
+
+  public render() {
+    if (this.state.hasError) {
+      return this.props.fallback;
+    }
+
+    return this.props.children;
+  }
+}
+
+export function RouteErrorBoundary() {
   const error = useRouteError();
   const navigate = useNavigate();
 
@@ -46,9 +78,5 @@ export const ErrorBoundary = ({ children, fallback }: ErrorBoundaryProps) => {
     );
   }
 
-  try {
-    return <>{children}</>;
-  } catch (err) {
-    return <>{fallback}</>;
-  }
-};
+  return null;
+}
