@@ -10,13 +10,17 @@ export const useGoogleMapsToken = () => {
   useEffect(() => {
     const fetchGoogleMapsKey = async () => {
       try {
-        const { data, error } = await supabase.functions.invoke('get-google-maps-token');
+        const { data, error } = await supabase.functions.invoke('get-google-maps-token', {
+          method: 'POST',
+        });
+
         if (error) {
           console.error('Error fetching Google Maps token:', error);
           toast.error('Failed to load map. Please try again later.');
           setError(error);
           return;
         }
+
         if (!data?.token) {
           const err = new Error('No token returned from function');
           console.error(err);
@@ -24,6 +28,7 @@ export const useGoogleMapsToken = () => {
           setError(err);
           return;
         }
+
         setMapKey(data.token);
       } catch (err) {
         console.error('Error in fetchGoogleMapsKey:', err);
