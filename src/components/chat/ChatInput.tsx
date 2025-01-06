@@ -6,43 +6,35 @@ import { useToast } from "@/hooks/use-toast";
 
 interface ChatInputProps {
   userId: string | undefined;
-  chatId: string;
 }
 
-export function ChatInput({ userId, chatId }: ChatInputProps) {
+export function ChatInput({ userId }: ChatInputProps) {
   const [newMessage, setNewMessage] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newMessage.trim() || !userId) return;
 
-    setIsSubmitting(true);
     try {
       const { error } = await supabase
         .from('group_chat_messages')
-        .insert({
-          content: newMessage.trim(),
-          sender_id: userId,
-          chat_id: chatId
-        });
+        .insert([
+          {
+            content: newMessage.trim(),
+            sender_id: userId,
+          }
+        ]);
 
-      if (error) {
-        console.error('Supabase error:', error);
-        throw error;
-      }
-      
+      if (error) throw error;
       setNewMessage("");
     } catch (error) {
       console.error('Error sending message:', error);
       toast({
         title: "Error",
-        description: "Failed to send message. Please try again.",
+        description: "Failed to send message",
         variant: "destructive",
       });
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
@@ -54,13 +46,9 @@ export function ChatInput({ userId, chatId }: ChatInputProps) {
           onChange={(e) => setNewMessage(e.target.value)}
           placeholder="Type your message..."
           className="min-h-[60px]"
-          disabled={isSubmitting}
         />
-        <Button 
-          type="submit" 
-          disabled={!newMessage.trim() || isSubmitting}
-        >
-          {isSubmitting ? "Sending..." : "Send"}
+        <Button type="submit" disabled={!newMessage.trim()}>
+          Send
         </Button>
       </div>
     </form>

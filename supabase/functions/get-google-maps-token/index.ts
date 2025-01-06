@@ -3,62 +3,36 @@ import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
 }
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders })
-  }
-
-  // Only allow POST requests
-  if (req.method !== 'POST') {
-    return new Response(
-      JSON.stringify({ error: 'Method not allowed' }),
-      { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 405 
-      }
-    )
+    return new Response('ok', { headers: corsHeaders })
   }
 
   try {
     const token = Deno.env.get('GOOGLE_MAPS_API_KEY')
-    console.log('Attempting to retrieve Google Maps API key...')
-    console.log('Token exists:', !!token)
-
+    
     if (!token) {
-      throw new Error('Google Maps API key not found')
+      console.error('Google Maps API key not found in environment variables')
+      throw new Error('Google Maps API key not configured. Please set the GOOGLE_MAPS_API_KEY secret in the Supabase dashboard.')
     }
 
-    console.log('Successfully retrieved Google Maps API key')
-    
     return new Response(
       JSON.stringify({ token }),
       { 
-        headers: { 
-          ...corsHeaders, 
-          'Content-Type': 'application/json' 
-        },
-        status: 200 
-      }
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200,
+      },
     )
   } catch (error) {
-    console.error('Error in get-google-maps-token function:', error)
-    
+    console.error('Error in get-google-maps-token function:', error.message)
     return new Response(
-      JSON.stringify({ 
-        error: 'Failed to retrieve Google Maps API key',
-        details: error.message 
-      }),
+      JSON.stringify({ error: error.message }),
       { 
-        headers: { 
-          ...corsHeaders, 
-          'Content-Type': 'application/json' 
-        },
-        status: 500 
-      }
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 500,
+      },
     )
   }
 })

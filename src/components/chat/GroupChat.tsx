@@ -33,10 +33,7 @@ export function GroupChat() {
         currentUserId={user?.id}
         isAdmin={isAdmin}
       />
-      <ChatInput 
-        userId={user?.id} 
-        chatId="default" // Using a default chat ID since we're not using multiple chats
-      />
+      <ChatInput userId={user?.id} />
     </div>
   );
 }

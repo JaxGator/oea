@@ -2,22 +2,89 @@ import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 import { UserSelect } from "./UserSelect";
+import { useAuthState } from "@/hooks/useAuthState";
 import { Loader2 } from "lucide-react";
-import { useGroupChatCreation } from "@/hooks/useGroupChatCreation";
 
 export function CreateGroupChatDialog() {
   const [isOpen, setIsOpen] = useState(false);
   const [chatName, setChatName] = useState("");
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
-  const { createGroupChat, isLoading } = useGroupChatCreation();
+  const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
+  const { user } = useAuthState();
 
   const handleCreateChat = async () => {
-    const success = await createGroupChat(chatName, selectedUsers);
-    if (success) {
+    if (!chatName.trim() || selectedUsers.length === 0 || !user?.id) {
+      toast({
+        title: "Error",
+        description: "Please fill in all required fields",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      // Create the group chat
+      const { data: chatData, error: chatError } = await supabase
+        .from('group_chats')
+        .insert({
+          name: chatName.trim(),
+          created_by: user.id
+        })
+        .select('id')
+        .single();
+
+      if (chatError) {
+        console.error('Error creating chat:', chatError);
+        throw new Error(chatError.message);
+      }
+
+      if (!chatData?.id) {
+        throw new Error('No chat ID returned');
+      }
+
+      // Add participants including the creator
+      const participants = [...selectedUsers, user.id].map(userId => ({
+        chat_id: chatData.id,
+        user_id: userId,
+        added_by: user.id
+      }));
+
+      const { error: participantsError } = await supabase
+        .from('group_chat_participants')
+        .insert(participants);
+
+      if (participantsError) {
+        console.error('Error adding participants:', participantsError);
+        // Attempt to clean up the created chat
+        await supabase
+          .from('group_chats')
+          .delete()
+          .eq('id', chatData.id);
+        throw new Error(participantsError.message);
+      }
+
+      toast({
+        title: "Success",
+        description: "Group chat created successfully",
+      });
+      
       setIsOpen(false);
       setChatName("");
       setSelectedUsers([]);
+    } catch (error) {
+      console.error('Error in handleCreateChat:', error);
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to create group chat",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 

@@ -9,17 +9,17 @@ if (!SUPABASE_ANON_KEY) throw new Error('Missing SUPABASE_ANON_KEY');
 
 export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, {
   auth: {
-    autoRefreshToken: true,
     persistSession: true,
+    autoRefreshToken: true,
     detectSessionInUrl: true,
     flowType: 'pkce',
-    storage: localStorage,
+    storage: typeof window !== 'undefined' ? window.localStorage : undefined,
     storageKey: 'supabase.auth.token',
+    debug: true
   },
   global: {
     headers: {
       'X-Client-Info': 'supabase-js-web',
-      'Access-Control-Allow-Origin': '*',
     },
   },
   db: {
