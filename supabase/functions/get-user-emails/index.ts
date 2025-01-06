@@ -2,6 +2,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { corsHeaders } from '../_shared/cors.ts'
 
 Deno.serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
@@ -33,27 +34,44 @@ Deno.serve(async (req) => {
       throw new Error('Unauthorized - Admin access required')
     }
 
-    // Fetch user emails using service role
+    console.log('Fetching user emails...');
+
+    // Use the auth schema explicitly with the service role client
     const { data: users, error: usersError } = await supabaseClient
-      .from('auth.users')
-      .select('id, email')
+      .auth.admin.listUsers();
 
     if (usersError) {
-      throw usersError
+      console.error('Error fetching users:', usersError);
+      throw usersError;
     }
 
+    // Map the users to just return id and email
+    const userEmails = users.users.map(user => ({
+      id: user.id,
+      email: user.email
+    }));
+
+    console.log(`Successfully fetched ${userEmails.length} user emails`);
+
     return new Response(
-      JSON.stringify(users),
+      JSON.stringify(userEmails),
       {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { 
+          ...corsHeaders, 
+          'Content-Type': 'application/json'
+        },
         status: 200,
       },
     )
   } catch (error) {
+    console.error('Error in get-user-emails function:', error);
     return new Response(
       JSON.stringify({ error: error.message }),
       {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { 
+          ...corsHeaders, 
+          'Content-Type': 'application/json'
+        },
         status: 400,
       },
     )
