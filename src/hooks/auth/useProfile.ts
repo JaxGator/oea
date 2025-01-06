@@ -12,6 +12,8 @@ export function useProfile(userId: string | undefined) {
       if (!userId) return null;
       
       try {
+        console.log('Fetching profile for user:', userId);
+        
         const { data, error } = await supabase
           .from('profiles')
           .select('*')
@@ -19,15 +21,20 @@ export function useProfile(userId: string | undefined) {
           .maybeSingle();
         
         if (error) {
-          console.error('Error fetching profile:', error);
+          console.error('Error fetching profile:', {
+            error,
+            userId,
+            timestamp: new Date().toISOString()
+          });
           toast({
             title: "Error",
-            description: "Failed to load profile data",
+            description: "Failed to load profile data. Please try again.",
             variant: "destructive",
           });
           throw error;
         }
         
+        console.log('Profile data received:', data);
         return data as Profile | null;
       } catch (error) {
         console.error('Profile fetch error:', error);

@@ -8,7 +8,8 @@ export function useAuthState() {
   const { 
     data: profile, 
     isLoading: isProfileLoading, 
-    error: profileError 
+    error: profileError,
+    refetch: refetchProfile
   } = useProfile(user?.id);
   const queryClient = useQueryClient();
 
@@ -17,11 +18,12 @@ export function useAuthState() {
     if (user?.id) {
       // Invalidate and refetch profile data
       queryClient.invalidateQueries({ queryKey: ['profile', user.id] });
+      refetchProfile();
       
       // Also invalidate members list if it exists
       queryClient.invalidateQueries({ queryKey: ['members'] });
     }
-  }, [user?.id, queryClient]);
+  }, [user?.id, queryClient, refetchProfile]);
 
   return {
     user,
