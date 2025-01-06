@@ -8,7 +8,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { Toaster } from "@/components/ui/sonner";
 import { CookieConsent } from "@/components/CookieConsent";
 import { Footer } from "@/components/home/Footer";
-import { useAuthState } from "@/hooks/useAuthState";
 
 // Add styles for the skip links
 const skipLinkStyles = `
@@ -19,7 +18,6 @@ const skipLinkStyles = `
 
 export function AppLayout() {
   const { isMaintenanceMode } = useMaintenanceMode();
-  const { user, profile } = useAuthState();
 
   useEffect(() => {
     const fetchFavicon = async () => {
@@ -69,7 +67,7 @@ export function AppLayout() {
 
       {/* Main Navigation */}
       <nav id="main-navigation" aria-label="Main navigation">
-        <DesktopNavigation user={user} profile={profile} />
+        <DesktopNavigation />
         <MobileNavigation />
       </nav>
 
