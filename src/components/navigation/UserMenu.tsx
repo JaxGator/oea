@@ -14,26 +14,41 @@ interface UserMenuProps {
 
 export function UserMenu({ user, profile }: UserMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [isSigningOut, setIsSigningOut] = useState(false);
   const { toast } = useToast();
   
   const handleSignOut = useCallback(async () => {
+    if (isSigningOut) return;
+    
+    setIsSigningOut(true);
     try {
+      // Clear any stored session data first
+      localStorage.removeItem('supabase.auth.token');
+      
       const { error } = await supabase.auth.signOut();
-      if (error) throw error;
+      if (error) {
+        console.error('Sign out error:', error);
+        throw error;
+      }
       
       toast({
         title: "Signed out successfully",
         description: "You have been logged out",
       });
+      
+      // Force reload the page to clear any remaining state
+      window.location.href = '/';
     } catch (error) {
       console.error('Sign out error:', error);
       toast({
         title: "Error signing out",
-        description: "Please try again",
+        description: "Please try again or refresh the page",
         variant: "destructive",
       });
+    } finally {
+      setIsSigningOut(false);
     }
-  }, [toast]);
+  }, [toast, isSigningOut]);
 
   if (!user) {
     return (
@@ -81,10 +96,11 @@ export function UserMenu({ user, profile }: UserMenuProps) {
         variant="ghost"
         className="text-white hover:text-primary-100 hover:bg-gray-800"
         onClick={handleSignOut}
+        disabled={isSigningOut}
         role="menuitem"
         tabIndex={0}
       >
-        Sign Out
+        {isSigningOut ? "Signing out..." : "Sign Out"}
       </Button>
     </div>
   );
