@@ -614,6 +614,14 @@ export type Database = {
         }
         Returns: boolean
       }
+      create_group_chat_with_participants: {
+        Args: {
+          p_chat_name: string
+          p_creator_id: string
+          p_participant_ids: string[]
+        }
+        Returns: string
+      }
       create_profile: {
         Args: {
           user_id: string
