@@ -3,6 +3,7 @@ import { User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { Profile } from "@/types/auth";
 import { createNavigationItems } from "@/utils/navigation";
+import { UserMenu } from "@/components/navigation/UserMenu";
 
 interface DesktopNavigationProps {
   user: User | null;
@@ -16,21 +17,25 @@ export function DesktopNavigation({ user, profile }: DesktopNavigationProps) {
 
   const navigationItems = createNavigationItems(user, profile, handleSignOut)
     .filter(item => !item.onClick && (!item.show || item.show(user, profile)))
-    .filter(item => item.path !== '/auth' && item.path !== '#' && item.path !== '/');
+    .filter(item => item.path !== '/auth' && item.path !== '#');
 
   return (
     <nav className="hidden md:block bg-gray-900 text-white p-4" role="navigation" aria-label="Main navigation">
       <div className="max-w-7xl mx-auto">
-        <div className="flex justify-between items-center">
-          <Link 
-            to="/" 
-            className="text-xl font-bold text-white hover:text-primary-100 transition-colors"
-            role="menuitem"
-          >
-            OEA
-          </Link>
-          
-          <div className="flex space-x-8" role="menubar">
+        <div className="flex items-center justify-between">
+          <div className="flex-1 flex items-center justify-center space-x-8">
+            <Link 
+              to="/" 
+              className="text-xl font-bold text-white hover:text-primary-100 transition-colors"
+              role="menuitem"
+            >
+              <img 
+                src="/lovable-uploads/609edf01-3169-439a-80f5-f6f15de7a5a6.png"
+                alt="OEA Logo"
+                className="h-12 w-auto"
+              />
+            </Link>
+            
             {navigationItems.map(({ label, path, external }) => 
               external ? (
                 <a
@@ -56,6 +61,10 @@ export function DesktopNavigation({ user, profile }: DesktopNavigationProps) {
                 </Link>
               )
             )}
+          </div>
+          
+          <div className="flex-none">
+            <UserMenu user={user} profile={profile} />
           </div>
         </div>
       </div>
