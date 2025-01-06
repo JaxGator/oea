@@ -29,7 +29,7 @@ export function useAdminStatus() {
           .from('profiles')
           .select('is_admin')
           .eq('id', user.id)
-          .maybeSingle(); // Changed from single() to maybeSingle()
+          .maybeSingle();
 
         if (profileError) throw profileError;
 

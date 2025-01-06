@@ -5,49 +5,60 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
 interface ChatInputProps {
-  userId: string | undefined;
+  chatId: string;
+  userId: string;
+  onMessageSent?: () => void;
 }
 
-export function ChatInput({ userId }: ChatInputProps) {
-  const [newMessage, setNewMessage] = useState("");
+export function ChatInput({ chatId, userId, onMessageSent }: ChatInputProps) {
+  const [content, setContent] = useState("");
+  const [isSending, setIsSending] = useState(false);
   const { toast } = useToast();
 
-  const handleSendMessage = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newMessage.trim() || !userId) return;
+    if (!content.trim()) return;
 
+    setIsSending(true);
     try {
       const { error } = await supabase
         .from('group_chat_messages')
-        .insert([
-          {
-            content: newMessage.trim(),
-            sender_id: userId,
-          }
-        ]);
+        .insert({
+          chat_id: chatId,
+          content: content.trim(),
+          sender_id: userId
+        });
 
       if (error) throw error;
-      setNewMessage("");
+
+      setContent("");
+      onMessageSent?.();
     } catch (error) {
       console.error('Error sending message:', error);
       toast({
         title: "Error",
-        description: "Failed to send message",
+        description: "Failed to send message. Please try again.",
         variant: "destructive",
       });
+    } finally {
+      setIsSending(false);
     }
   };
 
   return (
-    <form onSubmit={handleSendMessage} className="p-4 border-t">
+    <form onSubmit={handleSubmit} className="p-4 border-t">
       <div className="flex gap-2">
         <Textarea
-          value={newMessage}
-          onChange={(e) => setNewMessage(e.target.value)}
-          placeholder="Type your message..."
-          className="min-h-[60px]"
+          value={content}
+          onChange={(e) => setContent(e.target.value)}
+          placeholder="Type a message..."
+          className="flex-1 min-h-[80px]"
         />
-        <Button type="submit" disabled={!newMessage.trim()}>
+        <Button 
+          type="submit" 
+          disabled={isSending || !content.trim()}
+          className="self-end"
+        >
           Send
         </Button>
       </div>
