@@ -34,7 +34,7 @@ export async function handleQueryResult<T>(
     throw new Error('No data returned from query');
   }
 
-  return data;
+  return Array.isArray(data) ? data[0] : data;
 }
 
 export function ensureQueryResult<T>(result: T | PostgrestError): T {
