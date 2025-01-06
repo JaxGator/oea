@@ -1,12 +1,15 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Message } from "@/integrations/supabase/types";
+import { useAuthState } from "@/hooks/useAuthState";
 
 export function useMessages(selectedUserId: string | null) {
-  return useQuery({
+  const { user } = useAuthState();
+
+  return useQuery<Message[]>({
     queryKey: ['messages', selectedUserId],
     queryFn: async () => {
-      if (!selectedUserId) return [];
+      if (!selectedUserId || !user) return [];
       
       const { data, error } = await supabase
         .from('messages')
@@ -17,6 +20,6 @@ export function useMessages(selectedUserId: string | null) {
       if (error) throw error;
       return data as Message[];
     },
-    enabled: !!selectedUserId
+    enabled: !!selectedUserId && !!user
   });
 }

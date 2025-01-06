@@ -13,7 +13,7 @@ interface ChatWindowProps {
 export function ChatWindow({ selectedUserId }: ChatWindowProps) {
   const { user } = useAuthState();
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const { messages, isLoading, error } = useMessages(selectedUserId);
+  const { data: messages, isLoading, error } = useMessages(selectedUserId);
 
   useEffect(() => {
     if (messagesEndRef.current) {
