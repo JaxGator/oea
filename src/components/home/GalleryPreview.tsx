@@ -24,7 +24,7 @@ export const GalleryPreview = () => {
 
       if (storageError) {
         console.error('Error fetching gallery images:', storageError);
-        throw storageError;
+        return [];
       }
 
       if (!storageData || !Array.isArray(storageData)) {
