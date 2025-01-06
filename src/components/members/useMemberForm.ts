@@ -36,7 +36,7 @@ export function useMemberForm(member: Member | null, onUpdate: () => void, onClo
     }
 
     try {
-      const { error } = await supabase.functions.invoke('admin-user-management', {
+      const { data, error } = await supabase.functions.invoke('admin-user-management', {
         body: {
           userId: member.id,
           username,
@@ -50,7 +50,12 @@ export function useMemberForm(member: Member | null, onUpdate: () => void, onClo
         },
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error updating member:', error);
+        throw error;
+      }
+
+      console.log('Update response:', data);
 
       toast({
         title: "Success",
@@ -59,11 +64,11 @@ export function useMemberForm(member: Member | null, onUpdate: () => void, onClo
       
       onUpdate();
       onClose();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error updating member:', error);
       toast({
         title: "Error",
-        description: "Failed to update member",
+        description: error.message || "Failed to update member",
         variant: "destructive",
       });
     }
