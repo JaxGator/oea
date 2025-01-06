@@ -15,32 +15,38 @@ export const GalleryPreview = () => {
   const { data: images = [], isLoading, error } = useQuery({
     queryKey: ['gallery-images'],
     queryFn: async () => {
-      const { data: storageData, error: storageError } = await supabase.storage
-        .from('gallery')
-        .list('', {
-          limit: 100,
-          sortBy: { column: 'name', order: 'asc' },
-        });
-
-      if (storageError) {
-        console.error('Error fetching gallery images:', storageError);
-        return [];
-      }
-
-      if (!storageData || !Array.isArray(storageData)) {
-        return [];
-      }
-
-      const imageFiles = storageData.filter(file => 
-        file.name.match(/\.(jpg|jpeg|png|gif)$/i)
-      );
-
-      return imageFiles.map(file => {
-        const { data } = supabase.storage
+      try {
+        const { data: storageData, error: storageError } = await supabase.storage
           .from('gallery')
-          .getPublicUrl(file.name);
-        return data.publicUrl;
-      });
+          .list('', {
+            limit: 100,
+            sortBy: { column: 'name', order: 'asc' },
+          });
+
+        if (storageError) {
+          console.error('Error fetching gallery images:', storageError);
+          return [];
+        }
+
+        if (!storageData || !Array.isArray(storageData)) {
+          console.warn('No gallery data found or invalid data format');
+          return [];
+        }
+
+        const imageFiles = storageData.filter(file => 
+          file.name.match(/\.(jpg|jpeg|png|gif)$/i)
+        );
+
+        return imageFiles.map(file => {
+          const { data } = supabase.storage
+            .from('gallery')
+            .getPublicUrl(file.name);
+          return data.publicUrl;
+        });
+      } catch (error) {
+        console.error('Unexpected error fetching gallery images:', error);
+        return [];
+      }
     },
     retry: 1,
     refetchOnWindowFocus: false
@@ -49,18 +55,23 @@ export const GalleryPreview = () => {
   const { data: carouselEnabled = false } = useQuery({
     queryKey: ['site-config', 'gallery_carousel_enabled'],
     queryFn: async () => {
-      const { data, error: configError } = await supabase
-        .from('site_config')
-        .select('value')
-        .eq('key', 'gallery_carousel_enabled')
-        .maybeSingle();
-      
-      if (configError) {
-        console.error('Error fetching gallery config:', configError);
+      try {
+        const { data, error: configError } = await supabase
+          .from('site_config')
+          .select('value')
+          .eq('key', 'gallery_carousel_enabled')
+          .maybeSingle();
+        
+        if (configError) {
+          console.error('Error fetching gallery config:', configError);
+          return false;
+        }
+        
+        return data?.value === 'true';
+      } catch (error) {
+        console.error('Unexpected error fetching gallery config:', error);
         return false;
       }
-      
-      return data?.value === 'true';
     },
     retry: 1,
     refetchOnWindowFocus: false
@@ -85,38 +96,32 @@ export const GalleryPreview = () => {
     );
   }
 
-  if (isLoading) {
-    return (
-      <div className="mt-16 text-center text-gray-600">
-        Loading gallery...
-      </div>
-    );
-  }
-
   const hasImages = Array.isArray(images) && images.length > 0;
 
   return (
     <div className="mt-16 space-y-4">
       <GalleryHeader onViewAllClick={() => setShowFullGallery(true)} />
       
-      {hasImages ? (
-        carouselEnabled ? (
-          <GalleryCarousel 
-            images={images}
-            onImageSelect={setSelectedImage}
-            onKeyPress={handleKeyPress}
-          />
-        ) : (
-          <GalleryGrid 
-            images={images}
-            onImageSelect={setSelectedImage}
-            onKeyPress={handleKeyPress}
-          />
-        )
-      ) : (
+      {isLoading ? (
+        <div className="text-center py-8 text-gray-600">
+          Loading gallery...
+        </div>
+      ) : !hasImages ? (
         <div className="text-center py-8 text-gray-500">
           No images available in the gallery.
         </div>
+      ) : carouselEnabled ? (
+        <GalleryCarousel 
+          images={images}
+          onImageSelect={setSelectedImage}
+          onKeyPress={handleKeyPress}
+        />
+      ) : (
+        <GalleryGrid 
+          images={images}
+          onImageSelect={setSelectedImage}
+          onKeyPress={handleKeyPress}
+        />
       )}
 
       {showFullGallery && (
