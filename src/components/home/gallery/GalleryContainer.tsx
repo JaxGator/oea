@@ -12,15 +12,9 @@ export const useGalleryImages = () => {
           .from('gallery')
           .list();
 
-        if (storageError) {
-          console.error('Storage error:', storageError);
-          throw storageError;
-        }
+        if (storageError) throw storageError;
 
-        if (!storageData) {
-          console.log('No storage data found');
-          return [];
-        }
+        if (!storageData) return [];
 
         const imageUrls = storageData
           .filter(file => file.name.match(/\.(jpg|jpeg|png|gif)$/i))
@@ -33,9 +27,10 @@ export const useGalleryImages = () => {
       } catch (err) {
         console.error('Failed to fetch gallery images:', err);
         toast.error('Failed to load gallery images');
-        return [];
+        throw err;
       }
     },
+    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
     refetchOnWindowFocus: false,
     retry: 1
   });
@@ -50,7 +45,7 @@ export const useGalleryConfig = () => {
           .from('site_config')
           .select('value')
           .eq('key', 'gallery_carousel_enabled')
-          .single();
+          .maybeSingle();
         
         if (error) throw error;
         return data?.value === 'true';
@@ -59,6 +54,7 @@ export const useGalleryConfig = () => {
         return false;
       }
     },
+    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
     refetchOnWindowFocus: false
   });
 };
@@ -76,5 +72,10 @@ export const GalleryContainer: React.FC<GalleryContainerProps> = ({ children }) 
   const { data: images = [], isLoading, error } = useGalleryImages();
   const { data: isCarouselEnabled = false } = useGalleryConfig();
 
-  return <>{children({ images, isLoading, error: error as Error | null, isCarouselEnabled })}</>;
+  return <>{children({ 
+    images, 
+    isLoading, 
+    error: error as Error | null, 
+    isCarouselEnabled 
+  })}</>;
 };

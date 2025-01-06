@@ -1,4 +1,4 @@
-import { Button } from "@/components/ui/button";
+import React from 'react';
 import {
   Carousel,
   CarouselContent,
@@ -13,7 +13,11 @@ interface GalleryCarouselProps {
   onKeyPress: (imageUrl: string) => (e: React.KeyboardEvent) => void;
 }
 
-export const GalleryCarousel = ({ images, onImageSelect, onKeyPress }: GalleryCarouselProps) => {
+export const GalleryCarousel: React.FC<GalleryCarouselProps> = ({ 
+  images, 
+  onImageSelect, 
+  onKeyPress 
+}) => {
   return (
     <Carousel className="w-full">
       <CarouselContent>
@@ -29,6 +33,7 @@ export const GalleryCarousel = ({ images, onImageSelect, onKeyPress }: GalleryCa
                 src={imageUrl}
                 alt={`Gallery preview ${index + 1}`}
                 className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                loading={index === 0 ? "eager" : "lazy"}
               />
             </button>
           </CarouselItem>
