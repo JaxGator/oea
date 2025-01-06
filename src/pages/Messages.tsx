@@ -1,16 +1,56 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuthState } from "@/hooks/useAuthState";
 import { UserList } from "@/components/messages/UserList";
 import { ChatWindow } from "@/components/messages/ChatWindow";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { MessageSquare } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 export default function Messages() {
-  const { profile } = useAuthState();
+  const { profile, isLoading, error } = useAuthState();
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
+  useEffect(() => {
+    if (!isLoading && !profile) {
+      toast({
+        title: "Authentication required",
+        description: "Please sign in to access messages",
+        variant: "destructive",
+      });
+      navigate("/auth");
+    }
+  }, [profile, isLoading, navigate, toast]);
+
+  // Show loading state
+  if (isLoading) {
+    return (
+      <div className="container mx-auto p-4 flex items-center justify-center h-[calc(100vh-8rem)]">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="container mx-auto p-4">
+        <div className="bg-destructive/10 border-l-4 border-destructive p-4">
+          <div className="flex">
+            <div className="ml-3">
+              <p className="text-sm text-destructive">
+                Error loading profile: {error.message}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Check if user is approved
   if (!profile?.is_approved) {
     return (
       <div className="container mx-auto p-4">
