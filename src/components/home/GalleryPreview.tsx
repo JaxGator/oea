@@ -31,8 +31,8 @@ export const GalleryPreview = () => {
           return [];
         }
 
-        if (!storageData || storageData.length === 0) {
-          console.log('No images found in gallery');
+        if (!storageData) {
+          console.log('No storage data returned');
           return [];
         }
 
@@ -54,7 +54,8 @@ export const GalleryPreview = () => {
         return [];
       }
     },
-    retry: 1
+    retry: 1,
+    refetchOnWindowFocus: false
   });
 
   const { data: carouselEnabled = false } = useQuery({
@@ -79,7 +80,8 @@ export const GalleryPreview = () => {
         return false;
       }
     },
-    retry: 1
+    retry: 1,
+    refetchOnWindowFocus: false
   });
 
   const handleKeyPress = (imageUrl: string) => (e: React.KeyboardEvent) => {
@@ -130,11 +132,13 @@ export const GalleryPreview = () => {
         />
       )}
 
-      {/* Full Gallery Dialog */}
       {showFullGallery && (
         <Dialog 
           open={showFullGallery} 
-          onOpenChange={setShowFullGallery}
+          onOpenChange={(open) => {
+            setShowFullGallery(open);
+            if (!open) setSelectedImage(null);
+          }}
         >
           <DialogContent className="max-w-[90vw] max-h-[90vh] overflow-y-auto">
             <GallerySection
@@ -148,11 +152,12 @@ export const GalleryPreview = () => {
         </Dialog>
       )}
 
-      {/* Image Preview Dialog */}
       {selectedImage && (
         <Dialog 
           open={!!selectedImage} 
-          onOpenChange={(open) => !open && handleCloseModal()}
+          onOpenChange={(open) => {
+            if (!open) handleCloseModal();
+          }}
         >
           <DialogContent className="max-w-[95vw] max-h-[95vh] p-2">
             <div className="relative w-full h-full flex items-center justify-center bg-background">
