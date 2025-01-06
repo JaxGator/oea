@@ -1,4 +1,4 @@
-import { Message } from "@/integrations/supabase/types";
+import { Message } from "@/integrations/supabase/types/messages";
 
 interface ChatMessageProps {
   message: Message;
