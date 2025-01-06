@@ -20,12 +20,12 @@ export function DesktopNavigation({ user, profile }: DesktopNavigationProps) {
     .filter(item => item.path !== '/auth' && item.path !== '#');
 
   return (
-    <nav className="hidden md:block bg-gray-900 text-white p-4" role="navigation" aria-label="Main navigation">
+    <nav className="hidden md:block bg-[#0F172A] text-white p-2" role="navigation" aria-label="Main navigation">
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center justify-between">
           <Link 
             to="/" 
-            className="text-xl font-bold text-white hover:text-primary-100 transition-colors"
+            className="flex-shrink-0 text-xl font-bold text-white hover:text-primary-100 transition-colors"
             role="menuitem"
           >
             <img 
@@ -35,7 +35,7 @@ export function DesktopNavigation({ user, profile }: DesktopNavigationProps) {
             />
           </Link>
           
-          <div className="flex-1 flex items-center justify-center space-x-8 ml-8">
+          <div className="flex-1 flex items-center justify-center space-x-8">
             {navigationItems.map(({ label, path, external }) => 
               external ? (
                 <a
@@ -43,7 +43,7 @@ export function DesktopNavigation({ user, profile }: DesktopNavigationProps) {
                   href={path}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="hover:text-primary-100 transition-colors"
+                  className="hover:text-primary-100 transition-colors font-medium"
                   role="menuitem"
                   tabIndex={0}
                 >
@@ -53,7 +53,7 @@ export function DesktopNavigation({ user, profile }: DesktopNavigationProps) {
                 <Link
                   key={path}
                   to={path}
-                  className="hover:text-primary-100 transition-colors"
+                  className="hover:text-primary-100 transition-colors font-medium"
                   role="menuitem"
                   tabIndex={0}
                 >
@@ -63,7 +63,7 @@ export function DesktopNavigation({ user, profile }: DesktopNavigationProps) {
             )}
           </div>
           
-          <div className="flex-none">
+          <div className="flex-shrink-0">
             <UserMenu user={user} profile={profile} />
           </div>
         </div>
