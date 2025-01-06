@@ -6,6 +6,7 @@ import { FeaturedMerch } from "@/components/home/FeaturedMerch";
 import { Suspense } from 'react';
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { ErrorInfo } from 'react';
 
 const LoadingSpinner = () => (
   <div className="flex justify-center items-center min-h-[200px]">
@@ -36,8 +37,8 @@ export default function Index() {
         <div className="space-y-8">
           <ErrorBoundary 
             fallback={<ErrorFallback />}
-            onError={(error) => {
-              console.error('Featured Events Error:', error);
+            onError={(error: Error, errorInfo: ErrorInfo) => {
+              console.error('Featured Events Error:', error, errorInfo);
               toast.error('Failed to load events');
             }}
           >
@@ -48,8 +49,8 @@ export default function Index() {
 
           <ErrorBoundary 
             fallback={<ErrorFallback />}
-            onError={(error) => {
-              console.error('Gallery Preview Error:', error);
+            onError={(error: Error, errorInfo: ErrorInfo) => {
+              console.error('Gallery Preview Error:', error, errorInfo);
               toast.error('Failed to load gallery');
             }}
           >
@@ -60,8 +61,8 @@ export default function Index() {
 
           <ErrorBoundary 
             fallback={<ErrorFallback />}
-            onError={(error) => {
-              console.error('Featured Merch Error:', error);
+            onError={(error: Error, errorInfo: ErrorInfo) => {
+              console.error('Featured Merch Error:', error, errorInfo);
               toast.error('Failed to load merchandise');
             }}
           >

@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 interface Props {
   children: ReactNode;
   fallback?: ReactNode;
+  onError?: (error: Error, errorInfo: ErrorInfo) => void;
 }
 
 interface State {
@@ -21,7 +22,14 @@ export class ErrorBoundary extends Component<Props, State> {
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error('ErrorBoundary caught an error:', error, errorInfo);
-    toast.error('Something went wrong. Please try refreshing the page.');
+    
+    // Call the onError prop if provided
+    if (this.props.onError) {
+      this.props.onError(error, errorInfo);
+    } else {
+      // Default error handling if no onError prop is provided
+      toast.error('Something went wrong. Please try refreshing the page.');
+    }
   }
 
   public render() {
