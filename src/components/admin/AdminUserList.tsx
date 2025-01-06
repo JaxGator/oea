@@ -19,11 +19,7 @@ interface ProfileWithEmail {
   is_approved: boolean;
   is_member: boolean;
   created_at: string;
-  auth: {
-    users: {
-      email: string;
-    } | null;
-  } | null;
+  email: string | null;
 }
 
 export function AdminUserList() {
@@ -34,29 +30,49 @@ export function AdminUserList() {
   const { data: members, isLoading, error, refetch } = useQuery({
     queryKey: ['members'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // First, get all profiles
+      const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
-        .select('*, auth:auth.users(email)')
+        .select('*')
         .order('username');
 
-      if (error) {
-        console.error('Error fetching members:', error);
+      if (profilesError) {
+        console.error('Error fetching profiles:', profilesError);
         toast({
           title: "Error",
           description: "Failed to fetch members",
           variant: "destructive",
         });
-        throw error;
+        throw profilesError;
       }
 
-      // Transform the data to include email from the joined users table
-      const transformedData = (data as ProfileWithEmail[]).map(profile => ({
-        ...profile,
-        email: profile.auth?.users?.email || 'No email found',
-        auth: undefined // Remove the auth object from the final member data
-      }));
+      // Then, get all user emails from auth.users
+      const { data: authUsers, error: authError } = await supabase
+        .from('auth.users')
+        .select('id, email');
 
-      return transformedData as Member[];
+      if (authError) {
+        console.error('Error fetching auth users:', authError);
+        toast({
+          title: "Error",
+          description: "Failed to fetch user emails",
+          variant: "destructive",
+        });
+        throw authError;
+      }
+
+      // Create a map of user IDs to emails
+      const emailMap = new Map(
+        (authUsers || []).map(user => [user.id, user.email])
+      );
+
+      // Combine the data
+      const membersWithEmail = profiles.map(profile => ({
+        ...profile,
+        email: emailMap.get(profile.id) || null,
+      })) as ProfileWithEmail[];
+
+      return membersWithEmail;
     },
   });
 
