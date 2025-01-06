@@ -2,15 +2,12 @@ import { useState } from "react";
 import { useAuthState } from "@/hooks/useAuthState";
 import { UserList } from "@/components/messages/UserList";
 import { ChatWindow } from "@/components/messages/ChatWindow";
-import { CreateGroupChatDialog } from "@/components/messages/CreateGroupChatDialog";
-import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
-import { MessageSquare, MessagesSquare, Users } from "lucide-react";
+import { MessageSquare, MessagesSquare } from "lucide-react";
 
 export default function Messages() {
   const { profile } = useAuthState();
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
-  const { toast } = useToast();
 
   if (!profile?.is_approved) {
     return (
@@ -42,7 +39,6 @@ export default function Messages() {
             Messages
           </h1>
           <div className="flex flex-wrap gap-2 w-full sm:w-auto">
-            <CreateGroupChatDialog />
             <Button variant="outline" className="flex items-center gap-2 w-full sm:w-auto">
               <MessageSquare className="h-4 w-4" />
               Direct Messages
@@ -54,7 +50,7 @@ export default function Messages() {
           <div className="w-full lg:w-1/3 border rounded-lg bg-white flex flex-col overflow-hidden min-h-[300px] lg:min-h-0">
             <div className="p-3 border-b bg-gray-50">
               <h2 className="font-semibold text-gray-700 flex items-center gap-2">
-                <Users className="h-4 w-4" />
+                <MessageSquare className="h-4 w-4" />
                 Users
               </h2>
             </div>
