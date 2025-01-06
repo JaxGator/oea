@@ -37,9 +37,9 @@ export async function handleQueryResult<T>(
   return Array.isArray(data) ? data[0] : data;
 }
 
-export function ensureQueryResult<T>(result: T | PostgrestError): T {
+export function ensureQueryResult<T>(result: unknown): T {
   if (isSupabaseError(result)) {
     throw new Error(result.message);
   }
-  return result;
+  return result as T;
 }

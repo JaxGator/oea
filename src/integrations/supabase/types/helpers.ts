@@ -2,7 +2,10 @@ import { PostgrestError } from '@supabase/supabase-js';
 
 // Type guard for checking if a result is a Supabase error
 export function isSupabaseError(result: unknown): result is PostgrestError {
-  return result !== null && typeof result === 'object' && 'code' in result && 'message' in result;
+  return result !== null && 
+         typeof result === 'object' && 
+         'code' in result && 
+         'message' in result;
 }
 
 // Helper function to safely handle query results
