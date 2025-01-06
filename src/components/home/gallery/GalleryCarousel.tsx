@@ -7,7 +7,8 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Image } from "lucide-react";
+import { Image, ZoomIn } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface GalleryCarouselProps {
   images: string[];
@@ -24,12 +25,12 @@ export const GalleryCarousel: React.FC<GalleryCarouselProps> = ({
 }) => {
   if (isLoading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4" role="status" aria-label="Loading gallery">
         {[...Array(4)].map((_, index) => (
-          <div key={index} className="relative aspect-square">
-            <Skeleton className="w-full h-full rounded-lg animate-pulse" />
+          <div key={index} className="relative aspect-square animate-pulse">
+            <Skeleton className="w-full h-full rounded-lg bg-gray-200" />
             <div className="absolute inset-0 flex items-center justify-center">
-              <Image className="w-8 h-8 text-gray-400" />
+              <Image className="w-8 h-8 text-gray-400" aria-hidden="true" />
             </div>
           </div>
         ))}
@@ -39,20 +40,24 @@ export const GalleryCarousel: React.FC<GalleryCarouselProps> = ({
 
   if (images.length === 0) {
     return (
-      <div className="text-center py-12 bg-gray-50 rounded-lg">
-        <Image className="w-12 h-12 mx-auto text-gray-400 mb-3" />
-        <p className="text-gray-600">No images available</p>
+      <div className="text-center py-12 bg-gray-50 rounded-lg" role="status">
+        <Image className="w-12 h-12 mx-auto text-gray-400 mb-3" aria-hidden="true" />
+        <p className="text-gray-600">No images available in the gallery</p>
       </div>
     );
   }
 
   return (
-    <Carousel className="w-full">
+    <Carousel className="w-full" aria-label="Gallery carousel">
       <CarouselContent>
         {images.map((imageUrl, index) => (
           <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/4">
             <button
-              className="w-full aspect-square overflow-hidden rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary group relative"
+              className={cn(
+                "w-full aspect-square overflow-hidden rounded-lg",
+                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                "group relative transition-transform duration-300 hover:scale-[1.02]"
+              )}
               onClick={() => onImageSelect(imageUrl)}
               onKeyDown={onKeyPress(imageUrl)}
               aria-label={`View gallery image ${index + 1}`}
@@ -66,15 +71,21 @@ export const GalleryCarousel: React.FC<GalleryCarouselProps> = ({
               />
               <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                 <div className="bg-black/50 p-2 rounded-full">
-                  <Image className="w-6 h-6 text-white" />
+                  <ZoomIn className="w-6 h-6 text-white" aria-hidden="true" />
                 </div>
               </div>
             </button>
           </CarouselItem>
         ))}
       </CarouselContent>
-      <CarouselPrevious className="hidden md:flex" />
-      <CarouselNext className="hidden md:flex" />
+      <CarouselPrevious 
+        className="hidden md:flex" 
+        aria-label="View previous images"
+      />
+      <CarouselNext 
+        className="hidden md:flex"
+        aria-label="View next images"
+      />
     </Carousel>
   );
 };
