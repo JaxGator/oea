@@ -7,19 +7,10 @@ import {
 import { MemberFormFields } from "./MemberFormFields";
 import { MemberAvatarUpload } from "./MemberAvatarUpload";
 import { useMemberForm } from "./useMemberForm";
-
-interface Member {
-  id: string;
-  username: string;
-  full_name: string | null;
-  avatar_url: string | null;
-  is_admin: boolean;
-  is_approved: boolean;
-  is_member: boolean;
-}
+import { Member } from "./types";
 
 interface EditMemberDialogProps {
-  member: Member;
+  member: Member | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onUpdate: () => void;
@@ -45,6 +36,10 @@ export function EditMemberDialog({ member, open, onOpenChange, onUpdate }: EditM
     setAvatarUrl,
     handleSubmit,
   } = useMemberForm(member, onUpdate, () => onOpenChange(false));
+
+  if (!member) {
+    return null;
+  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
