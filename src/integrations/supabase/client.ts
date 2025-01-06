@@ -13,7 +13,7 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, 
     autoRefreshToken: true,
     detectSessionInUrl: true,
     flowType: 'pkce',
-    storage: localStorage,
+    storage: window.localStorage,
     storageKey: 'supabase.auth.token',
   },
   global: {
@@ -39,7 +39,11 @@ export const testSupabaseConnection = async () => {
       return false;
     }
     
-    console.log('Supabase connection test successful:', session ? 'Session exists' : 'No session');
+    if (session) {
+      console.log('Supabase connection test successful: Active session found');
+    } else {
+      console.log('Supabase connection test successful: No active session');
+    }
     return true;
   } catch (error) {
     console.error('Supabase connection test failed:', {
