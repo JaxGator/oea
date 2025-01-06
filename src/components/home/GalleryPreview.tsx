@@ -8,6 +8,8 @@ import { GalleryCarousel } from './gallery/GalleryCarousel';
 import { GalleryGrid } from './gallery/GalleryGrid';
 import { GalleryHeader } from './gallery/GalleryHeader';
 import { toast } from 'sonner';
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Loader2 } from "lucide-react";
 
 export const GalleryPreview = () => {
   const [showFullGallery, setShowFullGallery] = useState(false);
@@ -75,15 +77,6 @@ export const GalleryPreview = () => {
     }
   };
 
-  if (error) {
-    console.error('Gallery error:', error);
-    return (
-      <div className="text-center py-8 text-red-600">
-        Failed to load gallery. Please try again later.
-      </div>
-    );
-  }
-
   return (
     <div className="mt-16 space-y-4">
       <GalleryHeader 
@@ -91,17 +84,25 @@ export const GalleryPreview = () => {
         totalImages={images.length}
       />
       
-      {config ? (
+      {error ? (
+        <Alert variant="destructive">
+          <AlertDescription>
+            Failed to load gallery images. Please try again later.
+          </AlertDescription>
+        </Alert>
+      ) : config ? (
         <GalleryCarousel 
           images={images}
           onImageSelect={setSelectedImage}
           onKeyPress={handleKeyPress}
+          isLoading={isLoading}
         />
       ) : (
         <GalleryGrid 
           images={images}
           onImageSelect={setSelectedImage}
           onKeyPress={handleKeyPress}
+          isLoading={isLoading}
         />
       )}
 
