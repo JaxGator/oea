@@ -7,6 +7,38 @@ const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 if (!SUPABASE_URL) throw new Error('Missing SUPABASE_URL');
 if (!SUPABASE_ANON_KEY) throw new Error('Missing SUPABASE_ANON_KEY');
 
+const retryFetch = async (url: string, options: RequestInit = {}, retries = 3): Promise<Response> => {
+  try {
+    const response = await fetch(url, {
+      ...options,
+      credentials: 'include',
+      headers: {
+        ...options.headers,
+        'Cache-Control': 'no-cache',
+      },
+    });
+
+    if (!response.ok) {
+      console.error('Supabase fetch error:', {
+        status: response.status,
+        statusText: response.statusText,
+        url: response.url,
+      });
+      const error = await response.text();
+      throw new Error(`HTTP error! status: ${response.status}, message: ${error}`);
+    }
+
+    return response;
+  } catch (error) {
+    if (retries > 0) {
+      console.log(`Retrying fetch, ${retries} attempts remaining...`);
+      await new Promise(resolve => setTimeout(resolve, 1000 * (4 - retries)));
+      return retryFetch(url, options, retries - 1);
+    }
+    throw error;
+  }
+};
+
 export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, {
   auth: {
     persistSession: true,
@@ -30,28 +62,7 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, 
       eventsPerSecond: 2
     }
   },
-  // Add retries for network issues
-  fetch: (url, options) => {
-    return fetch(url, {
-      ...options,
-      credentials: 'include',
-      headers: {
-        ...options?.headers,
-        'Cache-Control': 'no-cache',
-      },
-    }).then(async (response) => {
-      if (!response.ok) {
-        console.error('Supabase fetch error:', {
-          status: response.status,
-          statusText: response.statusText,
-          url: response.url,
-        });
-        const error = await response.text();
-        throw new Error(`HTTP error! status: ${response.status}, message: ${error}`);
-      }
-      return response;
-    });
-  }
+  fetch: retryFetch
 });
 
 // Test connection and log detailed errors
