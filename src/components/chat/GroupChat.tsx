@@ -35,7 +35,7 @@ export function GroupChat() {
       />
       <ChatInput 
         userId={user?.id} 
-        chatId={messages[0]?.chat_id || ''} // Get chatId from the first message, or empty string if no messages
+        chatId="default" // Using a default chat ID since we're not using multiple chats
       />
     </div>
   );
