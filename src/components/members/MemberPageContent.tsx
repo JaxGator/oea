@@ -4,6 +4,7 @@ import { MemberTable } from "./MemberTable";
 import { Users } from "lucide-react";
 import { useState } from "react";
 import { ViewMemberDialog } from "./ViewMemberDialog";
+import { EditMemberDialog } from "./EditMemberDialog";
 import { Member } from "./types";
 
 interface MemberPageContentProps {
@@ -14,6 +15,7 @@ interface MemberPageContentProps {
 
 export function MemberPageContent({ members, currentUserIsAdmin, isMobile }: MemberPageContentProps) {
   const [viewingMember, setViewingMember] = useState<Member | null>(null);
+  const [editingMember, setEditingMember] = useState<Member | null>(null);
 
   return (
     <div className="min-h-screen bg-[#222222] py-12 px-4">
@@ -42,6 +44,7 @@ export function MemberPageContent({ members, currentUserIsAdmin, isMobile }: Mem
                     members={members}
                     currentUserIsAdmin={currentUserIsAdmin}
                     onViewMember={setViewingMember}
+                    onEditMember={setEditingMember}
                   />
                 </ScrollArea>
               )}
@@ -54,6 +57,13 @@ export function MemberPageContent({ members, currentUserIsAdmin, isMobile }: Mem
         member={viewingMember}
         open={!!viewingMember}
         onOpenChange={(open) => !open && setViewingMember(null)}
+      />
+
+      <EditMemberDialog
+        member={editingMember}
+        open={!!editingMember}
+        onOpenChange={(open) => !open && setEditingMember(null)}
+        onUpdate={() => {}}
       />
     </div>
   );

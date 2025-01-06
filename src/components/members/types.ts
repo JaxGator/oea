@@ -12,4 +12,5 @@ export interface MemberTableProps {
   members: Member[];
   currentUserIsAdmin: boolean;
   onViewMember: (member: Member) => void;
+  onEditMember: (member: Member) => void;
 }
