@@ -17,9 +17,15 @@ export function useMessages(selectedUserId: string | null) {
         .or(`sender_id.eq.${selectedUserId},receiver_id.eq.${selectedUserId}`)
         .order('created_at', { ascending: true });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching messages:', error);
+        throw error;
+      }
+      
       return data as Message[];
     },
-    enabled: !!selectedUserId && !!user
+    enabled: !!selectedUserId && !!user,
+    retry: 3,
+    retryDelay: 1000
   });
 }

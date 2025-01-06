@@ -1,3 +1,3 @@
 export * from './tables';
 export * from './database';
-export * from './messages';
+export type { Message } from './messages';
