@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Session, User, AuthError } from "@supabase/supabase-js";
+import { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -28,7 +28,6 @@ export function useSession() {
     async function getActiveSession() {
       try {
         console.log('Attempting to get session...', { retryCount });
-        
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         
         if (sessionError) {
@@ -37,7 +36,6 @@ export function useSession() {
             timestamp: new Date().toISOString(),
             retryCount
           });
-          
           throw sessionError;
         }
 

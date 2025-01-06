@@ -66,15 +66,13 @@ export function AppLayout() {
       </div>
 
       {/* Main Navigation */}
-      <header>
-        <nav id="main-navigation" aria-label="Main navigation">
-          <DesktopNavigation />
-          <MobileNavigation />
-        </nav>
-      </header>
+      <nav id="main-navigation" aria-label="Main navigation">
+        <DesktopNavigation />
+        <MobileNavigation />
+      </nav>
 
       {/* Main Content */}
-      <main id="main-content" className="flex-1 container mx-auto px-4" tabIndex={-1}>
+      <main id="main-content" className="flex-1" tabIndex={-1}>
         <Outlet />
       </main>
 

@@ -10,39 +10,28 @@ interface Member {
   is_admin: boolean;
   is_approved: boolean;
   is_member: boolean;
-  email?: string;
 }
 
-export function useMemberForm(member: Member | null, onUpdate: () => void, onClose: () => void) {
-  // Initialize state with member's current values or defaults
-  const [username, setUsername] = useState(member?.username || "");
-  const [fullName, setFullName] = useState(member?.full_name || "");
-  const [email, setEmail] = useState(member?.email || "");
+export function useMemberForm(member: Member, onUpdate: () => void, onClose: () => void) {
+  const [username, setUsername] = useState(member.username);
+  const [fullName, setFullName] = useState(member.full_name || "");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [isAdmin, setIsAdmin] = useState(member?.is_admin || false);
-  const [isApproved, setIsApproved] = useState(member?.is_approved || false);
-  const [isMember, setIsMember] = useState(member?.is_member || false);
-  const [avatarUrl, setAvatarUrl] = useState(member?.avatar_url || "");
+  const [isAdmin, setIsAdmin] = useState(member.is_admin);
+  const [isApproved, setIsApproved] = useState(member.is_approved);
+  const [isMember, setIsMember] = useState(member.is_member);
+  const [avatarUrl, setAvatarUrl] = useState(member.avatar_url || "");
   const { toast } = useToast();
 
   const handleSubmit = async () => {
-    if (!member?.id) {
-      toast({
-        title: "Error",
-        description: "No member selected for editing",
-        variant: "destructive",
-      });
-      return;
-    }
-
     try {
-      const { data, error } = await supabase.functions.invoke('admin-user-management', {
+      const { error } = await supabase.functions.invoke('admin-user-management', {
         body: {
           userId: member.id,
           username,
           fullName,
-          email: email || undefined, // Only send if not empty
-          password: password || undefined, // Only send if not empty
+          email,
+          password,
           isAdmin,
           isApproved,
           isMember,
@@ -50,12 +39,7 @@ export function useMemberForm(member: Member | null, onUpdate: () => void, onClo
         },
       });
 
-      if (error) {
-        console.error('Error updating member:', error);
-        throw error;
-      }
-
-      console.log('Update response:', data);
+      if (error) throw error;
 
       toast({
         title: "Success",
@@ -64,11 +48,11 @@ export function useMemberForm(member: Member | null, onUpdate: () => void, onClo
       
       onUpdate();
       onClose();
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error updating member:', error);
       toast({
         title: "Error",
-        description: error.message || "Failed to update member",
+        description: "Failed to update member",
         variant: "destructive",
       });
     }

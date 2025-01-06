@@ -6,7 +6,6 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { SessionContextProvider } from "@supabase/auth-helpers-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useState, useEffect } from "react";
-import { useToast } from "@/hooks/use-toast";
 
 interface AppProvidersProps {
   children: ReactNode;
@@ -24,24 +23,18 @@ const queryClient = new QueryClient({
 
 export function AppProviders({ children }: AppProvidersProps) {
   const [isLoading, setIsLoading] = useState(true);
-  const { toast } = useToast();
 
   useEffect(() => {
     let mounted = true;
 
+    // Initial session check
     const checkSession = async () => {
       try {
         const { data: { session }, error } = await supabase.auth.getSession();
         if (error) {
           console.error('Session check error:', error);
+          // Clear any stale data if there's a session error
           queryClient.clear();
-          // Clear any stored session data
-          await supabase.auth.signOut();
-          toast({
-            title: "Session Error",
-            description: "Please sign in again",
-            variant: "destructive",
-          });
         }
       } catch (err) {
         console.error('Session check failed:', err);
@@ -52,25 +45,13 @@ export function AppProviders({ children }: AppProvidersProps) {
       }
     };
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log('Auth state changed:', event, session?.user?.email);
+    // Set up auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event) => {
+      console.log('Auth state changed:', event);
       
       if (event === 'SIGNED_OUT') {
+        // Clear any auth-related state
         queryClient.clear();
-        localStorage.removeItem('supabase.auth.token');
-      }
-      
-      if (event === 'SIGNED_IN') {
-        // Refresh the session to ensure we have valid tokens
-        const { error } = await supabase.auth.getSession();
-        if (error) {
-          console.error('Error refreshing session:', error);
-          toast({
-            title: "Authentication Error",
-            description: "Please try signing in again",
-            variant: "destructive",
-          });
-        }
       }
     });
 
@@ -80,7 +61,7 @@ export function AppProviders({ children }: AppProvidersProps) {
       mounted = false;
       subscription.unsubscribe();
     };
-  }, [toast]);
+  }, []);
 
   if (isLoading) {
     return <div>Loading...</div>;

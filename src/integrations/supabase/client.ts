@@ -13,14 +13,23 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, 
     autoRefreshToken: true,
     detectSessionInUrl: true,
     flowType: 'pkce',
-    storage: window.localStorage,
+    storage: typeof window !== 'undefined' ? window.localStorage : undefined,
     storageKey: 'supabase.auth.token',
+    debug: true
   },
   global: {
     headers: {
       'X-Client-Info': 'supabase-js-web',
     },
   },
+  db: {
+    schema: 'public'
+  },
+  realtime: {
+    params: {
+      eventsPerSecond: 2
+    }
+  }
 });
 
 // Test connection and log detailed errors
@@ -39,11 +48,7 @@ export const testSupabaseConnection = async () => {
       return false;
     }
     
-    if (session) {
-      console.log('Supabase connection test successful: Active session found');
-    } else {
-      console.log('Supabase connection test successful: No active session');
-    }
+    console.log('Supabase connection test successful:', session ? 'Session exists' : 'No session');
     return true;
   } catch (error) {
     console.error('Supabase connection test failed:', {

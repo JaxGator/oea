@@ -1,4 +1,4 @@
-import { Anchor, Tent } from "lucide-react";
+import { Bike, Mountain, Ship, ShipWheel, Footprints, Users, Fish, CircleDot, Waves, Trophy, Flag, TentTree } from "lucide-react";
 
 interface ActivityType {
   name: string;
@@ -6,28 +6,34 @@ interface ActivityType {
 }
 
 const activities: ActivityType[] = [
-  { name: "Boating", icon: <Anchor size={32} /> },
-  { name: "Camping", icon: <Tent size={32} /> }
+  { name: "Kayaking", icon: <Ship className="h-8 w-8" /> },
+  { name: "Cycling", icon: <Bike className="h-8 w-8" /> },
+  { name: "Hiking", icon: <Mountain className="h-8 w-8" /> },
+  { name: "Boating", icon: <ShipWheel className="h-8 w-8" /> },
+  { name: "Running", icon: <Footprints className="h-8 w-8" /> },
+  { name: "Social Events", icon: <Users className="h-8 w-8" /> },
+  { name: "Fishing", icon: <Fish className="h-8 w-8" /> },
+  { name: "Pickleball", icon: <CircleDot className="h-8 w-8" /> },
+  { name: "Swimming", icon: <Waves className="h-8 w-8" /> },
+  { name: "Sporting Events", icon: <Trophy className="h-8 w-8" /> },
+  { name: "Golf", icon: <Flag className="h-8 w-8" /> },
+  { name: "Camping", icon: <TentTree className="h-8 w-8" /> },
 ];
 
 export function ActivityTypes() {
   return (
     <div className="bg-white p-8 rounded-lg shadow-sm">
-      <h2 className="text-2xl font-semibold mb-8 text-gray-900">
+      <div className="text-2xl font-semibold mb-8">
         Our Activities
-      </h2>
-      <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-2 gap-8">
+      </div>
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
         {activities.map((activity) => (
           <div
             key={activity.name}
-            className="flex flex-col items-center text-center p-4 rounded-lg hover:bg-gray-50 transition-colors"
+            className="flex flex-col items-center text-center p-6 rounded-lg hover:bg-gray-50 transition-colors"
           >
-            <div className="mb-3 text-primary">
-              {activity.icon}
-            </div>
-            <span className="text-base font-medium text-gray-700">
-              {activity.name}
-            </span>
+            <div className="mb-3 text-primary-500">{activity.icon}</div>
+            <span className="text-base font-medium text-gray-700">{activity.name}</span>
           </div>
         ))}
       </div>
