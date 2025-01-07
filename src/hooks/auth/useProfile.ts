@@ -33,6 +33,19 @@ export function useProfile(userId: string | undefined) {
       setState(prev => ({ ...prev, isLoading: true, error: null }));
 
       try {
+        // First ensure we have a valid session
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        
+        if (sessionError) {
+          console.error('Session error:', sessionError);
+          throw new Error('Authentication error. Please sign in again.');
+        }
+
+        if (!session) {
+          console.error('No active session');
+          throw new Error('No active session. Please sign in.');
+        }
+
         const { data: profile, error } = await supabase
           .from("profiles")
           .select("*")
