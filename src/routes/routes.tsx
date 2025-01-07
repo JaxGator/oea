@@ -15,21 +15,14 @@ import Maintenance from "@/pages/Maintenance";
 import { PrivacyPolicy } from "@/components/legal/PrivacyPolicy";
 import { TermsAndConditions } from "@/components/legal/TermsAndConditions";
 import { ErrorBoundary } from "@/components/error/ErrorBoundary";
-import { BrowserRouter } from "react-router-dom";
 
 export const router = createBrowserRouter([
   {
     path: "/",
-    element: (
-      <BrowserRouter>
-        <AppLayout />
-      </BrowserRouter>
-    ),
+    element: <AppLayout />,
     errorElement: (
       <ErrorBoundary fallback={<div>Something went wrong</div>}>
-        <BrowserRouter>
-          <AppLayout />
-        </BrowserRouter>
+        <AppLayout />
       </ErrorBoundary>
     ),
     children: [
