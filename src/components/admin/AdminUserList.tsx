@@ -15,15 +15,18 @@ export function AdminUserList() {
   const [editingMember, setEditingMember] = useState<Member | null>(null);
   const { members, isLoading, error, refetch } = useMemberManagement();
 
+  // Show loading state while data is being fetched
   if (isLoading) {
     return <LoadingState />;
   }
 
+  // Show error state if there's an error
   if (error) {
     console.error('Error loading members:', error);
     return <ErrorState />;
   }
 
+  // Show error state if no members are found
   if (!members || members.length === 0) {
     return <ErrorState message="No members found. Please try refreshing the page." />;
   }
@@ -46,18 +49,22 @@ export function AdminUserList() {
         />
       </AdminUserTableWrapper>
 
-      <ViewMemberDialog
-        member={viewingMember}
-        open={!!viewingMember}
-        onOpenChange={(open) => !open && setViewingMember(null)}
-      />
+      {viewingMember && (
+        <ViewMemberDialog
+          member={viewingMember}
+          open={!!viewingMember}
+          onOpenChange={(open) => !open && setViewingMember(null)}
+        />
+      )}
 
-      <EditMemberDialog
-        member={editingMember}
-        open={!!editingMember}
-        onOpenChange={(open) => !open && setEditingMember(null)}
-        onUpdate={refetch}
-      />
+      {editingMember && (
+        <EditMemberDialog
+          member={editingMember}
+          open={!!editingMember}
+          onOpenChange={(open) => !open && setEditingMember(null)}
+          onUpdate={refetch}
+        />
+      )}
     </div>
   );
 }
