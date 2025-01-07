@@ -20,9 +20,46 @@ export function AdminUserList() {
 
   console.log('AdminUserList render:', { members, isLoading, error, editingMember, viewingMember });
 
-  const handleEditMember = (member: Member) => {
-    console.log('Handling edit member:', member);
-    setEditingMember(member);
+  const handleEditMember = async (member: Member) => {
+    try {
+      console.log('Handling edit member:', member);
+      
+      // Verify the member exists before setting edit state
+      const { data: profile, error: fetchError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', member.id)
+        .maybeSingle();
+      
+      if (fetchError) {
+        console.error('Error fetching member profile:', fetchError);
+        toast({
+          title: "Error",
+          description: "Failed to load user profile. Please try again.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (!profile) {
+        console.error('Profile not found:', member.id);
+        toast({
+          title: "Error",
+          description: "User profile not found.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      setEditingMember(member);
+    } catch (error) {
+      console.error('Error in handleEditMember:', error);
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleCloseEdit = () => {
