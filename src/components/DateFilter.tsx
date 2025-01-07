@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { CalendarDays, CalendarRange } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { getUpcomingWeekendDate } from "@/utils/dateUtils";
 
 interface DateFilterProps {
   selectedDate?: Date;
@@ -9,27 +10,9 @@ interface DateFilterProps {
 }
 
 export function DateFilter({ selectedDate, onDateSelect }: DateFilterProps) {
-  const getWeekendDateRange = () => {
-    const today = new Date();
-    const currentDay = today.getDay(); // 0 is Sunday, 6 is Saturday, 5 is Friday
-    const friday = new Date(today);
-    
-    if (currentDay === 0) { // If Sunday, get the current weekend's Friday
-      friday.setDate(today.getDate() - 2);
-    } else if (currentDay >= 5) { // If already Friday or Saturday, use current Friday
-      friday.setDate(today.getDate() - (currentDay - 5));
-    } else { // If Monday-Thursday, get next Friday
-      friday.setDate(today.getDate() + (5 - currentDay));
-    }
-    
-    // Reset time to start of day
-    friday.setHours(0, 0, 0, 0);
-    return friday;
-  };
-
   const dates = [
     { label: "Today", value: new Date() },
-    { label: "This Weekend", value: getWeekendDateRange() },
+    { label: "This Weekend", value: getUpcomingWeekendDate() },
   ];
 
   return (

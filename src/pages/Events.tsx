@@ -10,6 +10,7 @@ import { useAuthState } from "@/hooks/useAuthState";
 import { Loader2, CalendarDays, CalendarRange, CalendarFold } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ErrorBoundary } from "@/components/error/ErrorBoundary";
+import { isSameDay, isDateInWeekendRange } from "@/utils/dateUtils";
 
 export default function Events() {
   const { isAuthenticated } = useAuthState();
@@ -19,19 +20,20 @@ export default function Events() {
   const { data: events = [], isLoading: isEventsLoading, error } = useEvents(selectedDate);
   const { handleRSVP, cancelRSVP } = useRSVP();
 
-  const filterEventsByWeekend = (events: any[], date: Date) => {
+  const filterEvents = (events: any[], date: Date | undefined) => {
     if (!date) return events;
-
-    const startDate = new Date(date);
-    startDate.setHours(0, 0, 0, 0);
-    
-    const endDate = new Date(date);
-    endDate.setDate(date.getDate() + 2); // Add 2 days to include Sunday
-    endDate.setHours(23, 59, 59, 999);
 
     return events.filter(event => {
       const eventDate = new Date(event.date);
-      return eventDate >= startDate && eventDate <= endDate;
+      // For "Today" filter
+      if (isSameDay(eventDate, date)) return true;
+      
+      // For "This Weekend" filter (Friday through Sunday)
+      if (date.getDay() === 5) { // If the selected date is a Friday
+        return isDateInWeekendRange(eventDate, date);
+      }
+      
+      return false;
     });
   };
 
@@ -45,8 +47,16 @@ export default function Events() {
     );
   }
 
+  if (isEventsLoading) {
+    return (
+      <div className="min-h-screen bg-[#F1F0FB] flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
+
   const now = new Date();
-  const filteredEvents = selectedDate ? filterEventsByWeekend(events, selectedDate) : events;
+  const filteredEvents = selectedDate ? filterEvents(events, selectedDate) : events;
   
   const upcomingEvents = filteredEvents
     .filter(event => new Date(event.date) >= now)
@@ -55,14 +65,6 @@ export default function Events() {
   const pastEvents = filteredEvents
     .filter(event => new Date(event.date) < now)
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-
-  if (isEventsLoading) {
-    return (
-      <div className="min-h-screen bg-[#F1F0FB] flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin" />
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-white">
