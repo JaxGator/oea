@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2 } from "lucide-react";
+import { useEffect } from "react";
 
 export function SocialFeed() {
   const { data: feeds, isLoading, error } = useQuery({
@@ -17,6 +18,43 @@ export function SocialFeed() {
       return data;
     },
   });
+
+  useEffect(() => {
+    // Function to load scripts from feed URLs
+    const loadFeedScripts = () => {
+      if (!feeds) return;
+
+      feeds.forEach((feed) => {
+        // Extract script content from feed_url if it exists
+        const scriptMatch = feed.feed_url.match(/<script[^>]*>([\s\S]*?)<\/script>/);
+        if (scriptMatch && scriptMatch[1]) {
+          // Create and execute the script
+          const scriptContent = scriptMatch[1];
+          const script = document.createElement('script');
+          script.type = 'text/javascript';
+          script.async = true;
+          
+          // Extract src if it exists in the original script tag
+          const srcMatch = feed.feed_url.match(/src="([^"]+)"/);
+          if (srcMatch && srcMatch[1]) {
+            script.src = srcMatch[1];
+          } else {
+            script.textContent = scriptContent;
+          }
+          
+          document.body.appendChild(script);
+        }
+      });
+    };
+
+    loadFeedScripts();
+
+    // Cleanup function to remove scripts when component unmounts
+    return () => {
+      const scripts = document.querySelectorAll('script[data-feed-script]');
+      scripts.forEach(script => script.remove());
+    };
+  }, [feeds]);
 
   if (error) {
     return (
@@ -48,7 +86,9 @@ export function SocialFeed() {
           <div key={feed.id} className="w-full">
             <h3 className="text-lg font-medium mb-4">{feed.platform}</h3>
             <div 
-              dangerouslySetInnerHTML={{ __html: feed.feed_url }}
+              dangerouslySetInnerHTML={{ 
+                __html: feed.feed_url.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+              }}
               className="w-full min-h-[300px]"
             />
           </div>
