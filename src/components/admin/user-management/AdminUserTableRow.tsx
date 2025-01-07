@@ -1,5 +1,4 @@
 import { Badge } from "@/components/ui/badge";
-import { AdminUserActions } from "../AdminUserActions";
 import {
   Tooltip,
   TooltipContent,
@@ -8,6 +7,9 @@ import {
 } from "@/components/ui/tooltip";
 import { Shield, UserCheck, Users } from "lucide-react";
 import { TableRow, TableCell } from "@/components/ui/table";
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
+import { MoreVertical, Edit, Trash2 } from "lucide-react";
 
 interface Profile {
   id: string;
@@ -60,13 +62,35 @@ export function AdminUserTableRow({
         </div>
       </TableCell>
       <TableCell>
-        <div className="flex flex-col sm:flex-row gap-2">
-          <AdminUserActions
-            profile={profile}
-            onUpdateStatus={onUpdateStatus}
-            isUpdating={isUpdating}
-            onEdit={handleEdit}
-          />
+        <div className="flex justify-end">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                className="h-8 w-8 p-0"
+                aria-label="Open menu"
+              >
+                <MoreVertical className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-[160px] bg-white">
+              <DropdownMenuItem 
+                onClick={handleEdit}
+                className="cursor-pointer hover:bg-gray-100"
+              >
+                <Edit className="mr-2 h-4 w-4" />
+                Edit
+              </DropdownMenuItem>
+              <DropdownMenuItem 
+                onClick={() => onUpdateStatus(profile.username)}
+                className="cursor-pointer hover:bg-gray-100"
+                disabled={isUpdating}
+              >
+                <UserCheck className="mr-2 h-4 w-4" />
+                Update Status
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </TableCell>
     </TableRow>
