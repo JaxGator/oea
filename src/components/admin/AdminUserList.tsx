@@ -5,154 +5,22 @@ import { AdminUserTableWrapper } from "./user-management/AdminUserTableWrapper";
 import { CreateUserDialog } from "./user-management/CreateUserDialog";
 import { BulkUserCreation } from "./user-management/BulkUserCreation";
 import { ViewMemberDialog } from "@/components/members/ViewMemberDialog";
-import { EditMemberDialog } from "@/components/members/EditMemberDialog";
+import { EditMemberHandler } from "./user-management/EditMemberHandler";
 import { LoadingState } from "./user-management/LoadingState";
 import { ErrorState } from "./user-management/ErrorState";
 import { useMemberManagement } from "@/hooks/admin/useMemberManagement";
+import { useSessionCheck } from "@/hooks/auth/useSessionCheck";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 
 export function AdminUserList() {
   const [viewingMember, setViewingMember] = useState<Member | null>(null);
   const [editingMember, setEditingMember] = useState<Member | null>(null);
   const { members, isLoading, error, refetch } = useMemberManagement();
   const { toast } = useToast();
-  const navigate = useNavigate();
 
-  // Check session on component mount
-  useEffect(() => {
-    checkSession();
-  }, []);
-
-  const checkSession = async () => {
-    try {
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-      
-      if (sessionError) {
-        console.error('Session error:', sessionError);
-        throw sessionError;
-      }
-
-      if (!session) {
-        console.log('No active session found, redirecting to auth');
-        navigate('/auth');
-        return;
-      }
-
-      // Verify the session is still valid
-      const { error: userError } = await supabase.auth.getUser();
-      if (userError) {
-        console.error('User verification failed:', userError);
-        await supabase.auth.signOut();
-        navigate('/auth');
-        return;
-      }
-    } catch (error) {
-      console.error('Session check failed:', error);
-      toast({
-        title: "Authentication Error",
-        description: "Please sign in again",
-        variant: "destructive",
-      });
-      navigate('/auth');
-    }
-  };
-
-  const handleEditMember = async (member: Member) => {
-    try {
-      console.log('Starting edit for member:', member);
-      
-      // Verify session before proceeding
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-      if (sessionError) {
-        throw sessionError;
-      }
-      
-      if (!session?.access_token) {
-        console.error('No active session found');
-        toast({
-          title: "Error",
-          description: "You must be logged in to edit users.",
-          variant: "destructive",
-        });
-        navigate('/auth');
-        return;
-      }
-
-      // Set initial state for immediate feedback
-      console.log('Setting initial editing state');
-      setEditingMember(member);
-
-      // Fetch latest profile data
-      console.log('Fetching latest profile data for ID:', member.id);
-      const { data: profile, error: fetchError } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', member.id)
-        .maybeSingle();
-      
-      if (fetchError) {
-        console.error('Profile fetch error:', {
-          error: fetchError,
-          member,
-          timestamp: new Date().toISOString()
-        });
-        toast({
-          title: "Error",
-          description: "Failed to load user profile. Please try again.",
-          variant: "destructive",
-        });
-        setEditingMember(null);
-        return;
-      }
-
-      if (!profile) {
-        console.error('Profile not found:', {
-          memberId: member.id,
-          timestamp: new Date().toISOString()
-        });
-        toast({
-          title: "Error",
-          description: "User profile not found.",
-          variant: "destructive",
-        });
-        setEditingMember(null);
-        return;
-      }
-
-      // Update state with merged data
-      const updatedMember = {
-        ...member,
-        ...profile,
-      };
-      console.log('Updating editing member with merged data:', updatedMember);
-      setEditingMember(updatedMember);
-    } catch (error) {
-      console.error('Error in handleEditMember:', {
-        error,
-        member,
-        timestamp: new Date().toISOString()
-      });
-      toast({
-        title: "Error",
-        description: "An unexpected error occurred. Please try again.",
-        variant: "destructive",
-      });
-      setEditingMember(null);
-      
-      // If it's an auth error, redirect to login
-      if (error.message?.includes('JWT')) {
-        navigate('/auth');
-      }
-    }
-  };
-
-  const handleCloseEdit = () => {
-    console.log('Closing edit dialog');
-    setEditingMember(null);
-  };
+  // Use the session check hook
+  useSessionCheck();
 
   const handleDeleteMember = async (userId: string) => {
     try {
@@ -199,7 +67,7 @@ export function AdminUserList() {
           members={members} 
           currentUserIsAdmin={true} 
           onViewMember={setViewingMember}
-          onEditMember={handleEditMember}
+          onEditMember={setEditingMember}
           onDeleteMember={handleDeleteMember}
         />
       </AdminUserTableWrapper>
@@ -226,14 +94,11 @@ export function AdminUserList() {
         />
       )}
 
-      {editingMember && (
-        <EditMemberDialog
-          member={editingMember}
-          open={!!editingMember}
-          onOpenChange={(open) => !open && handleCloseEdit()}
-          onUpdate={refetch}
-        />
-      )}
+      <EditMemberHandler
+        member={editingMember}
+        onClose={() => setEditingMember(null)}
+        onUpdate={refetch}
+      />
     </div>
   );
 }
