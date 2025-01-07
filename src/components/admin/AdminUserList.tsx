@@ -17,19 +17,32 @@ export function AdminUserList() {
 
   console.log('AdminUserList render:', { members, isLoading, error });
 
-  if (isLoading) {
-    return <LoadingState />;
-  }
+  const renderContent = () => {
+    if (isLoading) {
+      return <LoadingState />;
+    }
 
-  if (error) {
-    console.error('Error loading members:', error);
-    return <ErrorState message="Error loading members. Please try refreshing the page." />;
-  }
+    if (error) {
+      console.error('Error loading members:', error);
+      return <ErrorState message="Error loading members. Please try refreshing the page." />;
+    }
 
-  if (!Array.isArray(members)) {
-    console.error('Members is not an array:', members);
-    return <ErrorState message="Invalid data format. Please try refreshing the page." />;
-  }
+    if (!Array.isArray(members)) {
+      console.error('Members is not an array:', members);
+      return <ErrorState message="Invalid data format. Please try refreshing the page." />;
+    }
+
+    return (
+      <AdminUserTableWrapper>
+        <MemberTable 
+          members={members} 
+          currentUserIsAdmin={true} 
+          onViewMember={setViewingMember}
+          onEditMember={setEditingMember}
+        />
+      </AdminUserTableWrapper>
+    );
+  };
 
   return (
     <div className="space-y-4">
@@ -40,14 +53,8 @@ export function AdminUserList() {
           <BulkUserCreation />
         </div>
       </div>
-      <AdminUserTableWrapper>
-        <MemberTable 
-          members={members} 
-          currentUserIsAdmin={true} 
-          onViewMember={setViewingMember}
-          onEditMember={setEditingMember}
-        />
-      </AdminUserTableWrapper>
+
+      {renderContent()}
 
       {viewingMember && (
         <ViewMemberDialog
