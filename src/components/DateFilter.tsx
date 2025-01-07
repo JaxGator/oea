@@ -11,23 +11,20 @@ interface DateFilterProps {
 export function DateFilter({ selectedDate, onDateSelect }: DateFilterProps) {
   const getWeekendDateRange = () => {
     const today = new Date();
-    const currentDay = today.getDay(); // 0 is Sunday, 6 is Saturday
+    const currentDay = today.getDay(); // 0 is Sunday, 6 is Saturday, 5 is Friday
+    const friday = new Date(today);
     
-    // Create start date (Friday)
-    const startDate = new Date(today);
-    
-    if (currentDay === 5 || currentDay === 6 || currentDay === 0) {
-      // If today is already weekend (Fri, Sat, or Sun), adjust to current weekend's Friday
-      startDate.setDate(today.getDate() - ((currentDay + 2) % 3));
-    } else {
-      // Calculate days until next Friday
-      const daysUntilFriday = (5 - currentDay + 7) % 7;
-      startDate.setDate(today.getDate() + daysUntilFriday);
+    if (currentDay === 0) { // If Sunday, get the current weekend's Friday
+      friday.setDate(today.getDate() - 2);
+    } else if (currentDay >= 5) { // If already Friday or Saturday, use current Friday
+      friday.setDate(today.getDate() - (currentDay - 5));
+    } else { // If Monday-Thursday, get next Friday
+      friday.setDate(today.getDate() + (5 - currentDay));
     }
     
     // Reset time to start of day
-    startDate.setHours(0, 0, 0, 0);
-    return startDate;
+    friday.setHours(0, 0, 0, 0);
+    return friday;
   };
 
   const dates = [

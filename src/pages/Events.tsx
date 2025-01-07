@@ -35,8 +35,6 @@ export default function Events() {
     });
   };
 
-  const filteredEvents = selectedDate ? filterEventsByWeekend(events, selectedDate) : events;
-
   if (error) {
     console.error("Events loading error:", error);
     toast.error("Failed to load events. Please try again.");
@@ -48,6 +46,8 @@ export default function Events() {
   }
 
   const now = new Date();
+  const filteredEvents = selectedDate ? filterEventsByWeekend(events, selectedDate) : events;
+  
   const upcomingEvents = filteredEvents
     .filter(event => new Date(event.date) >= now)
     .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
