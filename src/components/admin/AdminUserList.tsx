@@ -24,8 +24,8 @@ export function AdminUserList() {
     return <ErrorState />;
   }
 
-  if (!members) {
-    return <ErrorState message="No members found" />;
+  if (!members || members.length === 0) {
+    return <ErrorState message="No members found. Please try refreshing the page." />;
   }
 
   return (
