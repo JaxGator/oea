@@ -1,9 +1,30 @@
 import { useSession } from "./auth/useSession";
 import { useProfile } from "./auth/useProfile";
+import { useToast } from "@/hooks/use-toast";
 
 export function useAuthState() {
+  const { toast } = useToast();
   const { user, isLoading: isSessionLoading, error: sessionError } = useSession();
   const { profile, isLoading: isProfileLoading, error: profileError } = useProfile(user?.id);
+
+  // Handle and log any errors
+  if (sessionError) {
+    console.error('Session error:', sessionError);
+    toast({
+      title: "Authentication Error",
+      description: "Please try signing in again",
+      variant: "destructive",
+    });
+  }
+
+  if (profileError) {
+    console.error('Profile error:', profileError);
+    toast({
+      title: "Profile Error",
+      description: "Unable to load user profile",
+      variant: "destructive",
+    });
+  }
 
   return {
     user,

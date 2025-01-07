@@ -15,6 +15,7 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, 
     flowType: 'pkce',
     storage: typeof window !== 'undefined' ? window.localStorage : undefined,
     storageKey: 'supabase.auth.token',
+    debug: true // Enable debug logs to help trace the issue
   },
   global: {
     headers: {
@@ -24,6 +25,24 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, 
   db: {
     schema: 'public'
   },
+});
+
+// Add error handling and logging for auth state changes
+supabase.auth.onAuthStateChange((event, session) => {
+  console.log('Auth state changed:', { event, session });
+  
+  if (event === 'SIGNED_OUT') {
+    console.log('User signed out, clearing local storage');
+    localStorage.removeItem('supabase.auth.token');
+  }
+  
+  if (event === 'TOKEN_REFRESHED') {
+    console.log('Token refreshed successfully');
+  }
+  
+  if (event === 'USER_UPDATED') {
+    console.log('User data updated');
+  }
 });
 
 // Test connection and log detailed errors
