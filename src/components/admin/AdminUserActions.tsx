@@ -31,7 +31,9 @@ export function AdminUserActions({
 }: AdminUserActionsProps) {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
-  const handleEdit = () => {
+  const handleEdit = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
     console.log('AdminUserActions: Edit clicked for profile:', profile);
     onEdit();
   };

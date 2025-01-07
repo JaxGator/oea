@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Member } from "@/components/members/types";
 import { MemberTable } from "@/components/members/MemberTable";
 import { AdminUserTableWrapper } from "./user-management/AdminUserTableWrapper";
@@ -20,6 +20,10 @@ export function AdminUserList() {
   const { toast } = useToast();
 
   useSessionCheck();
+
+  useEffect(() => {
+    console.log('AdminUserList: editingMember state updated:', editingMember);
+  }, [editingMember]);
 
   const handleDeleteMember = async (userId: string) => {
     try {

@@ -55,7 +55,14 @@ export function EditMemberHandler({ member, onClose, onUpdate }: EditMemberHandl
       }
 
       if (!profile) {
-        throw new Error('Profile not found');
+        console.error('Profile not found for ID:', memberData.id);
+        toast({
+          title: "Error",
+          description: "User profile not found",
+          variant: "destructive",
+        });
+        onClose();
+        return;
       }
 
       console.log('EditMemberHandler: Profile data fetched:', profile);
