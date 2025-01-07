@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Loader2 } from "lucide-react";
+import { Loader2, Rss } from "lucide-react";
 import { useEffect } from "react";
 
 export function SocialFeed() {
@@ -21,26 +21,21 @@ export function SocialFeed() {
   });
 
   useEffect(() => {
-    // Function to load scripts from feed URL
     const loadFeedScript = () => {
       if (!feeds?.[0]?.feed_url) return;
 
-      // Extract script content from feed_url if it exists
       const scriptMatch = feeds[0].feed_url.match(/<script[^>]*>([\s\S]*?)<\/script>/);
       if (scriptMatch && scriptMatch[1]) {
-        // Create and execute the script
-        const scriptContent = scriptMatch[1];
         const script = document.createElement('script');
         script.type = 'text/javascript';
         script.async = true;
         script.setAttribute('data-feed-script', 'true');
         
-        // Extract src if it exists in the original script tag
         const srcMatch = feeds[0].feed_url.match(/src="([^"]+)"/);
         if (srcMatch && srcMatch[1]) {
           script.src = srcMatch[1];
         } else {
-          script.textContent = scriptContent;
+          script.textContent = scriptMatch[1];
         }
         
         document.body.appendChild(script);
@@ -49,7 +44,6 @@ export function SocialFeed() {
 
     loadFeedScript();
 
-    // Cleanup function to remove script when component unmounts
     return () => {
       const scripts = document.querySelectorAll('script[data-feed-script]');
       scripts.forEach(script => script.remove());
@@ -80,9 +74,11 @@ export function SocialFeed() {
 
   return (
     <div className="mt-16 space-y-8">
-      <h2 className="text-2xl font-bold text-center">Social Media</h2>
+      <div className="flex items-center justify-center gap-2">
+        <Rss className="h-6 w-6" />
+        <h2 className="text-2xl font-bold">Social Feed</h2>
+      </div>
       <div className="w-full">
-        <h3 className="text-lg font-medium mb-4">{feeds[0].platform}</h3>
         <div 
           dangerouslySetInnerHTML={{ 
             __html: feeds[0].feed_url.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')

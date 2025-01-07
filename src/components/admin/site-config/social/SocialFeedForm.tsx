@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Check, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -15,13 +14,11 @@ interface SocialFeedFormProps {
 }
 
 export function SocialFeedForm({ existingFeed, onSave }: SocialFeedFormProps) {
-  const [title, setTitle] = useState("");
   const [embedCode, setEmbedCode] = useState("");
   const { toast } = useToast();
 
   useEffect(() => {
     if (existingFeed) {
-      setTitle(existingFeed.platform);
       setEmbedCode(existingFeed.feed_url);
     }
   }, [existingFeed]);
@@ -38,7 +35,7 @@ export function SocialFeedForm({ existingFeed, onSave }: SocialFeedFormProps) {
       const { error } = await supabase
         .from('social_media_feeds')
         .insert({
-          platform: title,
+          platform: 'Social Feed',
           feed_url: embedCode,
           is_active: true,
           display_order: 1
@@ -64,28 +61,14 @@ export function SocialFeedForm({ existingFeed, onSave }: SocialFeedFormProps) {
 
   const handleCancel = () => {
     if (existingFeed) {
-      setTitle(existingFeed.platform);
       setEmbedCode(existingFeed.feed_url);
     } else {
-      setTitle("");
       setEmbedCode("");
     }
   };
 
   return (
     <div className="space-y-4">
-      <div className="space-y-2">
-        <label htmlFor="title" className="text-sm font-medium">
-          Feed Title
-        </label>
-        <Input
-          id="title"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          placeholder="Enter feed title"
-        />
-      </div>
-
       <div className="space-y-2">
         <label htmlFor="embedCode" className="text-sm font-medium">
           Embed Code
