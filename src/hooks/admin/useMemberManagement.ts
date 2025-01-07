@@ -8,7 +8,7 @@ export function useMemberManagement() {
   const queryClient = useQueryClient();
 
   const { 
-    data: members = [], // Provide empty array as default value
+    data: members = [], 
     isLoading, 
     error, 
     refetch 
@@ -16,7 +16,7 @@ export function useMemberManagement() {
     queryKey: ['members'],
     queryFn: async () => {
       console.log('Fetching members...');
-      const { data, error } = await supabase
+      const { data: profiles, error } = await supabase
         .from('profiles')
         .select('*')
         .order('username');
@@ -26,13 +26,25 @@ export function useMemberManagement() {
         throw error;
       }
 
-      if (!data) {
-        console.log('No members found');
+      if (!profiles) {
+        console.log('No profiles found');
         return [];
       }
 
-      console.log('Members fetched successfully:', data.length, 'members');
-      return data as Member[];
+      // Map database profiles to Member type
+      const members: Member[] = profiles.map(profile => ({
+        id: profile.id,
+        username: profile.username,
+        full_name: profile.full_name,
+        avatar_url: profile.avatar_url,
+        is_admin: profile.is_admin || false,
+        is_approved: profile.is_approved || false,
+        is_member: profile.is_member || false,
+        created_at: profile.created_at
+      }));
+
+      console.log('Members fetched successfully:', members.length, 'members');
+      return members;
     },
     retry: 1,
     staleTime: 1000 * 60, // 1 minute
