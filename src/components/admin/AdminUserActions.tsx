@@ -40,7 +40,7 @@ export function AdminUserActions({
             </Button>
           </TooltipTrigger>
           <TooltipContent>
-            <p>Edit user details and permissions</p>
+            <p>Modify user details including name, permissions, and status</p>
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
@@ -62,7 +62,7 @@ export function AdminUserActions({
               </Button>
             </TooltipTrigger>
             <TooltipContent>
-              <p>Grant admin privileges to this user</p>
+              <p>Grant administrative privileges to this user, allowing them to manage the site</p>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>

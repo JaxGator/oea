@@ -4,6 +4,8 @@ import { ImageGrid } from "./gallery/ImageGrid";
 import { CarouselToggle } from "./gallery/CarouselToggle";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { HelpCircle } from "lucide-react";
 
 export function GalleryManager() {
   const {
@@ -20,6 +22,20 @@ export function GalleryManager() {
 
   return (
     <div className="space-y-6">
+      <div className="flex items-center gap-2">
+        <h2 className="text-lg font-semibold">Gallery Management</h2>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Upload and manage images for your site's gallery. Enable carousel mode for automatic image rotation.</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      </div>
+
       <CarouselToggle 
         enabled={carouselEnabled}
         onToggle={updateCarouselConfig}
