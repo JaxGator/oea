@@ -39,16 +39,21 @@ export function useMemberManagement() {
           return null;
         }
 
-        return {
+        const member: Member = {
           id: profile.id,
           username: profile.username,
           full_name: profile.full_name || null,
           avatar_url: profile.avatar_url || null,
           is_admin: Boolean(profile.is_admin),
           is_approved: Boolean(profile.is_approved),
-          is_member: Boolean(profile.is_member),
-          created_at: profile.created_at
+          is_member: Boolean(profile.is_member)
         };
+
+        if (profile.created_at) {
+          member.created_at = profile.created_at;
+        }
+
+        return member;
       }).filter((member): member is Member => member !== null);
 
       console.log('Processed members:', members);
