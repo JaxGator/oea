@@ -14,7 +14,7 @@ interface AddFeedDialogProps {
 
 export function AddFeedDialog({ feeds, onFeedAdded }: AddFeedDialogProps) {
   const { toast } = useToast();
-  const [isOpen, setIsOpen] = useState(false);
+  const [open, setOpen] = useState(false);
   const [embedCode, setEmbedCode] = useState("");
 
   const handleSave = async () => {
@@ -34,7 +34,7 @@ export function AddFeedDialog({ feeds, onFeedAdded }: AddFeedDialogProps) {
       if (error) throw error;
       
       onFeedAdded(data);
-      setIsOpen(false);
+      setOpen(false);
       setEmbedCode("");
       
       toast({
@@ -52,7 +52,7 @@ export function AddFeedDialog({ feeds, onFeedAdded }: AddFeedDialogProps) {
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button size="sm">
           <Plus className="h-4 w-4 mr-2" />
@@ -71,7 +71,7 @@ export function AddFeedDialog({ feeds, onFeedAdded }: AddFeedDialogProps) {
           />
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={() => setIsOpen(false)}>
+          <Button variant="outline" onClick={() => setOpen(false)}>
             Cancel
           </Button>
           <Button onClick={handleSave}>
