@@ -15,7 +15,6 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, 
     flowType: 'pkce',
     storage: typeof window !== 'undefined' ? window.localStorage : undefined,
     storageKey: 'supabase.auth.token',
-    debug: true
   },
   global: {
     headers: {
@@ -25,11 +24,6 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, 
   db: {
     schema: 'public'
   },
-  realtime: {
-    params: {
-      eventsPerSecond: 2
-    }
-  }
 });
 
 // Test connection and log detailed errors
@@ -48,7 +42,10 @@ export const testSupabaseConnection = async () => {
       return false;
     }
     
-    console.log('Supabase connection test successful:', session ? 'Session exists' : 'No session');
+    console.log('Supabase connection test successful:', {
+      hasSession: !!session,
+      timestamp: new Date().toISOString()
+    });
     return true;
   } catch (error) {
     console.error('Supabase connection test failed:', {
@@ -64,11 +61,7 @@ export const testSupabaseConnection = async () => {
 if (typeof window !== 'undefined') {
   testSupabaseConnection().then(isConnected => {
     if (!isConnected) {
-      console.error('Failed to establish initial Supabase connection. Please check:');
-      console.error('1. Network connectivity to', SUPABASE_URL);
-      console.error('2. Supabase service status');
-      console.error('3. Authentication configuration in Supabase dashboard');
-      console.error('4. Browser console for CORS or other network errors');
+      console.error('Failed to establish initial Supabase connection');
     }
   });
 }
