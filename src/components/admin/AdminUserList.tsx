@@ -11,27 +11,73 @@ import { ErrorState } from "./user-management/ErrorState";
 import { useMemberManagement } from "@/hooks/admin/useMemberManagement";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 export function AdminUserList() {
   const [viewingMember, setViewingMember] = useState<Member | null>(null);
   const [editingMember, setEditingMember] = useState<Member | null>(null);
   const { members, isLoading, error, refetch } = useMemberManagement();
   const { toast } = useToast();
+  const navigate = useNavigate();
 
-  console.log('AdminUserList render:', { members, isLoading, error, editingMember, viewingMember });
+  // Check session on component mount
+  useEffect(() => {
+    checkSession();
+  }, []);
+
+  const checkSession = async () => {
+    try {
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      
+      if (sessionError) {
+        console.error('Session error:', sessionError);
+        throw sessionError;
+      }
+
+      if (!session) {
+        console.log('No active session found, redirecting to auth');
+        navigate('/auth');
+        return;
+      }
+
+      // Verify the session is still valid
+      const { error: userError } = await supabase.auth.getUser();
+      if (userError) {
+        console.error('User verification failed:', userError);
+        await supabase.auth.signOut();
+        navigate('/auth');
+        return;
+      }
+    } catch (error) {
+      console.error('Session check failed:', error);
+      toast({
+        title: "Authentication Error",
+        description: "Please sign in again",
+        variant: "destructive",
+      });
+      navigate('/auth');
+    }
+  };
 
   const handleEditMember = async (member: Member) => {
     try {
       console.log('Starting edit for member:', member);
       
-      const { data: session } = await supabase.auth.getSession();
-      if (!session?.session) {
+      // Verify session before proceeding
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError) {
+        throw sessionError;
+      }
+      
+      if (!session?.access_token) {
         console.error('No active session found');
         toast({
           title: "Error",
           description: "You must be logged in to edit users.",
           variant: "destructive",
         });
+        navigate('/auth');
         return;
       }
 
@@ -95,6 +141,11 @@ export function AdminUserList() {
         variant: "destructive",
       });
       setEditingMember(null);
+      
+      // If it's an auth error, redirect to login
+      if (error.message?.includes('JWT')) {
+        navigate('/auth');
+      }
     }
   };
 
