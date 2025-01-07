@@ -1,6 +1,7 @@
 import { Routes, Route } from "react-router-dom";
 import { AppProviders } from "./components/providers/AppProviders";
 import { AppLayout } from "./components/layout/AppLayout";
+import { RequireAuth } from "./components/auth/RequireAuth";
 import Index from "./pages/Index";
 import About from "./pages/About";
 import Auth from "./pages/Auth";
@@ -33,19 +34,22 @@ const App = () => {
         <Routes>
           <Route path="/auth" element={<Auth />} />
           <Route element={<AppLayout />}>
+            {/* Public Routes */}
             <Route index element={<Index />} />
             <Route path="about" element={<About />} />
-            <Route path="events" element={<Events />} />
-            <Route path="events/:id" element={<EventDetails />} />
-            <Route path="members" element={<Members />} />
-            <Route path="profile" element={<Profile />} />
-            <Route path="resources" element={<Resources />} />
-            <Route path="admin" element={<Admin />} />
-            <Route path="test" element={<Test />} />
-            <Route path="store" element={<Store />} />
-            <Route path="maintenance" element={<Maintenance />} />
             <Route path="privacy" element={<PrivacyPolicy />} />
             <Route path="terms" element={<TermsAndConditions />} />
+            
+            {/* Protected Routes */}
+            <Route path="events" element={<RequireAuth><Events /></RequireAuth>} />
+            <Route path="events/:id" element={<RequireAuth><EventDetails /></RequireAuth>} />
+            <Route path="members" element={<RequireAuth><Members /></RequireAuth>} />
+            <Route path="profile" element={<RequireAuth><Profile /></RequireAuth>} />
+            <Route path="resources" element={<RequireAuth><Resources /></RequireAuth>} />
+            <Route path="admin" element={<RequireAuth><Admin /></RequireAuth>} />
+            <Route path="test" element={<RequireAuth><Test /></RequireAuth>} />
+            <Route path="store" element={<RequireAuth><Store /></RequireAuth>} />
+            <Route path="maintenance" element={<RequireAuth><Maintenance /></RequireAuth>} />
           </Route>
         </Routes>
       </AppProviders>

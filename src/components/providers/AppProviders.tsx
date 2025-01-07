@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
+import { isProtectedRoute } from "@/utils/routeConfig";
 
 interface AppProvidersProps {
   children: ReactNode;
@@ -40,18 +41,18 @@ export function AppProviders({ children }: AppProvidersProps) {
           console.error('Session check error:', error);
           queryClient.clear();
           localStorage.clear();
-          if (!location.pathname.includes('/auth')) {
+          if (isProtectedRoute(location.pathname)) {
             navigate('/auth');
           }
         }
 
-        if (!session && !location.pathname.includes('/auth')) {
-          console.log('No active session, redirecting to auth');
+        if (!session && isProtectedRoute(location.pathname)) {
+          console.log('No active session, redirecting protected route to auth');
           navigate('/auth');
         }
       } catch (err) {
         console.error('Session check failed:', err);
-        if (!location.pathname.includes('/auth')) {
+        if (isProtectedRoute(location.pathname)) {
           navigate('/auth');
         }
       } finally {
@@ -68,7 +69,7 @@ export function AppProviders({ children }: AppProvidersProps) {
         console.log('User signed out, clearing data and redirecting');
         queryClient.clear();
         localStorage.clear();
-        if (!location.pathname.includes('/auth')) {
+        if (isProtectedRoute(location.pathname)) {
           navigate('/auth');
         }
         toast({
@@ -83,7 +84,7 @@ export function AppProviders({ children }: AppProvidersProps) {
 
       if (event === 'SIGNED_IN') {
         console.log('User signed in:', session?.user?.id);
-        if (location.pathname.includes('/auth')) {
+        if (location.pathname === '/auth') {
           navigate('/');
         }
         toast({
