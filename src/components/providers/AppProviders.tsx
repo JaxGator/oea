@@ -31,7 +31,6 @@ export function AppProviders({ children }: AppProvidersProps) {
   useEffect(() => {
     let mounted = true;
 
-    // Initial session check
     const checkSession = async () => {
       try {
         const { data: { session }, error } = await supabase.auth.getSession();
@@ -61,7 +60,6 @@ export function AppProviders({ children }: AppProvidersProps) {
       }
     };
 
-    // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log('Auth state changed:', event);
       
