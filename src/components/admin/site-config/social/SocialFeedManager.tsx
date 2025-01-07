@@ -25,13 +25,19 @@ export function SocialFeedManager({ feeds, setFeeds }: SocialFeedManagerProps) {
           platform: 'instagram',
           embed_code: '',
           display_order: feeds.length,
-          title: 'New Feed'
+          title: 'New Feed',
+          is_enabled: false
         })
         .select()
         .single();
 
       if (error) throw error;
       setFeeds([...feeds, data]);
+      
+      toast({
+        title: "Success",
+        description: "New feed added successfully",
+      });
     } catch (error) {
       console.error('Error adding feed:', error);
       toast({
