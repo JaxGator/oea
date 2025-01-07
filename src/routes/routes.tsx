@@ -15,72 +15,77 @@ import Maintenance from "@/pages/Maintenance";
 import { PrivacyPolicy } from "@/components/legal/PrivacyPolicy";
 import { TermsAndConditions } from "@/components/legal/TermsAndConditions";
 import { ErrorBoundary } from "@/components/error/ErrorBoundary";
+import { AppProviders } from "@/components/providers/AppProviders";
 
 export const router = createBrowserRouter([
   {
-    path: "/",
-    element: <AppLayout />,
+    element: <AppProviders />,
     errorElement: (
       <ErrorBoundary fallback={<div>Something went wrong</div>}>
-        <AppLayout />
+        <AppProviders />
       </ErrorBoundary>
     ),
     children: [
       {
-        index: true,
-        element: <Index />,
-      },
-      {
-        path: "about",
-        element: <About />,
-      },
-      {
-        path: "auth",
-        element: <Auth />,
-      },
-      {
-        path: "events",
-        element: <Events />,
-      },
-      {
-        path: "events/:id",
-        element: <EventDetails />,
-      },
-      {
-        path: "members",
-        element: <Members />,
-      },
-      {
-        path: "profile",
-        element: <Profile />,
-      },
-      {
-        path: "resources",
-        element: <Resources />,
-      },
-      {
-        path: "admin",
-        element: <Admin />,
-      },
-      {
-        path: "test",
-        element: <Test />,
-      },
-      {
-        path: "store",
-        element: <Store />,
-      },
-      {
-        path: "maintenance",
-        element: <Maintenance />,
-      },
-      {
-        path: "privacy",
-        element: <PrivacyPolicy />,
-      },
-      {
-        path: "terms",
-        element: <TermsAndConditions />,
+        element: <AppLayout />,
+        children: [
+          {
+            index: true,
+            element: <Index />,
+          },
+          {
+            path: "about",
+            element: <About />,
+          },
+          {
+            path: "auth",
+            element: <Auth />,
+          },
+          {
+            path: "events",
+            element: <Events />,
+          },
+          {
+            path: "events/:id",
+            element: <EventDetails />,
+          },
+          {
+            path: "members",
+            element: <Members />,
+          },
+          {
+            path: "profile",
+            element: <Profile />,
+          },
+          {
+            path: "resources",
+            element: <Resources />,
+          },
+          {
+            path: "admin",
+            element: <Admin />,
+          },
+          {
+            path: "test",
+            element: <Test />,
+          },
+          {
+            path: "store",
+            element: <Store />,
+          },
+          {
+            path: "maintenance",
+            element: <Maintenance />,
+          },
+          {
+            path: "privacy",
+            element: <PrivacyPolicy />,
+          },
+          {
+            path: "terms",
+            element: <TermsAndConditions />,
+          },
+        ],
       },
     ],
   },
