@@ -19,6 +19,24 @@ export default function Events() {
   const { data: events = [], isLoading: isEventsLoading, error } = useEvents(selectedDate);
   const { handleRSVP, cancelRSVP } = useRSVP();
 
+  const filterEventsByWeekend = (events: any[], date: Date) => {
+    if (!date) return events;
+
+    const startDate = new Date(date);
+    startDate.setHours(0, 0, 0, 0);
+    
+    const endDate = new Date(date);
+    endDate.setDate(date.getDate() + 2); // Add 2 days to include Sunday
+    endDate.setHours(23, 59, 59, 999);
+
+    return events.filter(event => {
+      const eventDate = new Date(event.date);
+      return eventDate >= startDate && eventDate <= endDate;
+    });
+  };
+
+  const filteredEvents = selectedDate ? filterEventsByWeekend(events, selectedDate) : events;
+
   if (error) {
     console.error("Events loading error:", error);
     toast.error("Failed to load events. Please try again.");
@@ -30,11 +48,11 @@ export default function Events() {
   }
 
   const now = new Date();
-  const upcomingEvents = events
+  const upcomingEvents = filteredEvents
     .filter(event => new Date(event.date) >= now)
     .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
-  const pastEvents = events
+  const pastEvents = filteredEvents
     .filter(event => new Date(event.date) < now)
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 

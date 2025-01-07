@@ -1,76 +1,90 @@
 import { Button } from "@/components/ui/button";
+import { CalendarDays, CalendarRange } from "lucide-react";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 interface DateFilterProps {
-  selectedDate: Date | null;
-  onDateSelect: (date: Date | null) => void;
+  selectedDate?: Date;
+  onDateSelect: (date: Date | undefined) => void;
 }
 
-export function DateFilter({ 
-  selectedDate = null, 
-  onDateSelect 
-}: DateFilterProps) {
-  const getNextWeekendDate = () => {
+export function DateFilter({ selectedDate, onDateSelect }: DateFilterProps) {
+  const getWeekendDateRange = () => {
     const today = new Date();
     const currentDay = today.getDay(); // 0 is Sunday, 6 is Saturday
     
-    // If today is already part of the weekend (Fri, Sat, or Sun), return today
+    // Create start date (Friday)
+    const startDate = new Date(today);
+    
     if (currentDay === 5 || currentDay === 6 || currentDay === 0) {
-      const weekendStart = new Date(today);
-      weekendStart.setHours(0, 0, 0, 0);
-      return weekendStart;
+      // If today is already weekend (Fri, Sat, or Sun), adjust to current weekend's Friday
+      startDate.setDate(today.getDate() - ((currentDay + 2) % 3));
+    } else {
+      // Calculate days until next Friday
+      const daysUntilFriday = (5 - currentDay + 7) % 7;
+      startDate.setDate(today.getDate() + daysUntilFriday);
     }
     
-    // Calculate days until next Friday
-    const daysUntilFriday = (5 - currentDay + 7) % 7;
-    
-    // Create date for next Friday
-    const nextFriday = new Date(today);
-    nextFriday.setDate(today.getDate() + daysUntilFriday);
     // Reset time to start of day
-    nextFriday.setHours(0, 0, 0, 0);
-    
-    return nextFriday;
+    startDate.setHours(0, 0, 0, 0);
+    return startDate;
   };
 
   const dates = [
-    { label: "All", date: null },
-    { 
-      label: "This Weekend", 
-      date: getNextWeekendDate()
-    },
+    { label: "Today", value: new Date() },
+    { label: "This Weekend", value: getWeekendDateRange() },
   ];
 
-  const handleDateSelect = (date: Date | null) => {
-    try {
-      onDateSelect(date);
-    } catch (error) {
-      console.error("Error selecting date:", error);
-    }
-  };
-
-  const isSelectedDate = (itemDate: Date | null) => {
-    if (itemDate === null && selectedDate === null) return true;
-    if (itemDate === null || selectedDate === null) return false;
-    
-    return itemDate.getTime() === selectedDate.getTime();
-  };
-
   return (
-    <div className="flex gap-2">
-      {dates.map((item) => (
-        <Button
-          key={item.label}
-          variant={isSelectedDate(item.date) ? "default" : "outline"}
-          className={`${
-            isSelectedDate(item.date)
-              ? "bg-[#0d97d1] hover:bg-[#0d97d1]/90"
-              : "hover:bg-[#0d97d1]/10"
-          }`}
-          onClick={() => handleDateSelect(item.date)}
-        >
-          {item.label}
-        </Button>
-      ))}
+    <div className="flex items-center gap-2">
+      <Popover>
+        <PopoverTrigger asChild>
+          <Button
+            variant="outline"
+            className={`w-[240px] justify-start text-left font-normal ${
+              !selectedDate ? "text-muted-foreground" : ""
+            }`}
+          >
+            <CalendarRange className="mr-2 h-4 w-4" />
+            {selectedDate ? (
+              selectedDate.toLocaleDateString()
+            ) : (
+              <span>Pick a date</span>
+            )}
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-auto p-0" align="start">
+          <Calendar
+            mode="single"
+            selected={selectedDate}
+            onSelect={onDateSelect}
+            initialFocus
+          />
+        </PopoverContent>
+      </Popover>
+
+      <div className="flex items-center gap-2">
+        {dates.map((date) => (
+          <Button
+            key={date.label}
+            variant="outline"
+            className="gap-2"
+            onClick={() => onDateSelect(date.value)}
+          >
+            <CalendarDays className="h-4 w-4" />
+            {date.label}
+          </Button>
+        ))}
+        {selectedDate && (
+          <Button
+            variant="outline"
+            className="gap-2"
+            onClick={() => onDateSelect(undefined)}
+          >
+            Clear
+          </Button>
+        )}
+      </div>
     </div>
   );
 }
