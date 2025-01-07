@@ -1,24 +1,55 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Check, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useQuery } from "@tanstack/react-query";
 
 export function SocialFeedManager() {
   const [title, setTitle] = useState("");
   const [embedCode, setEmbedCode] = useState("");
   const { toast } = useToast();
 
+  // Fetch existing feed configuration
+  const { data: existingFeed, refetch } = useQuery({
+    queryKey: ['social-feed'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('social_media_feeds')
+        .select('*')
+        .single();
+      
+      if (error && error.code !== 'PGRST116') throw error;
+      return data;
+    },
+  });
+
+  // Set form values when existing feed is loaded
+  useEffect(() => {
+    if (existingFeed) {
+      setTitle(existingFeed.platform);
+      setEmbedCode(existingFeed.feed_url);
+    }
+  }, [existingFeed]);
+
   const handleSave = async () => {
     try {
+      // Delete any existing feeds first
+      await supabase
+        .from('social_media_feeds')
+        .delete()
+        .neq('id', 'placeholder');
+
+      // Insert the new feed
       const { error } = await supabase
         .from('social_media_feeds')
         .insert({
           platform: title,
           feed_url: embedCode,
-          is_active: true
+          is_active: true,
+          display_order: 1
         });
 
       if (error) throw error;
@@ -28,9 +59,7 @@ export function SocialFeedManager() {
         description: "Social media feed saved successfully",
       });
 
-      // Reset form
-      setTitle("");
-      setEmbedCode("");
+      refetch();
     } catch (error) {
       console.error('Error saving social feed:', error);
       toast({
@@ -42,8 +71,13 @@ export function SocialFeedManager() {
   };
 
   const handleCancel = () => {
-    setTitle("");
-    setEmbedCode("");
+    if (existingFeed) {
+      setTitle(existingFeed.platform);
+      setEmbedCode(existingFeed.feed_url);
+    } else {
+      setTitle("");
+      setEmbedCode("");
+    }
   };
 
   return (
@@ -51,7 +85,7 @@ export function SocialFeedManager() {
       <div>
         <h3 className="text-lg font-medium">Social Media Feed</h3>
         <p className="text-sm text-muted-foreground">
-          Add social media feed embed codes to display on the homepage
+          Configure your social media feed embed code
         </p>
       </div>
 
