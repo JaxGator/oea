@@ -67,23 +67,23 @@ export function AdminUserTableRow({
             <DropdownMenuTrigger asChild>
               <Button
                 variant="ghost"
-                className="h-8 w-8 p-0"
+                className="h-8 w-8 p-0 hover:bg-gray-100 rounded-full"
                 aria-label="Open menu"
               >
                 <MoreVertical className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-[160px] bg-white">
+            <DropdownMenuContent align="end" className="w-[160px] bg-white shadow-md">
               <DropdownMenuItem 
                 onClick={handleEdit}
-                className="cursor-pointer hover:bg-gray-100"
+                className="cursor-pointer hover:bg-gray-100 focus:bg-gray-100"
               >
                 <Edit className="mr-2 h-4 w-4" />
                 Edit
               </DropdownMenuItem>
               <DropdownMenuItem 
                 onClick={() => onUpdateStatus(profile.username)}
-                className="cursor-pointer hover:bg-gray-100"
+                className="cursor-pointer hover:bg-gray-100 focus:bg-gray-100"
                 disabled={isUpdating}
               >
                 <UserCheck className="mr-2 h-4 w-4" />
