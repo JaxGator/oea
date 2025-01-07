@@ -18,6 +18,7 @@ export function AdminUserList() {
   console.log('AdminUserList render:', { members, isLoading, error });
 
   if (isLoading) {
+    console.log('Loading state...');
     return <LoadingState />;
   }
 
@@ -26,7 +27,8 @@ export function AdminUserList() {
     return <ErrorState message="Error loading members. Please try refreshing the page." />;
   }
 
-  if (!Array.isArray(members) || members.length === 0) {
+  if (!members || members.length === 0) {
+    console.log('No members found');
     return <ErrorState message="No members found. Please try refreshing the page." />;
   }
 

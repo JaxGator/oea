@@ -8,7 +8,7 @@ export function useMemberManagement() {
   const queryClient = useQueryClient();
 
   const { 
-    data: members = [], 
+    data: members, 
     isLoading, 
     error, 
     refetch 
@@ -16,38 +16,43 @@ export function useMemberManagement() {
     queryKey: ['members'],
     queryFn: async () => {
       console.log('Fetching members...');
-      const { data: profiles, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .order('username');
+      try {
+        const { data: profiles, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .order('username');
 
-      if (error) {
-        console.error('Error fetching members:', error);
-        throw error;
+        if (error) {
+          console.error('Error fetching members:', error);
+          throw error;
+        }
+
+        if (!profiles || profiles.length === 0) {
+          console.log('No profiles found');
+          return [];
+        }
+
+        // Map database profiles to Member type with explicit type checking
+        const members: Member[] = profiles.map(profile => ({
+          id: profile.id || '',
+          username: profile.username || '',
+          full_name: profile.full_name || null,
+          avatar_url: profile.avatar_url || null,
+          is_admin: Boolean(profile.is_admin),
+          is_approved: Boolean(profile.is_approved),
+          is_member: Boolean(profile.is_member),
+          created_at: profile.created_at
+        }));
+
+        console.log('Members fetched successfully:', members);
+        return members;
+      } catch (err) {
+        console.error('Error in queryFn:', err);
+        throw err;
       }
-
-      if (!profiles) {
-        console.log('No profiles found');
-        return [];
-      }
-
-      // Map database profiles to Member type
-      const members: Member[] = profiles.map(profile => ({
-        id: profile.id,
-        username: profile.username,
-        full_name: profile.full_name,
-        avatar_url: profile.avatar_url,
-        is_admin: profile.is_admin || false,
-        is_approved: profile.is_approved || false,
-        is_member: profile.is_member || false,
-        created_at: profile.created_at
-      }));
-
-      console.log('Members fetched successfully:', members.length, 'members');
-      return members;
     },
     retry: 1,
-    staleTime: 1000 * 60, // 1 minute
+    staleTime: 1000 * 60 // 1 minute
   });
 
   const updateMemberStatus = async (memberId: string, updates: Partial<Member>) => {
@@ -83,7 +88,7 @@ export function useMemberManagement() {
   };
 
   return {
-    members,
+    members: members || [],
     isLoading,
     error,
     refetch,
