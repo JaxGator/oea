@@ -7,7 +7,6 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { DeleteUserDialog } from "./user-management/DeleteUserDialog";
-import { AdminDropdownMenu } from "./user-management/shared/AdminDropdownMenu";
 import { useState } from "react";
 
 interface AdminUserActionsProps {
@@ -49,23 +48,27 @@ export function AdminUserActions({
     setShowDeleteDialog(false);
   };
 
-  const dropdownActions = [
-    {
-      label: "Edit",
-      icon: <Edit2 className="mr-2 h-4 w-4" />,
-      onClick: handleEdit
-    },
-    {
-      label: "Delete",
-      icon: <Trash2 className="mr-2 h-4 w-4" />,
-      onClick: () => setShowDeleteDialog(true),
-      className: "text-red-600"
-    }
-  ];
-
   return (
     <div className="flex items-center gap-2">
-      <AdminDropdownMenu actions={dropdownActions} />
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={handleEdit}
+        className="whitespace-nowrap"
+      >
+        <Edit2 className="h-4 w-4 mr-2" />
+        Edit
+      </Button>
+
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={() => setShowDeleteDialog(true)}
+        className="whitespace-nowrap text-red-600"
+      >
+        <Trash2 className="h-4 w-4 mr-2" />
+        Delete
+      </Button>
 
       {!profile.is_admin && (
         <TooltipProvider>
