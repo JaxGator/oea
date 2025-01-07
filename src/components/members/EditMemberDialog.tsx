@@ -7,6 +7,9 @@ import {
 import { MemberFormFields } from "./MemberFormFields";
 import { MemberAvatarUpload } from "./MemberAvatarUpload";
 import { useMemberForm } from "./useMemberForm";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Loader2 } from "lucide-react";
 
 interface Member {
   id: string;
@@ -26,6 +29,8 @@ interface EditMemberDialogProps {
 }
 
 export function EditMemberDialog({ member, open, onOpenChange, onUpdate }: EditMemberDialogProps) {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  
   const {
     username,
     setUsername,
@@ -44,7 +49,15 @@ export function EditMemberDialog({ member, open, onOpenChange, onUpdate }: EditM
     avatarUrl,
     setAvatarUrl,
     handleSubmit,
-  } = useMemberForm(member, onUpdate, () => onOpenChange(false));
+  } = useMemberForm(member, onUpdate, () => {
+    setIsSubmitting(false);
+    onOpenChange(false);
+  });
+
+  const onSubmit = async () => {
+    setIsSubmitting(true);
+    await handleSubmit();
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -75,8 +88,31 @@ export function EditMemberDialog({ member, open, onOpenChange, onUpdate }: EditM
             setIsApproved={setIsApproved}
             isMember={isMember}
             setIsMember={setIsMember}
-            onSubmit={handleSubmit}
+            onSubmit={onSubmit}
           />
+
+          <div className="flex justify-end space-x-2">
+            <Button
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+              disabled={isSubmitting}
+            >
+              Cancel
+            </Button>
+            <Button 
+              onClick={onSubmit}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                'Save Changes'
+              )}
+            </Button>
+          </div>
         </div>
       </DialogContent>
     </Dialog>

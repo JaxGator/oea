@@ -34,6 +34,10 @@ export function AdminUserList() {
         return;
       }
 
+      // Set editing member state immediately for better UX
+      setEditingMember(member);
+
+      // Fetch latest profile data in background
       const { data: profile, error: fetchError } = await supabase
         .from('profiles')
         .select()
@@ -51,6 +55,7 @@ export function AdminUserList() {
           description: "Failed to load user profile. Please try again.",
           variant: "destructive",
         });
+        setEditingMember(null);
         return;
       }
 
@@ -64,10 +69,15 @@ export function AdminUserList() {
           description: "User profile not found.",
           variant: "destructive",
         });
+        setEditingMember(null);
         return;
       }
 
-      setEditingMember(member);
+      // Update editing member with latest profile data
+      setEditingMember({
+        ...member,
+        ...profile
+      });
     } catch (error) {
       console.error('Error in handleEditMember:', {
         error,
@@ -79,6 +89,7 @@ export function AdminUserList() {
         description: "An unexpected error occurred. Please try again.",
         variant: "destructive",
       });
+      setEditingMember(null);
     }
   };
 
