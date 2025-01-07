@@ -11,15 +11,17 @@ interface GallerySectionProps {
   selectedImage: string | null;
   onImageSelect: (image: string) => void;
   onImageDeselect: () => void;
+  isAdmin?: boolean;
 }
 
-export const GallerySection = ({
+export const GallerySection: React.FC<GallerySectionProps> = ({
   images,
   isLoading,
   selectedImage,
   onImageSelect,
   onImageDeselect,
-}: GallerySectionProps) => {
+  isAdmin = false
+}) => {
   const currentImageIndex = selectedImage ? images.indexOf(selectedImage) : -1;
 
   const handlePrevious = () => {

@@ -7,6 +7,7 @@ interface GalleryData {
   images: string[];
   isLoading: boolean;
   error: Error | null;
+  isCarouselEnabled?: boolean;
 }
 
 interface GalleryContainerProps {
@@ -14,6 +15,21 @@ interface GalleryContainerProps {
 }
 
 export const GalleryContainer: React.FC<GalleryContainerProps> = ({ children }) => {
+  const { data: config } = useQuery({
+    queryKey: ['site-config', 'gallery_carousel_enabled'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('site_config')
+        .select('value')
+        .eq('key', 'gallery_carousel_enabled')
+        .single();
+      
+      if (error) throw error;
+      return data?.value === 'true';
+    },
+    refetchOnWindowFocus: false
+  });
+
   const { data: images = [], isLoading, error } = useQuery({
     queryKey: ['gallery-images'],
     queryFn: async () => {
@@ -42,5 +58,5 @@ export const GalleryContainer: React.FC<GalleryContainerProps> = ({ children }) 
     retry: 1
   });
 
-  return <>{children({ images, isLoading, error: error as Error | null })}</>;
+  return <>{children({ images, isLoading, error, isCarouselEnabled: config })}</>;
 };

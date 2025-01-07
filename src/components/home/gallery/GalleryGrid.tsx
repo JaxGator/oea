@@ -8,13 +8,15 @@ interface GalleryGridProps {
   onImageSelect: (imageUrl: string) => void;
   onKeyPress: (imageUrl: string) => (e: React.KeyboardEvent) => void;
   isLoading?: boolean;
+  isAdmin?: boolean;
 }
 
 export const GalleryGrid: React.FC<GalleryGridProps> = ({ 
   images, 
   onImageSelect, 
   onKeyPress,
-  isLoading = false
+  isLoading = false,
+  isAdmin = false
 }) => {
   if (isLoading) {
     return (

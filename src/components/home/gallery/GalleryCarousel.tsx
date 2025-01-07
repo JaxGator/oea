@@ -15,13 +15,15 @@ interface GalleryCarouselProps {
   onImageSelect: (imageUrl: string) => void;
   onKeyPress: (imageUrl: string) => (e: React.KeyboardEvent) => void;
   isLoading?: boolean;
+  isAdmin?: boolean;
 }
 
 export const GalleryCarousel: React.FC<GalleryCarouselProps> = ({ 
   images, 
   onImageSelect, 
   onKeyPress,
-  isLoading = false
+  isLoading = false,
+  isAdmin = false
 }) => {
   if (isLoading) {
     return (
