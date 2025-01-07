@@ -23,7 +23,7 @@ export function AdminUserList() {
 
   const handleDeleteMember = async (userId: string) => {
     try {
-      console.log('Deleting user with ID:', userId);
+      console.log('AdminUserList: Deleting user with ID:', userId);
       const { error } = await supabase.functions.invoke('delete-user', {
         body: { userId }
       });
@@ -47,13 +47,19 @@ export function AdminUserList() {
   };
 
   const handleEditMember = (member: Member) => {
-    console.log('Setting editing member:', member);
+    console.log('AdminUserList: Setting editing member:', member);
     setEditingMember(member);
   };
 
   const handleCloseEdit = () => {
-    console.log('Closing edit dialog');
+    console.log('AdminUserList: Closing edit dialog');
     setEditingMember(null);
+  };
+
+  const handleUpdateComplete = () => {
+    console.log('AdminUserList: Member update completed');
+    refetch();
+    handleCloseEdit();
   };
 
   const renderContent = () => {
@@ -107,7 +113,7 @@ export function AdminUserList() {
       <EditMemberHandler
         member={editingMember}
         onClose={handleCloseEdit}
-        onUpdate={refetch}
+        onUpdate={handleUpdateComplete}
       />
     </div>
   );

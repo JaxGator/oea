@@ -12,27 +12,33 @@ interface EditMemberHandlerProps {
 }
 
 export function EditMemberHandler({ member, onClose, onUpdate }: EditMemberHandlerProps) {
-  const [editingMember, setEditingMember] = useState<Member | null>(member);
+  const [editingMember, setEditingMember] = useState<Member | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
 
   useEffect(() => {
     console.log('EditMemberHandler: member prop changed:', member);
-    setEditingMember(member);
+    if (member) {
+      fetchMemberData(member);
+    } else {
+      setEditingMember(null);
+    }
   }, [member]);
 
-  const handleEditMember = async () => {
-    if (!member) {
-      console.log('EditMemberHandler: No member to edit');
-      return;
-    }
-
+  const fetchMemberData = async (memberData: Member) => {
+    setIsLoading(true);
     try {
-      console.log('EditMemberHandler: Fetching latest profile data for:', member.id);
+      console.log('EditMemberHandler: Fetching latest profile data for:', memberData.id);
       const { data: { session }, error: sessionError } = await supabase.auth.getSession();
       
       if (sessionError || !session?.access_token) {
         console.error('Session verification failed:', sessionError);
+        toast({
+          title: "Authentication Error",
+          description: "Please sign in again",
+          variant: "destructive",
+        });
         navigate('/auth');
         return;
       }
@@ -40,7 +46,7 @@ export function EditMemberHandler({ member, onClose, onUpdate }: EditMemberHandl
       const { data: profile, error: fetchError } = await supabase
         .from('profiles')
         .select('*')
-        .eq('id', member.id)
+        .eq('id', memberData.id)
         .maybeSingle();
       
       if (fetchError) {
@@ -53,29 +59,36 @@ export function EditMemberHandler({ member, onClose, onUpdate }: EditMemberHandl
       }
 
       console.log('EditMemberHandler: Profile data fetched:', profile);
-      setEditingMember({ ...member, ...profile });
+      setEditingMember({ ...memberData, ...profile });
     } catch (error) {
-      console.error('Error in handleEditMember:', error);
+      console.error('Error in fetchMemberData:', error);
       toast({
         title: "Error",
         description: "Failed to load user profile",
         variant: "destructive",
       });
       onClose();
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  useEffect(() => {
-    if (member && !editingMember) {
-      handleEditMember();
+  const handleDialogChange = (open: boolean) => {
+    if (!open) {
+      console.log('EditMemberHandler: Dialog closed');
+      onClose();
     }
-  }, [member, editingMember]);
+  };
+
+  if (isLoading) {
+    return null; // Or return a loading spinner
+  }
 
   return editingMember ? (
     <EditMemberDialog
       member={editingMember}
       open={true}
-      onOpenChange={(open) => !open && onClose()}
+      onOpenChange={handleDialogChange}
       onUpdate={onUpdate}
     />
   ) : null;

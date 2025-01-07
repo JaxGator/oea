@@ -31,18 +31,18 @@ export function AdminUserActions({
 }: AdminUserActionsProps) {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
-  const handleEdit = (e: React.MouseEvent) => {
-    console.log('Edit clicked for profile:', profile);
+  const handleEdit = () => {
+    console.log('AdminUserActions: Edit clicked for profile:', profile);
     onEdit();
   };
 
-  const handleUpdateStatus = (e: React.MouseEvent) => {
-    console.log('Update status clicked for username:', profile.username);
+  const handleUpdateStatus = () => {
+    console.log('AdminUserActions: Update status clicked for username:', profile.username);
     onUpdateStatus(profile.username);
   };
 
   const handleDelete = () => {
-    console.log('Delete confirmed for profile:', profile);
+    console.log('AdminUserActions: Delete confirmed for profile:', profile);
     onDelete(profile.id);
     setShowDeleteDialog(false);
   };
