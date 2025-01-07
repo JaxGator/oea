@@ -23,6 +23,7 @@ export function AdminDropdownMenu({ actions }: AdminDropdownMenuProps) {
   const handleActionClick = (e: React.MouseEvent, action: AdminDropdownAction) => {
     e.preventDefault();
     e.stopPropagation();
+    console.log('AdminDropdownMenu: Action clicked:', action.label);
     action.onClick(e);
   };
 
