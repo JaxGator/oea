@@ -18,6 +18,7 @@ export function TechnicalSettings({ configs, setConfigs, isLoading }: TechnicalS
 
   const updateConfig = async (key: string, value: string) => {
     try {
+      console.log('Updating config:', key, value);
       const { error } = await supabase
         .from('site_config')
         .upsert({ 
@@ -29,6 +30,9 @@ export function TechnicalSettings({ configs, setConfigs, isLoading }: TechnicalS
         });
 
       if (error) throw error;
+
+      // Update local state
+      setConfigs(prev => ({ ...prev, [key]: value }));
 
       toast({
         title: "Success",
@@ -50,7 +54,6 @@ export function TechnicalSettings({ configs, setConfigs, isLoading }: TechnicalS
         <MaintenanceMode
           enabled={configs.maintenance_mode === 'true'}
           onToggle={(enabled) => {
-            setConfigs(prev => ({ ...prev, maintenance_mode: enabled.toString() }));
             updateConfig('maintenance_mode', enabled.toString());
           }}
         />
