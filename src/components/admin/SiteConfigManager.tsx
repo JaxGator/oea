@@ -4,6 +4,7 @@ import { GeneralSettings } from "./site-config/GeneralSettings";
 import { IntegrationsSettings } from "./site-config/IntegrationsSettings";
 import { LegalSettings } from "./site-config/LegalSettings";
 import { TechnicalSettings } from "./site-config/TechnicalSettings";
+import { SocialSettings } from "./site-config/SocialSettings";
 import { useConfigManager } from "./site-config/useConfigManager";
 
 export function SiteConfigManager() {
@@ -20,6 +21,14 @@ export function SiteConfigManager() {
 
         <TabsContent value="general">
           <GeneralSettings
+            configs={configs}
+            setConfigs={setConfigs}
+            updateConfig={updateConfig}
+          />
+        </TabsContent>
+
+        <TabsContent value="social">
+          <SocialSettings
             configs={configs}
             setConfigs={setConfigs}
             updateConfig={updateConfig}

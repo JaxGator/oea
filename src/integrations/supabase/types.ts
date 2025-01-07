@@ -325,6 +325,36 @@ export type Database = {
           },
         ]
       }
+      social_media_feeds: {
+        Row: {
+          created_at: string
+          display_order: number
+          feed_url: string
+          id: string
+          is_active: boolean | null
+          platform: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string
+          display_order?: number
+          feed_url: string
+          id?: string
+          is_active?: boolean | null
+          platform: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string
+          display_order?: number
+          feed_url?: string
+          id?: string
+          is_active?: boolean | null
+          platform?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       user_blocks: {
         Row: {
           blocked_id: string | null
