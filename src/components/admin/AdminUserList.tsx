@@ -9,11 +9,14 @@ import { EditMemberDialog } from "@/components/members/EditMemberDialog";
 import { LoadingState } from "./user-management/LoadingState";
 import { ErrorState } from "./user-management/ErrorState";
 import { useMemberManagement } from "@/hooks/admin/useMemberManagement";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 export function AdminUserList() {
   const [viewingMember, setViewingMember] = useState<Member | null>(null);
   const [editingMember, setEditingMember] = useState<Member | null>(null);
   const { members, isLoading, error, refetch } = useMemberManagement();
+  const { toast } = useToast();
 
   console.log('AdminUserList render:', { members, isLoading, error, editingMember, viewingMember });
 
@@ -25,6 +28,30 @@ export function AdminUserList() {
   const handleCloseEdit = () => {
     console.log('Handling close edit');
     setEditingMember(null);
+  };
+
+  const handleDeleteMember = async (userId: string) => {
+    try {
+      const { error } = await supabase.functions.invoke('delete-user', {
+        body: { userId }
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "User deleted successfully",
+      });
+
+      refetch();
+    } catch (error) {
+      console.error('Error deleting user:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete user. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   const renderContent = () => {
@@ -49,6 +76,7 @@ export function AdminUserList() {
           currentUserIsAdmin={true} 
           onViewMember={setViewingMember}
           onEditMember={handleEditMember}
+          onDeleteMember={handleDeleteMember}
         />
       </AdminUserTableWrapper>
     );

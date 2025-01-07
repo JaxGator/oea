@@ -7,10 +7,19 @@ interface MemberTableProps {
   currentUserIsAdmin: boolean;
   onViewMember: (member: Member) => void;
   onEditMember: (member: Member) => void;
+  onDeleteMember?: (userId: string) => void;
 }
 
-export function MemberTable({ members, currentUserIsAdmin, onViewMember, onEditMember }: MemberTableProps) {
-  const { handleDeleteMember } = useMembers();
+export function MemberTable({ 
+  members, 
+  currentUserIsAdmin, 
+  onViewMember, 
+  onEditMember,
+  onDeleteMember 
+}: MemberTableProps) {
+  const { handleDeleteMember: defaultHandleDelete } = useMembers();
+
+  const handleDelete = onDeleteMember || defaultHandleDelete;
 
   return (
     <div className="relative overflow-x-auto">
@@ -30,7 +39,7 @@ export function MemberTable({ members, currentUserIsAdmin, onViewMember, onEditM
               member={member}
               isCurrentUserAdmin={currentUserIsAdmin}
               onEdit={onEditMember}
-              onDelete={handleDeleteMember}
+              onDelete={handleDelete}
               onView={onViewMember}
             />
           ))}
