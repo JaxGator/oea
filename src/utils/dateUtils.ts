@@ -1,5 +1,4 @@
 import { startOfDay, addDays } from "date-fns";
-import { toZonedTime } from "date-fns-tz";
 
 export const isSameDay = (date1: Date, date2: Date): boolean => {
   const d1 = startOfDay(date1);
@@ -31,41 +30,27 @@ export const getUpcomingWeekendDate = (): Date => {
 export const filterEventsByDate = (events: any[], selectedDate: Date | undefined): any[] => {
   if (!selectedDate) return events;
 
-  const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  const normalizedSelectedDate = startOfDay(selectedDate);
 
-  return events.filter(event => {
-    const eventDate = new Date(event.date);
-    eventDate.setHours(0, 0, 0, 0);
+  return events.filter((event) => {
+    const eventDate = startOfDay(new Date(event.date));
 
     // For "This Weekend" selection
-    if (selectedDate.getDay() === 5) { // If selected date is Friday
-      return isDateInWeekendRange(eventDate, selectedDate);
+    if (normalizedSelectedDate.getDay() === 5) {
+      return isDateInWeekendRange(eventDate, normalizedSelectedDate);
     }
 
-    // Convert event date to local timezone for comparison
-    const localEventDate = toZonedTime(eventDate, timeZone);
-    localEventDate.setHours(0, 0, 0, 0);
-    
-    const localSelectedDate = toZonedTime(selectedDate, timeZone);
-    localSelectedDate.setHours(0, 0, 0, 0);
-
-    return isSameDay(localEventDate, localSelectedDate);
+    return isSameDay(eventDate, normalizedSelectedDate);
   });
 };
 
 export const isDateInWeekendRange = (date: Date, weekendStart: Date): boolean => {
-  const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-  const localDate = toZonedTime(date, timeZone);
-  localDate.setHours(0, 0, 0, 0);
+  const normalizedDate = startOfDay(date);
+  const normalizedWeekendStart = startOfDay(weekendStart);
   
-  const localWeekendStart = toZonedTime(weekendStart, timeZone);
-  localWeekendStart.setHours(0, 0, 0, 0);
-  
-  const weekendEnd = new Date(localWeekendStart);
-  weekendEnd.setDate(localWeekendStart.getDate() + 2); // Sunday (Friday + 2 days)
+  const weekendEnd = startOfDay(new Date(normalizedWeekendStart));
+  weekendEnd.setDate(normalizedWeekendStart.getDate() + 2); // Sunday (Friday + 2 days)
   weekendEnd.setHours(23, 59, 59, 999);
   
-  return localDate >= localWeekendStart && localDate <= weekendEnd;
+  return normalizedDate >= normalizedWeekendStart && normalizedDate <= weekendEnd;
 };
