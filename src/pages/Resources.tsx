@@ -7,8 +7,8 @@ const Resources = () => {
     <div className="min-h-screen bg-background">
       <div className="container mx-auto py-12 px-4">
         <div className="flex items-center gap-3 mb-8">
-          <SquareLibrary className="h-8 w-8 text-primary" />
-          <h1 className="text-4xl font-bold text-primary">Resources</h1>
+          <SquareLibrary className="h-6 w-6" />
+          <h2 className="text-2xl font-semibold">Resources</h2>
         </div>
         
         {resourcesData.map((resource, index) => (
