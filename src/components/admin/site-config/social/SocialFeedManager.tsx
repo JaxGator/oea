@@ -7,15 +7,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Trash2 } from "lucide-react";
-
-interface SocialFeed {
-  id: string;
-  platform: 'instagram' | 'facebook' | 'twitter';
-  embed_code: string;
-  is_enabled: boolean;
-  display_order: number;
-  title: string;
-}
+import { SocialFeed } from "../SocialMediaSettings";
 
 interface SocialFeedManagerProps {
   feeds: SocialFeed[];

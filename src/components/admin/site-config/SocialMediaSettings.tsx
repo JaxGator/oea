@@ -7,12 +7,16 @@ import { Separator } from "@/components/ui/separator";
 import { SocialLinksManager } from "./social/SocialLinksManager";
 import { SocialFeedManager } from "./social/SocialFeedManager";
 
-interface SocialFeed {
+export interface SocialFeed {
   id: string;
   platform: 'instagram' | 'facebook' | 'twitter';
-  feed_url: string;
+  embed_code: string;
   is_enabled: boolean;
   display_order: number;
+  title: string;
+  created_at?: string;
+  updated_at?: string;
+  updated_by?: string;
 }
 
 export function SocialMediaSettings() {
