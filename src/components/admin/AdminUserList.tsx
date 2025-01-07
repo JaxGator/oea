@@ -15,19 +15,18 @@ export function AdminUserList() {
   const [editingMember, setEditingMember] = useState<Member | null>(null);
   const { members, isLoading, error, refetch } = useMemberManagement();
 
-  // Show loading state while data is being fetched
+  console.log('AdminUserList render:', { members, isLoading, error });
+
   if (isLoading) {
     return <LoadingState />;
   }
 
-  // Show error state if there's an error
   if (error) {
     console.error('Error loading members:', error);
-    return <ErrorState />;
+    return <ErrorState message="Error loading members. Please try refreshing the page." />;
   }
 
-  // Show error state if no members are found
-  if (!members || members.length === 0) {
+  if (!Array.isArray(members) || members.length === 0) {
     return <ErrorState message="No members found. Please try refreshing the page." />;
   }
 

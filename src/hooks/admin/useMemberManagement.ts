@@ -8,7 +8,7 @@ export function useMemberManagement() {
   const queryClient = useQueryClient();
 
   const { 
-    data: members, 
+    data: members = [], // Provide empty array as default value
     isLoading, 
     error, 
     refetch 
@@ -23,15 +23,15 @@ export function useMemberManagement() {
 
       if (error) {
         console.error('Error fetching members:', error);
-        toast({
-          title: "Error",
-          description: "Failed to fetch members: " + error.message,
-          variant: "destructive",
-        });
         throw error;
       }
 
-      console.log('Members fetched successfully:', data?.length || 0, 'members');
+      if (!data) {
+        console.log('No members found');
+        return [];
+      }
+
+      console.log('Members fetched successfully:', data.length, 'members');
       return data as Member[];
     },
     retry: 1,
@@ -47,9 +47,8 @@ export function useMemberManagement() {
 
       if (error) throw error;
 
-      // Optimistically update the cache
       queryClient.setQueryData(['members'], (old: Member[] | undefined) => {
-        if (!old) return old;
+        if (!old) return [];
         return old.map(member => 
           member.id === memberId ? { ...member, ...updates } : member
         );
@@ -60,7 +59,6 @@ export function useMemberManagement() {
         description: "Member status updated successfully",
       });
 
-      // Refetch to ensure data consistency
       refetch();
     } catch (error) {
       console.error('Error updating member status:', error);
