@@ -6,7 +6,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { SessionContextProvider } from "@supabase/auth-helpers-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
+import { toast } from "@/hooks/use-toast";
 
 interface AppProvidersProps {
   children: ReactNode;
@@ -25,6 +26,7 @@ const queryClient = new QueryClient({
 export function AppProviders({ children }: AppProvidersProps) {
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     let mounted = true;
@@ -38,17 +40,21 @@ export function AppProviders({ children }: AppProvidersProps) {
           console.error('Session check error:', error);
           // Clear any stale data if there's a session error
           queryClient.clear();
-          localStorage.removeItem('supabase.auth.token');
-          navigate('/auth');
+          localStorage.clear(); // Clear all local storage to ensure no stale tokens
+          if (!location.pathname.includes('/auth')) {
+            navigate('/auth');
+          }
         }
 
-        if (!session) {
+        if (!session && !location.pathname.includes('/auth')) {
           console.log('No active session, redirecting to auth');
           navigate('/auth');
         }
       } catch (err) {
         console.error('Session check failed:', err);
-        navigate('/auth');
+        if (!location.pathname.includes('/auth')) {
+          navigate('/auth');
+        }
       } finally {
         if (mounted) {
           setIsLoading(false);
@@ -60,11 +66,17 @@ export function AppProviders({ children }: AppProvidersProps) {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log('Auth state changed:', event);
       
-      if (event === 'SIGNED_OUT' || event === 'USER_DELETED') {
+      if (event === 'SIGNED_OUT') {
         // Clear any auth-related state
         queryClient.clear();
-        localStorage.removeItem('supabase.auth.token');
-        navigate('/auth');
+        localStorage.clear(); // Clear all local storage
+        if (!location.pathname.includes('/auth')) {
+          navigate('/auth');
+        }
+        toast({
+          title: "Signed out",
+          description: "You have been signed out successfully",
+        });
       }
 
       if (event === 'TOKEN_REFRESHED') {
@@ -73,6 +85,13 @@ export function AppProviders({ children }: AppProvidersProps) {
 
       if (event === 'SIGNED_IN') {
         console.log('User signed in:', session?.user?.id);
+        if (location.pathname.includes('/auth')) {
+          navigate('/');
+        }
+        toast({
+          title: "Signed in",
+          description: "Welcome back!",
+        });
       }
     });
 
@@ -82,7 +101,7 @@ export function AppProviders({ children }: AppProvidersProps) {
       mounted = false;
       subscription.unsubscribe();
     };
-  }, [navigate]);
+  }, [navigate, location]);
 
   if (isLoading) {
     return <div>Loading...</div>;
