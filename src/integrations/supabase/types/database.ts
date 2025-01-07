@@ -2,7 +2,7 @@ import { AdminLog, Json } from './admin';
 import { Profile } from './auth';
 import { Event, EventRSVP, EventGuest } from './events';
 import { GalleryAlbum, GalleryImage } from './gallery';
-import { PageContent, SiteConfig, SocialMediaFeed } from './site';
+import { PageContent, SiteConfig } from './site';
 import { UserBlock } from './user';
 
 export type Database = {
@@ -80,15 +80,6 @@ export type Database = {
           updated_at?: string | null;
         };
         Update: Partial<SiteConfig>;
-      };
-      social_media_feeds: {
-        Row: SocialMediaFeed;
-        Insert: Omit<SocialMediaFeed, 'id' | 'created_at' | 'updated_at'> & {
-          id?: string;
-          created_at?: string;
-          updated_at?: string;
-        };
-        Update: Partial<SocialMediaFeed>;
       };
       user_blocks: {
         Row: UserBlock;
