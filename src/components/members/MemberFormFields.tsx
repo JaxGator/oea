@@ -2,6 +2,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { UserCircle } from "lucide-react";
 
 interface MemberFormFieldsProps {
   username: string;
@@ -18,6 +20,7 @@ interface MemberFormFieldsProps {
   setIsApproved: (value: boolean) => void;
   isMember: boolean;
   setIsMember: (value: boolean) => void;
+  avatarUrl?: string;
   onSubmit: () => void;
 }
 
@@ -36,10 +39,22 @@ export function MemberFormFields({
   setIsApproved,
   isMember,
   setIsMember,
+  avatarUrl,
   onSubmit,
 }: MemberFormFieldsProps) {
   return (
     <div className="space-y-4">
+      {avatarUrl && (
+        <div className="flex justify-center mb-4">
+          <Avatar className="h-20 w-20">
+            <AvatarImage src={avatarUrl} alt={username} />
+            <AvatarFallback>
+              <UserCircle className="h-20 w-20" />
+            </AvatarFallback>
+          </Avatar>
+        </div>
+      )}
+
       <div className="space-y-2">
         <Label htmlFor="email">Email</Label>
         <Input

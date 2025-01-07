@@ -17,7 +17,7 @@ interface Profile {
   is_admin: boolean;
   is_approved: boolean;
   is_member: boolean;
-  created_at: string;  // Added this field to match the type
+  created_at: string;
 }
 
 interface AdminUserTableRowProps {
@@ -33,6 +33,10 @@ export function AdminUserTableRow({
   onUpdateStatus,
   isUpdating
 }: AdminUserTableRowProps) {
+  if (!profile || !profile.username) {
+    return null; // Don't render if profile or username is missing
+  }
+
   return (
     <TableRow className="hover:bg-gray-50">
       <TableCell className="py-4">
