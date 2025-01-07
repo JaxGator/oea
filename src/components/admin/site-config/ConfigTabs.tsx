@@ -1,4 +1,4 @@
-import { Globe, Settings, Scale, Wrench, Share2 } from "lucide-react";
+import { Globe, Settings, Scale, Wrench } from "lucide-react";
 import { TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export function ConfigTabs() {
@@ -19,10 +19,6 @@ export function ConfigTabs() {
       <TabsTrigger value="technical" className="w-full sm:w-auto justify-start sm:justify-center">
         <Wrench className="h-4 w-4 mr-2" />
         Technical
-      </TabsTrigger>
-      <TabsTrigger value="social" className="w-full sm:w-auto justify-start sm:justify-center">
-        <Share2 className="h-4 w-4 mr-2" />
-        Social Media
       </TabsTrigger>
     </TabsList>
   );
