@@ -14,14 +14,16 @@ export function SocialFeedManager() {
 
   // Fetch existing feed configuration
   const { data: existingFeed, refetch } = useQuery({
-    queryKey: ['social-feed'],
+    queryKey: ['social-feed-admin'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('social_media_feeds')
         .select('*')
-        .single();
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
       
-      if (error && error.code !== 'PGRST116') throw error;
+      if (error) throw error;
       return data;
     },
   });

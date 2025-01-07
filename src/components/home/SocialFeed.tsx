@@ -5,16 +5,17 @@ import { Loader2 } from "lucide-react";
 import { useEffect } from "react";
 
 export function SocialFeed() {
-  const { data: feed, isLoading, error } = useQuery({
+  const { data: feeds, isLoading, error } = useQuery({
     queryKey: ['social-feed'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('social_media_feeds')
         .select('*')
         .eq('is_active', true)
-        .single();
+        .order('created_at', { ascending: false })
+        .limit(1);
       
-      if (error && error.code !== 'PGRST116') throw error;
+      if (error) throw error;
       return data;
     },
   });
@@ -22,10 +23,10 @@ export function SocialFeed() {
   useEffect(() => {
     // Function to load scripts from feed URL
     const loadFeedScript = () => {
-      if (!feed?.feed_url) return;
+      if (!feeds?.[0]?.feed_url) return;
 
       // Extract script content from feed_url if it exists
-      const scriptMatch = feed.feed_url.match(/<script[^>]*>([\s\S]*?)<\/script>/);
+      const scriptMatch = feeds[0].feed_url.match(/<script[^>]*>([\s\S]*?)<\/script>/);
       if (scriptMatch && scriptMatch[1]) {
         // Create and execute the script
         const scriptContent = scriptMatch[1];
@@ -35,7 +36,7 @@ export function SocialFeed() {
         script.setAttribute('data-feed-script', 'true');
         
         // Extract src if it exists in the original script tag
-        const srcMatch = feed.feed_url.match(/src="([^"]+)"/);
+        const srcMatch = feeds[0].feed_url.match(/src="([^"]+)"/);
         if (srcMatch && srcMatch[1]) {
           script.src = srcMatch[1];
         } else {
@@ -53,7 +54,7 @@ export function SocialFeed() {
       const scripts = document.querySelectorAll('script[data-feed-script]');
       scripts.forEach(script => script.remove());
     };
-  }, [feed]);
+  }, [feeds]);
 
   if (error) {
     return (
@@ -73,7 +74,7 @@ export function SocialFeed() {
     );
   }
 
-  if (!feed) {
+  if (!feeds?.length) {
     return null;
   }
 
@@ -81,10 +82,10 @@ export function SocialFeed() {
     <div className="mt-16 space-y-8">
       <h2 className="text-2xl font-bold text-center">Social Media</h2>
       <div className="w-full">
-        <h3 className="text-lg font-medium mb-4">{feed.platform}</h3>
+        <h3 className="text-lg font-medium mb-4">{feeds[0].platform}</h3>
         <div 
           dangerouslySetInnerHTML={{ 
-            __html: feed.feed_url.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+            __html: feeds[0].feed_url.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
           }}
           className="w-full min-h-[300px]"
         />
