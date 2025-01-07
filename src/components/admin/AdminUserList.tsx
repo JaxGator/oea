@@ -17,6 +17,11 @@ export function AdminUserList() {
 
   console.log('AdminUserList render:', { members, isLoading, error });
 
+  const handleEditMember = (member: Member) => {
+    console.log('Editing member:', member);
+    setEditingMember(member);
+  };
+
   const renderContent = () => {
     if (isLoading) {
       return <LoadingState />;
@@ -38,7 +43,7 @@ export function AdminUserList() {
           members={members} 
           currentUserIsAdmin={true} 
           onViewMember={setViewingMember}
-          onEditMember={setEditingMember}
+          onEditMember={handleEditMember}
         />
       </AdminUserTableWrapper>
     );

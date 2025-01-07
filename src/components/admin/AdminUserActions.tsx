@@ -24,6 +24,18 @@ export function AdminUserActions({
   onEdit,
   isUpdating 
 }: AdminUserActionsProps) {
+  const handleEdit = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onEdit();
+  };
+
+  const handleUpdateStatus = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onUpdateStatus(profile.username);
+  };
+
   return (
     <div className="flex items-center gap-2">
       <TooltipProvider>
@@ -32,7 +44,7 @@ export function AdminUserActions({
             <Button
               variant="outline"
               size="sm"
-              onClick={onEdit}
+              onClick={handleEdit}
               className="w-full sm:w-auto"
               aria-label="Edit user details"
             >
@@ -52,7 +64,7 @@ export function AdminUserActions({
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => onUpdateStatus(profile.username)}
+                onClick={handleUpdateStatus}
                 disabled={isUpdating}
                 className="w-full sm:w-auto whitespace-nowrap"
                 aria-label="Make user an admin"

@@ -38,6 +38,11 @@ export function AdminUserTableRow({
     return null;
   }
 
+  const handleEdit = () => {
+    console.log('Handling edit for profile:', profile);
+    onEdit(profile);
+  };
+
   return (
     <TableRow className="hover:bg-gray-50">
       <TableCell className="py-4">
@@ -60,7 +65,7 @@ export function AdminUserTableRow({
             profile={profile}
             onUpdateStatus={onUpdateStatus}
             isUpdating={isUpdating}
-            onEdit={() => onEdit(profile)}
+            onEdit={handleEdit}
           />
         </div>
       </TableCell>
