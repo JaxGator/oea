@@ -4,6 +4,7 @@ import { EditMemberDialog } from "@/components/members/EditMemberDialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
+import { Loader2 } from "lucide-react";
 
 interface EditMemberHandlerProps {
   member: Member | null;
@@ -88,7 +89,11 @@ export function EditMemberHandler({ member, onClose, onUpdate }: EditMemberHandl
   };
 
   if (isLoading) {
-    return null; // Or return a loading spinner
+    return (
+      <div className="flex items-center justify-center p-4">
+        <Loader2 className="h-6 w-6 animate-spin" />
+      </div>
+    );
   }
 
   return editingMember ? (
