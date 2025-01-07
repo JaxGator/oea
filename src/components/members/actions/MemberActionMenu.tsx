@@ -6,8 +6,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 interface MemberActionMenuProps {
-  onEdit: () => void;
-  onDelete: () => void;
+  onEdit: (e: React.MouseEvent) => void;
+  onDelete: (e: React.MouseEvent) => void;
 }
 
 export function MemberActionMenu({ onEdit, onDelete }: MemberActionMenuProps) {

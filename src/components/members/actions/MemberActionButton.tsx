@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { MoreHorizontal } from "lucide-react";
 
 interface MemberActionButtonProps {
-  onClick: () => void;
+  onClick?: () => void;
 }
 
 export function MemberActionButton({ onClick }: MemberActionButtonProps) {

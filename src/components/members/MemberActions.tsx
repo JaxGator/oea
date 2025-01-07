@@ -34,16 +34,28 @@ export function MemberActions({
 
   if (!user) return null;
 
+  const handleEdit = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onEdit();
+  };
+
+  const handleDelete = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setShowDeleteDialog(true);
+  };
+
   return (
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <MemberActionButton onClick={() => {}} />
+          <MemberActionButton />
         </DropdownMenuTrigger>
         {isCurrentUserAdmin && (
           <MemberActionMenu
-            onEdit={onEdit}
-            onDelete={() => setShowDeleteDialog(true)}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
           />
         )}
       </DropdownMenu>
