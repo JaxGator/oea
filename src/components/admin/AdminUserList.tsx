@@ -46,7 +46,7 @@ export function AdminUserList() {
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold">User Management</h2>
         <div className="flex gap-2">
           <CreateUserDialog onUserCreated={refetch} />
