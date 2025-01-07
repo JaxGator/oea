@@ -77,7 +77,7 @@ export function AdminUserList() {
       {editingMember && (
         <EditMemberDialog
           member={editingMember}
-          open={true}
+          open={!!editingMember}
           onOpenChange={(open) => !open && handleCloseEdit()}
           onUpdate={refetch}
         />

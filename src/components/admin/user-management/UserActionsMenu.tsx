@@ -31,7 +31,7 @@ export function UserActionsMenu({ onEdit, onUpdateStatus, isUpdating }: UserActi
   };
 
   return (
-    <DropdownMenu modal={false}>
+    <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button
           variant="ghost"
@@ -48,7 +48,6 @@ export function UserActionsMenu({ onEdit, onUpdateStatus, isUpdating }: UserActi
       <DropdownMenuContent 
         align="end" 
         className="w-[160px] bg-white shadow-lg border border-gray-200 rounded-md"
-        style={{ zIndex: 999 }}
       >
         <DropdownMenuItem 
           onClick={handleEdit}
