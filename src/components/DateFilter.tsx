@@ -3,7 +3,7 @@ import { CalendarRange } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { DateFilterButtons } from "@/components/event/filters/DateFilterButtons";
-import { fromZonedTime } from "date-fns-tz";
+import { fromZonedTime } from "date-fns-tz/fromZonedTime";
 
 interface DateFilterProps {
   selectedDate?: Date;

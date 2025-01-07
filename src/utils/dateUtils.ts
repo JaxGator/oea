@@ -1,5 +1,5 @@
 import { startOfDay, addDays } from "date-fns";
-import { fromZonedTime } from "date-fns-tz";
+import { fromZonedTime } from "date-fns-tz/fromZonedTime";
 
 export const isSameDay = (date1: Date, date2: Date): boolean => {
   const d1 = startOfDay(date1);
