@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { DropdownMenu, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { useAuthState } from "@/hooks/useAuthState";
 import {
   AlertDialog,
@@ -12,7 +12,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { MemberActionButton } from "./actions/MemberActionButton";
-import { MemberActionMenu } from "./actions/MemberActionMenu";
+import { Edit, Trash2 } from "lucide-react";
 
 interface MemberActionsProps {
   memberId: string;
@@ -53,10 +53,16 @@ export function MemberActions({
           <MemberActionButton />
         </DropdownMenuTrigger>
         {isCurrentUserAdmin && (
-          <MemberActionMenu
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-          />
+          <DropdownMenuContent align="end" className="w-[160px]">
+            <DropdownMenuItem onClick={handleEdit} className="cursor-pointer">
+              <Edit className="mr-2 h-4 w-4" />
+              Edit
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={handleDelete} className="cursor-pointer text-red-600">
+              <Trash2 className="mr-2 h-4 w-4" />
+              Delete
+            </DropdownMenuItem>
+          </DropdownMenuContent>
         )}
       </DropdownMenu>
 
