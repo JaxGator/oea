@@ -19,7 +19,16 @@ import { ErrorBoundary } from "./components/error/ErrorBoundary";
 
 const App = () => {
   return (
-    <ErrorBoundary fallback={<div>Something went wrong</div>}>
+    <ErrorBoundary 
+      fallback={
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="p-4 rounded-lg bg-red-50 text-red-800">
+            <h2 className="text-lg font-semibold mb-2">Something went wrong</h2>
+            <p>Please try refreshing the page. If the problem persists, contact support.</p>
+          </div>
+        </div>
+      }
+    >
       <AppProviders>
         <Routes>
           <Route path="/auth" element={<Auth />} />

@@ -18,7 +18,7 @@ const queryClient = new QueryClient({
     queries: {
       retry: 2,
       refetchOnWindowFocus: false,
-      staleTime: 1000 * 60 * 5,
+      staleTime: 1000 * 60 * 5, // 5 minutes
     },
   },
 });
@@ -33,6 +33,7 @@ export function AppProviders({ children }: AppProvidersProps) {
 
     const checkSession = async () => {
       try {
+        console.log('Checking session...');
         const { data: { session }, error } = await supabase.auth.getSession();
         
         if (error) {
@@ -64,6 +65,7 @@ export function AppProviders({ children }: AppProvidersProps) {
       console.log('Auth state changed:', event);
       
       if (event === 'SIGNED_OUT') {
+        console.log('User signed out, clearing data and redirecting');
         queryClient.clear();
         localStorage.clear();
         if (!location.pathname.includes('/auth')) {
@@ -101,8 +103,9 @@ export function AppProviders({ children }: AppProvidersProps) {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="min-h-screen flex items-center justify-center" role="status" aria-label="Loading">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" aria-hidden="true" />
+        <span className="sr-only">Loading...</span>
       </div>
     );
   }
