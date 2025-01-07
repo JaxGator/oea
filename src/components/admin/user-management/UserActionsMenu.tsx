@@ -47,7 +47,8 @@ export function UserActionsMenu({ onEdit, onUpdateStatus, isUpdating }: UserActi
       </DropdownMenuTrigger>
       <DropdownMenuContent 
         align="end" 
-        className="w-[160px] bg-white shadow-lg border border-gray-200 rounded-md"
+        className="z-50 min-w-[160px] bg-white shadow-lg border border-gray-200 rounded-md"
+        forceMount
       >
         <DropdownMenuItem 
           onClick={handleEdit}
