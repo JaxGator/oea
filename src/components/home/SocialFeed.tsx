@@ -6,7 +6,7 @@ import { useEffect } from "react";
 
 export function SocialFeed() {
   const { data: feeds, isLoading, error } = useQuery({
-    queryKey: ['social-feed'],
+    queryKey: ['social-feeds'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('social_media_feeds')
@@ -50,16 +50,6 @@ export function SocialFeed() {
     };
   }, [feeds]);
 
-  if (error) {
-    return (
-      <Alert variant="destructive">
-        <AlertDescription>
-          Failed to load social media feed
-        </AlertDescription>
-      </Alert>
-    );
-  }
-
   if (isLoading) {
     return (
       <div className="flex justify-center items-center min-h-[200px]">
@@ -68,13 +58,23 @@ export function SocialFeed() {
     );
   }
 
-  if (!feeds?.length) {
+  if (error) {
+    return (
+      <Alert variant="destructive">
+        <AlertDescription>
+          Error loading social media feed. Please try again later.
+        </AlertDescription>
+      </Alert>
+    );
+  }
+
+  if (!feeds || feeds.length === 0) {
     return null;
   }
 
   return (
     <div className="mt-16 space-y-8">
-      <div className="flex items-center justify-center gap-2">
+      <div className="flex items-center gap-2">
         <Rss className="h-6 w-6" />
         <h2 className="text-2xl font-bold">Social Feed</h2>
       </div>
@@ -82,8 +82,7 @@ export function SocialFeed() {
         <div 
           dangerouslySetInnerHTML={{ 
             __html: feeds[0].feed_url.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
-          }}
-          className="w-full min-h-[300px]"
+          }} 
         />
       </div>
     </div>
