@@ -34,7 +34,7 @@ export function useMemberManagement() {
       console.log('Raw profiles data:', profiles);
 
       const members = profiles.map(profile => {
-        if (!profile || !profile.id || !profile.username) {
+        if (!profile?.id || !profile?.username) {
           console.warn('Invalid profile data:', profile);
           return null;
         }
