@@ -26,6 +26,11 @@ export function AdminUserList() {
     return <ErrorState message="Error loading members. Please try refreshing the page." />;
   }
 
+  if (!Array.isArray(members)) {
+    console.error('Members is not an array:', members);
+    return <ErrorState message="Invalid data format. Please try refreshing the page." />;
+  }
+
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">

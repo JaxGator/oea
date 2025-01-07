@@ -8,7 +8,7 @@ export function useMemberManagement() {
   const queryClient = useQueryClient();
 
   const { 
-    data: members, 
+    data: members = [], 
     isLoading, 
     error, 
     refetch 
@@ -31,21 +31,29 @@ export function useMemberManagement() {
         return [];
       }
 
-      const members = profiles.map(profile => ({
-        id: profile.id,
-        username: profile.username,
-        full_name: profile.full_name,
-        avatar_url: profile.avatar_url,
-        is_admin: Boolean(profile.is_admin),
-        is_approved: Boolean(profile.is_approved),
-        is_member: Boolean(profile.is_member),
-        created_at: profile.created_at
-      }));
+      console.log('Raw profiles data:', profiles);
 
-      console.log('Members fetched:', members);
+      const members = profiles.map(profile => {
+        if (!profile || !profile.id || !profile.username) {
+          console.warn('Invalid profile data:', profile);
+          return null;
+        }
+
+        return {
+          id: profile.id,
+          username: profile.username,
+          full_name: profile.full_name || null,
+          avatar_url: profile.avatar_url || null,
+          is_admin: Boolean(profile.is_admin),
+          is_approved: Boolean(profile.is_approved),
+          is_member: Boolean(profile.is_member),
+          created_at: profile.created_at
+        };
+      }).filter((member): member is Member => member !== null);
+
+      console.log('Processed members:', members);
       return members;
-    },
-    initialData: []
+    }
   });
 
   const updateMemberStatus = async (memberId: string, updates: Partial<Member>) => {
@@ -81,7 +89,7 @@ export function useMemberManagement() {
   };
 
   return {
-    members: members || [],
+    members,
     isLoading,
     error,
     refetch,
