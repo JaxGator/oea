@@ -1,9 +1,10 @@
+import { startOfDay, addDays } from "date-fns";
+import { zonedTimeToUtc } from "date-fns-tz";
+
 export const isSameDay = (date1: Date, date2: Date): boolean => {
-  return (
-    date1.getFullYear() === date2.getFullYear() &&
-    date1.getMonth() === date2.getMonth() &&
-    date1.getDate() === date2.getDate()
-  );
+  const d1 = startOfDay(date1);
+  const d2 = startOfDay(date2);
+  return d1.getTime() === d2.getTime();
 };
 
 export const getUpcomingWeekendDate = (): Date => {
@@ -24,24 +25,13 @@ export const getUpcomingWeekendDate = (): Date => {
     friday.setDate(today.getDate() + (5 - dayOfWeek));
   }
   
-  friday.setHours(0, 0, 0, 0);
-  return friday;
-};
-
-export const isDateInWeekendRange = (date: Date, weekendStart: Date): boolean => {
-  const dateToCheck = new Date(date);
-  dateToCheck.setHours(0, 0, 0, 0);
-  
-  const weekendEnd = new Date(weekendStart);
-  weekendEnd.setDate(weekendStart.getDate() + 2); // Sunday (Friday + 2 days)
-  weekendEnd.setHours(23, 59, 59, 999);
-  
-  return dateToCheck >= weekendStart && dateToCheck <= weekendEnd;
+  return startOfDay(friday);
 };
 
 export const filterEventsByDate = (events: any[], selectedDate: Date | undefined): any[] => {
   if (!selectedDate) return events;
 
+  const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
@@ -54,7 +44,28 @@ export const filterEventsByDate = (events: any[], selectedDate: Date | undefined
       return isDateInWeekendRange(eventDate, selectedDate);
     }
 
-    // For specific date selection
-    return isSameDay(eventDate, selectedDate);
+    // Convert event date to local timezone for comparison
+    const localEventDate = zonedTimeToUtc(eventDate, timeZone);
+    localEventDate.setHours(0, 0, 0, 0);
+    
+    const localSelectedDate = zonedTimeToUtc(selectedDate, timeZone);
+    localSelectedDate.setHours(0, 0, 0, 0);
+
+    return isSameDay(localEventDate, localSelectedDate);
   });
+};
+
+export const isDateInWeekendRange = (date: Date, weekendStart: Date): boolean => {
+  const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const localDate = zonedTimeToUtc(date, timeZone);
+  localDate.setHours(0, 0, 0, 0);
+  
+  const localWeekendStart = zonedTimeToUtc(weekendStart, timeZone);
+  localWeekendStart.setHours(0, 0, 0, 0);
+  
+  const weekendEnd = new Date(localWeekendStart);
+  weekendEnd.setDate(localWeekendStart.getDate() + 2); // Sunday (Friday + 2 days)
+  weekendEnd.setHours(23, 59, 59, 999);
+  
+  return localDate >= localWeekendStart && localDate <= weekendEnd;
 };
