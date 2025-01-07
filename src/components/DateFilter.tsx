@@ -13,21 +13,23 @@ export function DateFilter({
     const today = new Date();
     const currentDay = today.getDay(); // 0 is Sunday, 6 is Saturday
     
-    // Calculate days until next Saturday
-    const daysUntilSaturday = (6 - currentDay + 7) % 7;
-    
-    // If today is Sunday, use today's date
-    if (currentDay === 0) {
-      return today;
+    // If today is already part of the weekend (Fri, Sat, or Sun), return today
+    if (currentDay === 5 || currentDay === 6 || currentDay === 0) {
+      const weekendStart = new Date(today);
+      weekendStart.setHours(0, 0, 0, 0);
+      return weekendStart;
     }
     
-    // Create date for next Saturday
-    const nextSaturday = new Date(today);
-    nextSaturday.setDate(today.getDate() + daysUntilSaturday);
-    // Reset time to start of day
-    nextSaturday.setHours(0, 0, 0, 0);
+    // Calculate days until next Friday
+    const daysUntilFriday = (5 - currentDay + 7) % 7;
     
-    return nextSaturday;
+    // Create date for next Friday
+    const nextFriday = new Date(today);
+    nextFriday.setDate(today.getDate() + daysUntilFriday);
+    // Reset time to start of day
+    nextFriday.setHours(0, 0, 0, 0);
+    
+    return nextFriday;
   };
 
   const dates = [
