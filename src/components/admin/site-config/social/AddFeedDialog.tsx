@@ -3,7 +3,15 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogHeader, 
+  DialogTitle, 
+  DialogTrigger, 
+  DialogFooter,
+  DialogDescription
+} from "@/components/ui/dialog";
 import { Plus } from "lucide-react";
 import { SocialFeed } from "../SocialMediaSettings";
 
@@ -14,10 +22,19 @@ interface AddFeedDialogProps {
 
 export function AddFeedDialog({ feeds, onFeedAdded }: AddFeedDialogProps) {
   const { toast } = useToast();
-  const [open, setOpen] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(false);
   const [embedCode, setEmbedCode] = useState("");
 
   const handleSave = async () => {
+    if (!embedCode.trim()) {
+      toast({
+        title: "Error",
+        description: "Please enter an embed code",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       const { data, error } = await supabase
         .from('social_media_feeds')
@@ -34,7 +51,7 @@ export function AddFeedDialog({ feeds, onFeedAdded }: AddFeedDialogProps) {
       if (error) throw error;
       
       onFeedAdded(data);
-      setOpen(false);
+      setDialogOpen(false);
       setEmbedCode("");
       
       toast({
@@ -51,10 +68,17 @@ export function AddFeedDialog({ feeds, onFeedAdded }: AddFeedDialogProps) {
     }
   };
 
+  const handleOpenChange = (open: boolean) => {
+    setDialogOpen(open);
+    if (!open) {
+      setEmbedCode(""); // Reset form when dialog closes
+    }
+  };
+
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={dialogOpen} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <Button size="sm">
+        <Button size="sm" variant="default">
           <Plus className="h-4 w-4 mr-2" />
           Add Feed
         </Button>
@@ -62,19 +86,29 @@ export function AddFeedDialog({ feeds, onFeedAdded }: AddFeedDialogProps) {
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Add New Social Media Feed</DialogTitle>
+          <DialogDescription>
+            Paste your social media embed code below to add a new feed to your site.
+          </DialogDescription>
         </DialogHeader>
         <div className="space-y-4 py-4">
           <Input
             value={embedCode}
             onChange={(e) => setEmbedCode(e.target.value)}
             placeholder="Paste embed code here"
+            className="min-h-[100px]"
           />
         </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={() => setOpen(false)}>
+        <DialogFooter className="gap-2">
+          <Button
+            variant="outline"
+            onClick={() => setDialogOpen(false)}
+          >
             Cancel
           </Button>
-          <Button onClick={handleSave}>
+          <Button 
+            onClick={handleSave}
+            disabled={!embedCode.trim()}
+          >
             Save Feed
           </Button>
         </DialogFooter>
