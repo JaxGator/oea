@@ -1,5 +1,5 @@
 import { startOfDay, addDays } from "date-fns";
-import { fromZonedTime } from "date-fns-tz/fromZonedTime";
+import { toZonedTime } from "date-fns-tz";
 
 export const isSameDay = (date1: Date, date2: Date): boolean => {
   const d1 = startOfDay(date1);
@@ -45,10 +45,10 @@ export const filterEventsByDate = (events: any[], selectedDate: Date | undefined
     }
 
     // Convert event date to local timezone for comparison
-    const localEventDate = fromZonedTime(eventDate, timeZone);
+    const localEventDate = toZonedTime(eventDate, timeZone);
     localEventDate.setHours(0, 0, 0, 0);
     
-    const localSelectedDate = fromZonedTime(selectedDate, timeZone);
+    const localSelectedDate = toZonedTime(selectedDate, timeZone);
     localSelectedDate.setHours(0, 0, 0, 0);
 
     return isSameDay(localEventDate, localSelectedDate);
@@ -57,10 +57,10 @@ export const filterEventsByDate = (events: any[], selectedDate: Date | undefined
 
 export const isDateInWeekendRange = (date: Date, weekendStart: Date): boolean => {
   const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-  const localDate = fromZonedTime(date, timeZone);
+  const localDate = toZonedTime(date, timeZone);
   localDate.setHours(0, 0, 0, 0);
   
-  const localWeekendStart = fromZonedTime(weekendStart, timeZone);
+  const localWeekendStart = toZonedTime(weekendStart, timeZone);
   localWeekendStart.setHours(0, 0, 0, 0);
   
   const weekendEnd = new Date(localWeekendStart);
