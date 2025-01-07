@@ -1,6 +1,8 @@
 import { SocialLinksManager } from "./social/SocialLinksManager";
+import { SocialFeedManager } from "./social/SocialFeedManager";
 import { useState } from "react";
 import { useSocialLinks } from "@/hooks/useSocialLinks";
+import { Separator } from "@/components/ui/separator";
 
 interface SocialSettingsProps {
   configs: Record<string, string>;
@@ -29,6 +31,10 @@ export function SocialSettings({ configs, setConfigs, updateConfig }: SocialSett
         socialLinks={socialLinks}
         setSocialLinks={setSocialLinks}
       />
+
+      <Separator className="my-6" />
+
+      <SocialFeedManager />
     </div>
   );
 }

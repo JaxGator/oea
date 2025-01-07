@@ -2,6 +2,7 @@ import { ErrorBoundary } from '@/components/error/ErrorBoundary';
 import { Hero } from '@/components/home/Hero';
 import { FeaturedEvents } from "@/components/home/FeaturedEvents";
 import { GalleryPreview } from "@/components/home/GalleryPreview";
+import { SocialFeed } from "@/components/home/SocialFeed";
 import { FeaturedMerch } from "@/components/home/FeaturedMerch";
 import { Suspense } from 'react';
 import { Loader2 } from "lucide-react";
@@ -56,6 +57,18 @@ export default function Index() {
           >
             <Suspense fallback={<LoadingSpinner />}>
               <GalleryPreview />
+            </Suspense>
+          </ErrorBoundary>
+
+          <ErrorBoundary 
+            fallback={<ErrorFallback />}
+            onError={(error: Error, errorInfo: ErrorInfo) => {
+              console.error('Social Feed Error:', error, errorInfo);
+              toast.error('Failed to load social feeds');
+            }}
+          >
+            <Suspense fallback={<LoadingSpinner />}>
+              <SocialFeed />
             </Suspense>
           </ErrorBoundary>
 
