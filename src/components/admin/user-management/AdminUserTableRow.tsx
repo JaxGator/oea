@@ -26,6 +26,8 @@ export function AdminUserTableRow({
   onUpdateStatus,
   isUpdating
 }: AdminUserTableRowProps) {
+  console.log('AdminUserTableRow render:', { profile });
+
   if (!profile?.id || !profile?.username) {
     console.warn('Invalid profile data:', profile);
     return null;
@@ -36,8 +38,13 @@ export function AdminUserTableRow({
     onEdit(profile);
   };
 
+  const handleUpdateStatus = () => {
+    console.log('Handling update status for:', profile.username);
+    onUpdateStatus(profile.username);
+  };
+
   return (
-    <TableRow className="hover:bg-gray-50">
+    <TableRow>
       <TableCell className="py-4">
         <div className="flex flex-col gap-1">
           <span className="font-medium">{profile.username}</span>
@@ -64,7 +71,7 @@ export function AdminUserTableRow({
         <div className="flex justify-end">
           <UserActionsMenu
             onEdit={handleEdit}
-            onUpdateStatus={() => onUpdateStatus(profile.username)}
+            onUpdateStatus={handleUpdateStatus}
             isUpdating={isUpdating}
           />
         </div>
