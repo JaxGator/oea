@@ -1,16 +1,13 @@
 import { useState } from "react";
 import { CreateEventDialog } from "@/components/CreateEventDialog";
-import { DateFilter } from "@/components/DateFilter";
 import { useEvents } from "@/hooks/useEvents";
-import { EventList } from "@/components/event/EventList";
-import { EventsMap } from "@/components/event/EventsMap";
 import { useRSVP } from "@/hooks/useRSVP";
 import { toast } from "sonner";
 import { useAuthState } from "@/hooks/useAuthState";
-import { Loader2, CalendarDays, CalendarRange, CalendarFold } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { ErrorBoundary } from "@/components/error/ErrorBoundary";
+import { Loader2, CalendarRange } from "lucide-react";
 import { isSameDay, isDateInWeekendRange } from "@/utils/dateUtils";
+import { EventsHeader } from "@/components/event/sections/EventsHeader";
+import { EventsContent } from "@/components/event/sections/EventsContent";
 
 export default function Events() {
   const { isAuthenticated } = useAuthState();
@@ -25,11 +22,9 @@ export default function Events() {
 
     return events.filter(event => {
       const eventDate = new Date(event.date);
-      // For "Today" filter
       if (isSameDay(eventDate, date)) return true;
       
-      // For "This Weekend" filter (Friday through Sunday)
-      if (date.getDay() === 5) { // If the selected date is a Friday
+      if (date.getDay() === 5) { // If selected date is Friday
         return isDateInWeekendRange(eventDate, date);
       }
       
@@ -76,59 +71,20 @@ export default function Events() {
         
         <div className="bg-white rounded-lg shadow-sm">
           <div className="p-6">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-              <h2 className="text-2xl font-semibold flex items-center gap-2">
-                <CalendarDays className="h-6 w-6" />
-                Upcoming Events
-              </h2>
-              <div className="flex flex-wrap gap-4 w-full sm:w-auto">
-                <DateFilter
-                  selectedDate={selectedDate}
-                  onDateSelect={setSelectedDate}
-                />
-                {isAuthenticated && (
-                  <Button 
-                    onClick={() => setIsCreateEventOpen(true)}
-                    className="bg-[#0d97d1] hover:bg-[#0d97d1]/90 w-full sm:w-auto"
-                  >
-                    Create Event
-                  </Button>
-                )}
-              </div>
-            </div>
+            <EventsHeader
+              selectedDate={selectedDate}
+              onDateSelect={setSelectedDate}
+              isAuthenticated={isAuthenticated}
+              onCreateEvent={() => setIsCreateEventOpen(true)}
+            />
 
-            {upcomingEvents.length > 0 && (
-              <div className="mb-8">
-                <ErrorBoundary fallback={<div>Error loading map. Please try again later.</div>}>
-                  <EventsMap events={upcomingEvents} />
-                </ErrorBoundary>
-              </div>
-            )}
-
-            <ErrorBoundary fallback={<div>Error loading events. Please try again later.</div>}>
-              <EventList 
-                events={upcomingEvents}
-                onRSVP={handleRSVP}
-                onCancelRSVP={cancelRSVP}
-              />
-            </ErrorBoundary>
+            <EventsContent
+              upcomingEvents={upcomingEvents}
+              pastEvents={pastEvents}
+              onRSVP={handleRSVP}
+              onCancelRSVP={cancelRSVP}
+            />
           </div>
-
-          {pastEvents.length > 0 && (
-            <div className="border-t p-6">
-              <h2 className="text-2xl font-semibold mb-6 flex items-center gap-2">
-                <CalendarFold className="h-6 w-6" />
-                Past Events
-              </h2>
-              <ErrorBoundary fallback={<div>Error loading past events. Please try again later.</div>}>
-                <EventList 
-                  events={pastEvents}
-                  onRSVP={handleRSVP}
-                  onCancelRSVP={cancelRSVP}
-                />
-              </ErrorBoundary>
-            </div>
-          )}
         </div>
 
         <CreateEventDialog
