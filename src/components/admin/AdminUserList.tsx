@@ -1,64 +1,26 @@
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { useState } from "react";
 import { Member } from "@/components/members/types";
 import { MemberTable } from "@/components/members/MemberTable";
 import { AdminUserTableWrapper } from "./user-management/AdminUserTableWrapper";
 import { CreateUserDialog } from "./user-management/CreateUserDialog";
 import { BulkUserCreation } from "./user-management/BulkUserCreation";
-import { useToast } from "@/hooks/use-toast";
-import { useState } from "react";
 import { ViewMemberDialog } from "@/components/members/ViewMemberDialog";
 import { EditMemberDialog } from "@/components/members/EditMemberDialog";
+import { LoadingState } from "./user-management/LoadingState";
+import { ErrorState } from "./user-management/ErrorState";
+import { useMemberManagement } from "@/hooks/admin/useMemberManagement";
 
 export function AdminUserList() {
-  const { toast } = useToast();
   const [viewingMember, setViewingMember] = useState<Member | null>(null);
   const [editingMember, setEditingMember] = useState<Member | null>(null);
-
-  const { data: members, isLoading, error, refetch } = useQuery({
-    queryKey: ['members'],
-    queryFn: async () => {
-      console.log('Fetching members...');
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .order('username');
-
-      if (error) {
-        console.error('Error fetching members:', error);
-        toast({
-          title: "Error",
-          description: "Failed to fetch members: " + error.message,
-          variant: "destructive",
-        });
-        throw error;
-      }
-
-      console.log('Members fetched successfully:', data?.length || 0, 'members');
-      return data as Member[];
-    },
-    retry: 1,
-    staleTime: 1000 * 60, // 1 minute
-    onError: (error) => {
-      console.error('Query error:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load members. Please try again.",
-        variant: "destructive",
-      });
-    },
-  });
+  const { members, isLoading, error, refetch } = useMemberManagement();
 
   if (isLoading) {
-    return <div>Loading users...</div>;
+    return <LoadingState />;
   }
 
   if (error) {
-    return (
-      <div className="p-4 text-red-500">
-        Error loading members. Please try refreshing the page.
-      </div>
-    );
+    return <ErrorState />;
   }
 
   return (
