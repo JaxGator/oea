@@ -1,4 +1,4 @@
-import { startOfDay, addDays } from "date-fns";
+import { startOfDay, parseISO } from "date-fns";
 
 export const isSameDay = (date1: Date, date2: Date): boolean => {
   const d1 = startOfDay(date1);
@@ -33,13 +33,15 @@ export const filterEventsByDate = (events: any[], selectedDate: Date | undefined
   const normalizedSelectedDate = startOfDay(selectedDate);
 
   return events.filter((event) => {
-    const eventDate = startOfDay(new Date(event.date));
+    // Parse the event.date string into a Date object
+    const eventDate = startOfDay(parseISO(event.date));
 
     // For "This Weekend" selection
     if (normalizedSelectedDate.getDay() === 5) {
       return isDateInWeekendRange(eventDate, normalizedSelectedDate);
     }
 
+    // Compare the normalized dates
     return isSameDay(eventDate, normalizedSelectedDate);
   });
 };
