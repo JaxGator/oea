@@ -10,6 +10,17 @@ interface DateFilterProps {
 }
 
 export function DateFilter({ selectedDate, onDateSelect }: DateFilterProps) {
+  const handleDateSelect = (date: Date | undefined) => {
+    if (date) {
+      // Ensure the date is set to midnight for consistent comparison
+      const normalizedDate = new Date(date);
+      normalizedDate.setHours(0, 0, 0, 0);
+      onDateSelect(normalizedDate);
+    } else {
+      onDateSelect(undefined);
+    }
+  };
+
   return (
     <div className="flex items-center gap-2">
       <Popover>
@@ -32,7 +43,7 @@ export function DateFilter({ selectedDate, onDateSelect }: DateFilterProps) {
           <Calendar
             mode="single"
             selected={selectedDate}
-            onSelect={onDateSelect}
+            onSelect={handleDateSelect}
             initialFocus
           />
         </PopoverContent>
@@ -40,7 +51,7 @@ export function DateFilter({ selectedDate, onDateSelect }: DateFilterProps) {
 
       <DateFilterButtons
         selectedDate={selectedDate}
-        onDateSelect={onDateSelect}
+        onDateSelect={handleDateSelect}
       />
     </div>
   );

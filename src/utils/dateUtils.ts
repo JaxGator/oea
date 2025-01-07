@@ -11,12 +11,17 @@ export const getUpcomingWeekendDate = (): Date => {
   const dayOfWeek = today.getDay(); // 0 is Sunday, 6 is Saturday
   const friday = new Date(today);
   
-  if (dayOfWeek === 0) { // Sunday
-    friday.setDate(today.getDate() - 2); // Go back to Friday
-  } else if (dayOfWeek >= 5) { // Friday or Saturday
-    friday.setDate(today.getDate() - (dayOfWeek - 5)); // Go back to current Friday
-  } else { // Monday through Thursday
-    friday.setDate(today.getDate() + (5 - dayOfWeek)); // Go forward to next Friday
+  // If today is Sunday, get next Friday
+  if (dayOfWeek === 0) {
+    friday.setDate(today.getDate() + 5);
+  } 
+  // If today is already Friday or Saturday, use today's date
+  else if (dayOfWeek >= 5) {
+    friday.setDate(today.getDate());
+  } 
+  // Otherwise, get this coming Friday
+  else {
+    friday.setDate(today.getDate() + (5 - dayOfWeek));
   }
   
   friday.setHours(0, 0, 0, 0);
@@ -32,4 +37,24 @@ export const isDateInWeekendRange = (date: Date, weekendStart: Date): boolean =>
   weekendEnd.setHours(23, 59, 59, 999);
   
   return dateToCheck >= weekendStart && dateToCheck <= weekendEnd;
+};
+
+export const filterEventsByDate = (events: any[], selectedDate: Date | undefined): any[] => {
+  if (!selectedDate) return events;
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  return events.filter(event => {
+    const eventDate = new Date(event.date);
+    eventDate.setHours(0, 0, 0, 0);
+
+    // For "This Weekend" selection
+    if (selectedDate.getDay() === 5) { // If selected date is Friday
+      return isDateInWeekendRange(eventDate, selectedDate);
+    }
+
+    // For specific date selection
+    return isSameDay(eventDate, selectedDate);
+  });
 };
