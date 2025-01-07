@@ -49,22 +49,24 @@ export function SocialFeedSection() {
   }
 
   return (
-    <div className="mt-16 space-y-4">
-      <h2 className="text-2xl font-bold text-gray-900">Social Media</h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {feeds.map((feed) => (
-          <Card key={feed.id}>
-            <CardContent className="p-4">
-              <div className="aspect-square">
-                <div 
-                  dangerouslySetInnerHTML={{ __html: feed.embed_code }}
-                  className="w-full h-full"
-                />
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+    <section className="py-16 bg-background">
+      <div className="container mx-auto px-4">
+        <h2 className="text-3xl font-bold text-center mb-8">Connect With Us</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {feeds.map((feed) => (
+            <Card key={feed.id} className="overflow-hidden">
+              <CardContent className="p-4">
+                <div className="aspect-square relative">
+                  <div 
+                    dangerouslySetInnerHTML={{ __html: feed.embed_code }}
+                    className="w-full h-full"
+                  />
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       </div>
-    </div>
+    </section>
   );
 }
