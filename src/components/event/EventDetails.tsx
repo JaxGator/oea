@@ -2,6 +2,7 @@ import { CalendarIcon, MapPinIcon, UsersIcon } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { useAuthState } from "@/hooks/useAuthState";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface EventDetailsProps {
   date: string;
@@ -42,6 +43,33 @@ export function EventDetails({
     return `${hour12}:${minutes} ${ampm}`;
   };
 
+  const LocationDisplay = () => {
+    if (!showLocation) {
+      return (
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className="flex items-center gap-2 text-gray-600">
+                <MapPinIcon className="w-4 h-4" />
+                <span className="text-sm italic">Location visible after approval</span>
+              </div>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Please log in and request approval to view event locations</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      );
+    }
+
+    return (
+      <div className="flex items-center gap-2 text-gray-600">
+        <MapPinIcon className="w-4 h-4" />
+        <span className="text-sm">{location}</span>
+      </div>
+    );
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-2 text-gray-600">
@@ -51,17 +79,7 @@ export function EventDetails({
         </span>
       </div>
       
-      {showLocation ? (
-        <div className="flex items-center gap-2 text-gray-600">
-          <MapPinIcon className="w-4 h-4" />
-          <span className="text-sm">{location}</span>
-        </div>
-      ) : (
-        <div className="flex items-center gap-2 text-gray-600">
-          <MapPinIcon className="w-4 h-4" />
-          <span className="text-sm italic">Location visible after approval</span>
-        </div>
-      )}
+      <LocationDisplay />
 
       <div className="flex items-center gap-2 text-gray-600">
         <UsersIcon className="w-4 h-4" />
