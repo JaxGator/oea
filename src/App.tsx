@@ -22,10 +22,10 @@ const App = () => {
     <ErrorBoundary fallback={<div>Something went wrong</div>}>
       <AppProviders>
         <Routes>
+          <Route path="/auth" element={<Auth />} />
           <Route element={<AppLayout />}>
             <Route index element={<Index />} />
             <Route path="about" element={<About />} />
-            <Route path="auth" element={<Auth />} />
             <Route path="events" element={<Events />} />
             <Route path="events/:id" element={<EventDetails />} />
             <Route path="members" element={<Members />} />
