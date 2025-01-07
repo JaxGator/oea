@@ -32,6 +32,7 @@ export function SocialFeedManager({ feeds, setFeeds }: SocialFeedManagerProps) {
         .single();
 
       if (error) throw error;
+      
       setFeeds([...feeds, data]);
       
       toast({
