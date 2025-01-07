@@ -22,10 +22,11 @@ export function AdminUserList() {
 
   const handleEditMember = async (member: Member) => {
     try {
-      console.log('Handling edit member:', member);
+      console.log('Starting edit for member:', member);
       
       const { data: session } = await supabase.auth.getSession();
       if (!session?.session) {
+        console.error('No active session found');
         toast({
           title: "Error",
           description: "You must be logged in to edit users.",
@@ -34,18 +35,20 @@ export function AdminUserList() {
         return;
       }
 
-      // Set editing member state immediately for better UX
+      // Set initial state for immediate feedback
+      console.log('Setting initial editing state');
       setEditingMember(member);
 
-      // Fetch latest profile data in background
+      // Fetch latest profile data
+      console.log('Fetching latest profile data for ID:', member.id);
       const { data: profile, error: fetchError } = await supabase
         .from('profiles')
-        .select()
+        .select('*')
         .eq('id', member.id)
         .maybeSingle();
       
       if (fetchError) {
-        console.error('Error fetching member profile:', {
+        console.error('Profile fetch error:', {
           error: fetchError,
           member,
           timestamp: new Date().toISOString()
@@ -73,11 +76,13 @@ export function AdminUserList() {
         return;
       }
 
-      // Update editing member with latest profile data
-      setEditingMember({
+      // Update state with merged data
+      const updatedMember = {
         ...member,
-        ...profile
-      });
+        ...profile,
+      };
+      console.log('Updating editing member with merged data:', updatedMember);
+      setEditingMember(updatedMember);
     } catch (error) {
       console.error('Error in handleEditMember:', {
         error,
@@ -94,7 +99,7 @@ export function AdminUserList() {
   };
 
   const handleCloseEdit = () => {
-    console.log('Handling close edit');
+    console.log('Closing edit dialog');
     setEditingMember(null);
   };
 

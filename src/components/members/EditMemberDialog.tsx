@@ -7,9 +7,10 @@ import {
 import { MemberFormFields } from "./MemberFormFields";
 import { MemberAvatarUpload } from "./MemberAvatarUpload";
 import { useMemberForm } from "./useMemberForm";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 interface Member {
   id: string;
@@ -30,7 +31,14 @@ interface EditMemberDialogProps {
 
 export function EditMemberDialog({ member, open, onOpenChange, onUpdate }: EditMemberDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { toast } = useToast();
   
+  useEffect(() => {
+    if (open) {
+      console.log('EditMemberDialog opened with member data:', member);
+    }
+  }, [open, member]);
+
   const {
     username,
     setUsername,
@@ -50,18 +58,48 @@ export function EditMemberDialog({ member, open, onOpenChange, onUpdate }: EditM
     setAvatarUrl,
     handleSubmit,
   } = useMemberForm(member, onUpdate, () => {
+    console.log('Form submission completed, closing dialog');
     setIsSubmitting(false);
     onOpenChange(false);
   });
 
   const onSubmit = async () => {
-    setIsSubmitting(true);
-    await handleSubmit();
+    try {
+      if (!username.trim()) {
+        toast({
+          title: "Validation Error",
+          description: "Username is required",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      console.log('Submitting form with data:', {
+        username,
+        fullName,
+        email,
+        isAdmin,
+        isApproved,
+        isMember,
+        avatarUrl
+      });
+
+      setIsSubmitting(true);
+      await handleSubmit();
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update member. Please try again.",
+        variant: "destructive",
+      });
+      setIsSubmitting(false);
+    }
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Edit Member</DialogTitle>
         </DialogHeader>
