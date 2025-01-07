@@ -15,15 +15,15 @@ export function AdminUserList() {
   const [editingMember, setEditingMember] = useState<Member | null>(null);
   const { members, isLoading, error, refetch } = useMemberManagement();
 
-  console.log('AdminUserList render:', { members, isLoading, error, editingMember });
+  console.log('AdminUserList render:', { members, isLoading, error, editingMember, viewingMember });
 
   const handleEditMember = (member: Member) => {
-    console.log('Editing member:', member);
+    console.log('Handling edit member:', member);
     setEditingMember(member);
   };
 
   const handleCloseEdit = () => {
-    console.log('Closing edit dialog');
+    console.log('Handling close edit');
     setEditingMember(null);
   };
 
@@ -77,7 +77,7 @@ export function AdminUserList() {
       {editingMember && (
         <EditMemberDialog
           member={editingMember}
-          open={!!editingMember}
+          open={true}
           onOpenChange={(open) => !open && handleCloseEdit()}
           onUpdate={refetch}
         />
