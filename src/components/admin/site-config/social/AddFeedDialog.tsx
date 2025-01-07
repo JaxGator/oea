@@ -3,9 +3,6 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Plus } from "lucide-react";
 import { SocialFeed } from "../SocialMediaSettings";
@@ -17,33 +14,19 @@ interface AddFeedDialogProps {
 
 export function AddFeedDialog({ feeds, onFeedAdded }: AddFeedDialogProps) {
   const { toast } = useToast();
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [newFeed, setNewFeed] = useState({
-    platform: 'instagram' as SocialFeed['platform'],
-    embed_code: '',
-    title: 'New Feed',
-    is_enabled: false
-  });
+  const [isOpen, setIsOpen] = useState(false);
+  const [embedCode, setEmbedCode] = useState("");
 
-  const resetNewFeed = () => {
-    setNewFeed({
-      platform: 'instagram',
-      embed_code: '',
-      title: 'New Feed',
-      is_enabled: false
-    });
-  };
-
-  const addFeed = async () => {
+  const handleSave = async () => {
     try {
       const { data, error } = await supabase
         .from('social_media_feeds')
         .insert({
-          platform: newFeed.platform,
-          embed_code: newFeed.embed_code,
+          platform: 'instagram',
+          embed_code: embedCode,
           display_order: feeds.length,
-          title: newFeed.title,
-          is_enabled: newFeed.is_enabled
+          title: 'New Feed',
+          is_enabled: true
         })
         .select()
         .single();
@@ -51,8 +34,8 @@ export function AddFeedDialog({ feeds, onFeedAdded }: AddFeedDialogProps) {
       if (error) throw error;
       
       onFeedAdded(data);
-      setIsDialogOpen(false);
-      resetNewFeed();
+      setIsOpen(false);
+      setEmbedCode("");
       
       toast({
         title: "Success",
@@ -69,10 +52,7 @@ export function AddFeedDialog({ feeds, onFeedAdded }: AddFeedDialogProps) {
   };
 
   return (
-    <Dialog open={isDialogOpen} onOpenChange={(open) => {
-      setIsDialogOpen(open);
-      if (!open) resetNewFeed();
-    }}>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <Button size="sm">
           <Plus className="h-4 w-4 mr-2" />
@@ -84,51 +64,17 @@ export function AddFeedDialog({ feeds, onFeedAdded }: AddFeedDialogProps) {
           <DialogTitle>Add New Social Media Feed</DialogTitle>
         </DialogHeader>
         <div className="space-y-4 py-4">
-          <div className="space-y-2">
-            <Label>Title</Label>
-            <Input
-              value={newFeed.title}
-              onChange={(e) => setNewFeed({ ...newFeed, title: e.target.value })}
-              placeholder="Enter feed title"
-            />
-          </div>
-          <div className="space-y-2">
-            <Label>Platform</Label>
-            <Select
-              value={newFeed.platform}
-              onValueChange={(value) => setNewFeed({ ...newFeed, platform: value as SocialFeed['platform'] })}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="instagram">Instagram</SelectItem>
-                <SelectItem value="facebook">Facebook</SelectItem>
-                <SelectItem value="twitter">Twitter</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="space-y-2">
-            <Label>Embed Code</Label>
-            <Input
-              value={newFeed.embed_code}
-              onChange={(e) => setNewFeed({ ...newFeed, embed_code: e.target.value })}
-              placeholder="Enter embed code"
-            />
-          </div>
-          <div className="flex items-center space-x-2">
-            <Switch
-              checked={newFeed.is_enabled}
-              onCheckedChange={(checked) => setNewFeed({ ...newFeed, is_enabled: checked })}
-            />
-            <Label>Enable Feed</Label>
-          </div>
+          <Input
+            value={embedCode}
+            onChange={(e) => setEmbedCode(e.target.value)}
+            placeholder="Paste embed code here"
+          />
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
+          <Button variant="outline" onClick={() => setIsOpen(false)}>
             Cancel
           </Button>
-          <Button onClick={addFeed}>
+          <Button onClick={handleSave}>
             Save Feed
           </Button>
         </DialogFooter>
