@@ -67,8 +67,14 @@ export function TechnicalSettings({ configs, setConfigs, isLoading }: TechnicalS
         <ImageUploadField
           label="Default Event Image"
           value={configs.default_event_image || ''}
-          onChange={(value) => setConfigs(prev => ({ ...prev, default_event_image: value }))}
-          onSave={() => updateConfig('default_event_image', configs.default_event_image || '')}
+          onChange={(value) => {
+            console.log('Image upload onChange:', value);
+            setConfigs(prev => ({ ...prev, default_event_image: value }));
+          }}
+          onSave={async () => {
+            console.log('Saving default_event_image:', configs.default_event_image);
+            await updateConfig('default_event_image', configs.default_event_image || '');
+          }}
         />
 
         <CodeEditor
