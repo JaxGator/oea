@@ -3,6 +3,8 @@ import { SocialFeedManager } from "./social/SocialFeedManager";
 import { useState } from "react";
 import { useSocialLinks } from "@/hooks/useSocialLinks";
 import { Separator } from "@/components/ui/separator";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { HelpCircle } from "lucide-react";
 
 interface SocialSettingsProps {
   configs: Record<string, string>;
@@ -20,12 +22,22 @@ export function SocialSettings({ configs, setConfigs, updateConfig }: SocialSett
 
   return (
     <div className="space-y-6">
-      <div>
+      <div className="flex items-center gap-2">
         <h3 className="text-lg font-medium">Social Media Settings</h3>
-        <p className="text-sm text-muted-foreground">
-          Configure your social media links and feeds
-        </p>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Configure your social media profiles and feed integrations</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       </div>
+      <p className="text-sm text-muted-foreground">
+        Configure your social media links and feeds
+      </p>
 
       <SocialLinksManager
         socialLinks={socialLinks}
