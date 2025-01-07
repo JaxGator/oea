@@ -14,27 +14,40 @@ export function GalleryManager() {
   const { toast } = useToast();
 
   useEffect(() => {
+    console.log('Initializing GalleryManager...');
     fetchImages();
     fetchCarouselConfig();
   }, []);
 
   const fetchCarouselConfig = async () => {
     try {
+      console.log('Fetching carousel configuration...');
       const { data, error } = await supabase
         .from('site_config')
         .select('value')
         .eq('key', 'gallery_carousel_enabled')
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching carousel config:', error);
+        throw error;
+      }
+      
+      console.log('Carousel config fetched:', data?.value);
       setCarouselEnabled(data?.value === 'true');
     } catch (error) {
       console.error('Error fetching carousel config:', error);
+      toast({
+        title: "Error",
+        description: "Failed to fetch carousel configuration",
+        variant: "destructive",
+      });
     }
   };
 
   const updateCarouselConfig = async (enabled: boolean) => {
     try {
+      console.log('Updating carousel configuration:', enabled);
       const { error } = await supabase
         .from('site_config')
         .upsert({
@@ -47,6 +60,7 @@ export function GalleryManager() {
 
       if (error) throw error;
 
+      console.log('Carousel configuration updated successfully');
       setCarouselEnabled(enabled);
       toast({
         title: "Success",
@@ -59,11 +73,14 @@ export function GalleryManager() {
         description: "Failed to update carousel settings",
         variant: "destructive",
       });
+      // Revert the UI state on error
+      setCarouselEnabled(!enabled);
     }
   };
 
   const fetchImages = async () => {
     try {
+      console.log('Fetching gallery images...');
       const { data: storageData, error: storageError } = await supabase.storage
         .from('gallery')
         .list();
@@ -77,12 +94,13 @@ export function GalleryManager() {
           url: supabase.storage.from('gallery').getPublicUrl(file.name).data.publicUrl
         }));
 
+      console.log(`Found ${imageUrls.length} images in gallery`);
       setImages(imageUrls);
     } catch (error) {
       console.error('Error fetching images:', error);
       toast({
         title: "Error",
-        description: "Failed to fetch images",
+        description: "Failed to fetch images. Please try refreshing the page.",
         variant: "destructive",
       });
     } finally {
@@ -93,14 +111,18 @@ export function GalleryManager() {
   const handleImageDelete = async (imageUrl: string) => {
     try {
       const fileName = imageUrl.split('/').pop()?.split('?')[0];
-      if (!fileName) return;
+      if (!fileName) {
+        throw new Error('Invalid image URL');
+      }
 
+      console.log('Deleting image:', fileName);
       const { error: storageError } = await supabase.storage
         .from('gallery')
         .remove([fileName]);
 
       if (storageError) throw storageError;
 
+      console.log('Image deleted successfully');
       toast({
         title: "Success",
         description: "Image deleted successfully",
@@ -111,14 +133,14 @@ export function GalleryManager() {
       console.error('Error deleting image:', error);
       toast({
         title: "Error",
-        description: "Failed to delete image",
+        description: "Failed to delete image. Please try again.",
         variant: "destructive",
       });
     }
   };
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return <div>Loading gallery...</div>;
   }
 
   return (

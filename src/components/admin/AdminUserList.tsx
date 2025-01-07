@@ -18,6 +18,7 @@ export function AdminUserList() {
   const { data: members, isLoading, error, refetch } = useQuery({
     queryKey: ['members'],
     queryFn: async () => {
+      console.log('Fetching members...');
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
@@ -27,22 +28,37 @@ export function AdminUserList() {
         console.error('Error fetching members:', error);
         toast({
           title: "Error",
-          description: "Failed to fetch members",
+          description: "Failed to fetch members: " + error.message,
           variant: "destructive",
         });
         throw error;
       }
 
+      console.log('Members fetched successfully:', data?.length || 0, 'members');
       return data as Member[];
+    },
+    retry: 1,
+    staleTime: 1000 * 60, // 1 minute
+    onError: (error) => {
+      console.error('Query error:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load members. Please try again.",
+        variant: "destructive",
+      });
     },
   });
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return <div>Loading users...</div>;
   }
 
   if (error) {
-    return <div>Error loading members</div>;
+    return (
+      <div className="p-4 text-red-500">
+        Error loading members. Please try refreshing the page.
+      </div>
+    );
   }
 
   return (
