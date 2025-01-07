@@ -329,30 +329,33 @@ export type Database = {
         Row: {
           created_at: string
           display_order: number
-          feed_url: string
+          embed_code: string
           id: string
           is_enabled: boolean | null
           platform: Database["public"]["Enums"]["social_media_platform"]
+          title: string
           updated_at: string
           updated_by: string | null
         }
         Insert: {
           created_at?: string
           display_order?: number
-          feed_url: string
+          embed_code: string
           id?: string
           is_enabled?: boolean | null
           platform: Database["public"]["Enums"]["social_media_platform"]
+          title?: string
           updated_at?: string
           updated_by?: string | null
         }
         Update: {
           created_at?: string
           display_order?: number
-          feed_url?: string
+          embed_code?: string
           id?: string
           is_enabled?: boolean | null
           platform?: Database["public"]["Enums"]["social_media_platform"]
+          title?: string
           updated_at?: string
           updated_by?: string | null
         }

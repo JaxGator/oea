@@ -11,9 +11,10 @@ import { Plus, Trash2 } from "lucide-react";
 interface SocialFeed {
   id: string;
   platform: 'instagram' | 'facebook' | 'twitter';
-  feed_url: string;
+  embed_code: string;
   is_enabled: boolean;
   display_order: number;
+  title: string;
 }
 
 interface SocialFeedManagerProps {
@@ -30,7 +31,7 @@ export function SocialFeedManager({ feeds, setFeeds }: SocialFeedManagerProps) {
         .from('social_media_feeds')
         .insert({
           platform: 'instagram',
-          feed_url: '',
+          embed_code: '',
           display_order: feeds.length,
         })
         .select()
@@ -115,6 +116,15 @@ export function SocialFeedManager({ feeds, setFeeds }: SocialFeedManagerProps) {
             <div className="flex-1 space-y-4">
               <div className="flex space-x-4">
                 <div className="flex-1">
+                  <Label>Title</Label>
+                  <Input
+                    value={feed.title}
+                    onChange={(e) => updateFeed(feed.id, { title: e.target.value })}
+                    placeholder="Enter feed title"
+                  />
+                </div>
+
+                <div className="flex-1">
                   <Label>Platform</Label>
                   <Select
                     value={feed.platform}
@@ -132,15 +142,15 @@ export function SocialFeedManager({ feeds, setFeeds }: SocialFeedManagerProps) {
                     </SelectContent>
                   </Select>
                 </div>
+              </div>
 
-                <div className="flex-1">
-                  <Label>Feed URL</Label>
-                  <Input
-                    value={feed.feed_url}
-                    onChange={(e) => updateFeed(feed.id, { feed_url: e.target.value })}
-                    placeholder="Enter feed URL"
-                  />
-                </div>
+              <div className="flex-1">
+                <Label>Embed Code</Label>
+                <Input
+                  value={feed.embed_code}
+                  onChange={(e) => updateFeed(feed.id, { embed_code: e.target.value })}
+                  placeholder="Enter embed code"
+                />
               </div>
 
               <div className="flex items-center space-x-2">

@@ -6,8 +6,9 @@ import { Loader2 } from "lucide-react";
 interface SocialFeed {
   id: string;
   platform: string;
-  feed_url: string;
+  embed_code: string;
   is_enabled: boolean;
+  title: string;
 }
 
 export function SocialFeedSection() {
@@ -55,11 +56,9 @@ export function SocialFeedSection() {
           <Card key={feed.id}>
             <CardContent className="p-4">
               <div className="aspect-square">
-                <iframe
-                  src={feed.feed_url}
-                  className="w-full h-full border-0"
-                  title={`${feed.platform} feed`}
-                  allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
+                <div 
+                  dangerouslySetInnerHTML={{ __html: feed.embed_code }}
+                  className="w-full h-full"
                 />
               </div>
             </CardContent>
