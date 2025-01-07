@@ -1,6 +1,6 @@
 import React from 'react';
 import { Button } from "@/components/ui/button";
-import { Image, Plus } from "lucide-react";
+import { Image } from "lucide-react";
 
 interface GalleryHeaderProps {
   onViewAllClick: () => void;
@@ -10,8 +10,7 @@ interface GalleryHeaderProps {
 
 export const GalleryHeader: React.FC<GalleryHeaderProps> = ({ 
   onViewAllClick, 
-  totalImages,
-  isAdmin 
+  totalImages
 }) => {
   return (
     <div className="flex justify-between items-center mb-6">
@@ -20,17 +19,9 @@ export const GalleryHeader: React.FC<GalleryHeaderProps> = ({
         <h2 className="text-2xl font-bold text-gray-900">Photo Gallery</h2>
         <span className="text-sm text-gray-500">({totalImages} photos)</span>
       </div>
-      <div className="flex gap-2">
-        {isAdmin && (
-          <Button variant="outline" onClick={() => window.location.href = '/admin/gallery'}>
-            <Plus className="h-4 w-4 mr-2" />
-            Manage Gallery
-          </Button>
-        )}
-        <Button variant="default" onClick={onViewAllClick}>
-          View All
-        </Button>
-      </div>
+      <Button variant="default" onClick={onViewAllClick}>
+        View All
+      </Button>
     </div>
   );
 };
