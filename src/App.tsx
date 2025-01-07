@@ -1,12 +1,15 @@
-import { RouterProvider } from "react-router-dom";
+import { BrowserRouter } from "react-router-dom";
 import { AppProviders } from "./components/providers/AppProviders";
 import { router } from "./routes/routes";
 
 const App = () => {
   return (
-    <AppProviders>
-      <RouterProvider router={router} />
-    </AppProviders>
+    <BrowserRouter>
+      <AppProviders>
+        {/* RouterProvider is not needed when using BrowserRouter */}
+        <router.Component />
+      </AppProviders>
+    </BrowserRouter>
   );
 };
 

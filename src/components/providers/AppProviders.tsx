@@ -38,9 +38,8 @@ export function AppProviders({ children }: AppProvidersProps) {
         
         if (error) {
           console.error('Session check error:', error);
-          // Clear any stale data if there's a session error
           queryClient.clear();
-          localStorage.clear(); // Clear all local storage to ensure no stale tokens
+          localStorage.clear();
           if (!location.pathname.includes('/auth')) {
             navigate('/auth');
           }
@@ -67,9 +66,8 @@ export function AppProviders({ children }: AppProvidersProps) {
       console.log('Auth state changed:', event);
       
       if (event === 'SIGNED_OUT') {
-        // Clear any auth-related state
         queryClient.clear();
-        localStorage.clear(); // Clear all local storage
+        localStorage.clear();
         if (!location.pathname.includes('/auth')) {
           navigate('/auth');
         }
