@@ -39,6 +39,7 @@ export function AdminUserActions({
   const handleEdit = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    console.log('Edit clicked for profile:', profile);
     onEdit();
   };
 

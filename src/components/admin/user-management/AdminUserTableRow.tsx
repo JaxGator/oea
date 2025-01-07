@@ -1,6 +1,6 @@
 import { TableRow, TableCell } from "@/components/ui/table";
 import { UserStatusBadges } from "./UserStatusBadges";
-import { UserActionsMenu } from "./UserActionsMenu";
+import { AdminUserActions } from "../AdminUserActions";
 
 interface Profile {
   id: string;
@@ -17,6 +17,7 @@ interface AdminUserTableRowProps {
   profile: Profile;
   onEdit: (profile: Profile) => void;
   onUpdateStatus: (username: string) => void;
+  onDelete: (userId: string) => void;
   isUpdating: boolean;
 }
 
@@ -24,6 +25,7 @@ export function AdminUserTableRow({
   profile,
   onEdit,
   onUpdateStatus,
+  onDelete,
   isUpdating
 }: AdminUserTableRowProps) {
   console.log('AdminUserTableRow render:', { profile });
@@ -36,11 +38,6 @@ export function AdminUserTableRow({
   const handleEdit = () => {
     console.log('Handling edit for profile:', profile);
     onEdit(profile);
-  };
-
-  const handleUpdateStatus = () => {
-    console.log('Handling update status for:', profile.username);
-    onUpdateStatus(profile.username);
   };
 
   return (
@@ -69,9 +66,11 @@ export function AdminUserTableRow({
       </TableCell>
       <TableCell>
         <div className="flex justify-end">
-          <UserActionsMenu
+          <AdminUserActions
+            profile={profile}
             onEdit={handleEdit}
-            onUpdateStatus={handleUpdateStatus}
+            onUpdateStatus={onUpdateStatus}
+            onDelete={onDelete}
             isUpdating={isUpdating}
           />
         </div>
