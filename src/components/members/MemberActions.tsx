@@ -1,13 +1,5 @@
 import { useState } from "react";
-import { MoreHorizontal, Trash2, Edit2 } from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-  DropdownMenuSeparator,
-} from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
+import { DropdownMenu, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useAuthState } from "@/hooks/useAuthState";
 import {
   AlertDialog,
@@ -19,6 +11,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { MemberActionButton } from "./actions/MemberActionButton";
+import { MemberActionMenu } from "./actions/MemberActionMenu";
 
 interface MemberActionsProps {
   memberId: string;
@@ -44,35 +38,14 @@ export function MemberActions({
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button 
-            variant="ghost" 
-            className="h-8 w-8 p-0 hover:bg-slate-100 dark:hover:bg-slate-800"
-            aria-label="Open menu"
-          >
-            <MoreHorizontal className="h-4 w-4 text-slate-600 dark:text-slate-400" />
-          </Button>
+          <MemberActionButton onClick={() => {}} />
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-[160px]">
-          {isCurrentUserAdmin && (
-            <>
-              <DropdownMenuItem 
-                onClick={onEdit}
-                className="cursor-pointer"
-              >
-                <Edit2 className="mr-2 h-4 w-4" />
-                Edit
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                onClick={() => setShowDeleteDialog(true)}
-                className="cursor-pointer text-red-600"
-              >
-                <Trash2 className="mr-2 h-4 w-4" />
-                Delete
-              </DropdownMenuItem>
-            </>
-          )}
-        </DropdownMenuContent>
+        {isCurrentUserAdmin && (
+          <MemberActionMenu
+            onEdit={onEdit}
+            onDelete={() => setShowDeleteDialog(true)}
+          />
+        )}
       </DropdownMenu>
 
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
