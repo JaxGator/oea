@@ -33,8 +33,9 @@ export function AdminUserTableRow({
   onUpdateStatus,
   isUpdating
 }: AdminUserTableRowProps) {
-  if (!profile || !profile.username) {
-    return null; // Don't render if profile or username is missing
+  if (!profile?.id || !profile?.username) {
+    console.warn('Invalid profile data:', profile);
+    return null;
   }
 
   return (

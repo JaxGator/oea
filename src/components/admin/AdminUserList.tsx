@@ -20,7 +20,12 @@ export function AdminUserList() {
   }
 
   if (error) {
+    console.error('Error loading members:', error);
     return <ErrorState />;
+  }
+
+  if (!members) {
+    return <ErrorState message="No members found" />;
   }
 
   return (
@@ -34,7 +39,7 @@ export function AdminUserList() {
       </div>
       <AdminUserTableWrapper>
         <MemberTable 
-          members={members || []} 
+          members={members} 
           currentUserIsAdmin={true} 
           onViewMember={setViewingMember}
           onEditMember={setEditingMember}
