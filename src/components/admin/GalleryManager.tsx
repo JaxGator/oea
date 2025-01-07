@@ -2,6 +2,8 @@ import { useGalleryManager } from "./gallery/hooks/useGalleryManager";
 import { ImageUploadForm } from "./gallery/ImageUploadForm";
 import { ImageGrid } from "./gallery/ImageGrid";
 import { CarouselToggle } from "./gallery/CarouselToggle";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
 
 export function GalleryManager() {
   const {
