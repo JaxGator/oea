@@ -19,11 +19,11 @@ export function AdminUserList() {
   const { members, isLoading, error, refetch } = useMemberManagement();
   const { toast } = useToast();
 
-  // Use the session check hook
   useSessionCheck();
 
   const handleDeleteMember = async (userId: string) => {
     try {
+      console.log('Deleting user with ID:', userId);
       const { error } = await supabase.functions.invoke('delete-user', {
         body: { userId }
       });
@@ -44,6 +44,16 @@ export function AdminUserList() {
         variant: "destructive",
       });
     }
+  };
+
+  const handleEditMember = (member: Member) => {
+    console.log('Setting editing member:', member);
+    setEditingMember(member);
+  };
+
+  const handleCloseEdit = () => {
+    console.log('Closing edit dialog');
+    setEditingMember(null);
   };
 
   const renderContent = () => {
@@ -67,7 +77,7 @@ export function AdminUserList() {
           members={members} 
           currentUserIsAdmin={true} 
           onViewMember={setViewingMember}
-          onEditMember={setEditingMember}
+          onEditMember={handleEditMember}
           onDeleteMember={handleDeleteMember}
         />
       </AdminUserTableWrapper>
@@ -96,7 +106,7 @@ export function AdminUserList() {
 
       <EditMemberHandler
         member={editingMember}
-        onClose={() => setEditingMember(null)}
+        onClose={handleCloseEdit}
         onUpdate={refetch}
       />
     </div>

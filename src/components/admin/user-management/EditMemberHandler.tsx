@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Member } from "@/components/members/types";
 import { EditMemberDialog } from "@/components/members/EditMemberDialog";
 import { supabase } from "@/integrations/supabase/client";
@@ -16,19 +16,27 @@ export function EditMemberHandler({ member, onClose, onUpdate }: EditMemberHandl
   const { toast } = useToast();
   const navigate = useNavigate();
 
+  useEffect(() => {
+    console.log('EditMemberHandler: member prop changed:', member);
+    setEditingMember(member);
+  }, [member]);
+
   const handleEditMember = async () => {
-    if (!member) return;
+    if (!member) {
+      console.log('EditMemberHandler: No member to edit');
+      return;
+    }
 
     try {
-      // Verify session and access token
+      console.log('EditMemberHandler: Fetching latest profile data for:', member.id);
       const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      
       if (sessionError || !session?.access_token) {
         console.error('Session verification failed:', sessionError);
         navigate('/auth');
         return;
       }
 
-      // Fetch latest profile data
       const { data: profile, error: fetchError } = await supabase
         .from('profiles')
         .select('*')
@@ -44,7 +52,7 @@ export function EditMemberHandler({ member, onClose, onUpdate }: EditMemberHandl
         throw new Error('Profile not found');
       }
 
-      // Update state with merged data
+      console.log('EditMemberHandler: Profile data fetched:', profile);
       setEditingMember({ ...member, ...profile });
     } catch (error) {
       console.error('Error in handleEditMember:', error);
@@ -57,10 +65,11 @@ export function EditMemberHandler({ member, onClose, onUpdate }: EditMemberHandl
     }
   };
 
-  // Fetch profile data when member changes
-  if (member && !editingMember) {
-    handleEditMember();
-  }
+  useEffect(() => {
+    if (member && !editingMember) {
+      handleEditMember();
+    }
+  }, [member, editingMember]);
 
   return editingMember ? (
     <EditMemberDialog
