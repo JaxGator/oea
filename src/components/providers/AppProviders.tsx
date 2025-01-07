@@ -6,11 +6,11 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { SessionContextProvider } from "@supabase/auth-helpers-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useState, useEffect } from "react";
-import { useNavigate, useLocation, Outlet } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
 
 interface AppProvidersProps {
-  children?: ReactNode;
+  children: ReactNode;
 }
 
 const queryClient = new QueryClient({
@@ -110,7 +110,7 @@ export function AppProviders({ children }: AppProvidersProps) {
         initialSession={null}
       >
         <TooltipProvider>
-          <Outlet />
+          {children}
           <Toaster />
           <Sonner />
         </TooltipProvider>
