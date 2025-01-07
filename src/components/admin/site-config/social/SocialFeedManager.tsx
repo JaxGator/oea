@@ -33,6 +33,7 @@ export function SocialFeedManager({ feeds, setFeeds }: SocialFeedManagerProps) {
           platform: 'instagram',
           embed_code: '',
           display_order: feeds.length,
+          title: 'New Feed'
         })
         .select()
         .single();
