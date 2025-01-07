@@ -1,11 +1,5 @@
+import { Shield, Edit2, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Shield, MoreVertical, Edit2, Trash2 } from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import {
   Tooltip,
   TooltipContent,
@@ -13,6 +7,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { DeleteUserDialog } from "./user-management/DeleteUserDialog";
+import { AdminDropdownMenu } from "./user-management/shared/AdminDropdownMenu";
 import { useState } from "react";
 
 interface AdminUserActionsProps {
@@ -37,15 +32,11 @@ export function AdminUserActions({
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   const handleEdit = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
     console.log('Edit clicked for profile:', profile);
     onEdit();
   };
 
   const handleUpdateStatus = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
     onUpdateStatus(profile.username);
   };
 
@@ -54,32 +45,23 @@ export function AdminUserActions({
     setShowDeleteDialog(false);
   };
 
+  const dropdownActions = [
+    {
+      label: "Edit",
+      icon: <Edit2 className="mr-2 h-4 w-4" />,
+      onClick: handleEdit
+    },
+    {
+      label: "Delete",
+      icon: <Trash2 className="mr-2 h-4 w-4" />,
+      onClick: () => setShowDeleteDialog(true),
+      className: "text-red-600"
+    }
+  ];
+
   return (
     <div className="flex items-center gap-2">
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button
-            variant="ghost"
-            className="h-8 w-8 p-0"
-            aria-label="Open menu"
-          >
-            <MoreVertical className="h-4 w-4" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          <DropdownMenuItem onClick={handleEdit}>
-            <Edit2 className="mr-2 h-4 w-4" />
-            Edit
-          </DropdownMenuItem>
-          <DropdownMenuItem 
-            onClick={() => setShowDeleteDialog(true)}
-            className="text-red-600"
-          >
-            <Trash2 className="mr-2 h-4 w-4" />
-            Delete
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+      <AdminDropdownMenu actions={dropdownActions} />
 
       {!profile.is_admin && (
         <TooltipProvider>
