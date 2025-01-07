@@ -3,7 +3,7 @@ import { CalendarRange } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { DateFilterButtons } from "@/components/event/filters/DateFilterButtons";
-import { zonedTimeToUtc } from "date-fns-tz";
+import { fromZonedTime } from "date-fns-tz";
 
 interface DateFilterProps {
   selectedDate?: Date;
@@ -15,7 +15,7 @@ export function DateFilter({ selectedDate, onDateSelect }: DateFilterProps) {
     if (date) {
       const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
       // Convert the selected date to UTC while preserving the local date
-      const localDate = zonedTimeToUtc(date, timeZone);
+      const localDate = fromZonedTime(date, timeZone);
       localDate.setHours(0, 0, 0, 0);
       onDateSelect(localDate);
     } else {
