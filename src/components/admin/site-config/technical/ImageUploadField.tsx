@@ -29,7 +29,6 @@ export function ImageUploadField({
       const publicUrl = await uploadImage(file, 'default');
       
       onChange(publicUrl);
-      await onSave();
 
       toast({
         title: "Success",
@@ -44,7 +43,6 @@ export function ImageUploadField({
       });
     } finally {
       setIsUploading(false);
-      // Reset the input
       event.target.value = '';
     }
   };
@@ -54,11 +52,13 @@ export function ImageUploadField({
       <label className="text-sm font-medium">{label}</label>
       <div className="space-y-2">
         {value && (
-          <ImagePreview
-            imageUrl={value}
-            label={label}
-            imageType="default"
-          />
+          <div className="mt-2">
+            <ImagePreview
+              imageUrl={value}
+              label={label}
+              imageType="default"
+            />
+          </div>
         )}
         <UploadButton
           isUploading={isUploading}

@@ -18,7 +18,6 @@ export function TechnicalSettings({ configs, setConfigs, isLoading }: TechnicalS
 
   const updateConfig = async (key: string, value: string) => {
     try {
-      console.log('Updating config:', key, value);
       const { error } = await supabase
         .from('site_config')
         .upsert({ 
@@ -31,7 +30,6 @@ export function TechnicalSettings({ configs, setConfigs, isLoading }: TechnicalS
 
       if (error) throw error;
 
-      // Update local state
       setConfigs(prev => ({ ...prev, [key]: value }));
 
       toast({
@@ -68,11 +66,10 @@ export function TechnicalSettings({ configs, setConfigs, isLoading }: TechnicalS
           label="Default Event Image"
           value={configs.default_event_image || ''}
           onChange={(value) => {
-            console.log('Image upload onChange:', value);
             setConfigs(prev => ({ ...prev, default_event_image: value }));
+            updateConfig('default_event_image', value);
           }}
           onSave={async () => {
-            console.log('Saving default_event_image:', configs.default_event_image);
             await updateConfig('default_event_image', configs.default_event_image || '');
           }}
         />
