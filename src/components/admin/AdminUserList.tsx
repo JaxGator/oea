@@ -24,15 +24,28 @@ export function AdminUserList() {
     try {
       console.log('Handling edit member:', member);
       
-      // Verify the member exists before setting edit state
+      const { data: session } = await supabase.auth.getSession();
+      if (!session?.session) {
+        toast({
+          title: "Error",
+          description: "You must be logged in to edit users.",
+          variant: "destructive",
+        });
+        return;
+      }
+
       const { data: profile, error: fetchError } = await supabase
         .from('profiles')
-        .select('*')
+        .select()
         .eq('id', member.id)
         .maybeSingle();
       
       if (fetchError) {
-        console.error('Error fetching member profile:', fetchError);
+        console.error('Error fetching member profile:', {
+          error: fetchError,
+          member,
+          timestamp: new Date().toISOString()
+        });
         toast({
           title: "Error",
           description: "Failed to load user profile. Please try again.",
@@ -42,7 +55,10 @@ export function AdminUserList() {
       }
 
       if (!profile) {
-        console.error('Profile not found:', member.id);
+        console.error('Profile not found:', {
+          memberId: member.id,
+          timestamp: new Date().toISOString()
+        });
         toast({
           title: "Error",
           description: "User profile not found.",
@@ -53,7 +69,11 @@ export function AdminUserList() {
 
       setEditingMember(member);
     } catch (error) {
-      console.error('Error in handleEditMember:', error);
+      console.error('Error in handleEditMember:', {
+        error,
+        member,
+        timestamp: new Date().toISOString()
+      });
       toast({
         title: "Error",
         description: "An unexpected error occurred. Please try again.",
