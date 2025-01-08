@@ -16,9 +16,6 @@ export function EditMemberHandler({ member, onClose, onUpdate }: EditMemberHandl
 
   useEffect(() => {
     console.log('EditMemberHandler: member prop changed:', member);
-    if (!member) {
-      console.warn('EditMemberHandler: Received null member');
-    }
   }, [member]);
 
   const handleDialogChange = (open: boolean) => {
@@ -38,7 +35,7 @@ export function EditMemberHandler({ member, onClose, onUpdate }: EditMemberHandl
 
   // Only render dialog if we have a valid member
   if (!member || !member.id || !member.username) {
-    console.warn('EditMemberHandler: Cannot render dialog without valid member data', { member });
+    console.log('EditMemberHandler: Cannot render dialog without valid member data', { member });
     return null;
   }
 
