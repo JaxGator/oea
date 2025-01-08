@@ -45,8 +45,8 @@ export function EventCardDetailedView({
   const isFullyBooked = rsvpCount >= event.max_guests;
 
   return (
-    <>
-      <div className="relative w-full aspect-video mb-4">
+    <div className="space-y-6">
+      <div className="relative w-full aspect-video">
         <img
           src={event.image_url}
           alt={event.title}
@@ -54,7 +54,7 @@ export function EventCardDetailedView({
         />
       </div>
       
-      <h2 className="text-2xl font-bold mb-4">{event.title}</h2>
+      <h2 className="text-2xl font-bold">{event.title}</h2>
       
       <EventDetails
         date={event.date}
@@ -80,7 +80,7 @@ export function EventCardDetailedView({
         />
       )}
 
-      <div className="mt-6">
+      <div className="sticky bottom-0 bg-white py-4 border-t">
         <EventActions
           isAdmin={isAdmin}
           userRSVPStatus={userRSVPStatus}
@@ -95,6 +95,6 @@ export function EventCardDetailedView({
           canAddGuests={canAddGuests}
         />
       </div>
-    </>
+    </div>
   );
 }

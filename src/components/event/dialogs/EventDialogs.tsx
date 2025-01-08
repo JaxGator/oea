@@ -43,21 +43,23 @@ export function EventDialogs({
   return (
     <>
       <Dialog open={showDetailsDialog} onOpenChange={setShowDetailsDialog}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-          <EventCardDetailedView
-            event={event}
-            rsvpCount={rsvpCount}
-            attendeeNames={attendeeNames}
-            userRSVPStatus={userRSVPStatus}
-            isAdmin={isAdmin}
-            isPastEvent={isPastEvent}
-            isWixEvent={isWixEvent}
-            canAddGuests={canAddGuests}
-            onRSVP={onRSVP}
-            onCancelRSVP={onCancelRSVP}
-            onEdit={() => setShowEditDialog(true)}
-            onDelete={onDelete}
-          />
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto p-6">
+          <div className="space-y-6">
+            <EventCardDetailedView
+              event={event}
+              rsvpCount={rsvpCount}
+              attendeeNames={attendeeNames}
+              userRSVPStatus={userRSVPStatus}
+              isAdmin={isAdmin}
+              isPastEvent={isPastEvent}
+              isWixEvent={isWixEvent}
+              canAddGuests={canAddGuests}
+              onRSVP={onRSVP}
+              onCancelRSVP={onCancelRSVP}
+              onEdit={() => setShowEditDialog(true)}
+              onDelete={onDelete}
+            />
+          </div>
         </DialogContent>
       </Dialog>
 
