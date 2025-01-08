@@ -74,6 +74,7 @@ export function EventCardContainer({
             title={event.title}
             onInteraction={handleInteraction}
             onKeyDown={handleInteraction}
+            isFeatured={event.is_featured}
           >
             <EventCardHeader imageUrl={event.image_url} title={event.title} />
             <EventCardContent
