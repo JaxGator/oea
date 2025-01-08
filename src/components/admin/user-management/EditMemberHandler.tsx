@@ -28,6 +28,17 @@ export function EditMemberHandler({ member, onClose, onUpdate }: EditMemberHandl
   console.log('EditMemberHandler: Rendering with member:', member);
   console.log('EditMemberHandler: Is member null?', !member);
 
+  // Test member for debugging
+  const testMember: Member = {
+    id: "test-id",
+    username: "test-user",
+    full_name: "Test User",
+    avatar_url: null,
+    is_admin: false,
+    is_approved: true,
+    is_member: true
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center p-4">
@@ -36,12 +47,15 @@ export function EditMemberHandler({ member, onClose, onUpdate }: EditMemberHandl
     );
   }
 
-  return member ? (
+  // Use the actual member if available, otherwise use testMember for debugging
+  const memberToEdit = member || testMember;
+
+  return (
     <EditMemberDialog
-      member={member}
-      open={true}
+      member={memberToEdit}
+      open={!!member}
       onOpenChange={handleDialogChange}
       onUpdate={onUpdate}
     />
-  ) : null;
+  );
 }
