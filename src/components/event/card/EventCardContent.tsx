@@ -52,8 +52,9 @@ export function EventCardContent({
           rsvpCount={rsvpCount}
           maxGuests={maxGuests}
           isWixEvent={isWixEvent}
-          waitlistCount={waitlistEnabled ? waitlistCount : undefined}
-          waitlistCapacity={waitlistEnabled ? waitlistCapacity : undefined}
+          waitlistEnabled={waitlistEnabled}
+          waitlistCount={waitlistCount}
+          waitlistCapacity={waitlistCapacity}
         />
       </CardContent>
 

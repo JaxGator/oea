@@ -20,6 +20,7 @@ interface EventActionsProps {
   showDelete?: boolean;
   canAddGuests?: boolean;
   currentGuests?: Guest[];
+  canJoinWaitlist?: boolean;
 }
 
 export function EventActions({
@@ -34,12 +35,17 @@ export function EventActions({
   isWixEvent,
   showDelete,
   canAddGuests,
-  currentGuests = []
+  currentGuests = [],
+  canJoinWaitlist
 }: EventActionsProps) {
   return (
     <div className="flex flex-wrap gap-2">
       {!userRSVPStatus && !isPastEvent && (
-        <RSVPButton isFullyBooked={isFullyBooked} onRSVP={onRSVP} />
+        <RSVPButton 
+          isFullyBooked={isFullyBooked} 
+          onRSVP={onRSVP} 
+          canJoinWaitlist={canJoinWaitlist}
+        />
       )}
 
       {userRSVPStatus === "attending" && !isPastEvent && (
