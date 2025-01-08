@@ -12,6 +12,9 @@ interface EventCardContentProps {
   userRSVPStatus: string | null;
   isPastEvent: boolean;
   canAddGuests: boolean;
+  waitlistEnabled?: boolean;
+  waitlistCount?: number;
+  waitlistCapacity?: number | null;
   onRSVP: (guests?: { firstName: string }[]) => void;
   onCancelRSVP: () => void;
   onEdit: () => void;
@@ -28,11 +31,18 @@ export function EventCardContent({
   userRSVPStatus,
   isPastEvent,
   canAddGuests,
+  waitlistEnabled,
+  waitlistCount = 0,
+  waitlistCapacity,
   onRSVP,
   onCancelRSVP,
   onEdit,
   onDelete,
 }: EventCardContentProps) {
+  const isFullyBooked = rsvpCount >= maxGuests;
+  const canJoinWaitlist = waitlistEnabled && isFullyBooked && 
+    (!waitlistCapacity || waitlistCount < waitlistCapacity);
+
   return (
     <>
       <CardContent className="p-4">
@@ -42,6 +52,8 @@ export function EventCardContent({
           rsvpCount={rsvpCount}
           maxGuests={maxGuests}
           isWixEvent={isWixEvent}
+          waitlistCount={waitlistEnabled ? waitlistCount : undefined}
+          waitlistCapacity={waitlistEnabled ? waitlistCapacity : undefined}
         />
       </CardContent>
 
@@ -49,7 +61,8 @@ export function EventCardContent({
         <EventActions
           isAdmin={isAdmin}
           userRSVPStatus={userRSVPStatus}
-          isFullyBooked={rsvpCount >= maxGuests}
+          isFullyBooked={isFullyBooked}
+          canJoinWaitlist={canJoinWaitlist}
           onRSVP={onRSVP}
           onCancelRSVP={onCancelRSVP}
           onEdit={onEdit}

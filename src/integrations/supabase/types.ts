@@ -119,6 +119,7 @@ export type Database = {
           event_id: string
           id: string
           response: Database["public"]["Enums"]["rsvp_response"]
+          status: string | null
           user_id: string
         }
         Insert: {
@@ -126,6 +127,7 @@ export type Database = {
           event_id: string
           id?: string
           response: Database["public"]["Enums"]["rsvp_response"]
+          status?: string | null
           user_id: string
         }
         Update: {
@@ -133,6 +135,7 @@ export type Database = {
           event_id?: string
           id?: string
           response?: Database["public"]["Enums"]["rsvp_response"]
+          status?: string | null
           user_id?: string
         }
         Relationships: [
@@ -170,6 +173,8 @@ export type Database = {
           ticket_price: number | null
           time: string
           title: string
+          waitlist_capacity: number | null
+          waitlist_enabled: boolean | null
         }
         Insert: {
           created_at?: string
@@ -188,6 +193,8 @@ export type Database = {
           ticket_price?: number | null
           time: string
           title: string
+          waitlist_capacity?: number | null
+          waitlist_enabled?: boolean | null
         }
         Update: {
           created_at?: string
@@ -206,6 +213,8 @@ export type Database = {
           ticket_price?: number | null
           time?: string
           title?: string
+          waitlist_capacity?: number | null
+          waitlist_enabled?: boolean | null
         }
         Relationships: []
       }
@@ -493,6 +502,48 @@ export type Database = {
           {
             foreignKeyName: "user_blocks_blocker_id_fkey"
             columns: ["blocker_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      waitlist_notifications: {
+        Row: {
+          event_id: string | null
+          id: string
+          is_read: boolean | null
+          notification_type: string
+          sent_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          event_id?: string | null
+          id?: string
+          is_read?: boolean | null
+          notification_type: string
+          sent_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          event_id?: string | null
+          id?: string
+          is_read?: boolean | null
+          notification_type?: string
+          sent_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "waitlist_notifications_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "waitlist_notifications_user_id_fkey"
+            columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]

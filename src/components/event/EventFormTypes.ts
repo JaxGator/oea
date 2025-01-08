@@ -10,6 +10,8 @@ export const eventSchema = z.object({
   image_url: z.string().url("Please enter a valid image URL"),
   reminder_enabled: z.boolean().default(false),
   reminder_intervals: z.array(z.string()).default(["7d", "1d", "1h"]),
+  waitlist_enabled: z.boolean().default(false),
+  waitlist_capacity: z.number().nullable().default(null),
 });
 
 export type EventFormValues = z.infer<typeof eventSchema>;
@@ -27,6 +29,8 @@ export interface EventFormProps {
     image_url?: string;
     reminder_enabled?: boolean;
     reminder_intervals?: string[];
+    waitlist_enabled?: boolean;
+    waitlist_capacity?: number | null;
   };
   isPastEvent?: boolean;
   isWixEvent?: boolean;

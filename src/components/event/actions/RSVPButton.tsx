@@ -16,10 +16,11 @@ interface Guest {
 
 interface RSVPButtonProps {
   isFullyBooked: boolean;
+  canJoinWaitlist?: boolean;
   onRSVP: (guests?: Guest[]) => void;
 }
 
-export function RSVPButton({ isFullyBooked, onRSVP }: RSVPButtonProps) {
+export function RSVPButton({ isFullyBooked, canJoinWaitlist, onRSVP }: RSVPButtonProps) {
   const [showGuestDialog, setShowGuestDialog] = useState(false);
   const [guests, setGuests] = useState<Guest[]>([]);
 
@@ -32,27 +33,41 @@ export function RSVPButton({ isFullyBooked, onRSVP }: RSVPButtonProps) {
     setShowGuestDialog(false);
   };
 
+  if (isFullyBooked && !canJoinWaitlist) {
+    return (
+      <Button variant="secondary" disabled>
+        Event Full
+      </Button>
+    );
+  }
+
   return (
     <Dialog open={showGuestDialog} onOpenChange={setShowGuestDialog}>
       <DialogTrigger asChild>
         <Button
-          variant="default"
-          className="bg-[#0d97d1] hover:bg-[#0d97d1]/90"
-          disabled={isFullyBooked}
+          variant={isFullyBooked ? "secondary" : "default"}
+          className={isFullyBooked ? "" : "bg-[#0d97d1] hover:bg-[#0d97d1]/90"}
         >
-          {isFullyBooked ? "Event Full" : "RSVP"}
+          {isFullyBooked ? "Join Waitlist" : "RSVP"}
         </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>RSVP to Event</DialogTitle>
+          <DialogTitle>
+            {isFullyBooked ? "Join Event Waitlist" : "RSVP to Event"}
+          </DialogTitle>
           <DialogDescription>
-            Add any guests you'd like to bring (optional)
+            {isFullyBooked 
+              ? "You'll be notified if a spot becomes available"
+              : "Add any guests you'd like to bring (optional)"}
           </DialogDescription>
         </DialogHeader>
-        <GuestList onGuestsChange={setGuests} />
-        <Button onClick={handleRSVP} className="bg-[#0d97d1] hover:bg-[#0d97d1]/90">
-          Confirm RSVP
+        {!isFullyBooked && <GuestList onGuestsChange={setGuests} />}
+        <Button 
+          onClick={handleRSVP}
+          className="bg-[#0d97d1] hover:bg-[#0d97d1]/90"
+        >
+          {isFullyBooked ? "Join Waitlist" : "Confirm RSVP"}
         </Button>
       </DialogContent>
     </Dialog>

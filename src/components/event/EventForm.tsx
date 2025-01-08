@@ -8,6 +8,7 @@ import { EventScheduling } from "./EventScheduling";
 import { EventLocationCapacity } from "./EventLocationCapacity";
 import { EventImageUpload } from "./EventImageUpload";
 import { EventReminderSettings } from "./EventReminderSettings";
+import { EventWaitlistSettings } from "./EventWaitlistSettings";
 import { useEventFormSubmit } from "@/hooks/useEventFormSubmit";
 
 export function EventForm({ onSuccess, initialData, isPastEvent, isWixEvent }: EventFormProps) {
@@ -23,6 +24,8 @@ export function EventForm({ onSuccess, initialData, isPastEvent, isWixEvent }: E
       image_url: "/lovable-uploads/609edf01-3169-439a-80f5-f6f15de7a5a6.png",
       reminder_enabled: false,
       reminder_intervals: ["7d", "1d", "1h"],
+      waitlist_enabled: false,
+      waitlist_capacity: null,
     },
   });
 
@@ -47,6 +50,7 @@ export function EventForm({ onSuccess, initialData, isPastEvent, isWixEvent }: E
         />
         <EventImageUpload form={form} defaultImage={initialData?.image_url} />
         <EventReminderSettings form={form} disabled={isPastEvent} />
+        <EventWaitlistSettings form={form} disabled={isPastEvent} />
         <Button type="submit" className="w-full bg-[#0d97d1] hover:bg-[#0d97d1]/90">
           {initialData ? "Update Event" : "Create Event"}
         </Button>
