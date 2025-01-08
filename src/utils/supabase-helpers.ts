@@ -44,9 +44,12 @@ export function assertData<T>(data: T | null, error: PostgrestError | null): ass
 
 export async function handleQueryResult<T>(
   response: PostgrestResponse<T> | PostgrestSingleResponse<T>
-): Promise<T extends Array<any> ? T : T | null> {
+): Promise<T> {
   const { data, error } = response;
   handleError(error);
+  if (!data) {
+    throw new Error('No data returned from query');
+  }
   return data;
 }
 
@@ -62,7 +65,6 @@ export function ensureQueryResult<T>(result: T | PostgrestError): T {
   return result;
 }
 
-// Test database connection and table access
 export async function testDatabaseConnection() {
   try {
     const tables = ['profiles', 'events', 'event_rsvps'] as const;
