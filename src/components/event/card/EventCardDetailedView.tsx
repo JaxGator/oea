@@ -45,42 +45,44 @@ export function EventCardDetailedView({
   const isFullyBooked = rsvpCount >= event.max_guests;
 
   return (
-    <div className="space-y-6">
-      <div className="relative w-full aspect-video">
-        <img
-          src={event.image_url}
-          alt={event.title}
-          className="absolute inset-0 w-full h-full object-cover rounded-lg"
+    <div className="flex flex-col min-h-full">
+      <div className="flex-1 space-y-6">
+        <div className="relative w-full aspect-video">
+          <img
+            src={event.image_url}
+            alt={event.title}
+            className="absolute inset-0 w-full h-full object-cover rounded-lg"
+          />
+        </div>
+        
+        <h2 className="text-2xl font-bold">{event.title}</h2>
+        
+        <EventDetails
+          date={event.date}
+          time={event.time}
+          location={event.location}
+          rsvpCount={rsvpCount}
+          maxGuests={event.max_guests}
+          description={event.description || ""}
+          attendeeNames={attendeeNames}
+          userRSVPStatus={userRSVPStatus}
+          showFullDescription
         />
+        
+        {(userRSVPStatus === 'attending' || isAdmin) && !disableRSVP && (
+          <AddToCalendar
+            event={{
+              title: event.title,
+              description: event.description,
+              date: event.date,
+              time: event.time,
+              location: event.location,
+            }}
+          />
+        )}
       </div>
-      
-      <h2 className="text-2xl font-bold">{event.title}</h2>
-      
-      <EventDetails
-        date={event.date}
-        time={event.time}
-        location={event.location}
-        rsvpCount={rsvpCount}
-        maxGuests={event.max_guests}
-        description={event.description || ""}
-        attendeeNames={attendeeNames}
-        userRSVPStatus={userRSVPStatus}
-        showFullDescription
-      />
-      
-      {(userRSVPStatus === 'attending' || isAdmin) && !disableRSVP && (
-        <AddToCalendar
-          event={{
-            title: event.title,
-            description: event.description,
-            date: event.date,
-            time: event.time,
-            location: event.location,
-          }}
-        />
-      )}
 
-      <div className="sticky bottom-0 bg-white py-4 border-t">
+      <div className="sticky bottom-0 bg-white py-4 border-t mt-6">
         <EventActions
           isAdmin={isAdmin}
           userRSVPStatus={userRSVPStatus}
