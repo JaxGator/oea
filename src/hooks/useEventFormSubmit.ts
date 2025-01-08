@@ -56,6 +56,11 @@ export const useEventFormSubmit = (onSuccess: () => void) => {
         location: data.location,
         max_guests: data.max_guests,
         image_url: data.image_url,
+        reminder_enabled: data.reminder_enabled,
+        reminder_intervals: data.reminder_intervals,
+        waitlist_enabled: data.waitlist_enabled,
+        waitlist_capacity: data.waitlist_capacity,
+        is_featured: data.is_featured
       };
 
       if (initialData?.id) {
