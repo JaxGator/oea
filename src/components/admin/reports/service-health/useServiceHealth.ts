@@ -3,6 +3,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { ServiceHealthStatus } from "./types";
 import { toast } from "@/hooks/use-toast";
 
+interface HealthCheckResponse {
+  ok: boolean;
+  latency: number;
+  error?: string;
+}
+
 export function useServiceHealth() {
   return useQuery({
     queryKey: ['service-health'],
@@ -19,7 +25,7 @@ export function useServiceHealth() {
         
         // Check Lovable API status
         const lovableStartTime = performance.now();
-        const lovableResponse = await fetch('https://api.lovable.dev/health')
+        const lovableResponse: HealthCheckResponse = await fetch('https://api.lovable.dev/health')
           .then(res => {
             const lovableEndTime = performance.now();
             return {
@@ -38,7 +44,7 @@ export function useServiceHealth() {
 
         // Check Namecheap DNS servers
         const namecheapStartTime = performance.now();
-        const namecheapResponse = await fetch('https://dns.api.namecheap.com/health')
+        const namecheapResponse: HealthCheckResponse = await fetch('https://dns.api.namecheap.com/health')
           .then(res => {
             const namecheapEndTime = performance.now();
             return {
@@ -57,7 +63,7 @@ export function useServiceHealth() {
 
         // Check Netlify status
         const netlifyStartTime = performance.now();
-        const netlifyResponse = await fetch('https://www.netlifystatus.com/api/v2/status.json')
+        const netlifyResponse: HealthCheckResponse = await fetch('https://www.netlifystatus.com/api/v2/status.json')
           .then(res => {
             const netlifyEndTime = performance.now();
             return {
