@@ -1,4 +1,4 @@
-import { Users } from "lucide-react";
+import { UserRoundCog } from "lucide-react";
 
 export function AdminUserTableHeader() {
   return (
@@ -7,7 +7,7 @@ export function AdminUserTableHeader() {
       role="heading"
       aria-level={2}
     >
-      <Users className="h-5 w-5" aria-hidden="true" />
+      <UserRoundCog className="h-5 w-5" aria-hidden="true" />
       <h2 className="text-xl font-semibold">User Management</h2>
     </div>
   );
