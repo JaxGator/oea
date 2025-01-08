@@ -14,28 +14,26 @@ interface EventEditDialogProps {
 export function EventEditDialog({ event, open, onOpenChange, onSuccess }: EventEditDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl max-h-[90vh]">
-        <div className="overflow-y-auto max-h-full">
-          <DialogHeader>
-            <DialogTitle>Edit Event: {event.title}</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-6 p-6">
-            <EventForm
-              initialData={event}
-              onSuccess={onSuccess}
-            />
-            
-            {event.waitlist_enabled && (
-              <>
-                <Separator />
-                <WaitlistManager
-                  eventId={event.id}
-                  maxGuests={event.max_guests}
-                  waitlistCapacity={event.waitlist_capacity}
-                />
-              </>
-            )}
-          </div>
+      <DialogContent className="max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
+        <DialogHeader>
+          <DialogTitle>Edit Event: {event.title}</DialogTitle>
+        </DialogHeader>
+        <div className="flex-1 overflow-y-auto px-6 pb-6">
+          <EventForm
+            initialData={event}
+            onSuccess={onSuccess}
+          />
+          
+          {event.waitlist_enabled && (
+            <>
+              <Separator className="my-6" />
+              <WaitlistManager
+                eventId={event.id}
+                maxGuests={event.max_guests}
+                waitlistCapacity={event.waitlist_capacity}
+              />
+            </>
+          )}
         </div>
       </DialogContent>
     </Dialog>
