@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import { GuestList } from "../GuestList";
 import { useState } from "react";
+import { toast } from "sonner";
 
 interface Guest {
   firstName: string;
@@ -31,6 +32,11 @@ export function RSVPButton({ isFullyBooked, canJoinWaitlist, onRSVP }: RSVPButto
       onRSVP();
     }
     setShowGuestDialog(false);
+    
+    toast.success(isFullyBooked ? 
+      "You've been added to the waitlist" : 
+      "You've successfully RSVP'd to this event"
+    );
   };
 
   if (isFullyBooked && !canJoinWaitlist) {
