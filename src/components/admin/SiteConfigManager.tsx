@@ -17,7 +17,7 @@ export function SiteConfigManager() {
   }
 
   return (
-    <div className="space-y-6 p-4 max-w-full overflow-x-hidden">
+    <div className="space-y-6 p-4 pb-16 max-w-full overflow-x-hidden">
       <div className="flex items-center gap-2">
         <h2 className="text-lg font-semibold">Site Configuration</h2>
         <TooltipProvider>
@@ -33,7 +33,9 @@ export function SiteConfigManager() {
       </div>
 
       <Tabs defaultValue="general" className="space-y-4 w-full">
-        <ConfigTabs />
+        <div className="sticky top-0 z-10 bg-background pt-2 pb-4 border-b">
+          <ConfigTabs />
+        </div>
 
         <div className="mt-6 overflow-x-hidden">
           <TabsContent value="general" className="m-0">
