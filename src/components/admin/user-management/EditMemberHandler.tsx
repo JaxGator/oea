@@ -37,8 +37,8 @@ export function EditMemberHandler({ member, onClose, onUpdate }: EditMemberHandl
   }
 
   // Only render dialog if we have a valid member
-  if (!member) {
-    console.warn('EditMemberHandler: Cannot render dialog without valid member data');
+  if (!member || !member.id || !member.username) {
+    console.warn('EditMemberHandler: Cannot render dialog without valid member data', { member });
     return null;
   }
 

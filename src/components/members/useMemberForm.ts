@@ -1,39 +1,44 @@
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { Member } from "./types";
 
-interface Member {
-  id: string;
-  username: string;
-  full_name: string | null;
-  avatar_url: string | null;
-  is_admin: boolean;
-  is_approved: boolean;
-  is_member: boolean;
-}
+const DEFAULT_MEMBER: Partial<Member> = {
+  username: '',
+  full_name: '',
+  avatar_url: '',
+  is_admin: false,
+  is_approved: false,
+  is_member: false,
+};
 
-export function useMemberForm(member: Member, onUpdate: () => void, onClose: () => void) {
+export function useMemberForm(member: Member | null, onUpdate: () => void, onClose: () => void) {
+  const { toast } = useToast();
+
   // Validate member object and provide defaults
   if (!member || typeof member !== 'object') {
     console.error('useMemberForm: Invalid member object provided:', member);
     throw new Error('Invalid member data provided to useMemberForm');
   }
 
-  const [username, setUsername] = useState(member.username || '');
-  const [fullName, setFullName] = useState(member.full_name || '');
+  const safeMember = { ...DEFAULT_MEMBER, ...member };
+
+  const [username, setUsername] = useState(safeMember.username);
+  const [fullName, setFullName] = useState(safeMember.full_name || '');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [isAdmin, setIsAdmin] = useState(member.is_admin || false);
-  const [isApproved, setIsApproved] = useState(member.is_approved || false);
-  const [isMember, setIsMember] = useState(member.is_member || false);
-  const [avatarUrl, setAvatarUrl] = useState(member.avatar_url || '');
-  const { toast } = useToast();
+  const [isAdmin, setIsAdmin] = useState(safeMember.is_admin || false);
+  const [isApproved, setIsApproved] = useState(safeMember.is_approved || false);
+  const [isMember, setIsMember] = useState(safeMember.is_member || false);
+  const [avatarUrl, setAvatarUrl] = useState(safeMember.avatar_url || '');
 
   const handleSubmit = async () => {
     try {
-      if (!member.id) {
+      if (!member?.id) {
         throw new Error('Member ID is required for updates');
       }
+
+      console.log('useMemberForm: Submitting update for member:', member.id);
 
       const { error } = await supabase.functions.invoke('admin-user-management', {
         body: {
