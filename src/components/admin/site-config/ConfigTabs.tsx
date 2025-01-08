@@ -4,7 +4,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 
 export function ConfigTabs() {
   return (
-    <TabsList className="grid w-full grid-cols-2 sm:grid-cols-5 gap-2">
+    <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 gap-2">
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
