@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Member } from "@/components/members/types";
 import { ViewMemberDialog } from "@/components/members/ViewMemberDialog";
 import { EditMemberHandler } from "./user-management/EditMemberHandler";
@@ -8,10 +8,14 @@ import { UserListHeader } from "./user-management/UserListHeader";
 import { UserListContent } from "./user-management/UserListContent";
 import { useUserManagement } from "@/hooks/admin/useUserManagement";
 import { useToast } from "@/hooks/use-toast";
+import { useDebounce } from "@/hooks/use-debounce";
 
 export function AdminUserList() {
   const [viewingMember, setViewingMember] = useState<Member | null>(null);
-  const { members, isLoading, error, refetch } = useMemberManagement();
+  const [searchTerm, setSearchTerm] = useState("");
+  const debouncedSearch = useDebounce(searchTerm, 300);
+  
+  const { members, isLoading, error, refetch } = useMemberManagement(debouncedSearch);
   const { toast } = useToast();
   
   const {
@@ -38,9 +42,16 @@ export function AdminUserList() {
     handleEditMember(member);
   };
 
+  const handleSearch = useCallback((term: string) => {
+    setSearchTerm(term);
+  }, []);
+
   return (
     <div className="space-y-4">
-      <UserListHeader onUserCreated={refetch} />
+      <UserListHeader 
+        onUserCreated={refetch}
+        onSearch={handleSearch}
+      />
       
       <UserListContent
         members={members}
