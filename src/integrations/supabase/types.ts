@@ -224,6 +224,7 @@ export type Database = {
           created_by: string
           date: string
           description: string | null
+          display_order: number | null
           id: string
           image_url: string
           imported_rsvp_count: number | null
@@ -244,6 +245,7 @@ export type Database = {
           created_by: string
           date: string
           description?: string | null
+          display_order?: number | null
           id?: string
           image_url: string
           imported_rsvp_count?: number | null
@@ -264,6 +266,7 @@ export type Database = {
           created_by?: string
           date?: string
           description?: string | null
+          display_order?: number | null
           id?: string
           image_url?: string
           imported_rsvp_count?: number | null

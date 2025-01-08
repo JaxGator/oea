@@ -12,6 +12,8 @@ export interface Event {
   rsvps?: EventRSVP[];
   waitlist_enabled?: boolean;
   waitlist_capacity?: number | null;
+  is_featured?: boolean;
+  display_order?: number | null;
 }
 
 export interface EventRSVP {

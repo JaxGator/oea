@@ -89,6 +89,7 @@ export function EventCardContainer({
               waitlistEnabled={event.waitlist_enabled}
               waitlistCount={waitlistCount}
               waitlistCapacity={event.waitlist_capacity}
+              isFeatured={event.is_featured}
               onRSVP={handleRSVP}
               onCancelRSVP={() => onCancelRSVP(event.id)}
               onEdit={() => setShowEditDialog(true)}

@@ -1,6 +1,7 @@
 import { CardContent, CardFooter } from "@/components/ui/card";
 import { EventCardBasicInfo } from "./EventCardBasicInfo";
 import { EventActions } from "../actions/EventActions";
+import { Star } from "lucide-react";
 
 interface EventCardContentProps {
   date: string;
@@ -15,6 +16,7 @@ interface EventCardContentProps {
   waitlistEnabled?: boolean;
   waitlistCount?: number;
   waitlistCapacity?: number | null;
+  isFeatured?: boolean;
   onRSVP: (guests?: { firstName: string }[]) => void;
   onCancelRSVP: () => void;
   onEdit: () => void;
@@ -34,6 +36,7 @@ export function EventCardContent({
   waitlistEnabled,
   waitlistCount = 0,
   waitlistCapacity,
+  isFeatured = false,
   onRSVP,
   onCancelRSVP,
   onEdit,
@@ -46,16 +49,21 @@ export function EventCardContent({
   return (
     <>
       <CardContent className="p-4">
-        <EventCardBasicInfo
-          date={date}
-          location={location}
-          rsvpCount={rsvpCount}
-          maxGuests={maxGuests}
-          isWixEvent={isWixEvent}
-          waitlistEnabled={waitlistEnabled}
-          waitlistCount={waitlistCount}
-          waitlistCapacity={waitlistCapacity}
-        />
+        <div className="flex justify-between items-start mb-4">
+          <EventCardBasicInfo
+            date={date}
+            location={location}
+            rsvpCount={rsvpCount}
+            maxGuests={maxGuests}
+            isWixEvent={isWixEvent}
+            waitlistEnabled={waitlistEnabled}
+            waitlistCount={waitlistCount}
+            waitlistCapacity={waitlistCapacity}
+          />
+          {isFeatured && (
+            <Star className="h-5 w-5 text-yellow-500 fill-yellow-500" />
+          )}
+        </div>
       </CardContent>
 
       <CardFooter className="p-4 pt-0">
