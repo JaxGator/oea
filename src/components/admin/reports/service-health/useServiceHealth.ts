@@ -1,20 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { ServiceHealthStatus } from "./types";
+import { ServiceHealthStatus, HealthCheckResponse } from "./types";
 import { toast } from "@/hooks/use-toast";
-
-interface HealthCheckResponse {
-  ok: boolean;
-  latency: number;
-  error?: string;
-}
-
-const NAMECHEAP_DNS_SERVERS = [
-  'dns1.p06.nsone.net',
-  'dns2.p06.nsone.net',
-  'dns3.p06.nsone.net',
-  'dns4.p06.nsone.net'
-];
 
 export function useServiceHealth() {
   return useQuery({
@@ -48,26 +35,6 @@ export function useServiceHealth() {
               error: error.message
             };
           });
-
-        // Check Namecheap DNS servers
-        const namecheapStartTime = performance.now();
-        let dnsChecks = await Promise.all(
-          NAMECHEAP_DNS_SERVERS.map(async (server) => {
-            try {
-              const response = await fetch(`https://${server}`);
-              return response.ok;
-            } catch {
-              return false;
-            }
-          })
-        );
-        const namecheapEndTime = performance.now();
-        
-        const namecheapResponse: HealthCheckResponse = {
-          ok: dnsChecks.some(status => status), // Consider healthy if at least one server responds
-          latency: namecheapEndTime - namecheapStartTime,
-          error: dnsChecks.every(status => !status) ? 'DNS servers not responding' : undefined
-        };
 
         // Check Netlify status
         const netlifyStartTime = performance.now();
@@ -105,11 +72,6 @@ export function useServiceHealth() {
               status: lovableResponse.ok ? 'healthy' : 'error',
               latency: lovableResponse.latency,
               error: lovableResponse.error
-            },
-            namecheap: {
-              status: namecheapResponse.ok ? 'healthy' : 'error',
-              latency: namecheapResponse.latency,
-              error: namecheapResponse.error
             }
           };
         }
@@ -128,11 +90,6 @@ export function useServiceHealth() {
             status: lovableResponse.ok ? 'healthy' : 'error',
             latency: lovableResponse.latency,
             error: lovableResponse.error
-          },
-          namecheap: {
-            status: namecheapResponse.ok ? 'healthy' : 'error',
-            latency: namecheapResponse.latency,
-            error: namecheapResponse.error
           }
         };
       } catch (error) {
@@ -155,11 +112,6 @@ export function useServiceHealth() {
             error: 'Connection failed'
           },
           lovable: {
-            status: 'error',
-            latency: 0,
-            error: 'Connection failed'
-          },
-          namecheap: {
             status: 'error',
             latency: 0,
             error: 'Connection failed'

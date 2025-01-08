@@ -10,5 +10,10 @@ export interface ServiceHealthStatus {
   supabase: ServiceHealth;
   netlify: ServiceHealth;
   lovable: ServiceHealth;
-  namecheap: ServiceHealth;
+}
+
+export interface HealthCheckResponse {
+  ok: boolean;
+  latency: number;
+  error?: string;
 }
