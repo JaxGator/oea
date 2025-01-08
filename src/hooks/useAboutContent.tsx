@@ -16,7 +16,7 @@ Hey there, friends!
 We're all about creating a welcoming space where everyone can enjoy fun, meaningful experiences together. To keep things running smoothly, here are a few simple guidelines we'd love for you to follow:
 
 Prioritize the Fun!
-Our events are designed with you in mind, so we'd appreciate it if you could prioritize them when possible. Meetup-style events are especially important for building our awesome community vibes!
+Our events are designed with you in mind, so we'd appreciate it if you could prioritize them when possible.
 
 Stay Engaged!
 Life happens, and that's okay! But if you decide to step back from events or we notice you've gone quiet for three months, we'll assume you've moved on (though we'll miss you!).
