@@ -28,8 +28,10 @@ export function useEvents(selectedDate?: Date) {
           `)
           .order('date');
 
+        // Only filter by date if a date is selected
         if (selectedDate) {
-          query = query.eq('date', selectedDate.toISOString().split('T')[0]);
+          const dateStr = selectedDate.toISOString().split('T')[0];
+          query = query.eq('date', dateStr);
         }
 
         const result = await query;

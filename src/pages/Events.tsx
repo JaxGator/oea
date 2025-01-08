@@ -10,13 +10,13 @@ import { filterEventsByDate } from "@/utils/dateUtils";
 export default function Events() {
   const { isAuthenticated } = useAuthState();
   const [isCreateEventOpen, setIsCreateEventOpen] = useState(false);
-  const [selectedDate, setSelectedDate] = useState<Date>();
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   
-  const { data: events = [], isLoading: isEventsLoading, error } = useEvents();
+  const { data: events = [], isLoading: isEventsLoading, error } = useEvents(selectedDate);
   const { handleRSVP, cancelRSVP } = useRSVP();
 
-  // Filter events based on selected date
-  const filteredEvents = filterEventsByDate(events, selectedDate);
+  // Only filter by date if a date is selected, otherwise show all events
+  const filteredEvents = selectedDate ? filterEventsByDate(events, selectedDate) : events;
   
   // Separate upcoming and past events
   const now = new Date();
