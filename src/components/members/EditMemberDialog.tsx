@@ -1,17 +1,14 @@
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
 } from "@/components/ui/dialog";
-import { MemberFormFields } from "./MemberFormFields";
 import { MemberAvatarUpload } from "./MemberAvatarUpload";
 import { useMemberForm } from "./useMemberForm";
 import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Member } from "./types";
+import { EditMemberHeader } from "./edit/EditMemberHeader";
+import { EditMemberForm } from "./edit/EditMemberForm";
 
 interface EditMemberDialogProps {
   member: Member;
@@ -20,13 +17,17 @@ interface EditMemberDialogProps {
   onUpdate: () => void;
 }
 
-export function EditMemberDialog({ member, open, onOpenChange, onUpdate }: EditMemberDialogProps) {
+export function EditMemberDialog({ 
+  member, 
+  open, 
+  onOpenChange, 
+  onUpdate 
+}: EditMemberDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
   
   useEffect(() => {
     if (open) {
-      // Validate member object when dialog opens
       if (!member?.id || !member?.username) {
         console.error('EditMemberDialog: Invalid member data:', member);
         toast({
@@ -42,20 +43,6 @@ export function EditMemberDialog({ member, open, onOpenChange, onUpdate }: EditM
   }, [open, member, onOpenChange, toast]);
 
   const {
-    username,
-    setUsername,
-    fullName,
-    setFullName,
-    email,
-    setEmail,
-    password,
-    setPassword,
-    isAdmin,
-    setIsAdmin,
-    isApproved,
-    setIsApproved,
-    isMember,
-    setIsMember,
     avatarUrl,
     setAvatarUrl,
     handleSubmit,
@@ -65,27 +52,8 @@ export function EditMemberDialog({ member, open, onOpenChange, onUpdate }: EditM
     onOpenChange(false);
   });
 
-  const onSubmit = async () => {
+  const handleFormSubmit = async () => {
     try {
-      if (!username.trim()) {
-        toast({
-          title: "Validation Error",
-          description: "Username is required",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      console.log('Submitting form with data:', {
-        username,
-        fullName,
-        email,
-        isAdmin,
-        isApproved,
-        isMember,
-        avatarUrl
-      });
-
       setIsSubmitting(true);
       await handleSubmit();
     } catch (error) {
@@ -99,7 +67,6 @@ export function EditMemberDialog({ member, open, onOpenChange, onUpdate }: EditM
     }
   };
 
-  // Additional validation before rendering
   if (!member?.id) {
     console.error('EditMemberDialog: Cannot render without valid member data');
     return null;
@@ -108,57 +75,21 @@ export function EditMemberDialog({ member, open, onOpenChange, onUpdate }: EditM
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle>Edit Member</DialogTitle>
-        </DialogHeader>
+        <EditMemberHeader />
         <div className="space-y-6">
           <MemberAvatarUpload
             memberId={member.id}
-            username={username}
+            username={member.username}
             avatarUrl={avatarUrl}
             onAvatarUpdate={setAvatarUrl}
           />
 
-          <MemberFormFields
-            username={username}
-            setUsername={setUsername}
-            fullName={fullName}
-            setFullName={setFullName}
-            email={email}
-            setEmail={setEmail}
-            password={password}
-            setPassword={setPassword}
-            isAdmin={isAdmin}
-            setIsAdmin={setIsAdmin}
-            isApproved={isApproved}
-            setIsApproved={setIsApproved}
-            isMember={isMember}
-            setIsMember={setIsMember}
-            onSubmit={onSubmit}
+          <EditMemberForm
+            member={member}
+            onSubmit={handleFormSubmit}
+            isSubmitting={isSubmitting}
+            onCancel={() => onOpenChange(false)}
           />
-
-          <div className="flex justify-end space-x-2">
-            <Button
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-              disabled={isSubmitting}
-            >
-              Cancel
-            </Button>
-            <Button 
-              onClick={onSubmit}
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Saving...
-                </>
-              ) : (
-                'Save Changes'
-              )}
-            </Button>
-          </div>
         </div>
       </DialogContent>
     </Dialog>
