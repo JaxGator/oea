@@ -43,8 +43,8 @@ export function EventDialogs({
   return (
     <>
       <Dialog open={showDetailsDialog} onOpenChange={setShowDetailsDialog}>
-        <DialogContent className="max-w-3xl h-[90vh] p-0 flex flex-col">
-          <div className="flex-1 overflow-y-auto p-6">
+        <DialogContent className="max-w-3xl max-h-[90vh] p-0">
+          <div className="overflow-y-auto max-h-full p-6">
             <EventCardDetailedView
               event={event}
               rsvpCount={rsvpCount}
