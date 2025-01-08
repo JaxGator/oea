@@ -25,6 +25,18 @@ export function ServiceHealthCard({ serviceHealth }: ServiceHealthCardProps) {
             latency={0}
             error="Loading status..."
           />
+          <ServiceHealthItem
+            name="Lovable"
+            status="error"
+            latency={0}
+            error="Loading status..."
+          />
+          <ServiceHealthItem
+            name="Namecheap DNS"
+            status="error"
+            latency={0}
+            error="Loading status..."
+          />
         </div>
       </Card>
     );
@@ -45,6 +57,18 @@ export function ServiceHealthCard({ serviceHealth }: ServiceHealthCardProps) {
           status={serviceHealth.netlify.status}
           latency={serviceHealth.netlify.latency}
           error={serviceHealth.netlify.error}
+        />
+        <ServiceHealthItem
+          name="Lovable"
+          status={serviceHealth.lovable.status}
+          latency={serviceHealth.lovable.latency}
+          error={serviceHealth.lovable.error}
+        />
+        <ServiceHealthItem
+          name="Namecheap DNS"
+          status={serviceHealth.namecheap.status}
+          latency={serviceHealth.namecheap.latency}
+          error={serviceHealth.namecheap.error}
         />
       </div>
     </Card>

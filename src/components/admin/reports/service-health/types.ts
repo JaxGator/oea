@@ -9,4 +9,6 @@ export interface ServiceHealth {
 export interface ServiceHealthStatus {
   supabase: ServiceHealth;
   netlify: ServiceHealth;
+  lovable: ServiceHealth;
+  namecheap: ServiceHealth;
 }
