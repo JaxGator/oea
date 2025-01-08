@@ -1,97 +1,49 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
+import { useSession } from "@/hooks/auth/useSession";
+import { toast } from "@/hooks/use-toast";
 
 export function useAdminStatus() {
-  const [state, setState] = useState({
-    isAdmin: false,
-    isLoading: true,
-    error: null as Error | null
-  });
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const { user } = useSession();
 
   useEffect(() => {
-    let isMounted = true;
-    
     const checkAdminStatus = async () => {
-      try {
-        const { data: { user }, error: userError } = await supabase.auth.getUser();
-        
-        // If there's no user, just set isAdmin to false without showing error
-        if (!user) {
-          if (isMounted) {
-            setState(prev => ({ ...prev, isAdmin: false, isLoading: false }));
-          }
-          return;
-        }
+      if (!user?.id) {
+        setIsAdmin(false);
+        setIsLoading(false);
+        return;
+      }
 
-        // Only proceed with admin check if we have a logged-in user
-        const { data, error: profileError } = await supabase
+      try {
+        const { data, error } = await supabase
           .from('profiles')
           .select('is_admin')
           .eq('id', user.id)
           .maybeSingle();
 
-        if (profileError) throw profileError;
-
-        if (isMounted) {
-          setState(prev => ({
-            ...prev,
-            isAdmin: !!data?.is_admin,
-            error: null,
-            isLoading: false
-          }));
+        if (error) {
+          console.error('Error checking admin status:', error);
+          toast({
+            title: "Error",
+            description: "Failed to verify admin status",
+            variant: "destructive",
+          });
+          setIsAdmin(false);
+        } else {
+          setIsAdmin(!!data?.is_admin);
         }
-      } catch (err) {
-        console.error("Error checking admin status:", err);
-        // Only show toast for logged-in users
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user && isMounted) {
-          toast.error("Failed to verify admin status. Please try again.");
-        }
-        if (isMounted) {
-          setState(prev => ({
-            ...prev,
-            error: err as Error,
-            isLoading: false
-          }));
-        }
+      } catch (error) {
+        console.error('Error checking admin status:', error);
+        setIsAdmin(false);
+      } finally {
+        setIsLoading(false);
       }
     };
 
-    // Initial check
     checkAdminStatus();
+  }, [user?.id]);
 
-    // Set up real-time subscription for admin status changes
-    const subscription = supabase
-      .channel('admin-changes')
-      .on('postgres_changes', 
-        { 
-          event: 'UPDATE', 
-          schema: 'public', 
-          table: 'profiles',
-          filter: `id=eq.${supabase.auth.getUser().then(({ data }) => data.user?.id)}`
-        }, 
-        (payload) => {
-          if (isMounted) {
-            setState(prev => ({
-              ...prev,
-              isAdmin: !!(payload.new as any).is_admin
-            }));
-          }
-        }
-      )
-      .subscribe();
-
-    // Cleanup
-    return () => {
-      isMounted = false;
-      subscription.unsubscribe();
-    };
-  }, []);
-
-  return { 
-    isAdmin: state.isAdmin, 
-    isLoading: state.isLoading,
-    error: state.error?.message
-  };
+  return { isAdmin, isLoading };
 }
