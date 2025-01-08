@@ -1,9 +1,7 @@
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { UserCircle } from "lucide-react";
+import { UserInfoFields } from "./form/UserInfoFields";
+import { UserRoleFields } from "./form/UserRoleFields";
+import { UserAvatar } from "./form/UserAvatar";
 
 interface MemberFormFieldsProps {
   username: string;
@@ -44,76 +42,28 @@ export function MemberFormFields({
 }: MemberFormFieldsProps) {
   return (
     <div className="space-y-4">
-      {avatarUrl && (
-        <div className="flex justify-center mb-4">
-          <Avatar className="h-20 w-20">
-            <AvatarImage src={avatarUrl} alt={username} />
-            <AvatarFallback>
-              <UserCircle className="h-20 w-20" />
-            </AvatarFallback>
-          </Avatar>
-        </div>
-      )}
-
-      <div className="space-y-2">
-        <Label htmlFor="email">Email</Label>
-        <Input
-          id="email"
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="password">New Password (leave empty to keep current)</Label>
-        <Input
-          id="password"
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          placeholder="Enter new password"
-        />
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="username">Username</Label>
-        <Input
-          id="username"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-        />
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="fullName">Full Name</Label>
-        <Input
-          id="fullName"
-          value={fullName}
-          onChange={(e) => setFullName(e.target.value)}
-        />
-      </div>
-      <div className="flex items-center space-x-2">
-        <Checkbox
-          id="isAdmin"
-          checked={isAdmin}
-          onCheckedChange={(checked) => setIsAdmin(checked as boolean)}
-        />
-        <Label htmlFor="isAdmin">Admin</Label>
-      </div>
-      <div className="flex items-center space-x-2">
-        <Checkbox
-          id="isApproved"
-          checked={isApproved}
-          onCheckedChange={(checked) => setIsApproved(checked as boolean)}
-        />
-        <Label htmlFor="isApproved">Approved</Label>
-      </div>
-      <div className="flex items-center space-x-2">
-        <Checkbox
-          id="isMember"
-          checked={isMember}
-          onCheckedChange={(checked) => setIsMember(checked as boolean)}
-        />
-        <Label htmlFor="isMember">Member</Label>
-      </div>
+      <UserAvatar username={username} avatarUrl={avatarUrl} />
+      
+      <UserInfoFields
+        username={username}
+        setUsername={setUsername}
+        fullName={fullName}
+        setFullName={setFullName}
+        email={email}
+        setEmail={setEmail}
+        password={password}
+        setPassword={setPassword}
+      />
+      
+      <UserRoleFields
+        isAdmin={isAdmin}
+        setIsAdmin={setIsAdmin}
+        isApproved={isApproved}
+        setIsApproved={setIsApproved}
+        isMember={isMember}
+        setIsMember={setIsMember}
+      />
+      
       <Button onClick={onSubmit} className="w-full">
         Save Changes
       </Button>
