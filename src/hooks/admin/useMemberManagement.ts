@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Member } from "@/components/members/types";
 import { UserFilters } from "@/components/admin/AdminUserList";
 import { useToast } from "@/hooks/use-toast";
+import { handleQueryResult } from "@/utils/supabase-helpers";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -44,7 +45,7 @@ export function useMemberManagement(searchTerm: string = "", filters: UserFilter
           .order('username');
 
         const { data, error, count } = await query;
-
+        
         if (error) {
           console.error('Error fetching members:', {
             error,
