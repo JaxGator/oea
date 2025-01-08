@@ -20,6 +20,12 @@ export function EditMemberHandler({ member, onClose, onUpdate }: EditMemberHandl
     const fetchMemberData = async () => {
       if (!member?.id) {
         console.error('EditMemberHandler: Invalid member ID:', member);
+        toast({
+          title: "Error",
+          description: "Invalid member data. Please try again.",
+          variant: "destructive",
+        });
+        onClose();
         return;
       }
 
