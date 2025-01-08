@@ -9,7 +9,8 @@ export interface Profile {
   is_approved: boolean;
   is_member: boolean;
   created_at: string;
-  has_unread_messages?: boolean; // Added this optional property
+  has_unread_messages?: boolean;
+  event_reminders_enabled: boolean | null;
 }
 
 export interface AuthState {
