@@ -2,20 +2,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { EventForm } from "./EventForm";
 import { WaitlistManager } from "../admin/events/WaitlistManager";
 import { Separator } from "@/components/ui/separator";
+import { EventFormData } from "./EventFormTypes";
 
 interface EventEditDialogProps {
-  event: {
-    id: string;
-    title: string;
-    description?: string;
-    date: string;
-    time: string;
-    location: string;
-    max_guests: number;
-    image_url?: string;
-    waitlist_enabled?: boolean;
-    waitlist_capacity?: number | null;
-  };
+  event: EventFormData;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSuccess: () => void;
