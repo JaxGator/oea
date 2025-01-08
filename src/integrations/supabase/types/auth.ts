@@ -9,4 +9,5 @@ export type Profile = {
   is_member: boolean | null;
   email_notifications: boolean | null;
   in_app_notifications: boolean | null;
+  event_reminders_enabled: boolean | null;
 };

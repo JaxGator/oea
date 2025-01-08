@@ -1,4 +1,4 @@
-import { FormControl, FormField, FormItem, FormLabel, FormDescription } from "@/components/ui/form";
+import { FormControl, FormDescription, FormField, FormItem, FormLabel } from "@/components/ui/form";
 import { Switch } from "@/components/ui/switch";
 import { UseFormReturn } from "react-hook-form";
 import { EventFormValues } from "./EventFormTypes";
