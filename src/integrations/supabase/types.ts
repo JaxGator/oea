@@ -119,6 +119,8 @@ export type Database = {
           is_featured: boolean | null
           location: string
           max_guests: number
+          requires_payment: boolean | null
+          ticket_price: number | null
           time: string
           title: string
         }
@@ -133,6 +135,8 @@ export type Database = {
           is_featured?: boolean | null
           location: string
           max_guests: number
+          requires_payment?: boolean | null
+          ticket_price?: number | null
           time: string
           title: string
         }
@@ -147,6 +151,8 @@ export type Database = {
           is_featured?: boolean | null
           location?: string
           max_guests?: number
+          requires_payment?: boolean | null
+          ticket_price?: number | null
           time?: string
           title?: string
         }
@@ -247,6 +253,54 @@ export type Database = {
           updated_by?: string | null
         }
         Relationships: []
+      }
+      payments: {
+        Row: {
+          amount: number
+          created_at: string
+          event_id: string
+          id: string
+          payment_method: string | null
+          status: string
+          transaction_id: string | null
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          event_id: string
+          id?: string
+          payment_method?: string | null
+          status: string
+          transaction_id?: string | null
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          event_id?: string
+          id?: string
+          payment_method?: string | null
+          status?: string
+          transaction_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payments_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payments_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {

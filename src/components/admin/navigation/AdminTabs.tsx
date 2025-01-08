@@ -1,8 +1,9 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Users, Settings, Image } from "lucide-react";
+import { Users, Settings, Image, DollarSign } from "lucide-react";
 import { AdminUserList } from "@/components/admin/AdminUserList";
 import { SiteConfigManager } from "@/components/admin/SiteConfigManager";
 import { GalleryManager } from "@/components/admin/GalleryManager";
+import { PaymentManager } from "@/components/admin/payments/PaymentManager";
 import { ErrorBoundary } from "@/components/error/ErrorBoundary";
 
 interface AdminTabsProps {
@@ -21,6 +22,10 @@ export function AdminTabs({ defaultTab = "users" }: AdminTabsProps) {
           <Image className="h-4 w-4 mr-2" />
           Photo Gallery
         </TabsTrigger>
+        <TabsTrigger value="payments" className="w-full sm:w-auto justify-start sm:justify-center">
+          <DollarSign className="h-4 w-4 mr-2" />
+          Payments
+        </TabsTrigger>
         <TabsTrigger value="site-config" className="w-full sm:w-auto justify-start sm:justify-center">
           <Settings className="h-4 w-4 mr-2" />
           Site Configuration
@@ -36,6 +41,12 @@ export function AdminTabs({ defaultTab = "users" }: AdminTabsProps) {
       <TabsContent value="gallery" className="space-y-4 min-h-[300px]">
         <ErrorBoundary fallback={<div>Error loading gallery manager</div>}>
           <GalleryManager />
+        </ErrorBoundary>
+      </TabsContent>
+
+      <TabsContent value="payments" className="space-y-4 min-h-[300px]">
+        <ErrorBoundary fallback={<div>Error loading payment manager</div>}>
+          <PaymentManager />
         </ErrorBoundary>
       </TabsContent>
 
