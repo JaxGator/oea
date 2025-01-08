@@ -13,6 +13,13 @@ export const FeaturedEvents = () => {
       today.setHours(0, 0, 0, 0);
       return eventDate >= today;
     })
+    .sort((a, b) => {
+      // Sort featured events first
+      if (a.is_featured && !b.is_featured) return -1;
+      if (!a.is_featured && b.is_featured) return 1;
+      // Then sort by date
+      return new Date(a.date).getTime() - new Date(b.date).getTime();
+    })
     .slice(0, 4);
 
   return (

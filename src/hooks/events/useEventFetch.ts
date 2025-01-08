@@ -19,6 +19,7 @@ export const fetchFeaturedEvents = async (): Promise<Event[]> => {
       image_url,
       created_at,
       created_by,
+      is_featured,
       rsvps:event_rsvps(
         id,
         event_id,
