@@ -15,7 +15,7 @@ export function UserReminderPreferences() {
 
   useEffect(() => {
     if (profile) {
-      setEnabled(profile.event_reminders_enabled || false);
+      setEnabled(profile.event_reminders_enabled ?? false);
     }
   }, [profile]);
 
