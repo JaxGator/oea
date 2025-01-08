@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Member } from "@/components/members/types";
 import { EditMemberDialog } from "@/components/members/EditMemberDialog";
 import { useToast } from "@/hooks/use-toast";
@@ -13,10 +13,6 @@ interface EditMemberHandlerProps {
 export function EditMemberHandler({ member, onClose, onUpdate }: EditMemberHandlerProps) {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
-
-  useEffect(() => {
-    console.log('EditMemberHandler: member prop changed:', member);
-  }, [member]);
 
   const handleDialogChange = (open: boolean) => {
     if (!open) {
@@ -33,9 +29,8 @@ export function EditMemberHandler({ member, onClose, onUpdate }: EditMemberHandl
     );
   }
 
-  // Only render dialog if we have a valid member
-  if (!member || !member.id || !member.username) {
-    console.log('EditMemberHandler: Cannot render dialog without valid member data', { member });
+  if (!member?.id || !member?.username) {
+    console.log('EditMemberHandler: Invalid member data:', member);
     return null;
   }
 

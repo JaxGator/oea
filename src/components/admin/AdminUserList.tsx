@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Member } from "@/components/members/types";
 import { MemberTable } from "@/components/members/MemberTable";
 import { AdminUserTableWrapper } from "./user-management/AdminUserTableWrapper";
@@ -20,10 +20,6 @@ export function AdminUserList() {
   const { toast } = useToast();
 
   useSessionCheck();
-
-  useEffect(() => {
-    console.log('AdminUserList: editingMember state updated:', editingMember);
-  }, [editingMember]);
 
   const handleDeleteMember = async (userId: string) => {
     try {
@@ -67,15 +63,11 @@ export function AdminUserList() {
   };
 
   const renderContent = () => {
-    if (isLoading) {
-      return <LoadingState />;
-    }
-
+    if (isLoading) return <LoadingState />;
     if (error) {
       console.error('Error loading members:', error);
       return <ErrorState message="Error loading members. Please try refreshing the page." />;
     }
-
     if (!Array.isArray(members)) {
       console.error('Members is not an array:', members);
       return <ErrorState message="Invalid data format. Please try refreshing the page." />;

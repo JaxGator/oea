@@ -8,15 +8,12 @@ import {
 } from "@/components/ui/tooltip";
 import { DeleteUserDialog } from "./user-management/DeleteUserDialog";
 import { useState } from "react";
+import { Member } from "../members/types";
 
 interface AdminUserActionsProps {
-  profile: {
-    id: string;
-    username: string;
-    is_admin: boolean;
-  };
+  profile: Member;
   onUpdateStatus: (username: string) => void;
-  onEdit: () => void;
+  onEdit: (member: Member) => void;
   onDelete: (userId: string) => void;
   isUpdating: boolean;
 }
@@ -34,7 +31,7 @@ export function AdminUserActions({
     e.preventDefault();
     e.stopPropagation();
     console.log('AdminUserActions: Edit clicked for profile:', profile);
-    onEdit();
+    onEdit(profile);
   };
 
   const handleUpdateStatus = () => {

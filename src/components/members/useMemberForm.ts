@@ -3,7 +3,8 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Member } from "./types";
 
-const DEFAULT_MEMBER: Partial<Member> = {
+const DEFAULT_MEMBER: Member = {
+  id: '',
   username: '',
   full_name: '',
   avatar_url: '',
@@ -16,12 +17,7 @@ export function useMemberForm(member: Member | null, onUpdate: () => void, onClo
   const { toast } = useToast();
 
   // Validate member object and provide defaults
-  if (!member || typeof member !== 'object') {
-    console.error('useMemberForm: Invalid member object provided:', member);
-    throw new Error('Invalid member data provided to useMemberForm');
-  }
-
-  const safeMember = { ...DEFAULT_MEMBER, ...member };
+  const safeMember = member ? { ...DEFAULT_MEMBER, ...member } : DEFAULT_MEMBER;
 
   const [username, setUsername] = useState(safeMember.username);
   const [fullName, setFullName] = useState(safeMember.full_name || '');
