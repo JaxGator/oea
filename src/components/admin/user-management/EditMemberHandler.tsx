@@ -26,6 +26,7 @@ export function EditMemberHandler({ member, onClose, onUpdate }: EditMemberHandl
   };
 
   console.log('EditMemberHandler: Rendering with member:', member);
+  console.log('EditMemberHandler: Is member null?', !member);
 
   if (isLoading) {
     return (
