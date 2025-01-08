@@ -3,6 +3,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { Communication, MessageTemplate, RecipientList } from "@/types/communications";
 import { useNotifications } from "@/components/providers/NotificationProvider";
 
+type NewCommunication = Pick<Communication, 'subject' | 'content' | 'recipient_type' | 'recipient_data'> & Partial<Omit<Communication, 'subject' | 'content' | 'recipient_type' | 'recipient_data'>>;
+
+type NewMessageTemplate = Pick<MessageTemplate, 'name' | 'subject' | 'content'> & Partial<Omit<MessageTemplate, 'name' | 'subject' | 'content'>>;
+
 export function useCommunications() {
   const queryClient = useQueryClient();
   const { notify } = useNotifications();
@@ -34,12 +38,7 @@ export function useCommunications() {
   });
 
   const sendMessageMutation = useMutation({
-    mutationFn: async (communication: Partial<Communication>) => {
-      // Ensure required fields are present
-      if (!communication.content || !communication.subject || !communication.recipient_type || !communication.recipient_data) {
-        throw new Error('Missing required fields for communication');
-      }
-
+    mutationFn: async (communication: NewCommunication) => {
       const { data, error } = await supabase
         .from('communications')
         .insert([communication])
@@ -60,12 +59,7 @@ export function useCommunications() {
   });
 
   const createTemplateMutation = useMutation({
-    mutationFn: async (template: Partial<MessageTemplate>) => {
-      // Ensure required fields are present
-      if (!template.content || !template.name || !template.subject) {
-        throw new Error('Missing required fields for template');
-      }
-
+    mutationFn: async (template: NewMessageTemplate) => {
       const { data, error } = await supabase
         .from('message_templates')
         .insert([template])

@@ -1,4 +1,4 @@
-import { Profile } from "./auth";
+import { Json } from "./database.types";
 
 export type MessageStatus = 'draft' | 'scheduled' | 'sent' | 'failed';
 export type RecipientType = 'individual' | 'group' | 'all' | 'event' | 'custom_list';
