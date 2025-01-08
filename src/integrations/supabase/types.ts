@@ -39,6 +39,69 @@ export type Database = {
         }
         Relationships: []
       }
+      communications: {
+        Row: {
+          content: string
+          created_at: string | null
+          id: string
+          metadata: Json | null
+          recipient_data: Json
+          recipient_type: Database["public"]["Enums"]["recipient_type"]
+          scheduled_for: string | null
+          sender_id: string | null
+          sent_at: string | null
+          status: Database["public"]["Enums"]["message_status"] | null
+          subject: string
+          template_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          content: string
+          created_at?: string | null
+          id?: string
+          metadata?: Json | null
+          recipient_data: Json
+          recipient_type: Database["public"]["Enums"]["recipient_type"]
+          scheduled_for?: string | null
+          sender_id?: string | null
+          sent_at?: string | null
+          status?: Database["public"]["Enums"]["message_status"] | null
+          subject: string
+          template_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          content?: string
+          created_at?: string | null
+          id?: string
+          metadata?: Json | null
+          recipient_data?: Json
+          recipient_type?: Database["public"]["Enums"]["recipient_type"]
+          scheduled_for?: string | null
+          sender_id?: string | null
+          sent_at?: string | null
+          status?: Database["public"]["Enums"]["message_status"] | null
+          subject?: string
+          template_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "communications_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "communications_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "message_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       event_guests: {
         Row: {
           created_at: string
@@ -284,6 +347,128 @@ export type Database = {
         }
         Relationships: []
       }
+      list_members: {
+        Row: {
+          added_at: string | null
+          list_id: string
+          member_id: string
+        }
+        Insert: {
+          added_at?: string | null
+          list_id: string
+          member_id: string
+        }
+        Update: {
+          added_at?: string | null
+          list_id?: string
+          member_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "list_members_list_id_fkey"
+            columns: ["list_id"]
+            isOneToOne: false
+            referencedRelation: "recipient_lists"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "list_members_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      message_delivery: {
+        Row: {
+          communication_id: string | null
+          created_at: string | null
+          delivered_at: string | null
+          error_message: string | null
+          id: string
+          opened_at: string | null
+          recipient_id: string | null
+          status: Database["public"]["Enums"]["message_status"]
+          updated_at: string | null
+        }
+        Insert: {
+          communication_id?: string | null
+          created_at?: string | null
+          delivered_at?: string | null
+          error_message?: string | null
+          id?: string
+          opened_at?: string | null
+          recipient_id?: string | null
+          status: Database["public"]["Enums"]["message_status"]
+          updated_at?: string | null
+        }
+        Update: {
+          communication_id?: string | null
+          created_at?: string | null
+          delivered_at?: string | null
+          error_message?: string | null
+          id?: string
+          opened_at?: string | null
+          recipient_id?: string | null
+          status?: Database["public"]["Enums"]["message_status"]
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "message_delivery_communication_id_fkey"
+            columns: ["communication_id"]
+            isOneToOne: false
+            referencedRelation: "communications"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "message_delivery_recipient_id_fkey"
+            columns: ["recipient_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      message_templates: {
+        Row: {
+          content: string
+          created_at: string | null
+          created_by: string | null
+          id: string
+          name: string
+          subject: string
+          updated_at: string | null
+        }
+        Insert: {
+          content: string
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          name: string
+          subject: string
+          updated_at?: string | null
+        }
+        Update: {
+          content?: string
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          name?: string
+          subject?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "message_templates_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       page_content: {
         Row: {
           content: string
@@ -403,6 +588,41 @@ export type Database = {
           username?: string
         }
         Relationships: []
+      }
+      recipient_lists: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          id: string
+          name: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          name: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          name?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recipient_lists_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       site_config: {
         Row: {
@@ -629,6 +849,8 @@ export type Database = {
       }
     }
     Enums: {
+      message_status: "draft" | "scheduled" | "sent" | "failed"
+      recipient_type: "individual" | "group" | "all" | "event" | "custom_list"
       rsvp_response: "attending" | "not_attending" | "maybe"
       social_media_platform: "instagram" | "facebook" | "twitter"
     }
