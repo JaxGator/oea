@@ -54,13 +54,12 @@ export function MemberTableRow({
         />
       </td>
       <td className="px-6 py-4">
-        <MemberActions
-          memberId={member.id}
-          memberName={member.username}
-          isCurrentUserAdmin={isCurrentUserAdmin}
-          onEdit={() => onEdit(member)}
-          onDelete={() => onDelete(member.id)}
-        />
+        {isCurrentUserAdmin && (
+          <MemberActions
+            member={member}
+            onEdit={() => onEdit(member)}
+          />
+        )}
       </td>
     </tr>
   );

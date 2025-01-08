@@ -4,6 +4,7 @@ import { UserCircle, MessageSquare } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { MemberActions } from "./MemberActions";
 import { Profile } from "@/types/auth";
+import { Member } from "./types";
 
 interface MemberCardProps {
   member: Profile;
@@ -13,6 +14,17 @@ interface MemberCardProps {
 }
 
 export function MemberCard({ member, currentUserIsAdmin, onEdit, onDelete }: MemberCardProps) {
+  // Convert Profile to Member type for MemberActions
+  const memberData: Member = {
+    id: member.id,
+    username: member.username,
+    full_name: member.full_name,
+    avatar_url: member.avatar_url,
+    is_admin: member.is_admin || false,
+    is_approved: member.is_approved || false,
+    is_member: member.is_member || false
+  };
+
   return (
     <Card className="w-full">
       <CardContent className="p-4">
@@ -52,10 +64,7 @@ export function MemberCard({ member, currentUserIsAdmin, onEdit, onDelete }: Mem
           </div>
           {currentUserIsAdmin && (
             <MemberActions
-              memberId={member.id}
-              memberName={member.username}
-              isCurrentUserAdmin={currentUserIsAdmin}
-              onDelete={() => onDelete(member.id)}
+              member={memberData}
               onEdit={() => onEdit(member)}
             />
           )}

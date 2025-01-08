@@ -35,6 +35,11 @@ export function useCommunications() {
 
   const sendMessageMutation = useMutation({
     mutationFn: async (communication: Partial<Communication>) => {
+      // Ensure required fields are present
+      if (!communication.content || !communication.subject || !communication.recipient_type || !communication.recipient_data) {
+        throw new Error('Missing required fields for communication');
+      }
+
       const { data, error } = await supabase
         .from('communications')
         .insert([communication])
@@ -56,6 +61,11 @@ export function useCommunications() {
 
   const createTemplateMutation = useMutation({
     mutationFn: async (template: Partial<MessageTemplate>) => {
+      // Ensure required fields are present
+      if (!template.content || !template.name || !template.subject) {
+        throw new Error('Missing required fields for template');
+      }
+
       const { data, error } = await supabase
         .from('message_templates')
         .insert([template])
