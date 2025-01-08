@@ -10,12 +10,20 @@ import { useUserManagement } from "@/hooks/admin/useUserManagement";
 import { useToast } from "@/hooks/use-toast";
 import { useDebounce } from "@/hooks/use-debounce";
 
+export type UserFilters = {
+  isAdmin?: boolean;
+  isApproved?: boolean;
+  isMember?: boolean;
+};
+
 export function AdminUserList() {
   const [viewingMember, setViewingMember] = useState<Member | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [filters, setFilters] = useState<UserFilters>({});
+  const [page, setPage] = useState(1);
   const debouncedSearch = useDebounce(searchTerm, 300);
   
-  const { members, isLoading, error, refetch } = useMemberManagement(debouncedSearch);
+  const { members, isLoading, error, refetch, totalPages } = useMemberManagement(debouncedSearch, filters, page);
   const { toast } = useToast();
   
   const {
@@ -44,6 +52,16 @@ export function AdminUserList() {
 
   const handleSearch = useCallback((term: string) => {
     setSearchTerm(term);
+    setPage(1); // Reset to first page on new search
+  }, []);
+
+  const handleFilterChange = useCallback((newFilters: UserFilters) => {
+    setFilters(newFilters);
+    setPage(1); // Reset to first page on filter change
+  }, []);
+
+  const handlePageChange = useCallback((newPage: number) => {
+    setPage(newPage);
   }, []);
 
   return (
@@ -51,6 +69,8 @@ export function AdminUserList() {
       <UserListHeader 
         onUserCreated={refetch}
         onSearch={handleSearch}
+        onFilterChange={handleFilterChange}
+        filters={filters}
       />
       
       <UserListContent
@@ -59,6 +79,9 @@ export function AdminUserList() {
         error={error}
         onEditMember={handleEdit}
         onDeleteMember={handleDeleteMember}
+        currentPage={page}
+        totalPages={totalPages}
+        onPageChange={handlePageChange}
       />
 
       {viewingMember && (

@@ -3,6 +3,14 @@ import { MemberTable } from "@/components/members/MemberTable";
 import { AdminUserTableWrapper } from "./AdminUserTableWrapper";
 import { LoadingState } from "./LoadingState";
 import { ErrorState } from "./ErrorState";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 
 interface UserListContentProps {
   members: Member[] | null;
@@ -10,6 +18,9 @@ interface UserListContentProps {
   error: Error | null;
   onEditMember: (member: Member) => void;
   onDeleteMember: (userId: string) => void;
+  currentPage: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
 }
 
 export function UserListContent({
@@ -18,6 +29,9 @@ export function UserListContent({
   error,
   onEditMember,
   onDeleteMember,
+  currentPage,
+  totalPages,
+  onPageChange,
 }: UserListContentProps) {
   if (isLoading) return <LoadingState />;
   
@@ -32,14 +46,47 @@ export function UserListContent({
   }
 
   return (
-    <AdminUserTableWrapper>
-      <MemberTable 
-        members={members} 
-        currentUserIsAdmin={true} 
-        onViewMember={() => {}}
-        onEditMember={onEditMember}
-        onDeleteMember={onDeleteMember}
-      />
-    </AdminUserTableWrapper>
+    <div className="space-y-4">
+      <AdminUserTableWrapper>
+        <MemberTable 
+          members={members} 
+          currentUserIsAdmin={true} 
+          onViewMember={() => {}}
+          onEditMember={onEditMember}
+          onDeleteMember={onDeleteMember}
+        />
+      </AdminUserTableWrapper>
+
+      {totalPages > 1 && (
+        <Pagination>
+          <PaginationContent>
+            <PaginationItem>
+              <PaginationPrevious 
+                onClick={() => onPageChange(currentPage - 1)}
+                className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+              />
+            </PaginationItem>
+            
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+              <PaginationItem key={page}>
+                <PaginationLink
+                  onClick={() => onPageChange(page)}
+                  isActive={currentPage === page}
+                >
+                  {page}
+                </PaginationLink>
+              </PaginationItem>
+            ))}
+            
+            <PaginationItem>
+              <PaginationNext 
+                onClick={() => onPageChange(currentPage + 1)}
+                className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+              />
+            </PaginationItem>
+          </PaginationContent>
+        </Pagination>
+      )}
+    </div>
   );
 }
