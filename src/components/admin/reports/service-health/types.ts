@@ -1,10 +1,12 @@
+export type ServiceStatus = 'healthy' | 'error';
+
+export interface ServiceHealth {
+  status: ServiceStatus;
+  latency: number;
+  error?: string;
+}
+
 export interface ServiceHealthStatus {
-  supabase: {
-    status: 'healthy' | 'error';
-    latency: number;
-  };
-  netlify: {
-    status: 'healthy' | 'error';
-    latency: number;
-  };
+  supabase: ServiceHealth;
+  netlify: ServiceHealth;
 }
