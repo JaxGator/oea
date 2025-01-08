@@ -8,6 +8,26 @@ export type TablesInsert<T extends keyof Database['public']['Tables']> = Databas
 export type TablesUpdate<T extends keyof Database['public']['Tables']> = Database['public']['Tables'][T]['Update']
 export type TablesRow<T extends keyof Database['public']['Tables']> = Database['public']['Tables'][T]['Row']
 
+const MAX_RETRIES = 3;
+const INITIAL_RETRY_DELAY = 1000;
+
+async function retryWithBackoff<T>(
+  operation: () => Promise<T>,
+  retries = MAX_RETRIES,
+  delay = INITIAL_RETRY_DELAY
+): Promise<T> {
+  try {
+    return await operation();
+  } catch (error) {
+    if (retries === 0) throw error;
+    
+    console.log(`Retrying operation, ${retries} attempts remaining. Waiting ${delay}ms...`);
+    await new Promise(resolve => setTimeout(resolve, delay));
+    
+    return retryWithBackoff(operation, retries - 1, delay * 2);
+  }
+}
+
 export function handleError(error: PostgrestError | null, context?: string) {
   if (error) {
     const errorDetails = {
@@ -49,27 +69,28 @@ export async function handleQueryResult<T>(
   response: PostgrestResponse<T> | PostgrestSingleResponse<T>,
   context?: string
 ): Promise<T> {
-  const { data, error } = response;
-  handleError(error, context);
-  
-  if (!data) {
-    const message = 'No data returned from query';
-    console.error(message, { context });
-    throw new Error(message);
-  }
-
-  // If we get an array but expect a single item
-  if (Array.isArray(data)) {
-    if (data.length === 0) {
-      const message = 'No data found';
+  return retryWithBackoff(async () => {
+    const { data, error } = response;
+    handleError(error, context);
+    
+    if (!data) {
+      const message = 'No data returned from query';
       console.error(message, { context });
       throw new Error(message);
     }
-    // Return first item if single result expected
-    return data[0] as T;
-  }
 
-  return data;
+    // Handle array results when single item is expected
+    if (Array.isArray(data)) {
+      if (data.length === 0) {
+        const message = 'No data found';
+        console.error(message, { context });
+        throw new Error(message);
+      }
+      return data[0] as T;
+    }
+
+    return data;
+  });
 }
 
 export function isQueryError(result: unknown): result is PostgrestError {

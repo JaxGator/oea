@@ -2,9 +2,12 @@ import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import App from './App';
 import './index.css';
+import { NotificationProvider } from './components/providers/NotificationProvider';
 
 createRoot(document.getElementById("root")!).render(
   <BrowserRouter>
-    <App />
+    <NotificationProvider>
+      <App />
+    </NotificationProvider>
   </BrowserRouter>
 );

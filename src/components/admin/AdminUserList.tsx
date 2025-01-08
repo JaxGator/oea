@@ -7,8 +7,9 @@ import { useSessionCheck } from "@/hooks/auth/useSessionCheck";
 import { UserListHeader } from "./user-management/UserListHeader";
 import { UserListContent } from "./user-management/UserListContent";
 import { useUserManagement } from "@/hooks/admin/useUserManagement";
-import { useToast } from "@/hooks/use-toast";
+import { useNotifications } from "@/components/providers/NotificationProvider";
 import { useDebounce } from "@/hooks/use-debounce";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export type UserFilters = {
   isAdmin?: boolean;
@@ -22,9 +23,9 @@ export function AdminUserList() {
   const [filters, setFilters] = useState<UserFilters>({});
   const [page, setPage] = useState(1);
   const debouncedSearch = useDebounce(searchTerm, 300);
+  const { notify } = useNotifications();
   
   const { data, isLoading, error, refetch } = useMemberManagement(debouncedSearch, filters, page);
-  const { toast } = useToast();
   
   const {
     editingMember,
@@ -39,11 +40,7 @@ export function AdminUserList() {
   const handleEdit = (member: Member) => {
     if (!member?.id || !member?.username) {
       console.error('AdminUserList: Invalid member data for edit:', member);
-      toast({
-        title: "Error",
-        description: "Invalid member data. Please try again.",
-        variant: "destructive",
-      });
+      notify("error", "Invalid Data", "Member data is incomplete. Please try again.");
       return;
     }
     console.log('AdminUserList: Handling edit for member:', member);
@@ -66,13 +63,32 @@ export function AdminUserList() {
     setPage(newPage);
   }, []);
 
-  // Add error boundary fallback
   if (error) {
     console.error('AdminUserList: Error fetching members:', error);
     return (
-      <div className="p-4 bg-red-50 rounded-lg">
-        <h3 className="text-red-800 font-semibold">Error loading users</h3>
-        <p className="text-red-600">Please try refreshing the page</p>
+      <div className="p-6 bg-destructive/10 rounded-lg border border-destructive/20">
+        <h3 className="text-lg font-semibold text-destructive mb-2">Error Loading Users</h3>
+        <p className="text-destructive/80 mb-4">There was a problem loading the user list.</p>
+        <button 
+          onClick={() => refetch()}
+          className="px-4 py-2 bg-background hover:bg-muted transition-colors rounded-md"
+        >
+          Try Again
+        </button>
+      </div>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <div className="space-y-4">
+        <div className="flex justify-between items-center">
+          <Skeleton className="h-10 w-[200px]" />
+          <Skeleton className="h-10 w-[100px]" />
+        </div>
+        {[1, 2, 3].map((i) => (
+          <Skeleton key={i} className="h-16 w-full" />
+        ))}
       </div>
     );
   }
