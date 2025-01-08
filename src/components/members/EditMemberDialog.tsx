@@ -35,9 +35,20 @@ export function EditMemberDialog({ member, open, onOpenChange, onUpdate }: EditM
   
   useEffect(() => {
     if (open) {
+      // Validate member object when dialog opens
+      if (!member || !member.id || !member.username) {
+        console.error('EditMemberDialog: Invalid member data:', member);
+        toast({
+          title: "Error",
+          description: "Invalid member data provided",
+          variant: "destructive",
+        });
+        onOpenChange(false);
+        return;
+      }
       console.log('EditMemberDialog opened with member data:', member);
     }
-  }, [open, member]);
+  }, [open, member, onOpenChange, toast]);
 
   const {
     username,
@@ -96,6 +107,12 @@ export function EditMemberDialog({ member, open, onOpenChange, onUpdate }: EditM
       setIsSubmitting(false);
     }
   };
+
+  // Additional validation before rendering
+  if (!member || !member.id) {
+    console.error('EditMemberDialog: Cannot render without valid member data');
+    return null;
+  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

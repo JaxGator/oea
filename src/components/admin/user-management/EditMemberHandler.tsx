@@ -16,6 +16,9 @@ export function EditMemberHandler({ member, onClose, onUpdate }: EditMemberHandl
 
   useEffect(() => {
     console.log('EditMemberHandler: member prop changed:', member);
+    if (!member) {
+      console.warn('EditMemberHandler: Received null member');
+    }
   }, [member]);
 
   const handleDialogChange = (open: boolean) => {
@@ -25,9 +28,6 @@ export function EditMemberHandler({ member, onClose, onUpdate }: EditMemberHandl
     }
   };
 
-  console.log('EditMemberHandler: Rendering with member:', member);
-  console.log('EditMemberHandler: Is member null?', !member);
-
   if (isLoading) {
     return (
       <div className="flex items-center justify-center p-4">
@@ -36,10 +36,16 @@ export function EditMemberHandler({ member, onClose, onUpdate }: EditMemberHandl
     );
   }
 
+  // Only render dialog if we have a valid member
+  if (!member) {
+    console.warn('EditMemberHandler: Cannot render dialog without valid member data');
+    return null;
+  }
+
   return (
     <EditMemberDialog
-      member={member!}
-      open={!!member}
+      member={member}
+      open={true}
       onOpenChange={handleDialogChange}
       onUpdate={onUpdate}
     />
