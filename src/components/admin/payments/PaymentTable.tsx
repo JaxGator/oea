@@ -17,7 +17,7 @@ interface Payment {
   created_at: string;
   transaction_id: string;
   events: { title: string };
-  profiles: { username: string; email: string };
+  profiles: { username: string };
 }
 
 interface PaymentTableProps {

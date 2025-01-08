@@ -23,8 +23,7 @@ export function PaymentManager() {
             title
           ),
           profiles (
-            username,
-            email
+            username
           )
         `)
         .order('created_at', { ascending: false });
