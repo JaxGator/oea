@@ -16,6 +16,9 @@ export function SessionManager({ children, queryClient }: SessionManagerProps) {
 
   useEffect(() => {
     let mounted = true;
+    let retryCount = 0;
+    const maxRetries = 3;
+    const retryDelay = 1000; // 1 second
 
     const checkSession = async () => {
       try {
@@ -24,19 +27,36 @@ export function SessionManager({ children, queryClient }: SessionManagerProps) {
         
         if (error) {
           console.error('Session check error:', error);
+          if (retryCount < maxRetries) {
+            retryCount++;
+            console.log(`Retrying session check (${retryCount}/${maxRetries})...`);
+            setTimeout(checkSession, retryDelay * retryCount);
+            return;
+          }
+          
           queryClient.clear();
           localStorage.clear();
           if (isProtectedRoute(location.pathname)) {
             navigate('/auth');
           }
+          throw error;
         }
 
         if (!session && isProtectedRoute(location.pathname)) {
           console.log('No active session, redirecting protected route to auth');
           navigate('/auth');
         }
+
+        // Reset retry count on successful check
+        retryCount = 0;
       } catch (err) {
         console.error('Session check failed:', err);
+        toast({
+          title: "Connection Error",
+          description: "Failed to verify your session. Please check your connection and try again.",
+          variant: "destructive",
+        });
+        
         if (isProtectedRoute(location.pathname)) {
           navigate('/auth');
         }
@@ -75,6 +95,7 @@ export function SessionManager({ children, queryClient }: SessionManagerProps) {
       }
     });
 
+    // Initial session check
     checkSession();
 
     return () => {
