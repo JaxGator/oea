@@ -8,15 +8,18 @@ export type TablesInsert<T extends keyof Database['public']['Tables']> = Databas
 export type TablesUpdate<T extends keyof Database['public']['Tables']> = Database['public']['Tables'][T]['Update']
 export type TablesRow<T extends keyof Database['public']['Tables']> = Database['public']['Tables'][T]['Row']
 
-export function handleError(error: PostgrestError | null) {
+export function handleError(error: PostgrestError | null, context?: string) {
   if (error) {
-    console.error('Database error:', {
+    const errorDetails = {
       message: error.message,
       details: error.details,
       hint: error.hint,
       code: error.code,
+      context,
       timestamp: new Date().toISOString()
-    });
+    };
+    
+    console.error('Database error:', errorDetails);
     
     toast({
       title: "Database Error",
@@ -28,11 +31,11 @@ export function handleError(error: PostgrestError | null) {
   }
 }
 
-export function assertData<T>(data: T | null, error: PostgrestError | null): asserts data is T {
-  handleError(error);
+export function assertData<T>(data: T | null, error: PostgrestError | null, context?: string): asserts data is T {
+  handleError(error, context);
   if (!data) {
     const message = 'No data returned from query';
-    console.error(message);
+    console.error(message, { context });
     toast({
       title: "Error",
       description: message,
@@ -43,21 +46,26 @@ export function assertData<T>(data: T | null, error: PostgrestError | null): ass
 }
 
 export async function handleQueryResult<T>(
-  response: PostgrestResponse<T> | PostgrestSingleResponse<T>
+  response: PostgrestResponse<T> | PostgrestSingleResponse<T>,
+  context?: string
 ): Promise<T> {
   const { data, error } = response;
-  handleError(error);
+  handleError(error, context);
   
   if (!data) {
-    throw new Error('No data returned from query');
+    const message = 'No data returned from query';
+    console.error(message, { context });
+    throw new Error(message);
   }
 
-  // Handle array results when single item is expected
+  // If we get an array but expect a single item
   if (Array.isArray(data)) {
     if (data.length === 0) {
-      throw new Error('No data returned from query');
+      const message = 'No data found';
+      console.error(message, { context });
+      throw new Error(message);
     }
-    // If we're expecting a single item but got an array, take the first item
+    // Return first item if single result expected
     return data[0] as T;
   }
 
@@ -68,9 +76,9 @@ export function isQueryError(result: unknown): result is PostgrestError {
   return isSupabaseError(result);
 }
 
-export function ensureQueryResult<T>(result: T | PostgrestError): T {
+export function ensureQueryResult<T>(result: T | PostgrestError, context?: string): T {
   if (isQueryError(result)) {
-    handleError(result);
+    handleError(result, context);
     throw result;
   }
   return result;

@@ -4,7 +4,7 @@ import { CreateUserDialog } from "./CreateUserDialog";
 import { BulkUserCreation } from "./BulkUserCreation";
 import { Search } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
-import { UserFilters } from "../AdminUserList";
+import type { UserFilters } from "../AdminUserList";
 import { Label } from "@/components/ui/label";
 
 interface UserListHeaderProps {
@@ -18,7 +18,7 @@ export function UserListHeader({
   onUserCreated, 
   onSearch, 
   onFilterChange,
-  filters 
+  filters = {} // Provide default empty object
 }: UserListHeaderProps) {
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -28,9 +28,11 @@ export function UserListHeader({
   };
 
   const handleFilterChange = (key: keyof UserFilters) => {
+    // Ensure filters object exists before accessing
+    const currentFilters = filters || {};
     const newFilters = {
-      ...filters,
-      [key]: !filters[key]
+      ...currentFilters,
+      [key]: !currentFilters[key]
     };
     onFilterChange(newFilters);
   };
@@ -60,7 +62,7 @@ export function UserListHeader({
           <div className="flex items-center space-x-2">
             <Checkbox 
               id="admin-filter"
-              checked={filters.isAdmin}
+              checked={filters?.isAdmin || false}
               onCheckedChange={() => handleFilterChange('isAdmin')}
             />
             <Label htmlFor="admin-filter">Admins</Label>
@@ -69,7 +71,7 @@ export function UserListHeader({
           <div className="flex items-center space-x-2">
             <Checkbox 
               id="approved-filter"
-              checked={filters.isApproved}
+              checked={filters?.isApproved || false}
               onCheckedChange={() => handleFilterChange('isApproved')}
             />
             <Label htmlFor="approved-filter">Approved</Label>
@@ -78,7 +80,7 @@ export function UserListHeader({
           <div className="flex items-center space-x-2">
             <Checkbox 
               id="member-filter"
-              checked={filters.isMember}
+              checked={filters?.isMember || false}
               onCheckedChange={() => handleFilterChange('isMember')}
             />
             <Label htmlFor="member-filter">Members</Label>

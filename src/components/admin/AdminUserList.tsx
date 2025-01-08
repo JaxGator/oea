@@ -56,13 +56,26 @@ export function AdminUserList() {
   }, []);
 
   const handleFilterChange = useCallback((newFilters: UserFilters) => {
+    console.log('AdminUserList: Applying filters:', newFilters);
     setFilters(newFilters);
     setPage(1);
   }, []);
 
   const handlePageChange = useCallback((newPage: number) => {
+    console.log('AdminUserList: Changing page to:', newPage);
     setPage(newPage);
   }, []);
+
+  // Add error boundary fallback
+  if (error) {
+    console.error('AdminUserList: Error fetching members:', error);
+    return (
+      <div className="p-4 bg-red-50 rounded-lg">
+        <h3 className="text-red-800 font-semibold">Error loading users</h3>
+        <p className="text-red-600">Please try refreshing the page</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">
