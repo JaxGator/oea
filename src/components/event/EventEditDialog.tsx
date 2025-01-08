@@ -1,59 +1,49 @@
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { EventForm } from "./EventForm";
-import { Event } from "@/types/event";
+import { WaitlistManager } from "../admin/events/WaitlistManager";
+import { Separator } from "@/components/ui/separator";
 
 interface EventEditDialogProps {
-  event: Event;
+  event: {
+    id: string;
+    title: string;
+    description?: string;
+    date: string;
+    time: string;
+    location: string;
+    max_guests: number;
+    image_url?: string;
+    waitlist_enabled?: boolean;
+    waitlist_capacity?: number | null;
+  };
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSuccess: () => void;
 }
 
 export function EventEditDialog({ event, open, onOpenChange, onSuccess }: EventEditDialogProps) {
-  const isPastEvent = new Date(event.date) < new Date(new Date().setHours(0, 0, 0, 0));
-  const isWixEvent = event.description === 'Imported from Wix';
-
-  const handleSuccess = () => {
-    onSuccess();
-    onOpenChange(false);
-    setTimeout(() => {
-      window.location.reload();
-    }, 100);
-  };
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-3xl">
         <DialogHeader>
-          <DialogTitle>Edit Event</DialogTitle>
-          <DialogDescription>
-            {isPastEvent ? 
-              "You can update event details and attendance numbers for this past event." :
-              "Make changes to the event details below."}
-          </DialogDescription>
+          <DialogTitle>Edit Event: {event.title}</DialogTitle>
         </DialogHeader>
-        <div className="py-4">
+        <div className="space-y-6">
           <EventForm
-            initialData={{
-              id: event.id,
-              title: event.title,
-              description: event.description || "",
-              date: event.date,
-              time: event.time,
-              location: event.location,
-              max_guests: event.max_guests,
-              image_url: event.image_url || "",
-            }}
-            onSuccess={handleSuccess}
-            isPastEvent={isPastEvent}
-            isWixEvent={isWixEvent}
+            initialData={event}
+            onSuccess={onSuccess}
           />
+          
+          {event.waitlist_enabled && (
+            <>
+              <Separator />
+              <WaitlistManager
+                eventId={event.id}
+                maxGuests={event.max_guests}
+                waitlistCapacity={event.waitlist_capacity}
+              />
+            </>
+          )}
         </div>
       </DialogContent>
     </Dialog>
