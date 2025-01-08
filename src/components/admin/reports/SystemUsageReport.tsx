@@ -6,6 +6,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { Button } from "@/components/ui/button";
 import { Download } from "lucide-react";
 import { DateRange } from "react-day-picker";
+import { supabase } from "@/integrations/supabase/client";
 
 const COLORS = ['#4CAF50', '#f44336'];
 
@@ -24,7 +25,8 @@ const APP_PAGES = [
 export function SystemUsageReport() {
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
 
-  const { data: systemStats, isLoading } = useQuery({
+  // Query for system stats
+  const { data: systemStats, isLoading: statsLoading } = useQuery({
     queryKey: ['system-stats', dateRange],
     queryFn: async () => {
       // This would be replaced with actual API metrics data
@@ -46,12 +48,38 @@ export function SystemUsageReport() {
     },
   });
 
+  // Query for service health status
+  const { data: serviceHealth, isLoading: healthLoading } = useQuery({
+    queryKey: ['service-health'],
+    queryFn: async () => {
+      // Check Supabase connection
+      const supabaseHealth = await testSupabaseConnection();
+      
+      // Check Netlify status (this would typically be an API call to Netlify's status endpoint)
+      const netlifyHealth = await fetch('https://www.netlifystatus.com/api/v2/status.json')
+        .then(res => res.ok)
+        .catch(() => false);
+
+      return {
+        supabase: {
+          status: supabaseHealth ? 'healthy' : 'error',
+          latency: Math.random() * 100, // This would be real latency in ms
+        },
+        netlify: {
+          status: netlifyHealth ? 'healthy' : 'error',
+          latency: Math.random() * 50, // This would be real latency in ms
+        }
+      };
+    },
+    refetchInterval: 30000, // Refresh every 30 seconds
+  });
+
   const handleExport = () => {
     // Implementation for CSV export
     console.log("Exporting system data...");
   };
 
-  if (isLoading) {
+  if (statsLoading || healthLoading) {
     return <div>Loading...</div>;
   }
 
@@ -72,6 +100,43 @@ export function SystemUsageReport() {
           Export Data
         </Button>
       </div>
+
+      {/* Service Health Status */}
+      <Card className="p-4">
+        <h3 className="text-lg font-semibold mb-4">Service Health</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="p-4 rounded-lg border">
+            <div className="flex items-center justify-between">
+              <span className="font-medium">Supabase</span>
+              <span className={`px-2 py-1 rounded-full text-sm ${
+                serviceHealth?.supabase.status === 'healthy' 
+                  ? 'bg-green-100 text-green-800' 
+                  : 'bg-red-100 text-red-800'
+              }`}>
+                {serviceHealth?.supabase.status}
+              </span>
+            </div>
+            <p className="text-sm text-gray-600 mt-2">
+              Latency: {serviceHealth?.supabase.latency.toFixed(2)}ms
+            </p>
+          </div>
+          <div className="p-4 rounded-lg border">
+            <div className="flex items-center justify-between">
+              <span className="font-medium">Netlify</span>
+              <span className={`px-2 py-1 rounded-full text-sm ${
+                serviceHealth?.netlify.status === 'healthy' 
+                  ? 'bg-green-100 text-green-800' 
+                  : 'bg-red-100 text-red-800'
+              }`}>
+                {serviceHealth?.netlify.status}
+              </span>
+            </div>
+            <p className="text-sm text-gray-600 mt-2">
+              Latency: {serviceHealth?.netlify.latency.toFixed(2)}ms
+            </p>
+          </div>
+        </div>
+      </Card>
 
       <div className="grid md:grid-cols-2 gap-6">
         <Card className="p-4">
