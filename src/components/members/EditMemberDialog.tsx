@@ -67,7 +67,7 @@ export function EditMemberDialog({
     }
   };
 
-  if (!member?.id) {
+  if (!member?.id || !member?.username) {
     console.error('EditMemberDialog: Cannot render without valid member data');
     return null;
   }
@@ -80,7 +80,7 @@ export function EditMemberDialog({
           <MemberAvatarUpload
             memberId={member.id}
             username={member.username}
-            avatarUrl={avatarUrl}
+            avatarUrl={avatarUrl || member.avatar_url || ''}
             onAvatarUpdate={setAvatarUrl}
           />
 

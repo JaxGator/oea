@@ -46,7 +46,14 @@ export function AdminUserActions({
   const handleEdit = () => {
     if (!validateProfile('edit')) return;
     console.log('AdminUserActions: Edit clicked for profile:', profile);
-    onEdit(profile);
+    onEdit({
+      ...profile,
+      full_name: profile.full_name || '',
+      avatar_url: profile.avatar_url || '',
+      is_admin: profile.is_admin || false,
+      is_approved: profile.is_approved || false,
+      is_member: profile.is_member || false
+    });
   };
 
   const handleDelete = () => {

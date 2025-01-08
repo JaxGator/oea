@@ -46,8 +46,17 @@ export function EditMemberHandler({ member, onClose, onUpdate }: EditMemberHandl
           throw new Error('Member not found');
         }
 
-        console.log('EditMemberHandler: Member data fetched:', data);
-        setMemberData(data as Member);
+        const enrichedData: Member = {
+          ...data,
+          full_name: data.full_name || '',
+          avatar_url: data.avatar_url || '',
+          is_admin: data.is_admin || false,
+          is_approved: data.is_approved || false,
+          is_member: data.is_member || false
+        };
+
+        console.log('EditMemberHandler: Member data fetched:', enrichedData);
+        setMemberData(enrichedData);
       } catch (error) {
         console.error('EditMemberHandler: Error fetching member data:', error);
         toast({
