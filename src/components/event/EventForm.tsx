@@ -10,8 +10,12 @@ import { EventImageUpload } from "./EventImageUpload";
 import { EventReminderSettings } from "./EventReminderSettings";
 import { EventWaitlistSettings } from "./EventWaitlistSettings";
 import { useEventFormSubmit } from "@/hooks/useEventFormSubmit";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { useAdminStatus } from "@/hooks/events/useAdminStatus";
 
 export function EventForm({ onSuccess, initialData, isPastEvent, isWixEvent }: EventFormProps) {
+  const { isAdmin } = useAdminStatus();
   const form = useForm<EventFormValues>({
     resolver: zodResolver(eventSchema),
     defaultValues: initialData || {
@@ -26,6 +30,7 @@ export function EventForm({ onSuccess, initialData, isPastEvent, isWixEvent }: E
       reminder_intervals: ["7d", "1d", "1h"],
       waitlist_enabled: false,
       waitlist_capacity: null,
+      is_featured: false,
     },
   });
 
@@ -51,6 +56,18 @@ export function EventForm({ onSuccess, initialData, isPastEvent, isWixEvent }: E
         <EventImageUpload form={form} defaultImage={initialData?.image_url} />
         <EventReminderSettings form={form} disabled={isPastEvent} />
         <EventWaitlistSettings form={form} disabled={isPastEvent} />
+        
+        {isAdmin && (
+          <div className="flex items-center space-x-2">
+            <Switch
+              id="is_featured"
+              checked={form.watch("is_featured")}
+              onCheckedChange={(checked) => form.setValue("is_featured", checked)}
+            />
+            <Label htmlFor="is_featured">Feature this event</Label>
+          </div>
+        )}
+
         <Button type="submit" className="w-full bg-[#0d97d1] hover:bg-[#0d97d1]/90">
           {initialData ? "Update Event" : "Create Event"}
         </Button>

@@ -12,6 +12,7 @@ export const eventSchema = z.object({
   reminder_intervals: z.array(z.string()).default(["7d", "1d", "1h"]),
   waitlist_enabled: z.boolean().default(false),
   waitlist_capacity: z.number().nullable().default(null),
+  is_featured: z.boolean().default(false),
 });
 
 export type EventFormValues = z.infer<typeof eventSchema>;
@@ -29,6 +30,7 @@ export interface EventFormData {
   reminder_intervals?: string[];
   waitlist_enabled?: boolean;
   waitlist_capacity?: number | null;
+  is_featured?: boolean;
 }
 
 export interface EventFormProps {
