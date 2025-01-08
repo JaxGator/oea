@@ -34,9 +34,21 @@ export function useEvents(selectedDate?: Date) {
           query = query.eq('date', dateStr);
         }
 
-        const result = await query;
-        const data = await handleQueryResult(result);
-        return transformEventData(Array.isArray(data) ? data : [data]);
+        const { data, error } = await query;
+        
+        if (error) {
+          console.error('Error fetching events:', error);
+          toast.error('Failed to load events. Please try again.');
+          throw error;
+        }
+
+        if (!data) {
+          console.log('No events found');
+          return [];
+        }
+
+        console.log('Fetched events:', data);
+        return transformEventData(data);
       } catch (error) {
         console.error('Error fetching events:', error);
         toast.error('Failed to load events. Please try again.');
