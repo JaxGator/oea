@@ -1,0 +1,111 @@
+import { useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { Bell } from "lucide-react";
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@/components/ui/hover-card";
+import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { useToast } from "@/hooks/use-toast";
+
+interface AdminNotification {
+  id: string;
+  message: string;
+  type: 'success' | 'error' | 'info';
+  created_at: string;
+}
+
+export function NotificationCenter() {
+  const { toast } = useToast();
+  
+  const { data: notifications = [] } = useQuery({
+    queryKey: ['admin-notifications'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('admin_logs')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(10);
+
+      if (error) {
+        console.error('Error fetching notifications:', error);
+        throw error;
+      }
+
+      return data.map((log): AdminNotification => ({
+        id: log.id,
+        message: `${log.action_type} performed on ${log.target_type}`,
+        type: 'info',
+        created_at: log.created_at
+      }));
+    },
+  });
+
+  // Subscribe to real-time notifications
+  useEffect(() => {
+    const channel = supabase
+      .channel('admin-notifications')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'admin_logs'
+        },
+        (payload) => {
+          const newLog = payload.new;
+          toast({
+            title: "New Admin Action",
+            description: `${newLog.action_type} performed on ${newLog.target_type}`,
+          });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [toast]);
+
+  if (notifications.length === 0) return null;
+
+  return (
+    <HoverCard>
+      <HoverCardTrigger asChild>
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          className="relative text-white hover:text-primary-100 hover:bg-gray-800"
+        >
+          <Bell className="h-5 w-5" />
+          <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-red-500 text-xs text-white flex items-center justify-center">
+            {notifications.length}
+          </span>
+        </Button>
+      </HoverCardTrigger>
+      <HoverCardContent className="w-80">
+        <ScrollArea className="h-[300px]">
+          <div className="space-y-4">
+            <h4 className="text-sm font-semibold">Recent Activities</h4>
+            <div className="space-y-2">
+              {notifications.map((notification) => (
+                <div 
+                  key={notification.id} 
+                  className="text-sm flex items-center justify-between border-b pb-2"
+                >
+                  <span>{notification.message}</span>
+                  <span className="text-gray-500 text-xs">
+                    {new Date(notification.created_at).toLocaleDateString()}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </ScrollArea>
+      </HoverCardContent>
+    </HoverCard>
+  );
+}

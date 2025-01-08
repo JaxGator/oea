@@ -19,6 +19,7 @@ export function useUserManagement(refetchMembers: () => void) {
       toast({
         title: "Success",
         description: "User deleted successfully",
+        variant: "default",
       });
 
       refetchMembers();
@@ -34,6 +35,14 @@ export function useUserManagement(refetchMembers: () => void) {
 
   const handleEditMember = (member: Member) => {
     console.log('useUserManagement: Setting editing member:', member);
+    if (!member?.id || !member?.username) {
+      toast({
+        title: "Error",
+        description: "Invalid member data. Please try again.",
+        variant: "destructive",
+      });
+      return;
+    }
     setEditingMember(member);
   };
 
@@ -44,6 +53,10 @@ export function useUserManagement(refetchMembers: () => void) {
 
   const handleUpdateComplete = () => {
     console.log('useUserManagement: Member update completed');
+    toast({
+      title: "Success",
+      description: "Member updated successfully",
+    });
     refetchMembers();
     handleCloseEdit();
   };
