@@ -32,15 +32,15 @@ export function useServiceHealth() {
         
         // Check Lovable API status
         const lovableStartTime = performance.now();
-        const lovableResponse: HealthCheckResponse = await fetch('https://api.lovable.dev/health')
-          .then(res => {
+        const lovableResponse = await fetch('https://api.lovable.dev/health')
+          .then((res): HealthCheckResponse => {
             const lovableEndTime = performance.now();
             return {
               ok: res.ok,
               latency: lovableEndTime - lovableStartTime
             };
           })
-          .catch(error => {
+          .catch((error): HealthCheckResponse => {
             console.error('Lovable health check error:', error);
             return {
               ok: false,
@@ -71,15 +71,15 @@ export function useServiceHealth() {
 
         // Check Netlify status
         const netlifyStartTime = performance.now();
-        const netlifyResponse: HealthCheckResponse = await fetch('https://www.netlifystatus.com/api/v2/status.json')
-          .then(res => {
+        const netlifyResponse = await fetch('https://www.netlifystatus.com/api/v2/status.json')
+          .then((res): HealthCheckResponse => {
             const netlifyEndTime = performance.now();
             return {
               ok: res.ok,
               latency: netlifyEndTime - netlifyStartTime
             };
           })
-          .catch(error => {
+          .catch((error): HealthCheckResponse => {
             console.error('Netlify health check error:', error);
             return {
               ok: false,
