@@ -3,96 +3,52 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Profile } from "@/types/auth";
 
-interface ProfileState {
-  profile: Profile | null;
-  isLoading: boolean;
-  error: Error | null;
-}
-
 export function useProfile(userId: string | undefined) {
-  const [state, setState] = useState<ProfileState>({
-    profile: null,
-    isLoading: false,
-    error: null
-  });
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
     if (!userId) {
-      setState({ profile: null, isLoading: false, error: null });
+      setProfile(null);
+      setIsLoading(false);
       return;
     }
 
-    let isMounted = true;
-    const maxRetries = 3;
-    let retryCount = 0;
-
-    const fetchProfile = async (): Promise<void> => {
-      if (!isMounted) return;
-      
-      setState(prev => ({ ...prev, isLoading: true, error: null }));
-
+    const fetchProfile = async () => {
       try {
-        // First ensure we have a valid session
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-        
-        if (sessionError) {
-          console.error('Session error:', sessionError);
-          throw new Error('Authentication error. Please sign in again.');
-        }
-
-        if (!session) {
-          console.error('No active session');
-          throw new Error('No active session. Please sign in.');
-        }
-
-        const { data: profile, error } = await supabase
+        const { data, error } = await supabase
           .from("profiles")
           .select("*")
           .eq("id", userId)
           .maybeSingle();
 
-        if (error) throw error;
-
-        if (isMounted) {
-          setState({
-            profile,
-            isLoading: false,
-            error: null
-          });
-        }
-      } catch (error) {
-        console.error("Error fetching profile:", error);
-        
-        if (retryCount < maxRetries && isMounted) {
-          retryCount++;
-          const delay = Math.min(1000 * Math.pow(2, retryCount), 10000);
-          setTimeout(fetchProfile, delay);
-          return;
-        }
-
-        if (isMounted) {
-          setState(prev => ({
-            ...prev,
-            isLoading: false,
-            error: error as Error
-          }));
-
+        if (error) {
+          console.error('Profile fetch error:', error);
+          setError(error);
           toast({
-            title: "Error",
-            description: "Failed to load profile. Please try refreshing the page.",
+            title: "Error loading profile",
+            description: "Please try refreshing the page",
             variant: "destructive",
           });
+        } else {
+          setProfile(data);
         }
+      } catch (err) {
+        console.error('Error fetching profile:', err);
+        setError(err instanceof Error ? err : new Error('Unknown error'));
+      } finally {
+        setIsLoading(false);
       }
     };
 
     fetchProfile();
-
-    return () => {
-      isMounted = false;
-    };
   }, [userId, toast]);
 
-  return state;
+  return {
+    profile,
+    isLoading,
+    error
+  };
 }
