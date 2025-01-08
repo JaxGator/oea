@@ -34,6 +34,7 @@ export function SessionManager({ children, queryClient }: SessionManagerProps) {
             return;
           }
           
+          // Clear data and redirect on persistent error
           queryClient.clear();
           localStorage.clear();
           if (isProtectedRoute(location.pathname)) {
@@ -42,9 +43,11 @@ export function SessionManager({ children, queryClient }: SessionManagerProps) {
           throw error;
         }
 
+        // Handle no session case
         if (!session && isProtectedRoute(location.pathname)) {
-          console.log('No active session, redirecting protected route to auth');
+          console.log('No active session, redirecting to auth');
           navigate('/auth');
+          return;
         }
 
         // Reset retry count on successful check
@@ -63,35 +66,44 @@ export function SessionManager({ children, queryClient }: SessionManagerProps) {
       }
     };
 
+    // Set up auth state change listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (!mounted) return;
+      
       console.log('Auth state changed:', event);
       
-      if (event === 'SIGNED_OUT') {
-        console.log('User signed out, clearing data and redirecting');
-        queryClient.clear();
-        localStorage.clear();
-        if (isProtectedRoute(location.pathname)) {
-          navigate('/auth');
-        }
-        toast({
-          title: "Signed out",
-          description: "You have been signed out successfully",
-        });
-      }
-
-      if (event === 'TOKEN_REFRESHED') {
-        console.log('Token refreshed successfully');
-      }
-
-      if (event === 'SIGNED_IN') {
-        console.log('User signed in:', session?.user?.id);
-        if (location.pathname === '/auth') {
-          navigate('/');
-        }
-        toast({
-          title: "Signed in",
-          description: "Welcome back!",
-        });
+      switch (event) {
+        case 'SIGNED_OUT':
+          console.log('User signed out, clearing data');
+          queryClient.clear();
+          localStorage.clear();
+          if (isProtectedRoute(location.pathname)) {
+            navigate('/auth');
+          }
+          toast({
+            title: "Signed out",
+            description: "You have been signed out successfully",
+          });
+          break;
+          
+        case 'SIGNED_IN':
+          console.log('User signed in:', session?.user?.id);
+          if (location.pathname === '/auth') {
+            navigate('/');
+          }
+          toast({
+            title: "Signed in",
+            description: "Welcome back!",
+          });
+          break;
+          
+        case 'TOKEN_REFRESHED':
+          console.log('Token refreshed successfully');
+          break;
+          
+        case 'USER_UPDATED':
+          console.log('User data updated');
+          break;
       }
     });
 
