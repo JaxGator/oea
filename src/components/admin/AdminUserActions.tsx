@@ -24,52 +24,39 @@ export function AdminUserActions({
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const { toast } = useToast();
 
-  const handleUpdateStatus = () => {
-    if (!profile?.username) {
-      console.error('AdminUserActions: Invalid profile data for status update:', profile);
+  const validateProfile = (action: string): boolean => {
+    if (!profile?.id || !profile?.username) {
+      console.error(`AdminUserActions: Invalid profile data for ${action}:`, profile);
       toast({
         title: "Error",
         description: "Invalid user data. Please try again.",
         variant: "destructive",
       });
-      return;
+      return false;
     }
+    return true;
+  };
+
+  const handleUpdateStatus = () => {
+    if (!validateProfile('status update')) return;
     console.log('AdminUserActions: Update status clicked for username:', profile.username);
     onUpdateStatus(profile.username);
   };
 
   const handleEdit = () => {
-    if (!profile?.id || !profile?.username) {
-      console.error('AdminUserActions: Invalid profile data for edit:', profile);
-      toast({
-        title: "Error",
-        description: "Invalid user data. Please try again.",
-        variant: "destructive",
-      });
-      return;
-    }
+    if (!validateProfile('edit')) return;
     console.log('AdminUserActions: Edit clicked for profile:', profile);
     onEdit(profile);
   };
 
   const handleDelete = () => {
-    if (!profile?.id) {
-      console.error('AdminUserActions: Invalid profile data for deletion:', profile);
-      toast({
-        title: "Error",
-        description: "Invalid user data. Please try again.",
-        variant: "destructive",
-      });
-      return;
-    }
+    if (!validateProfile('deletion')) return;
     console.log('AdminUserActions: Delete confirmed for profile:', profile);
     onDelete(profile.id);
     setShowDeleteDialog(false);
   };
 
-  // Validate profile data before rendering
-  if (!profile?.id || !profile?.username) {
-    console.error('AdminUserActions: Invalid profile data:', profile);
+  if (!validateProfile('render')) {
     return null;
   }
 
