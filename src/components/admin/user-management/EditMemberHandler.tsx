@@ -25,6 +25,8 @@ export function EditMemberHandler({ member, onClose, onUpdate }: EditMemberHandl
     }
   };
 
+  console.log('EditMemberHandler: Rendering with member:', member);
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center p-4">

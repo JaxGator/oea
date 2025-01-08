@@ -34,6 +34,7 @@ export function AdminUserActions({
     e.preventDefault();
     e.stopPropagation();
     console.log('AdminUserActions: Edit clicked for profile:', profile);
+    console.log('AdminUserActions: Calling onEdit callback');
     onEdit();
   };
 
