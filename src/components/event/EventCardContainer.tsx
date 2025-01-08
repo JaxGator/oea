@@ -36,7 +36,6 @@ export function EventCardContainer({
   const { showEditDialog, setShowEditDialog } = useEventDialogs();
   const { showDetailsDialog, setShowDetailsDialog, handleInteraction } = useEventInteraction();
 
-  // Fetch waitlist count
   const { data: waitlistCount = 0 } = useQuery({
     queryKey: ['waitlist-count', event.id],
     queryFn: async () => {

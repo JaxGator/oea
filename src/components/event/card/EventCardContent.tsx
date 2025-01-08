@@ -1,7 +1,7 @@
 import { CardContent, CardFooter } from "@/components/ui/card";
 import { EventCardBasicInfo } from "./EventCardBasicInfo";
-import { EventActions } from "../actions/EventActions";
-import { Star } from "lucide-react";
+import { FeaturedEventBadge } from "./FeaturedEventBadge";
+import { EventCardActions } from "./EventCardActions";
 
 interface EventCardContentProps {
   date: string;
@@ -60,17 +60,12 @@ export function EventCardContent({
             waitlistCount={waitlistCount}
             waitlistCapacity={waitlistCapacity}
           />
-          {isFeatured && (
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-medium text-yellow-600">Featured Event</span>
-              <Star className="h-5 w-5 text-yellow-500 fill-yellow-500" />
-            </div>
-          )}
+          {isFeatured && <FeaturedEventBadge />}
         </div>
       </CardContent>
 
       <CardFooter className="p-4 pt-0">
-        <EventActions
+        <EventCardActions
           isAdmin={isAdmin}
           userRSVPStatus={userRSVPStatus}
           isFullyBooked={isFullyBooked}
@@ -81,7 +76,6 @@ export function EventCardContent({
           onDelete={onDelete}
           isPastEvent={isPastEvent}
           isWixEvent={isWixEvent}
-          showDelete={isAdmin && (isPastEvent || isWixEvent)}
           canAddGuests={canAddGuests}
         />
       </CardFooter>
