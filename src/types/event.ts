@@ -10,6 +10,8 @@ export interface Event {
   created_at: string;
   image_url: string;
   rsvps?: EventRSVP[];
+  waitlist_enabled?: boolean;
+  waitlist_capacity?: number | null;
 }
 
 export interface EventRSVP {
