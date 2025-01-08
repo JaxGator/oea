@@ -68,12 +68,24 @@ export function WaitlistManager({ eventId, maxGuests, waitlistCapacity }: Waitli
 
     setIsProcessing(true);
     try {
-      const { error } = await supabase
+      // Update RSVP status
+      const { error: rsvpError } = await supabase
         .from('event_rsvps')
         .update({ status: 'confirmed' })
         .eq('id', rsvpId);
 
-      if (error) throw error;
+      if (rsvpError) throw rsvpError;
+
+      // Create notification
+      const { error: notificationError } = await supabase
+        .from('waitlist_notifications')
+        .insert({
+          event_id: eventId,
+          user_id: waitlistEntries?.find(entry => entry.id === rsvpId)?.profiles.id,
+          notification_type: 'promoted'
+        });
+
+      if (notificationError) throw notificationError;
 
       notify("success", "Attendee Promoted", "Successfully promoted from waitlist");
       refetch();

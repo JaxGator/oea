@@ -16,22 +16,24 @@ export const eventSchema = z.object({
 
 export type EventFormValues = z.infer<typeof eventSchema>;
 
+export interface EventFormData {
+  id: string;
+  title: string;
+  description: string;
+  date: string;
+  time: string;
+  location: string;
+  max_guests: number;
+  image_url: string;
+  reminder_enabled?: boolean;
+  reminder_intervals?: string[];
+  waitlist_enabled?: boolean;
+  waitlist_capacity?: number | null;
+}
+
 export interface EventFormProps {
   onSuccess: () => void;
-  initialData?: {
-    id: string;
-    title: string;
-    description: string;
-    date: string;
-    time: string;
-    location: string;
-    max_guests: number;
-    image_url?: string;
-    reminder_enabled?: boolean;
-    reminder_intervals?: string[];
-    waitlist_enabled?: boolean;
-    waitlist_capacity?: number | null;
-  };
+  initialData?: EventFormData;
   isPastEvent?: boolean;
   isWixEvent?: boolean;
 }
