@@ -34,7 +34,7 @@ export function RSVPButton({ isFullyBooked, canJoinWaitlist, onRSVP }: RSVPButto
     setShowGuestDialog(false);
     
     toast.success(isFullyBooked ? 
-      "You've been added to the waitlist" : 
+      "You've been added to the waitlist. We'll notify you if a spot becomes available!" : 
       "You've successfully RSVP'd to this event"
     );
   };
@@ -64,7 +64,7 @@ export function RSVPButton({ isFullyBooked, canJoinWaitlist, onRSVP }: RSVPButto
           </DialogTitle>
           <DialogDescription>
             {isFullyBooked 
-              ? "You'll be notified if a spot becomes available"
+              ? "You'll be automatically notified if a spot becomes available"
               : "Add any guests you'd like to bring (optional)"}
           </DialogDescription>
         </DialogHeader>
