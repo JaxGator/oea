@@ -18,19 +18,19 @@ export function EventForm({ onSuccess, initialData, isPastEvent, isWixEvent }: E
   const { isAdmin } = useAdminStatus();
   const form = useForm<EventFormValues>({
     resolver: zodResolver(eventSchema),
-    defaultValues: initialData || {
-      title: "",
-      description: "",
-      date: "",
-      time: "",
-      location: "",
-      max_guests: 50,
-      image_url: "/lovable-uploads/609edf01-3169-439a-80f5-f6f15de7a5a6.png",
-      reminder_enabled: false,
-      reminder_intervals: ["7d", "1d", "1h"],
-      waitlist_enabled: false,
-      waitlist_capacity: null,
-      is_featured: false,
+    defaultValues: {
+      title: initialData?.title || "",
+      description: initialData?.description || "",
+      date: initialData?.date || "",
+      time: initialData?.time || "",
+      location: initialData?.location || "",
+      max_guests: initialData?.max_guests || 50,
+      image_url: initialData?.image_url || "/lovable-uploads/609edf01-3169-439a-80f5-f6f15de7a5a6.png",
+      reminder_enabled: initialData?.reminder_enabled || false,
+      reminder_intervals: initialData?.reminder_intervals || ["7d", "1d", "1h"],
+      waitlist_enabled: initialData?.waitlist_enabled || false,
+      waitlist_capacity: initialData?.waitlist_capacity || null,
+      is_featured: initialData?.is_featured || false,
     },
   });
 
@@ -38,9 +38,7 @@ export function EventForm({ onSuccess, initialData, isPastEvent, isWixEvent }: E
 
   const onSubmit = async (data: EventFormValues) => {
     await handleFormSubmit(data, initialData);
-    if (!initialData) {
-      form.reset();
-    }
+    onSuccess(); // Call onSuccess to close the modal after successful submission
   };
 
   return (
