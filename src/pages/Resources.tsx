@@ -5,7 +5,7 @@ import { resourcesData } from "@/data/resourcesData";
 const Resources = () => {
   return (
     <div className="min-h-screen bg-background">
-      <div className="container mx-auto py-12 px-4">
+      <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="flex items-center gap-3 mb-8">
           <SquareLibrary className="h-6 w-6" />
           <h2 className="text-2xl font-semibold">Resources</h2>
