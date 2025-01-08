@@ -1,17 +1,10 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { useNotifications } from "@/components/providers/NotificationProvider";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { WaitlistTable } from "./waitlist/WaitlistTable";
+import { WaitlistHeader } from "./waitlist/WaitlistHeader";
+import type { WaitlistEntry } from "./waitlist/types";
 
 interface WaitlistManagerProps {
   eventId: string;
@@ -19,7 +12,11 @@ interface WaitlistManagerProps {
   waitlistCapacity: number | null;
 }
 
-export function WaitlistManager({ eventId, maxGuests, waitlistCapacity }: WaitlistManagerProps) {
+export function WaitlistManager({ 
+  eventId, 
+  maxGuests, 
+  waitlistCapacity 
+}: WaitlistManagerProps) {
   const [isProcessing, setIsProcessing] = useState(false);
   const { notify } = useNotifications();
 
@@ -34,7 +31,8 @@ export function WaitlistManager({ eventId, maxGuests, waitlistCapacity }: Waitli
           profiles:user_id (
             username,
             full_name,
-            email_notifications
+            email_notifications,
+            user_id:id
           )
         `)
         .eq('event_id', eventId)
@@ -42,7 +40,7 @@ export function WaitlistManager({ eventId, maxGuests, waitlistCapacity }: Waitli
         .order('created_at', { ascending: true });
 
       if (error) throw error;
-      return data || [];
+      return data as WaitlistEntry[];
     },
   });
 
@@ -68,6 +66,9 @@ export function WaitlistManager({ eventId, maxGuests, waitlistCapacity }: Waitli
 
     setIsProcessing(true);
     try {
+      const entry = waitlistEntries?.find(entry => entry.id === rsvpId);
+      if (!entry) throw new Error("Entry not found");
+
       // Update RSVP status
       const { error: rsvpError } = await supabase
         .from('event_rsvps')
@@ -81,7 +82,7 @@ export function WaitlistManager({ eventId, maxGuests, waitlistCapacity }: Waitli
         .from('waitlist_notifications')
         .insert({
           event_id: eventId,
-          user_id: waitlistEntries?.find(entry => entry.id === rsvpId)?.profiles.id,
+          user_id: entry.profiles.user_id,
           notification_type: 'promoted'
         });
 
@@ -97,53 +98,23 @@ export function WaitlistManager({ eventId, maxGuests, waitlistCapacity }: Waitli
     }
   };
 
+  const stats = {
+    waitlistCount: waitlistEntries?.length || 0,
+    waitlistCapacity,
+    currentRSVPs,
+    maxGuests
+  };
+
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <div>
-          <h3 className="text-lg font-semibold">Waitlist Management</h3>
-          <p className="text-sm text-muted-foreground">
-            {waitlistEntries?.length || 0} people waiting
-            {waitlistCapacity && ` (Capacity: ${waitlistCapacity})`}
-          </p>
-        </div>
-        <div className="text-sm text-muted-foreground">
-          {currentRSVPs}/{maxGuests} spots filled
-        </div>
-      </div>
-
-      <ScrollArea className="h-[300px] rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead>Joined Waitlist</TableHead>
-              <TableHead>Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {waitlistEntries?.map((entry) => (
-              <TableRow key={entry.id}>
-                <TableCell>
-                  {entry.profiles.full_name || entry.profiles.username}
-                </TableCell>
-                <TableCell>
-                  {new Date(entry.created_at).toLocaleDateString()}
-                </TableCell>
-                <TableCell>
-                  <Button
-                    size="sm"
-                    onClick={() => handlePromoteFromWaitlist(entry.id)}
-                    disabled={isProcessing || (currentRSVPs && currentRSVPs >= maxGuests)}
-                  >
-                    Promote to Attendee
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </ScrollArea>
+      <WaitlistHeader stats={stats} />
+      <WaitlistTable
+        entries={waitlistEntries || []}
+        isProcessing={isProcessing}
+        currentRSVPs={currentRSVPs}
+        maxGuests={maxGuests}
+        onPromote={handlePromoteFromWaitlist}
+      />
     </div>
   );
 }
