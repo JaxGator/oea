@@ -7,10 +7,13 @@ import { useSessionCheck } from "@/hooks/auth/useSessionCheck";
 import { UserListHeader } from "./user-management/UserListHeader";
 import { UserListContent } from "./user-management/UserListContent";
 import { useUserManagement } from "@/hooks/admin/useUserManagement";
+import { useToast } from "@/hooks/use-toast";
 
 export function AdminUserList() {
   const [viewingMember, setViewingMember] = useState<Member | null>(null);
   const { members, isLoading, error, refetch } = useMemberManagement();
+  const { toast } = useToast();
+  
   const {
     editingMember,
     handleEditMember,
@@ -21,6 +24,20 @@ export function AdminUserList() {
 
   useSessionCheck();
 
+  const handleEdit = (member: Member) => {
+    if (!member?.id || !member?.username) {
+      console.error('AdminUserList: Invalid member data for edit:', member);
+      toast({
+        title: "Error",
+        description: "Invalid member data. Please try again.",
+        variant: "destructive",
+      });
+      return;
+    }
+    console.log('AdminUserList: Handling edit for member:', member);
+    handleEditMember(member);
+  };
+
   return (
     <div className="space-y-4">
       <UserListHeader onUserCreated={refetch} />
@@ -29,7 +46,7 @@ export function AdminUserList() {
         members={members}
         isLoading={isLoading}
         error={error}
-        onEditMember={handleEditMember}
+        onEditMember={handleEdit}
         onDeleteMember={handleDeleteMember}
       />
 
@@ -41,11 +58,13 @@ export function AdminUserList() {
         />
       )}
 
-      <EditMemberHandler
-        member={editingMember}
-        onClose={handleCloseEdit}
-        onUpdate={handleUpdateComplete}
-      />
+      {editingMember && (
+        <EditMemberHandler
+          member={editingMember}
+          onClose={handleCloseEdit}
+          onUpdate={handleUpdateComplete}
+        />
+      )}
     </div>
   );
 }

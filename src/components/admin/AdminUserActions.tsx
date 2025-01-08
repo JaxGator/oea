@@ -23,15 +23,29 @@ export function AdminUserActions({
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   const handleUpdateStatus = () => {
+    if (!profile?.username) {
+      console.error('AdminUserActions: Invalid profile data for status update:', profile);
+      return;
+    }
     console.log('AdminUserActions: Update status clicked for username:', profile.username);
     onUpdateStatus(profile.username);
   };
 
   const handleDelete = () => {
+    if (!profile?.id) {
+      console.error('AdminUserActions: Invalid profile data for deletion:', profile);
+      return;
+    }
     console.log('AdminUserActions: Delete confirmed for profile:', profile);
     onDelete(profile.id);
     setShowDeleteDialog(false);
   };
+
+  // Validate profile data before rendering
+  if (!profile?.id || !profile?.username) {
+    console.error('AdminUserActions: Invalid profile data:', profile);
+    return null;
+  }
 
   return (
     <div className="flex items-center gap-2">
