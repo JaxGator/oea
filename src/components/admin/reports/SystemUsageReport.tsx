@@ -9,6 +9,18 @@ import { DateRange } from "react-day-picker";
 
 const COLORS = ['#4CAF50', '#f44336'];
 
+// Define actual pages in the application
+const APP_PAGES = [
+  { route: '/', name: 'Home' },
+  { route: '/events', name: 'Events' },
+  { route: '/about', name: 'About' },
+  { route: '/members', name: 'Members' },
+  { route: '/profile', name: 'Profile' },
+  { route: '/admin', name: 'Admin Dashboard' },
+  { route: '/resources', name: 'Resources' },
+  { route: '/store', name: 'Store' }
+];
+
 export function SystemUsageReport() {
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
 
@@ -26,9 +38,9 @@ export function SystemUsageReport() {
           success: 95,
           failure: 5,
         },
-        loadTimes: Array.from({ length: 7 }, (_, i) => ({
-          page: `Page ${i + 1}`,
-          loadTime: Math.random() * 2,
+        loadTimes: APP_PAGES.map(page => ({
+          page: page.name,
+          loadTime: Math.random() * 2, // Simulated load times between 0-2 seconds
         })),
       };
     },
@@ -115,7 +127,7 @@ export function SystemUsageReport() {
               </tr>
             </thead>
             <tbody>
-              {systemStats?.loadTimes.map((item: any, index: number) => (
+              {systemStats?.loadTimes.map((item, index) => (
                 <tr key={index} className="border-b">
                   <td className="p-2">{item.page}</td>
                   <td className="p-2">{item.loadTime.toFixed(2)}s</td>
