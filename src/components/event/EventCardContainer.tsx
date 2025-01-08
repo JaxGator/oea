@@ -7,8 +7,7 @@ import { useEventCard } from "@/hooks/useEventCard";
 import { useEventDialogs } from "@/hooks/useEventDialogs";
 import { useEventInteraction } from "@/hooks/events/useEventInteraction";
 import { EventRSVPHandler } from "./rsvp/EventRSVPHandler";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { useEventWaitlist } from "@/hooks/events/useEventWaitlist";
 
 interface EventCardContainerProps {
   event: Event;
@@ -35,25 +34,7 @@ export function EventCardContainer({
 
   const { showEditDialog, setShowEditDialog } = useEventDialogs();
   const { showDetailsDialog, setShowDetailsDialog, handleInteraction } = useEventInteraction();
-
-  const { data: waitlistCount = 0 } = useQuery({
-    queryKey: ['waitlist-count', event.id],
-    queryFn: async () => {
-      if (!event.waitlist_enabled) return 0;
-      const { count, error } = await supabase
-        .from('event_rsvps')
-        .select('*', { count: 'exact', head: true })
-        .eq('event_id', event.id)
-        .eq('status', 'waitlisted');
-      
-      if (error) {
-        console.error('Error fetching waitlist count:', error);
-        return 0;
-      }
-      return count || 0;
-    },
-    enabled: !!event.waitlist_enabled
-  });
+  const { waitlistCount } = useEventWaitlist(event.id, event.waitlist_enabled);
 
   const isPastEvent = new Date(event.date) < new Date(new Date().setHours(0, 0, 0, 0));
   const isWixEvent = event.description === 'Imported from Wix';
