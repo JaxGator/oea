@@ -8,6 +8,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useCommunications } from "@/hooks/admin/useCommunications";
 import { Member } from "@/components/members/types";
 import { Mail } from "lucide-react";
+import { toast } from "sonner";
+import { useSession } from "@/hooks/auth/useSession";
 
 interface SendMessageDialogProps {
   member: Member;
@@ -20,23 +22,36 @@ export function SendMessageDialog({ member }: SendMessageDialogProps) {
   const [templateId, setTemplateId] = useState<string>("");
   
   const { templates, sendMessage, isLoading } = useCommunications();
+  const { user } = useSession();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    await sendMessage({
-      subject,
-      content,
-      recipient_type: "individual",
-      recipient_data: { member_id: member.id },
-      template_id: templateId || null,
-      status: "draft"
-    });
+    if (!user?.id) {
+      toast.error("You must be logged in to send messages");
+      return;
+    }
 
-    setOpen(false);
-    setSubject("");
-    setContent("");
-    setTemplateId("");
+    try {
+      await sendMessage({
+        subject,
+        content,
+        recipient_type: "individual",
+        recipient_data: { member_id: member.id },
+        template_id: templateId || null,
+        status: "draft",
+        sender_id: user.id // Explicitly set the sender_id
+      });
+
+      toast.success("Message sent successfully");
+      setOpen(false);
+      setSubject("");
+      setContent("");
+      setTemplateId("");
+    } catch (error) {
+      console.error("Error sending message:", error);
+      toast.error("Failed to send message. Please try again.");
+    }
   };
 
   const handleTemplateChange = (value: string) => {
@@ -110,7 +125,7 @@ export function SendMessageDialog({ member }: SendMessageDialogProps) {
               Cancel
             </Button>
             <Button type="submit" disabled={isLoading}>
-              Send Message
+              {isLoading ? "Sending..." : "Send Message"}
             </Button>
           </div>
         </form>
