@@ -6,10 +6,15 @@ import { useToast } from "@/hooks/use-toast";
 
 const ITEMS_PER_PAGE = 10;
 
+interface MemberQueryResult {
+  members: Member[];
+  totalPages: number;
+}
+
 export function useMemberManagement(searchTerm: string = "", filters: UserFilters = {}, page: number = 1) {
   const { toast } = useToast();
 
-  return useQuery({
+  return useQuery<MemberQueryResult, Error>({
     queryKey: ['members', searchTerm, filters, page],
     queryFn: async () => {
       try {
@@ -19,12 +24,10 @@ export function useMemberManagement(searchTerm: string = "", filters: UserFilter
           .from('profiles')
           .select('*', { count: 'exact' });
 
-        // Apply search filter if provided
         if (searchTerm) {
           query = query.or(`username.ilike.%${searchTerm}%,email.ilike.%${searchTerm}%`);
         }
 
-        // Apply role filters
         if (filters.isAdmin !== undefined) {
           query = query.eq('is_admin', filters.isAdmin);
         }
@@ -35,7 +38,6 @@ export function useMemberManagement(searchTerm: string = "", filters: UserFilter
           query = query.eq('is_member', filters.isMember);
         }
 
-        // Apply pagination
         const start = (page - 1) * ITEMS_PER_PAGE;
         query = query
           .range(start, start + ITEMS_PER_PAGE - 1)
@@ -58,13 +60,6 @@ export function useMemberManagement(searchTerm: string = "", filters: UserFilter
           
           throw error;
         }
-
-        console.log('Members fetch successful:', {
-          count,
-          results: data?.length,
-          page,
-          timestamp: new Date().toISOString()
-        });
 
         return {
           members: data as Member[],

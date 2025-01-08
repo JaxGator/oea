@@ -23,7 +23,7 @@ export function AdminUserList() {
   const [page, setPage] = useState(1);
   const debouncedSearch = useDebounce(searchTerm, 300);
   
-  const { members, isLoading, error, refetch, totalPages } = useMemberManagement(debouncedSearch, filters, page);
+  const { data, isLoading, error, refetch } = useMemberManagement(debouncedSearch, filters, page);
   const { toast } = useToast();
   
   const {
@@ -74,13 +74,13 @@ export function AdminUserList() {
       />
       
       <UserListContent
-        members={members}
+        members={data?.members ?? []}
         isLoading={isLoading}
         error={error}
         onEditMember={handleEdit}
         onDeleteMember={handleDeleteMember}
         currentPage={page}
-        totalPages={totalPages}
+        totalPages={data?.totalPages ?? 1}
         onPageChange={handlePageChange}
       />
 

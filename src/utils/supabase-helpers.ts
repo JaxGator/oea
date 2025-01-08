@@ -2,6 +2,7 @@ import { PostgrestError, PostgrestResponse, PostgrestSingleResponse } from '@sup
 import { Database } from '@/types/database.types';
 import { isSupabaseError } from '@/integrations/supabase/types/helpers';
 import { toast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 export type TablesInsert<T extends keyof Database['public']['Tables']> = Database['public']['Tables'][T]['Insert']
 export type TablesUpdate<T extends keyof Database['public']['Tables']> = Database['public']['Tables'][T]['Update']
@@ -23,7 +24,7 @@ export function handleError(error: PostgrestError | null) {
       variant: "destructive",
     });
     
-    throw new Error(error.message);
+    throw error;
   }
 }
 
@@ -49,7 +50,7 @@ export async function handleQueryResult<T>(
   if (!data) {
     throw new Error('No data returned from query');
   }
-  return data as T;
+  return data;
 }
 
 export function isQueryError(result: unknown): result is PostgrestError {
@@ -59,6 +60,7 @@ export function isQueryError(result: unknown): result is PostgrestError {
 export function ensureQueryResult<T>(result: T | PostgrestError): T {
   if (isQueryError(result)) {
     handleError(result);
+    throw result;
   }
   return result;
 }
