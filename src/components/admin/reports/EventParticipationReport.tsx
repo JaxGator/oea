@@ -60,7 +60,7 @@ export function EventParticipationReport() {
       <div className="flex flex-col md:flex-row gap-4 justify-between">
         <DatePickerWithRange
           value={dateRange}
-          onChange={setDateRange}
+          onChange={(newDateRange: DateRange | undefined) => setDateRange(newDateRange)}
         />
         <Select value={eventType} onValueChange={setEventType}>
           <SelectTrigger className="w-[180px]">

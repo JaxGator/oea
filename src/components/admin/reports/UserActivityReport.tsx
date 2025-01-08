@@ -72,7 +72,7 @@ export function UserActivityReport() {
       <div className="flex flex-col md:flex-row gap-4 justify-between">
         <DatePickerWithRange
           value={dateRange}
-          onChange={setDateRange}
+          onChange={(newDateRange: DateRange | undefined) => setDateRange(newDateRange)}
         />
         <Select value={userType} onValueChange={setUserType}>
           <SelectTrigger className="w-[180px]">

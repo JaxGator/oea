@@ -53,7 +53,7 @@ export function SystemUsageReport() {
       <div className="flex flex-col md:flex-row gap-4 justify-between">
         <DatePickerWithRange
           value={dateRange}
-          onChange={setDateRange}
+          onChange={(newDateRange: DateRange | undefined) => setDateRange(newDateRange)}
         />
         <Button onClick={handleExport} variant="outline">
           <Download className="mr-2 h-4 w-4" />
