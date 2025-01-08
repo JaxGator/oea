@@ -1,10 +1,14 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Users, Settings, Image, DollarSign } from "lucide-react";
+import { Users, Settings, Image, DollarSign, BarChart3 } from "lucide-react";
 import { AdminUserList } from "@/components/admin/AdminUserList";
 import { SiteConfigManager } from "@/components/admin/SiteConfigManager";
 import { GalleryManager } from "@/components/admin/GalleryManager";
 import { PaymentManager } from "@/components/admin/payments/PaymentManager";
 import { ErrorBoundary } from "@/components/error/ErrorBoundary";
+import { ReportsTabs } from "@/components/admin/reports/ReportsLayout";
+import { UserActivityReport } from "@/components/admin/reports/UserActivityReport";
+import { EventParticipationReport } from "@/components/admin/reports/EventParticipationReport";
+import { SystemUsageReport } from "@/components/admin/reports/SystemUsageReport";
 
 interface AdminTabsProps {
   defaultTab?: string;
@@ -25,6 +29,10 @@ export function AdminTabs({ defaultTab = "users" }: AdminTabsProps) {
         <TabsTrigger value="payments" className="w-full sm:w-auto justify-start sm:justify-center">
           <DollarSign className="h-4 w-4 mr-2" />
           Payments
+        </TabsTrigger>
+        <TabsTrigger value="reports" className="w-full sm:w-auto justify-start sm:justify-center">
+          <BarChart3 className="h-4 w-4 mr-2" />
+          Reports
         </TabsTrigger>
         <TabsTrigger value="site-config" className="w-full sm:w-auto justify-start sm:justify-center">
           <Settings className="h-4 w-4 mr-2" />
@@ -47,6 +55,26 @@ export function AdminTabs({ defaultTab = "users" }: AdminTabsProps) {
       <TabsContent value="payments" className="space-y-4 min-h-[300px]">
         <ErrorBoundary fallback={<div>Error loading payment manager</div>}>
           <PaymentManager />
+        </ErrorBoundary>
+      </TabsContent>
+
+      <TabsContent value="reports" className="space-y-4 min-h-[300px]">
+        <ErrorBoundary fallback={<div>Error loading reports</div>}>
+          <Tabs defaultValue="user-activity" className="space-y-4">
+            <ReportsTabs />
+            
+            <TabsContent value="user-activity">
+              <UserActivityReport />
+            </TabsContent>
+            
+            <TabsContent value="event-participation">
+              <EventParticipationReport />
+            </TabsContent>
+            
+            <TabsContent value="system-usage">
+              <SystemUsageReport />
+            </TabsContent>
+          </Tabs>
         </ErrorBoundary>
       </TabsContent>
 
