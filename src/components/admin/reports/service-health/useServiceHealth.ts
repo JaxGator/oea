@@ -9,6 +9,13 @@ interface HealthCheckResponse {
   error?: string;
 }
 
+const NAMECHEAP_DNS_SERVERS = [
+  'dns1.p06.nsone.net',
+  'dns2.p06.nsone.net',
+  'dns3.p06.nsone.net',
+  'dns4.p06.nsone.net'
+];
+
 export function useServiceHealth() {
   return useQuery({
     queryKey: ['service-health'],
@@ -44,22 +51,23 @@ export function useServiceHealth() {
 
         // Check Namecheap DNS servers
         const namecheapStartTime = performance.now();
-        const namecheapResponse: HealthCheckResponse = await fetch('https://dns.api.namecheap.com/health')
-          .then(res => {
-            const namecheapEndTime = performance.now();
-            return {
-              ok: res.ok,
-              latency: namecheapEndTime - namecheapStartTime
-            };
+        let dnsChecks = await Promise.all(
+          NAMECHEAP_DNS_SERVERS.map(async (server) => {
+            try {
+              const response = await fetch(`https://${server}`);
+              return response.ok;
+            } catch {
+              return false;
+            }
           })
-          .catch(error => {
-            console.error('Namecheap DNS health check error:', error);
-            return {
-              ok: false,
-              latency: 0,
-              error: error.message
-            };
-          });
+        );
+        const namecheapEndTime = performance.now();
+        
+        const namecheapResponse: HealthCheckResponse = {
+          ok: dnsChecks.some(status => status), // Consider healthy if at least one server responds
+          latency: namecheapEndTime - namecheapStartTime,
+          error: dnsChecks.every(status => !status) ? 'DNS servers not responding' : undefined
+        };
 
         // Check Netlify status
         const netlifyStartTime = performance.now();
