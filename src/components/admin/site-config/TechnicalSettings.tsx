@@ -2,6 +2,7 @@ import { MaintenanceMode } from "./technical/MaintenanceMode";
 import { ImageUploadField } from "./technical/ImageUploadField";
 import { CodeEditor } from "./technical/CodeEditor";
 import { FaviconConfig } from "./technical/FaviconConfig";
+import { ReminderSettings } from "./technical/ReminderSettings";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Dispatch, SetStateAction } from "react";
@@ -71,6 +72,16 @@ export function TechnicalSettings({ configs, setConfigs, isLoading }: TechnicalS
           }}
           onSave={async () => {
             await updateConfig('default_event_image', configs.default_event_image || '');
+          }}
+        />
+
+        <ReminderSettings
+          eventId={configs.current_event_id || ''}
+          enabled={configs.reminder_enabled || false}
+          intervals={configs.reminder_intervals || ["7d", "1d", "1h"]}
+          onUpdate={() => {
+            // Refresh configs after update
+            setConfigs(prev => ({ ...prev }));
           }}
         />
 

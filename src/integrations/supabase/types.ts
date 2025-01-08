@@ -68,6 +68,51 @@ export type Database = {
           },
         ]
       }
+      event_reminders: {
+        Row: {
+          created_at: string | null
+          event_id: string | null
+          id: string
+          notification_status: string | null
+          reminder_time: string
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          event_id?: string | null
+          id?: string
+          notification_status?: string | null
+          reminder_time: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          event_id?: string | null
+          id?: string
+          notification_status?: string | null
+          reminder_time?: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_reminders_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_reminders_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       event_rsvps: {
         Row: {
           created_at: string
@@ -119,6 +164,8 @@ export type Database = {
           is_featured: boolean | null
           location: string
           max_guests: number
+          reminder_enabled: boolean | null
+          reminder_intervals: Json | null
           requires_payment: boolean | null
           ticket_price: number | null
           time: string
@@ -135,6 +182,8 @@ export type Database = {
           is_featured?: boolean | null
           location: string
           max_guests: number
+          reminder_enabled?: boolean | null
+          reminder_intervals?: Json | null
           requires_payment?: boolean | null
           ticket_price?: number | null
           time: string
@@ -151,6 +200,8 @@ export type Database = {
           is_featured?: boolean | null
           location?: string
           max_guests?: number
+          reminder_enabled?: boolean | null
+          reminder_intervals?: Json | null
           requires_payment?: boolean | null
           ticket_price?: number | null
           time?: string
@@ -307,6 +358,7 @@ export type Database = {
           avatar_url: string | null
           created_at: string
           email_notifications: boolean | null
+          event_reminders_enabled: boolean | null
           full_name: string | null
           id: string
           in_app_notifications: boolean | null
@@ -319,6 +371,7 @@ export type Database = {
           avatar_url?: string | null
           created_at?: string
           email_notifications?: boolean | null
+          event_reminders_enabled?: boolean | null
           full_name?: string | null
           id: string
           in_app_notifications?: boolean | null
@@ -331,6 +384,7 @@ export type Database = {
           avatar_url?: string | null
           created_at?: string
           email_notifications?: boolean | null
+          event_reminders_enabled?: boolean | null
           full_name?: string | null
           id?: string
           in_app_notifications?: boolean | null
