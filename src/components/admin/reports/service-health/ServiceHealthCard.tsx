@@ -1,7 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { ServiceHealthStatus } from "./types";
-import { AlertCircle, CheckCircle2, Wifi, Database, Cloud, Github } from "lucide-react";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { Database, Cloud, Github } from "lucide-react";
+import { ServiceHealthItem } from "./ServiceHealthItem";
 
 interface ServiceHealthCardProps {
   serviceHealth: ServiceHealthStatus | undefined;
@@ -80,49 +80,5 @@ export function ServiceHealthCard({ serviceHealth }: ServiceHealthCardProps) {
         />
       </div>
     </Card>
-  );
-}
-
-interface ServiceHealthItemProps {
-  name: string;
-  icon: typeof Database | typeof Cloud | typeof Github;
-  status: 'healthy' | 'error';
-  latency: number;
-  error?: string;
-}
-
-function ServiceHealthItem({ name, icon: Icon, status, latency, error }: ServiceHealthItemProps) {
-  return (
-    <div className="p-4 rounded-lg border">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Icon className="h-4 w-4 text-gray-500" />
-          <span className="font-medium">{name}</span>
-          <Tooltip>
-            <TooltipTrigger>
-              {status === 'healthy' ? (
-                <CheckCircle2 className="h-4 w-4 text-green-500" />
-              ) : (
-                <AlertCircle className="h-4 w-4 text-red-500" />
-              )}
-            </TooltipTrigger>
-            <TooltipContent>
-              {status === 'healthy' ? 'Service is healthy' : error || 'Service is experiencing issues'}
-            </TooltipContent>
-          </Tooltip>
-        </div>
-        <div className="flex items-center gap-2">
-          <Wifi className="h-4 w-4 text-gray-400" />
-          <span className={`text-sm ${latency > 1000 ? 'text-orange-600' : 'text-gray-600'}`}>
-            {latency.toFixed(0)}ms
-          </span>
-        </div>
-      </div>
-      {error && (
-        <p className="text-sm text-red-600 mt-2">
-          {error}
-        </p>
-      )}
-    </div>
   );
 }
