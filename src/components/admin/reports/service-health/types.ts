@@ -10,6 +10,7 @@ export interface ServiceHealthStatus {
   supabase: ServiceHealth;
   netlify: ServiceHealth;
   lovable: ServiceHealth;
+  github: ServiceHealth;
 }
 
 export interface HealthCheckResponse {

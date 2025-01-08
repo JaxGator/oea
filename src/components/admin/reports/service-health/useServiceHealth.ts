@@ -55,6 +55,25 @@ export function useServiceHealth() {
             };
           });
 
+        // Check GitHub status
+        const githubStartTime = performance.now();
+        const githubResponse = await fetch('https://www.githubstatus.com/api/v2/status.json')
+          .then((res): HealthCheckResponse => {
+            const githubEndTime = performance.now();
+            return {
+              ok: res.ok,
+              latency: githubEndTime - githubStartTime
+            };
+          })
+          .catch((error): HealthCheckResponse => {
+            console.error('GitHub health check error:', error);
+            return {
+              ok: false,
+              latency: 0,
+              error: error.message
+            };
+          });
+
         if (error) {
           console.error('Supabase health check error:', error);
           return {
@@ -72,6 +91,11 @@ export function useServiceHealth() {
               status: lovableResponse.ok ? 'healthy' : 'error',
               latency: lovableResponse.latency,
               error: lovableResponse.error
+            },
+            github: {
+              status: githubResponse.ok ? 'healthy' : 'error',
+              latency: githubResponse.latency,
+              error: githubResponse.error
             }
           };
         }
@@ -90,6 +114,11 @@ export function useServiceHealth() {
             status: lovableResponse.ok ? 'healthy' : 'error',
             latency: lovableResponse.latency,
             error: lovableResponse.error
+          },
+          github: {
+            status: githubResponse.ok ? 'healthy' : 'error',
+            latency: githubResponse.latency,
+            error: githubResponse.error
           }
         };
       } catch (error) {
@@ -112,6 +141,11 @@ export function useServiceHealth() {
             error: 'Connection failed'
           },
           lovable: {
+            status: 'error',
+            latency: 0,
+            error: 'Connection failed'
+          },
+          github: {
             status: 'error',
             latency: 0,
             error: 'Connection failed'

@@ -1,6 +1,6 @@
 import { Card } from "@/components/ui/card";
 import { ServiceHealthStatus } from "./types";
-import { AlertCircle, CheckCircle2, Wifi } from "lucide-react";
+import { AlertCircle, CheckCircle2, Wifi, Database, Cloud, Github } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface ServiceHealthCardProps {
@@ -15,18 +15,28 @@ export function ServiceHealthCard({ serviceHealth }: ServiceHealthCardProps) {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <ServiceHealthItem
             name="Supabase"
+            icon={Database}
             status="error"
             latency={0}
             error="Loading status..."
           />
           <ServiceHealthItem
             name="Netlify"
+            icon={Cloud}
             status="error"
             latency={0}
             error="Loading status..."
           />
           <ServiceHealthItem
             name="Lovable"
+            icon={Cloud}
+            status="error"
+            latency={0}
+            error="Loading status..."
+          />
+          <ServiceHealthItem
+            name="GitHub"
+            icon={Github}
             status="error"
             latency={0}
             error="Loading status..."
@@ -42,21 +52,31 @@ export function ServiceHealthCard({ serviceHealth }: ServiceHealthCardProps) {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <ServiceHealthItem
           name="Supabase"
+          icon={Database}
           status={serviceHealth.supabase.status}
           latency={serviceHealth.supabase.latency}
           error={serviceHealth.supabase.error}
         />
         <ServiceHealthItem
           name="Netlify"
+          icon={Cloud}
           status={serviceHealth.netlify.status}
           latency={serviceHealth.netlify.latency}
           error={serviceHealth.netlify.error}
         />
         <ServiceHealthItem
           name="Lovable"
+          icon={Cloud}
           status={serviceHealth.lovable.status}
           latency={serviceHealth.lovable.latency}
           error={serviceHealth.lovable.error}
+        />
+        <ServiceHealthItem
+          name="GitHub"
+          icon={Github}
+          status={serviceHealth.github.status}
+          latency={serviceHealth.github.latency}
+          error={serviceHealth.github.error}
         />
       </div>
     </Card>
@@ -65,16 +85,18 @@ export function ServiceHealthCard({ serviceHealth }: ServiceHealthCardProps) {
 
 interface ServiceHealthItemProps {
   name: string;
+  icon: typeof Database | typeof Cloud | typeof Github;
   status: 'healthy' | 'error';
   latency: number;
   error?: string;
 }
 
-function ServiceHealthItem({ name, status, latency, error }: ServiceHealthItemProps) {
+function ServiceHealthItem({ name, icon: Icon, status, latency, error }: ServiceHealthItemProps) {
   return (
     <div className="p-4 rounded-lg border">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
+          <Icon className="h-4 w-4 text-gray-500" />
           <span className="font-medium">{name}</span>
           <Tooltip>
             <TooltipTrigger>
