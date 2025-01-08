@@ -9,8 +9,6 @@ import { UserListContent } from "./user-management/UserListContent";
 import { useUserManagement } from "@/hooks/admin/useUserManagement";
 import { useToast } from "@/hooks/use-toast";
 import { useDebounce } from "@/hooks/use-debounce";
-import { UserSearch } from "./user-management/UserSearch";
-import { UserFilters } from "./user-management/UserFilters";
 
 export type UserFilters = {
   isAdmin?: boolean;
@@ -68,12 +66,12 @@ export function AdminUserList() {
 
   return (
     <div className="space-y-4">
-      <div className="space-y-4">
-        <UserSearch onSearch={handleSearch} />
-        <UserFilters filters={filters} onFilterChange={handleFilterChange} />
-      </div>
-
-      <UserListHeader onUserCreated={refetch} />
+      <UserListHeader 
+        onUserCreated={refetch}
+        onSearch={handleSearch}
+        onFilterChange={handleFilterChange}
+        filters={filters}
+      />
       
       <UserListContent
         members={data?.members ?? []}

@@ -1,14 +1,14 @@
-import { UserFilters } from "../AdminUserList";
+import type { UserFilters as UserFiltersType } from "../AdminUserList";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 
 interface UserFiltersProps {
-  filters: UserFilters;
-  onFilterChange: (filters: UserFilters) => void;
+  filters: UserFiltersType;
+  onFilterChange: (filters: UserFiltersType) => void;
 }
 
 export function UserFilters({ filters, onFilterChange }: UserFiltersProps) {
-  const handleFilterChange = (key: keyof UserFilters) => {
+  const handleFilterChange = (key: keyof UserFiltersType) => {
     onFilterChange({
       ...filters,
       [key]: !filters[key],
