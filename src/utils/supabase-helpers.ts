@@ -47,10 +47,21 @@ export async function handleQueryResult<T>(
 ): Promise<T> {
   const { data, error } = response;
   handleError(error);
+  
   if (!data) {
     throw new Error('No data returned from query');
   }
-  return data as T;
+
+  // Handle array results when single item is expected
+  if (Array.isArray(data)) {
+    if (data.length === 0) {
+      throw new Error('No data returned from query');
+    }
+    // If we're expecting a single item but got an array, take the first item
+    return data[0] as T;
+  }
+
+  return data;
 }
 
 export function isQueryError(result: unknown): result is PostgrestError {
