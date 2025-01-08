@@ -5,11 +5,12 @@ import { DatePickerWithRange } from "@/components/ui/date-range-picker";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { Button } from "@/components/ui/button";
 import { Download } from "lucide-react";
+import { DateRange } from "react-day-picker";
 
 const COLORS = ['#4CAF50', '#f44336'];
 
 export function SystemUsageReport() {
-  const [dateRange, setDateRange] = useState<{ from: Date; to: Date } | undefined>();
+  const [dateRange, setDateRange] = useState<DateRange | undefined>();
 
   const { data: systemStats, isLoading } = useQuery({
     queryKey: ['system-stats', dateRange],

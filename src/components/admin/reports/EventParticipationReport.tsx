@@ -8,9 +8,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Download } from "lucide-react";
 import { format } from "date-fns";
+import { DateRange } from "react-day-picker";
 
 export function EventParticipationReport() {
-  const [dateRange, setDateRange] = useState<{ from: Date; to: Date } | undefined>();
+  const [dateRange, setDateRange] = useState<DateRange | undefined>();
   const [eventType, setEventType] = useState<string>("all");
 
   const { data: eventStats, isLoading } = useQuery({
