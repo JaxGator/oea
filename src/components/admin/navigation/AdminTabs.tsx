@@ -1,5 +1,5 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Users, Settings, Image, DollarSign, BarChart3 } from "lucide-react";
+import { Users, Settings, Image, DollarSign, BarChart3, TestTube2 } from "lucide-react";
 import { AdminUserList } from "@/components/admin/AdminUserList";
 import { SiteConfigManager } from "@/components/admin/SiteConfigManager";
 import { GalleryManager } from "@/components/admin/GalleryManager";
@@ -9,6 +9,7 @@ import { ReportsTabs } from "@/components/admin/reports/ReportsLayout";
 import { UserActivityReport } from "@/components/admin/reports/UserActivityReport";
 import { EventParticipationReport } from "@/components/admin/reports/EventParticipationReport";
 import { SystemUsageReport } from "@/components/admin/reports/SystemUsageReport";
+import { AdminTestRunner } from "../testing/AdminTestRunner";
 
 interface AdminTabsProps {
   defaultTab?: string;
@@ -33,6 +34,10 @@ export function AdminTabs({ defaultTab = "users" }: AdminTabsProps) {
         <TabsTrigger value="reports" className="w-full sm:w-auto justify-start sm:justify-center">
           <BarChart3 className="h-4 w-4 mr-2" />
           Reports
+        </TabsTrigger>
+        <TabsTrigger value="testing" className="w-full sm:w-auto justify-start sm:justify-center">
+          <TestTube2 className="h-4 w-4 mr-2" />
+          Testing
         </TabsTrigger>
         <TabsTrigger value="site-config" className="w-full sm:w-auto justify-start sm:justify-center">
           <Settings className="h-4 w-4 mr-2" />
@@ -75,6 +80,12 @@ export function AdminTabs({ defaultTab = "users" }: AdminTabsProps) {
               <SystemUsageReport />
             </TabsContent>
           </Tabs>
+        </ErrorBoundary>
+      </TabsContent>
+
+      <TabsContent value="testing" className="space-y-4 min-h-[300px]">
+        <ErrorBoundary fallback={<div>Error loading test runner</div>}>
+          <AdminTestRunner />
         </ErrorBoundary>
       </TabsContent>
 
