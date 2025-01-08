@@ -17,28 +17,30 @@ export function SiteConfigManager() {
   }
 
   return (
-    <div className="space-y-6 p-4 pb-16 max-w-full overflow-x-hidden">
-      <div className="flex items-center gap-2">
-        <h2 className="text-lg font-semibold">Site Configuration</h2>
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
-            </TooltipTrigger>
-            <TooltipContent>
-              <p className="max-w-[250px]">Manage all aspects of your site including general settings, social media, legal documents, and technical configurations</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-      </div>
-
-      <Tabs defaultValue="general" className="space-y-4 w-full">
-        <div className="sticky top-0 z-10 bg-background pt-2 pb-4 border-b">
-          <ConfigTabs />
+    <div className="space-y-6 pb-16 max-w-full overflow-x-hidden">
+      <div className="sticky top-0 z-10 bg-background pt-4 pb-4 border-b space-y-4">
+        <div className="px-4 flex items-center gap-2">
+          <h2 className="text-lg font-semibold">Site Configuration</h2>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
+              </TooltipTrigger>
+              <TooltipContent>
+                <p className="max-w-[250px]">Manage all aspects of your site including general settings, social media, legal documents, and technical configurations</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
 
-        <div className="mt-6 overflow-x-hidden">
-          <TabsContent value="general" className="m-0">
+        <div className="px-4">
+          <ConfigTabs />
+        </div>
+      </div>
+
+      <div className="px-4">
+        <Tabs defaultValue="general" className="space-y-8 w-full">
+          <TabsContent value="general" className="m-0 mt-2">
             <GeneralSettings
               configs={configs}
               setConfigs={setConfigs}
@@ -46,7 +48,7 @@ export function SiteConfigManager() {
             />
           </TabsContent>
 
-          <TabsContent value="social" className="m-0">
+          <TabsContent value="social" className="m-0 mt-2">
             <SocialSettings
               configs={configs}
               setConfigs={setConfigs}
@@ -54,7 +56,7 @@ export function SiteConfigManager() {
             />
           </TabsContent>
 
-          <TabsContent value="integrations" className="m-0">
+          <TabsContent value="integrations" className="m-0 mt-2">
             <IntegrationsSettings
               configs={configs}
               setConfigs={setConfigs}
@@ -62,7 +64,7 @@ export function SiteConfigManager() {
             />
           </TabsContent>
 
-          <TabsContent value="legal" className="m-0">
+          <TabsContent value="legal" className="m-0 mt-2">
             <LegalSettings
               configs={configs}
               setConfigs={setConfigs}
@@ -70,15 +72,15 @@ export function SiteConfigManager() {
             />
           </TabsContent>
 
-          <TabsContent value="technical" className="m-0">
+          <TabsContent value="technical" className="m-0 mt-2">
             <TechnicalSettings
               configs={configs}
               setConfigs={setConfigs}
               isLoading={isLoading}
             />
           </TabsContent>
-        </div>
-      </Tabs>
+        </Tabs>
+      </div>
     </div>
   );
 }
