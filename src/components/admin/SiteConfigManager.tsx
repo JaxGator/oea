@@ -17,7 +17,7 @@ export function SiteConfigManager() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-4 max-w-full overflow-x-hidden">
       <div className="flex items-center gap-2">
         <h2 className="text-lg font-semibold">Site Configuration</h2>
         <TooltipProvider>
@@ -26,54 +26,56 @@ export function SiteConfigManager() {
               <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
             </TooltipTrigger>
             <TooltipContent>
-              <p>Manage all aspects of your site including general settings, social media, legal documents, and technical configurations</p>
+              <p className="max-w-[250px]">Manage all aspects of your site including general settings, social media, legal documents, and technical configurations</p>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
       </div>
 
-      <Tabs defaultValue="general" className="space-y-4">
+      <Tabs defaultValue="general" className="space-y-4 w-full">
         <ConfigTabs />
 
-        <TabsContent value="general">
-          <GeneralSettings
-            configs={configs}
-            setConfigs={setConfigs}
-            updateConfig={updateConfig}
-          />
-        </TabsContent>
+        <div className="mt-6 overflow-x-hidden">
+          <TabsContent value="general" className="m-0">
+            <GeneralSettings
+              configs={configs}
+              setConfigs={setConfigs}
+              updateConfig={updateConfig}
+            />
+          </TabsContent>
 
-        <TabsContent value="social">
-          <SocialSettings
-            configs={configs}
-            setConfigs={setConfigs}
-            updateConfig={updateConfig}
-          />
-        </TabsContent>
+          <TabsContent value="social" className="m-0">
+            <SocialSettings
+              configs={configs}
+              setConfigs={setConfigs}
+              updateConfig={updateConfig}
+            />
+          </TabsContent>
 
-        <TabsContent value="integrations">
-          <IntegrationsSettings
-            configs={configs}
-            setConfigs={setConfigs}
-            updateConfig={updateConfig}
-          />
-        </TabsContent>
+          <TabsContent value="integrations" className="m-0">
+            <IntegrationsSettings
+              configs={configs}
+              setConfigs={setConfigs}
+              updateConfig={updateConfig}
+            />
+          </TabsContent>
 
-        <TabsContent value="legal">
-          <LegalSettings
-            configs={configs}
-            setConfigs={setConfigs}
-            updateConfig={updateConfig}
-          />
-        </TabsContent>
+          <TabsContent value="legal" className="m-0">
+            <LegalSettings
+              configs={configs}
+              setConfigs={setConfigs}
+              updateConfig={updateConfig}
+            />
+          </TabsContent>
 
-        <TabsContent value="technical">
-          <TechnicalSettings
-            configs={configs}
-            setConfigs={setConfigs}
-            isLoading={isLoading}
-          />
-        </TabsContent>
+          <TabsContent value="technical" className="m-0">
+            <TechnicalSettings
+              configs={configs}
+              setConfigs={setConfigs}
+              isLoading={isLoading}
+            />
+          </TabsContent>
+        </div>
       </Tabs>
     </div>
   );
