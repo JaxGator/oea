@@ -43,20 +43,54 @@ export function useGalleryManager() {
   const fetchImages = async () => {
     try {
       console.log('Fetching gallery images...');
+      
+      // First, get the ordered list of images from the gallery_images table
+      const { data: galleryData, error: galleryError } = await supabase
+        .from('gallery_images')
+        .select('*')
+        .order('display_order', { ascending: true });
+
+      if (galleryError) {
+        console.error('Error fetching gallery data:', galleryError);
+        throw galleryError;
+      }
+
+      console.log('Gallery data fetched:', galleryData);
+
+      if (!galleryData || galleryData.length === 0) {
+        console.log('No gallery images found in database');
+        setImages([]);
+        return;
+      }
+
+      // Then get the actual files from storage
       const { data: storageData, error: storageError } = await supabase.storage
         .from('gallery')
         .list();
 
-      if (storageError) throw storageError;
+      if (storageError) {
+        console.error('Error fetching storage data:', storageError);
+        throw storageError;
+      }
 
-      const imageUrls = storageData
-        .filter(file => file.name.match(/\.(jpg|jpeg|png|gif)$/i))
-        .map(file => ({
-          id: file.name,
-          url: supabase.storage.from('gallery').getPublicUrl(file.name).data.publicUrl
-        }));
+      console.log('Storage data fetched:', storageData);
 
-      console.log(`Found ${imageUrls.length} images in gallery`);
+      // Map the files to their public URLs, maintaining the order from gallery_images
+      const imageUrls = galleryData
+        .map(galleryImage => {
+          const storageFile = storageData.find(file => file.name === galleryImage.file_name);
+          if (!storageFile) {
+            console.warn(`File not found in storage: ${galleryImage.file_name}`);
+            return null;
+          }
+          return {
+            id: galleryImage.id,
+            url: supabase.storage.from('gallery').getPublicUrl(galleryImage.file_name).data.publicUrl
+          };
+        })
+        .filter((image): image is { url: string; id: string } => image !== null);
+
+      console.log(`Found ${imageUrls.length} valid images in gallery`);
       setImages(imageUrls);
     } catch (error) {
       console.error('Error fetching images:', error);
