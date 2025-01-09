@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback, memo } from "react";
 import { Member } from "../members/types";
 import { EditUserButton } from "./user-management/actions/EditUserButton";
 import { DeleteUserButton } from "./user-management/actions/DeleteUserButton";
@@ -14,7 +14,7 @@ interface AdminUserActionsProps {
   isUpdating: boolean;
 }
 
-export function AdminUserActions({ 
+export const AdminUserActions = memo(function AdminUserActions({ 
   profile, 
   onUpdateStatus, 
   onEdit,
@@ -24,7 +24,7 @@ export function AdminUserActions({
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const { toast } = useToast();
 
-  const validateProfile = (action: string): boolean => {
+  const validateProfile = useCallback((action: string): boolean => {
     if (!profile?.id || !profile?.username) {
       console.error(`AdminUserActions: Invalid profile data for ${action}:`, profile);
       toast({
@@ -35,15 +35,15 @@ export function AdminUserActions({
       return false;
     }
     return true;
-  };
+  }, [profile?.id, profile?.username, toast]);
 
-  const handleUpdateStatus = () => {
+  const handleUpdateStatus = useCallback(() => {
     if (!validateProfile('status update')) return;
     console.log('AdminUserActions: Update status clicked for username:', profile.username);
     onUpdateStatus(profile.username);
-  };
+  }, [validateProfile, profile.username, onUpdateStatus]);
 
-  const handleEdit = () => {
+  const handleEdit = useCallback(() => {
     if (!validateProfile('edit')) return;
     console.log('AdminUserActions: Edit clicked for profile:', profile);
     onEdit({
@@ -54,14 +54,14 @@ export function AdminUserActions({
       is_approved: profile.is_approved || false,
       is_member: profile.is_member || false
     });
-  };
+  }, [validateProfile, profile, onEdit]);
 
-  const handleDelete = () => {
+  const handleDelete = useCallback(() => {
     if (!validateProfile('deletion')) return;
     console.log('AdminUserActions: Delete confirmed for profile:', profile);
     onDelete(profile.id);
     setShowDeleteDialog(false);
-  };
+  }, [validateProfile, profile, onDelete]);
 
   if (!validateProfile('render')) {
     return null;
@@ -87,4 +87,4 @@ export function AdminUserActions({
       />
     </div>
   );
-}
+});
