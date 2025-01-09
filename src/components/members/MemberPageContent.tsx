@@ -6,6 +6,8 @@ import { useState } from "react";
 import { ViewMemberDialog } from "./ViewMemberDialog";
 import { Member } from "./types";
 import { ErrorBoundary } from "@/components/error/ErrorBoundary";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { LeaderboardPage } from "./leaderboard/LeaderboardPage";
 
 interface MemberPageContentProps {
   members: any[];
@@ -37,30 +39,43 @@ export function MemberPageContent({ members, currentUserIsAdmin, isMobile }: Mem
               <h1 className="text-2xl font-bold" id="members-heading">Member Directory</h1>
             </div>
             
-            {members.length === 0 ? (
-              <div className="text-center py-8 text-gray-500" role="status">
-                No members found.
-              </div>
-            ) : (
-              <div role="region" aria-labelledby="members-heading">
-                {isMobile ? (
-                  <MemberList 
-                    members={members}
-                    currentUserIsAdmin={currentUserIsAdmin}
-                    isMobile={isMobile}
-                  />
+            <Tabs defaultValue="directory" className="w-full">
+              <TabsList className="grid w-full grid-cols-2 mb-6">
+                <TabsTrigger value="directory">Directory</TabsTrigger>
+                <TabsTrigger value="leaderboard">Leaderboard</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="directory">
+                {members.length === 0 ? (
+                  <div className="text-center py-8 text-gray-500" role="status">
+                    No members found.
+                  </div>
                 ) : (
-                  <ScrollArea className="rounded-md border">
-                    <MemberTable 
-                      members={members}
-                      currentUserIsAdmin={currentUserIsAdmin}
-                      onViewMember={setViewingMember}
-                      onEditMember={handleEditMember}
-                    />
-                  </ScrollArea>
+                  <div role="region" aria-labelledby="members-heading">
+                    {isMobile ? (
+                      <MemberList 
+                        members={members}
+                        currentUserIsAdmin={currentUserIsAdmin}
+                        isMobile={isMobile}
+                      />
+                    ) : (
+                      <ScrollArea className="rounded-md border">
+                        <MemberTable 
+                          members={members}
+                          currentUserIsAdmin={currentUserIsAdmin}
+                          onViewMember={setViewingMember}
+                          onEditMember={handleEditMember}
+                        />
+                      </ScrollArea>
+                    )}
+                  </div>
                 )}
-              </div>
-            )}
+              </TabsContent>
+
+              <TabsContent value="leaderboard">
+                <LeaderboardPage />
+              </TabsContent>
+            </Tabs>
           </div>
         </div>
 

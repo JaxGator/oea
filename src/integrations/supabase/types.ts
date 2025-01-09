@@ -350,6 +350,89 @@ export type Database = {
         }
         Relationships: []
       }
+      leaderboard_badges: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          icon_url: string | null
+          id: string
+          name: string
+          requirement_type: string
+          requirement_value: number
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          icon_url?: string | null
+          id?: string
+          name: string
+          requirement_type: string
+          requirement_value: number
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          icon_url?: string | null
+          id?: string
+          name?: string
+          requirement_type?: string
+          requirement_value?: number
+        }
+        Relationships: []
+      }
+      leaderboard_metrics: {
+        Row: {
+          created_at: string | null
+          current_streak: number | null
+          events_attended: number | null
+          events_hosted: number | null
+          id: string
+          last_activity_date: string | null
+          longest_streak: number | null
+          monthly_points: number | null
+          total_contributions: number | null
+          updated_at: string | null
+          user_id: string | null
+          weekly_points: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          current_streak?: number | null
+          events_attended?: number | null
+          events_hosted?: number | null
+          id?: string
+          last_activity_date?: string | null
+          longest_streak?: number | null
+          monthly_points?: number | null
+          total_contributions?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+          weekly_points?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          current_streak?: number | null
+          events_attended?: number | null
+          events_hosted?: number | null
+          id?: string
+          last_activity_date?: string | null
+          longest_streak?: number | null
+          monthly_points?: number | null
+          total_contributions?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+          weekly_points?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "leaderboard_metrics_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       list_members: {
         Row: {
           added_at: string | null
@@ -562,6 +645,7 @@ export type Database = {
           is_admin: boolean | null
           is_approved: boolean | null
           is_member: boolean | null
+          leaderboard_opt_out: boolean | null
           username: string
         }
         Insert: {
@@ -575,6 +659,7 @@ export type Database = {
           is_admin?: boolean | null
           is_approved?: boolean | null
           is_member?: boolean | null
+          leaderboard_opt_out?: boolean | null
           username: string
         }
         Update: {
@@ -588,6 +673,7 @@ export type Database = {
           is_admin?: boolean | null
           is_approved?: boolean | null
           is_member?: boolean | null
+          leaderboard_opt_out?: boolean | null
           username?: string
         }
         Relationships: []
@@ -694,6 +780,42 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: []
+      }
+      user_badges: {
+        Row: {
+          badge_id: string | null
+          earned_at: string | null
+          id: string
+          user_id: string | null
+        }
+        Insert: {
+          badge_id?: string | null
+          earned_at?: string | null
+          id?: string
+          user_id?: string | null
+        }
+        Update: {
+          badge_id?: string | null
+          earned_at?: string | null
+          id?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_badges_badge_id_fkey"
+            columns: ["badge_id"]
+            isOneToOne: false
+            referencedRelation: "leaderboard_badges"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_badges_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_blocks: {
         Row: {
@@ -849,6 +971,10 @@ export type Database = {
           url: string
           created_at: string
         }[]
+      }
+      update_leaderboard_metrics: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
       }
     }
     Enums: {
