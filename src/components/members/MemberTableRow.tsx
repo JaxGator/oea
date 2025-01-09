@@ -3,6 +3,8 @@ import { MemberStatusBadges } from "./MemberStatusBadges";
 import { MemberActions } from "./MemberActions";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { UserCircle } from "lucide-react";
+import { useMessageReading } from "@/hooks/messages/useMessageReading";
+import { useSession } from "@/hooks/auth/useSession";
 
 interface MemberTableRowProps {
   member: Member;
@@ -19,17 +21,31 @@ export function MemberTableRow({
   onDelete,
   onView
 }: MemberTableRowProps) {
+  const { session } = useSession();
+  const { markMessagesAsRead } = useMessageReading();
+
+  const handleView = () => {
+    onView(member);
+    // Mark messages as read when viewing a member's profile
+    if (session?.user.id) {
+      markMessagesAsRead({
+        receiverId: session.user.id,
+        senderId: member.id
+      });
+    }
+  };
+
   return (
     <tr className="bg-white border-b dark:bg-gray-900 dark:border-gray-700">
       <td className="px-6 py-4">
         <div 
           className="flex items-center space-x-3 cursor-pointer hover:opacity-80"
-          onClick={() => onView(member)}
+          onClick={handleView}
           role="button"
           tabIndex={0}
           onKeyDown={(e) => {
             if (e.key === 'Enter' || e.key === ' ') {
-              onView(member);
+              handleView();
             }
           }}
         >
