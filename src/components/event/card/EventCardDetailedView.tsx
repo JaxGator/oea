@@ -43,6 +43,7 @@ export function EventCardDetailedView({
 }: EventCardDetailedViewProps) {
   const disableRSVP = isPastEvent || (isPastEvent && isWixEvent);
   const isFullyBooked = rsvpCount >= event.max_guests;
+  const canAddToCalendar = userRSVPStatus === 'attending' || isAdmin;
 
   return (
     <div className="flex flex-col min-h-full">
@@ -69,7 +70,7 @@ export function EventCardDetailedView({
           showFullDescription
         />
         
-        {(userRSVPStatus === 'attending' || isAdmin) && !disableRSVP && (
+        {canAddToCalendar && !disableRSVP && (
           <AddToCalendar
             event={{
               title: event.title,
