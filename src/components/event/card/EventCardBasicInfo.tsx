@@ -1,3 +1,5 @@
+import { useAuthState } from "@/hooks/useAuthState";
+
 interface EventCardBasicInfoProps {
   date: string;
   location: string;
@@ -19,6 +21,8 @@ export function EventCardBasicInfo({
   waitlistCount = 0,
   waitlistCapacity
 }: EventCardBasicInfoProps) {
+  const { isAuthenticated } = useAuthState();
+  
   const formattedDate = new Date(date).toLocaleDateString('en-US', {
     weekday: 'long',
     year: 'numeric',
@@ -30,7 +34,7 @@ export function EventCardBasicInfo({
     <div className="space-y-2">
       <div className="text-sm text-gray-600">
         <p>{formattedDate}</p>
-        <p>{location}</p>
+        {isAuthenticated && <p>{location}</p>}
       </div>
       <div className="text-sm">
         <p>
