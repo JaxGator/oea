@@ -1,16 +1,15 @@
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
 import { Member } from "../types";
 import { useSession } from "@/hooks/auth/useSession";
+import { toast } from "@/hooks/use-toast";
 
-export function useMessageSending(member: Member, onSuccess: () => void) {
+export function useMessageSending(recipient: Member, onSuccess: () => void) {
   const [isSending, setIsSending] = useState(false);
-  const { toast } = useToast();
-  const { user } = useSession();
+  const { session } = useSession();
 
-  const sendMessage = async (message: string) => {
-    if (!user) {
+  const sendMessage = async (content: string) => {
+    if (!session?.user) {
       toast({
         title: "Error",
         description: "You must be logged in to send messages",
@@ -21,28 +20,25 @@ export function useMessageSending(member: Member, onSuccess: () => void) {
 
     setIsSending(true);
     try {
+      // Check if user can message the recipient
       const { data: canMessage, error: checkError } = await supabase
         .rpc('can_message_user', {
-          target_user_id: member.id
+          target_user_id: recipient.id
         });
 
       if (checkError) throw new Error(checkError.message);
-
+      
       if (!canMessage) {
-        toast({
-          title: "Cannot Send Message",
-          description: "You cannot send messages to this user. Both users must be approved members.",
-          variant: "destructive",
-        });
-        return;
+        throw new Error("You cannot message this user");
       }
 
+      // Send the message
       const { error: messageError } = await supabase
         .from('messages')
         .insert({
-          sender_id: user.id,
-          receiver_id: member.id,
-          content: message,
+          sender_id: session.user.id,
+          receiver_id: recipient.id,
+          content: content
         });
 
       if (messageError) throw new Error(messageError.message);
@@ -52,7 +48,7 @@ export function useMessageSending(member: Member, onSuccess: () => void) {
       console.error('Error sending message:', error);
       toast({
         title: "Error",
-        description: error instanceof Error ? error.message : "Failed to send message. Please try again.",
+        description: error instanceof Error ? error.message : "Failed to send message",
         variant: "destructive",
       });
     } finally {
@@ -60,8 +56,5 @@ export function useMessageSending(member: Member, onSuccess: () => void) {
     }
   };
 
-  return {
-    sendMessage,
-    isSending
-  };
+  return { sendMessage, isSending };
 }
