@@ -20,27 +20,34 @@ export function GalleryPreview() {
         .limit(6);
 
       if (error) throw error;
-      return data;
+
+      // Transform the data to return the full public URLs for the images
+      return data.map(image => {
+        const { data: urlData } = supabase.storage
+          .from('gallery')
+          .getPublicUrl(image.file_name);
+        return urlData.publicUrl;
+      });
     },
   });
 
-  const handleImageClick = (imageUrl: string) => {
+  const handleImageSelect = (imageUrl: string) => {
     setSelectedImage(imageUrl);
   };
 
   const handleNavigate = (direction: 'next' | 'prev') => {
-    const currentIndex = images.findIndex(img => img.file_name === selectedImage);
+    const currentIndex = images.findIndex(img => img === selectedImage);
     if (currentIndex === -1) return;
 
     const newIndex = direction === 'next' 
       ? (currentIndex + 1) % images.length 
       : (currentIndex - 1 + images.length) % images.length;
 
-    setSelectedImage(images[newIndex].file_name);
+    setSelectedImage(images[newIndex]);
   };
 
-  const isFirstImage = selectedImage === images[0]?.file_name;
-  const isLastImage = selectedImage === images[images.length - 1]?.file_name;
+  const isFirstImage = selectedImage === images[0];
+  const isLastImage = selectedImage === images[images.length - 1];
 
   return (
     <div className="py-12 bg-white">
@@ -57,7 +64,7 @@ export function GalleryPreview() {
 
         <GalleryGrid 
           images={images} 
-          onImageClick={handleImageClick}
+          onImageSelect={handleImageSelect}
         />
 
         <FullGalleryDialog
