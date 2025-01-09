@@ -42,22 +42,23 @@ export function useGalleryManager() {
       setIsLoading(true);
       console.log('Fetching gallery images...');
       
-      const { data: galleryData, error: galleryError } = await supabase
-        .from('gallery_images')
-        .select('*')
-        .order('display_order', { ascending: true });
+      // First get the list of files from the storage bucket
+      const { data: storageData, error: storageError } = await supabase
+        .storage
+        .from('gallery')
+        .list();
 
-      if (galleryError) throw galleryError;
+      if (storageError) throw storageError;
 
-      console.log('Gallery data fetched:', galleryData);
+      console.log('Storage data fetched:', storageData);
 
-      if (!galleryData || galleryData.length === 0) {
-        console.log('No gallery images found in database');
+      if (!storageData || storageData.length === 0) {
+        console.log('No gallery images found in storage');
         setImages([]);
         return;
       }
 
-      // Get the bucket URL directly from Supabase
+      // Get the bucket URL
       const { data: { publicUrl: bucketUrl } } = supabase.storage
         .from('gallery')
         .getPublicUrl('');
@@ -65,18 +66,20 @@ export function useGalleryManager() {
       console.log('Bucket public URL:', bucketUrl);
 
       // Transform the data to include public URLs
-      const imageUrls = galleryData.map((image) => {
-        const fullUrl = `${bucketUrl}${image.file_name}`;
-        console.log('Generated URL for image:', {
-          fileName: image.file_name,
-          url: fullUrl
-        });
+      const imageUrls = storageData
+        .filter(file => file.name && !file.name.startsWith('.')) // Filter out hidden files
+        .map((file) => {
+          const fullUrl = `${bucketUrl}${file.name}`;
+          console.log('Generated URL for image:', {
+            fileName: file.name,
+            url: fullUrl
+          });
 
-        return {
-          id: image.id,
-          url: fullUrl
-        };
-      });
+          return {
+            id: file.id || file.name, // Use file name as fallback ID
+            url: fullUrl
+          };
+        });
 
       console.log('Final processed image URLs:', imageUrls);
       setImages(imageUrls);
