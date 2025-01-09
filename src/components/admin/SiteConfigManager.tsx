@@ -80,6 +80,3 @@ export function SiteConfigManager() {
     </div>
   );
 }
-
-export { SiteConfigManager };
-export default SiteConfigManager;

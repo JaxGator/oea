@@ -91,6 +91,3 @@ export function PaymentManager() {
     </Card>
   );
 }
-
-export { PaymentManager };
-export default PaymentManager;

@@ -1,24 +1,15 @@
-import { Suspense, lazy } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Users, Settings, Image, DollarSign, BarChart3, TestTube2 } from "lucide-react";
+import { AdminUserList } from "@/components/admin/AdminUserList";
+import { SiteConfigManager } from "@/components/admin/SiteConfigManager";
+import { GalleryManager } from "@/components/admin/GalleryManager";
+import { PaymentManager } from "@/components/admin/payments/PaymentManager";
 import { ErrorBoundary } from "@/components/error/ErrorBoundary";
-import { Skeleton } from "@/components/ui/skeleton";
-
-// Lazy load admin components with proper default exports
-const AdminUserList = lazy(() => import("../AdminUserList").then(module => ({ default: module.AdminUserList })));
-const SiteConfigManager = lazy(() => import("../SiteConfigManager").then(module => ({ default: module.SiteConfigManager })));
-const GalleryManager = lazy(() => import("../GalleryManager").then(module => ({ default: module.GalleryManager })));
-const PaymentManager = lazy(() => import("../payments/PaymentManager").then(module => ({ default: module.PaymentManager })));
-const ReportsTabs = lazy(() => import("../reports/ReportsLayout").then(module => ({ default: module.ReportsTabs })));
-const AdminTestRunner = lazy(() => import("../testing/AdminTestRunner").then(module => ({ default: module.AdminTestRunner })));
-
-// Loading fallback component
-const TabLoader = () => (
-  <div className="space-y-4 p-8">
-    <Skeleton className="h-8 w-[200px]" />
-    <Skeleton className="h-[400px] w-full" />
-  </div>
-);
+import { ReportsTabs } from "@/components/admin/reports/ReportsLayout";
+import { UserActivityReport } from "@/components/admin/reports/UserActivityReport";
+import { EventParticipationReport } from "@/components/admin/reports/EventParticipationReport";
+import { SystemUsageReport } from "@/components/admin/reports/SystemUsageReport";
+import { AdminTestRunner } from "../testing/AdminTestRunner";
 
 interface AdminTabsProps {
   defaultTab?: string;
@@ -54,43 +45,55 @@ export function AdminTabs({ defaultTab = "users" }: AdminTabsProps) {
         </TabsTrigger>
       </TabsList>
 
-      <ErrorBoundary fallback={<div>Error loading admin content</div>}>
-        <TabsContent value="users" className="space-y-4 min-h-[300px]">
-          <Suspense fallback={<TabLoader />}>
-            <AdminUserList />
-          </Suspense>
-        </TabsContent>
+      <TabsContent value="users" className="space-y-4 min-h-[300px]">
+        <ErrorBoundary fallback={<div>Error loading user management</div>}>
+          <AdminUserList />
+        </ErrorBoundary>
+      </TabsContent>
 
-        <TabsContent value="gallery" className="space-y-4 min-h-[300px]">
-          <Suspense fallback={<TabLoader />}>
-            <GalleryManager />
-          </Suspense>
-        </TabsContent>
+      <TabsContent value="gallery" className="space-y-4 min-h-[300px]">
+        <ErrorBoundary fallback={<div>Error loading gallery manager</div>}>
+          <GalleryManager />
+        </ErrorBoundary>
+      </TabsContent>
 
-        <TabsContent value="payments" className="space-y-4 min-h-[300px]">
-          <Suspense fallback={<TabLoader />}>
-            <PaymentManager />
-          </Suspense>
-        </TabsContent>
+      <TabsContent value="payments" className="space-y-4 min-h-[300px]">
+        <ErrorBoundary fallback={<div>Error loading payment manager</div>}>
+          <PaymentManager />
+        </ErrorBoundary>
+      </TabsContent>
 
-        <TabsContent value="reports" className="space-y-4 min-h-[300px]">
-          <Suspense fallback={<TabLoader />}>
+      <TabsContent value="reports" className="space-y-4 min-h-[300px]">
+        <ErrorBoundary fallback={<div>Error loading reports</div>}>
+          <Tabs defaultValue="user-activity" className="space-y-4">
             <ReportsTabs />
-          </Suspense>
-        </TabsContent>
+            
+            <TabsContent value="user-activity">
+              <UserActivityReport />
+            </TabsContent>
+            
+            <TabsContent value="event-participation">
+              <EventParticipationReport />
+            </TabsContent>
+            
+            <TabsContent value="system-usage">
+              <SystemUsageReport />
+            </TabsContent>
+          </Tabs>
+        </ErrorBoundary>
+      </TabsContent>
 
-        <TabsContent value="testing" className="space-y-4 min-h-[300px]">
-          <Suspense fallback={<TabLoader />}>
-            <AdminTestRunner />
-          </Suspense>
-        </TabsContent>
+      <TabsContent value="testing" className="space-y-4 min-h-[300px]">
+        <ErrorBoundary fallback={<div>Error loading test runner</div>}>
+          <AdminTestRunner />
+        </ErrorBoundary>
+      </TabsContent>
 
-        <TabsContent value="site-config" className="space-y-4 min-h-[300px]">
-          <Suspense fallback={<TabLoader />}>
-            <SiteConfigManager />
-          </Suspense>
-        </TabsContent>
-      </ErrorBoundary>
+      <TabsContent value="site-config" className="space-y-4 min-h-[300px]">
+        <ErrorBoundary fallback={<div>Error loading site configuration</div>}>
+          <SiteConfigManager />
+        </ErrorBoundary>
+      </TabsContent>
     </Tabs>
   );
 }
