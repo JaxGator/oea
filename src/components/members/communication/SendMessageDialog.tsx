@@ -5,6 +5,7 @@ import { Member } from "../types";
 import { MessageCircle } from "lucide-react";
 import { MessageForm } from "./MessageForm";
 import { useMessageSending } from "./useMessageSending";
+import { useToast } from "@/hooks/use-toast";
 
 interface SendMessageDialogProps {
   member: Member;
@@ -12,7 +13,14 @@ interface SendMessageDialogProps {
 
 export function SendMessageDialog({ member }: SendMessageDialogProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const { sendMessage, isSending } = useMessageSending(member, () => setIsOpen(false));
+  const { toast } = useToast();
+  const { sendMessage, isSending } = useMessageSending(member, () => {
+    setIsOpen(false);
+    toast({
+      title: "Message sent",
+      description: `Your message has been sent to ${member.username}`,
+    });
+  });
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>

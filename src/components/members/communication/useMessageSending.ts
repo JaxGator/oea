@@ -47,11 +47,6 @@ export function useMessageSending(member: Member, onSuccess: () => void) {
 
       if (messageError) throw new Error(messageError.message);
 
-      toast({
-        title: "Success",
-        description: "Message sent successfully",
-      });
-      
       onSuccess();
     } catch (error) {
       console.error('Error sending message:', error);
