@@ -18,7 +18,10 @@ export function MemberActions({ member, onEdit }: MemberActionsProps) {
 
   return (
     <div className="flex items-center gap-2">
-      {profile.is_approved && <SendMessageDialog member={member} />}
+      {/* Show message button if user is approved and is a member */}
+      {(profile.is_approved && profile.is_member) && (
+        <SendMessageDialog member={member} />
+      )}
       {profile.is_admin && onEdit && (
         <Button
           variant="outline"

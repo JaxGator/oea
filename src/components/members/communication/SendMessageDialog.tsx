@@ -50,20 +50,17 @@ export function SendMessageDialog({ member }: SendMessageDialogProps) {
         return;
       }
 
-      // Create the communication record
-      const { error: sendError } = await supabase
-        .from('communications')
+      // Create the message record
+      const { error: messageError } = await supabase
+        .from('messages')
         .insert({
-          subject: `Message from ${user.email}`,
-          content: message,
           sender_id: user.id,
-          recipient_type: 'individual', // Changed from 'user' to 'individual'
-          recipient_data: { user_id: member.id },
-          status: 'sent'
+          receiver_id: member.id,
+          content: message,
         });
 
-      if (sendError) {
-        throw new Error(sendError.message);
+      if (messageError) {
+        throw new Error(messageError.message);
       }
 
       toast({
