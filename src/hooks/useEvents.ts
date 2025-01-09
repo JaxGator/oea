@@ -13,7 +13,7 @@ export function useEvents(selectedDate?: Date) {
     queryKey: ['events', selectedDate?.toISOString(), isApproved],
     queryFn: async () => {
       try {
-        const tableName = isApproved ? 'events' : 'event_public_view';
+        const tableName = isApproved ? 'events' : 'event_public_view' as const;
         const query = supabase
           .from(tableName)
           .select(`

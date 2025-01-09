@@ -9,24 +9,14 @@ export const fetchFeaturedEvents = async (): Promise<Event[]> => {
   const { data, error } = await supabase
     .from('events')
     .select(`
-      id,
-      title,
-      description,
-      date,
-      time,
-      location,
-      max_guests,
-      image_url,
-      created_at,
-      created_by,
-      is_featured,
-      rsvps:event_rsvps(
+      *,
+      event_rsvps (
         id,
         event_id,
         user_id,
         response,
         created_at,
-        profiles(
+        profiles (
           full_name,
           username
         )
@@ -40,7 +30,7 @@ export const fetchFeaturedEvents = async (): Promise<Event[]> => {
     throw error;
   }
 
-  return transformEventData(data);
+  return transformEventData(data || []);
 };
 
 export const useEventFetch = () => {
