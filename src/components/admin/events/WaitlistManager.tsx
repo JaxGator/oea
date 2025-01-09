@@ -32,7 +32,7 @@ export function WaitlistManager({
             username,
             full_name,
             email_notifications,
-            user_id:id
+            user_id
           )
         `)
         .eq('event_id', eventId)
@@ -40,7 +40,13 @@ export function WaitlistManager({
         .order('created_at', { ascending: true });
 
       if (error) throw error;
-      return data as WaitlistEntry[];
+      
+      // Transform the data to match our WaitlistEntry type
+      return (data as any[]).map(entry => ({
+        id: entry.id,
+        created_at: entry.created_at,
+        profiles: entry.profiles[0] // Take the first profile since it's returned as an array
+      })) as WaitlistEntry[];
     },
   });
 
