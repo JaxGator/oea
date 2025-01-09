@@ -7,9 +7,10 @@ import { useSession } from "@/hooks/auth/useSession";
 interface MemberActionsProps {
   member: Member;
   onEdit?: (member: Member) => void;
+  onDelete?: (memberId: string) => void;
 }
 
-export function MemberActions({ member, onEdit }: MemberActionsProps) {
+export function MemberActions({ member, onEdit, onDelete }: MemberActionsProps) {
   const { user } = useSession();
   const { profile, isLoading } = useProfile(user?.id);
 
@@ -50,14 +51,27 @@ export function MemberActions({ member, onEdit }: MemberActionsProps) {
       {canMessage && (
         <SendMessageDialog member={member} />
       )}
-      {profile.is_admin && onEdit && (
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => onEdit(member)}
-        >
-          Edit
-        </Button>
+      {profile.is_admin && (
+        <>
+          {onEdit && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onEdit(member)}
+            >
+              Edit
+            </Button>
+          )}
+          {onDelete && (
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={() => onDelete(member.id)}
+            >
+              Delete
+            </Button>
+          )}
+        </>
       )}
     </div>
   );

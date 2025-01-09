@@ -9,6 +9,7 @@ interface MemberCardProps {
   member: Member;
   currentUserIsAdmin: boolean;
   onEdit: (member: Member) => void;
+  onDelete: (memberId: string) => void;
   onClick?: () => void;
 }
 
@@ -16,6 +17,7 @@ export function MemberCard({
   member, 
   currentUserIsAdmin,
   onEdit,
+  onDelete,
   onClick 
 }: MemberCardProps) {
   return (
@@ -50,6 +52,7 @@ export function MemberCard({
           <MemberActions
             member={member}
             onEdit={() => onEdit(member)}
+            onDelete={() => onDelete(member.id)}
           />
         </div>
       </div>
