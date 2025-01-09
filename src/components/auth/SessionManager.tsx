@@ -29,23 +29,32 @@ export function SessionManager({ children, queryClient }: SessionManagerProps) {
           return;
         }
 
-        if (!session && isProtectedRoute(location.pathname)) {
-          console.log('No active session, redirecting to auth');
-          await clearSessionData();
-          navigate('/auth');
-          return;
-        }
-
-        // Always try to refresh the session
+        // Always try to refresh the session first if it exists
         if (session) {
-          console.log('Refreshing session...');
-          const { error: refreshError } = await supabase.auth.refreshSession();
+          console.log('Attempting to refresh session...');
+          const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession();
+          
           if (refreshError) {
             console.error('Session refresh error:', refreshError);
             await handleSessionError(refreshError);
             return;
           }
+          
+          if (!refreshData.session) {
+            console.log('Session refresh failed - no new session');
+            await clearSessionData();
+            if (isProtectedRoute(location.pathname)) {
+              navigate('/auth');
+            }
+            return;
+          }
+          
           console.log('Session refreshed successfully');
+        } else if (isProtectedRoute(location.pathname)) {
+          console.log('No active session, redirecting to auth');
+          await clearSessionData();
+          navigate('/auth');
+          return;
         }
 
       } catch (err) {
@@ -71,12 +80,13 @@ export function SessionManager({ children, queryClient }: SessionManagerProps) {
 
     const clearSessionData = async () => {
       try {
-        // Clear all cached data
+        // First clear the session from Supabase
+        await supabase.auth.signOut();
+        
+        // Then clear all local data
         queryClient.clear();
         localStorage.clear();
-        
-        // Ensure complete sign out
-        await supabase.auth.signOut();
+        sessionStorage.clear();
         
         console.log('Session data cleared');
       } catch (error) {
