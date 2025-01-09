@@ -16,7 +16,7 @@ export const GalleryPreview = () => {
   const { profile } = useAuthState();
   const isAdmin = profile?.is_admin;
 
-  const { data: config } = useQuery({
+  const { data: carouselEnabled } = useQuery({
     queryKey: ['site-config', 'gallery_carousel_enabled'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -61,7 +61,7 @@ export const GalleryPreview = () => {
                     Failed to load gallery images. Please try again later.
                   </AlertDescription>
                 </Alert>
-              ) : config ? (
+              ) : carouselEnabled ? (
                 <GalleryCarousel 
                   images={images}
                   onImageSelect={setSelectedImage}
