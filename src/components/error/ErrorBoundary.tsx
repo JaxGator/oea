@@ -1,9 +1,14 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { toast } from 'sonner';
 
+interface FallbackProps {
+  error: Error;
+  resetErrorBoundary: () => void;
+}
+
 interface Props {
   children: ReactNode;
-  fallback?: React.ComponentType<{ error: Error; resetErrorBoundary: () => void }>;
+  fallback?: React.ComponentType<FallbackProps> | ReactNode;
   onError?: (error: Error, errorInfo: ErrorInfo) => void;
 }
 
@@ -39,7 +44,10 @@ export class ErrorBoundary extends Component<Props, State> {
   public render() {
     if (this.state.hasError && this.state.error) {
       if (this.props.fallback) {
-        const FallbackComponent = this.props.fallback;
+        if (React.isValidElement(this.props.fallback)) {
+          return this.props.fallback;
+        }
+        const FallbackComponent = this.props.fallback as React.ComponentType<FallbackProps>;
         return <FallbackComponent error={this.state.error} resetErrorBoundary={this.resetErrorBoundary} />;
       }
       return (

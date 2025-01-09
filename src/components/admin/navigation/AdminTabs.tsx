@@ -15,6 +15,14 @@ interface AdminTabsProps {
   defaultTab?: string;
 }
 
+const TabErrorFallback = ({ error }: { error: Error }) => (
+  <div className="p-4 rounded-lg bg-red-50 text-red-800">
+    <h2 className="text-lg font-semibold mb-2">Error loading content</h2>
+    <p>{error.message}</p>
+    <p>Please try refreshing the page.</p>
+  </div>
+);
+
 export function AdminTabs({ defaultTab = "users" }: AdminTabsProps) {
   return (
     <Tabs defaultValue={defaultTab} className="space-y-4">
@@ -46,25 +54,25 @@ export function AdminTabs({ defaultTab = "users" }: AdminTabsProps) {
       </TabsList>
 
       <TabsContent value="users" className="space-y-4 min-h-[300px]">
-        <ErrorBoundary fallback={<div>Error loading user management</div>}>
+        <ErrorBoundary fallback={TabErrorFallback}>
           <AdminUserList />
         </ErrorBoundary>
       </TabsContent>
 
       <TabsContent value="gallery" className="space-y-4 min-h-[300px]">
-        <ErrorBoundary fallback={<div>Error loading gallery manager</div>}>
+        <ErrorBoundary fallback={TabErrorFallback}>
           <GalleryManager />
         </ErrorBoundary>
       </TabsContent>
 
       <TabsContent value="payments" className="space-y-4 min-h-[300px]">
-        <ErrorBoundary fallback={<div>Error loading payment manager</div>}>
+        <ErrorBoundary fallback={TabErrorFallback}>
           <PaymentManager />
         </ErrorBoundary>
       </TabsContent>
 
       <TabsContent value="reports" className="space-y-4 min-h-[300px]">
-        <ErrorBoundary fallback={<div>Error loading reports</div>}>
+        <ErrorBoundary fallback={TabErrorFallback}>
           <Tabs defaultValue="user-activity" className="space-y-4">
             <ReportsTabs />
             
@@ -84,13 +92,13 @@ export function AdminTabs({ defaultTab = "users" }: AdminTabsProps) {
       </TabsContent>
 
       <TabsContent value="testing" className="space-y-4 min-h-[300px]">
-        <ErrorBoundary fallback={<div>Error loading test runner</div>}>
+        <ErrorBoundary fallback={TabErrorFallback}>
           <AdminTestRunner />
         </ErrorBoundary>
       </TabsContent>
 
       <TabsContent value="site-config" className="space-y-4 min-h-[300px]">
-        <ErrorBoundary fallback={<div>Error loading site configuration</div>}>
+        <ErrorBoundary fallback={TabErrorFallback}>
           <SiteConfigManager />
         </ErrorBoundary>
       </TabsContent>
