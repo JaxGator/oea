@@ -24,8 +24,9 @@ export function useMemberManagement(searchTerm: string = "", filters: UserFilter
           .from('profiles')
           .select('*', { count: 'exact' });
 
+        // Only search by username since email is not in profiles table
         if (searchTerm) {
-          query = query.or(`username.ilike.%${searchTerm}%,email.ilike.%${searchTerm}%`);
+          query = query.ilike('username', `%${searchTerm}%`);
         }
 
         if (filters.isAdmin !== undefined) {
@@ -49,6 +50,13 @@ export function useMemberManagement(searchTerm: string = "", filters: UserFilter
           console.error('Error fetching members:', error);
           throw error;
         }
+
+        console.log('Members fetch result:', {
+          count,
+          data,
+          page,
+          filters
+        });
 
         return {
           members: data as Member[],
