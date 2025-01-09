@@ -6,10 +6,10 @@ import { toast } from "@/hooks/use-toast";
 
 export function useMessageSending(recipient: Member, onSuccess: () => void) {
   const [isSending, setIsSending] = useState(false);
-  const { session } = useSession();
+  const { user } = useSession();
 
   const sendMessage = async (content: string) => {
-    if (!session?.user) {
+    if (!user) {
       toast({
         title: "Error",
         description: "You must be logged in to send messages",
@@ -36,7 +36,7 @@ export function useMessageSending(recipient: Member, onSuccess: () => void) {
       const { error: messageError } = await supabase
         .from('messages')
         .insert({
-          sender_id: session.user.id,
+          sender_id: user.id,
           receiver_id: recipient.id,
           content: content
         });
