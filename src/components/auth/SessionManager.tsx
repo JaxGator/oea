@@ -16,9 +16,6 @@ export function SessionManager({ children, queryClient }: SessionManagerProps) {
 
   useEffect(() => {
     let mounted = true;
-    let retryCount = 0;
-    const maxRetries = 3;
-    const retryDelay = 1000; // 1 second
 
     const checkSession = async () => {
       try {
@@ -27,14 +24,7 @@ export function SessionManager({ children, queryClient }: SessionManagerProps) {
         
         if (error) {
           console.error('Session check error:', error);
-          if (retryCount < maxRetries) {
-            retryCount++;
-            console.log(`Retrying session check (${retryCount}/${maxRetries})...`);
-            setTimeout(checkSession, retryDelay * retryCount);
-            return;
-          }
-          
-          // Clear data and redirect on persistent error
+          // Clear data and redirect on session error
           queryClient.clear();
           localStorage.clear();
           if (isProtectedRoute(location.pathname)) {
@@ -50,13 +40,11 @@ export function SessionManager({ children, queryClient }: SessionManagerProps) {
           return;
         }
 
-        // Reset retry count on successful check
-        retryCount = 0;
       } catch (err) {
         console.error('Session check failed:', err);
         toast({
-          title: "Connection Error",
-          description: "Failed to verify your session. Please check your connection and try again.",
+          title: "Session Error",
+          description: "Please sign in again",
           variant: "destructive",
         });
         
@@ -74,7 +62,8 @@ export function SessionManager({ children, queryClient }: SessionManagerProps) {
       
       switch (event) {
         case 'SIGNED_OUT':
-          console.log('User signed out, clearing data');
+        case 'USER_DELETED':
+          console.log('User signed out or deleted, clearing data');
           queryClient.clear();
           localStorage.clear();
           if (isProtectedRoute(location.pathname)) {
@@ -82,7 +71,7 @@ export function SessionManager({ children, queryClient }: SessionManagerProps) {
           }
           toast({
             title: "Signed out",
-            description: "You have been signed out successfully",
+            description: "You have been signed out",
           });
           break;
           
@@ -110,8 +99,12 @@ export function SessionManager({ children, queryClient }: SessionManagerProps) {
     // Initial session check
     checkSession();
 
+    // Periodic session check every 5 minutes
+    const intervalId = setInterval(checkSession, 5 * 60 * 1000);
+
     return () => {
       mounted = false;
+      clearInterval(intervalId);
       subscription.unsubscribe();
     };
   }, [navigate, location, queryClient]);
