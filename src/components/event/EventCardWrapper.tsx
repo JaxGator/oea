@@ -1,33 +1,32 @@
 import { Card } from "@/components/ui/card";
-import { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
 interface EventCardWrapperProps {
+  children: React.ReactNode;
   title: string;
-  onInteraction: (e: React.KeyboardEvent | React.MouseEvent) => void;
-  onKeyDown: (e: React.KeyboardEvent) => void;
-  children: ReactNode;
+  onInteraction?: (e: React.MouseEvent | React.KeyboardEvent) => void;
+  onKeyDown?: (e: React.KeyboardEvent) => void;
   isFeatured?: boolean;
 }
 
-export function EventCardWrapper({ 
-  title, 
-  onInteraction, 
-  onKeyDown, 
+export function EventCardWrapper({
   children,
+  title,
+  onInteraction,
+  onKeyDown,
   isFeatured = false
 }: EventCardWrapperProps) {
   return (
-    <Card 
-      className={cn(
-        "w-full transition-all duration-300 hover:shadow-lg animate-fade-in bg-white cursor-pointer",
-        isFeatured && "ring-2 ring-yellow-400 shadow-md hover:ring-yellow-500"
-      )}
+    <Card
       onClick={onInteraction}
       onKeyDown={onKeyDown}
       tabIndex={0}
       role="button"
       aria-label={`View details for ${title}`}
+      className={cn(
+        "relative overflow-hidden transition-shadow hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 cursor-pointer",
+        isFeatured && "border-2 border-primary"
+      )}
     >
       {children}
     </Card>
