@@ -6,7 +6,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { HelpCircle } from "lucide-react";
-import { useEffect } from "react";
 
 export default function GalleryManager() {
   const {
@@ -16,29 +15,6 @@ export default function GalleryManager() {
     fetchImages,
     updateCarouselConfig
   } = useGalleryManager();
-
-  // Add validation logging when images change
-  useEffect(() => {
-    if (images.length > 0) {
-      console.log('Gallery images loaded:', images);
-      // Validate each image URL
-      images.forEach((image, index) => {
-        fetch(image.url)
-          .then(response => {
-            if (!response.ok) {
-              console.error(`Image ${index} (${image.url}) is not accessible:`, response.status);
-            } else {
-              console.log(`Image ${index} (${image.url}) is accessible`);
-            }
-          })
-          .catch(error => {
-            console.error(`Failed to validate image ${index} (${image.url}):`, error);
-          });
-      });
-    } else {
-      console.log('No gallery images found');
-    }
-  }, [images]);
 
   if (isLoading) {
     return <div>Loading gallery...</div>;
@@ -80,6 +56,13 @@ export default function GalleryManager() {
               .remove([fileName]);
 
             if (storageError) throw storageError;
+
+            const { error: dbError } = await supabase
+              .from('gallery_images')
+              .delete()
+              .eq('file_name', fileName);
+
+            if (dbError) throw dbError;
 
             console.log('Image deleted successfully');
             toast({

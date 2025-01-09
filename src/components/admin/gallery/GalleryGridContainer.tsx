@@ -10,6 +10,7 @@ export function GalleryGridContainer({ images, onImageDelete }: GalleryGridConta
   const [loadedImages, setLoadedImages] = useState<Set<string>>(new Set());
 
   const handleImageLoad = (imageId: string) => {
+    console.log('Image loaded successfully:', imageId);
     setLoadedImages(prev => new Set([...prev, imageId]));
   };
 

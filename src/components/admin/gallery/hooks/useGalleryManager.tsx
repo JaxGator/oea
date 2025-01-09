@@ -45,6 +45,7 @@ export function useGalleryManager() {
       setIsLoading(true);
       console.log('Fetching gallery images...');
       
+      // First get the gallery images data
       const { data: galleryData, error: galleryError } = await supabase
         .from('gallery_images')
         .select('*')
@@ -63,59 +64,25 @@ export function useGalleryManager() {
         return;
       }
 
-      const { data: storageData, error: storageError } = await supabase.storage
-        .from('gallery')
-        .list();
+      // Transform the data to include public URLs
+      const imageUrls = galleryData.map((image) => {
+        const { data: urlData } = supabase.storage
+          .from('gallery')
+          .getPublicUrl(image.file_name);
 
-      if (storageError) {
-        console.error('Error fetching storage data:', storageError);
-        throw storageError;
-      }
+        console.log('Generated URL for image:', {
+          fileName: image.file_name,
+          url: urlData.publicUrl
+        });
 
-      console.log('Storage data fetched:', storageData);
+        return {
+          id: image.id,
+          url: urlData.publicUrl
+        };
+      });
 
-      const imageUrls = await Promise.all(
-        galleryData.map(async (galleryImage) => {
-          const storageFile = storageData.find(file => file.name === galleryImage.file_name);
-          if (!storageFile) {
-            console.warn(`File not found in storage: ${galleryImage.file_name}`);
-            return null;
-          }
-
-          const { data: publicUrlData } = supabase.storage
-            .from('gallery')
-            .getPublicUrl(galleryImage.file_name);
-
-          if (!publicUrlData.publicUrl) {
-            console.warn(`Could not generate public URL for: ${galleryImage.file_name}`);
-            return null;
-          }
-
-          // Verify the image is accessible
-          try {
-            const response = await fetch(publicUrlData.publicUrl, { method: 'HEAD' });
-            if (!response.ok) {
-              console.warn(`Image not accessible: ${publicUrlData.publicUrl}`);
-              return null;
-            }
-          } catch (error) {
-            console.error(`Error verifying image accessibility: ${galleryImage.file_name}`, error);
-            return null;
-          }
-
-          return {
-            id: galleryImage.id,
-            url: publicUrlData.publicUrl
-          };
-        })
-      );
-
-      const validImages = imageUrls.filter((image): image is { url: string; id: string } => 
-        image !== null && image.url !== null
-      );
-
-      console.log(`Found ${validImages.length} valid images in gallery:`, validImages);
-      setImages(validImages);
+      console.log('Processed image URLs:', imageUrls);
+      setImages(imageUrls);
     } catch (error) {
       console.error('Error fetching images:', error);
       toast({
