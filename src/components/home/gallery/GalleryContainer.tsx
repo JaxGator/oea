@@ -40,11 +40,15 @@ export const GalleryContainer: React.FC<GalleryContainerProps> = ({ children }) 
           .order('display_order', { ascending: true });
 
         if (error) throw error;
-
         if (!data) return [];
 
-        // Transform the data to return just the file_name strings
-        return data.map(image => image.file_name);
+        // Transform the data to return the full public URLs for the images
+        return data.map(image => {
+          const { data: urlData } = supabase.storage
+            .from('gallery')
+            .getPublicUrl(image.file_name);
+          return urlData.publicUrl;
+        });
       } catch (err) {
         console.error('Failed to fetch gallery images:', err);
         toast.error('Failed to load gallery images');
