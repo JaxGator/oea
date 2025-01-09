@@ -46,7 +46,11 @@ export function useGalleryManager() {
       const { data: storageData, error: storageError } = await supabase
         .storage
         .from('gallery')
-        .list();
+        .list('', {
+          limit: 100,
+          offset: 0,
+          sortBy: { column: 'name', order: 'asc' }
+        });
 
       if (storageError) throw storageError;
 
@@ -69,15 +73,18 @@ export function useGalleryManager() {
       const imageUrls = storageData
         .filter(file => file.name && !file.name.startsWith('.')) // Filter out hidden files
         .map((file) => {
-          const fullUrl = `${bucketUrl}${file.name}`;
+          const { data: { publicUrl } } = supabase.storage
+            .from('gallery')
+            .getPublicUrl(file.name);
+
           console.log('Generated URL for image:', {
             fileName: file.name,
-            url: fullUrl
+            url: publicUrl
           });
 
           return {
             id: file.id || file.name, // Use file name as fallback ID
-            url: fullUrl
+            url: publicUrl
           };
         });
 
