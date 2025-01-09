@@ -25,7 +25,7 @@ export function EventCardWrapper({
       aria-label={`View details for ${title}`}
       className={cn(
         "relative overflow-hidden transition-shadow hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 cursor-pointer",
-        isFeatured && "border-2 border-primary"
+        isFeatured && "border-2 border-yellow-500"
       )}
     >
       {children}
