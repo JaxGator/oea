@@ -13,29 +13,49 @@ export function useEvents(selectedDate?: Date) {
     queryKey: ['events', selectedDate?.toISOString(), isApproved],
     queryFn: async () => {
       try {
-        // Type assertion to help TypeScript understand this is a valid table
-        const query = supabase
-          .from(isApproved ? 'events' : 'event_public_view')
-          .select(`
-            *,
-            event_rsvps (
-              id,
-              event_id,
-              user_id,
-              response,
-              created_at,
-              profiles (
-                full_name,
-                username
+        let query;
+        if (isApproved) {
+          query = supabase
+            .from('events')
+            .select(`
+              *,
+              event_rsvps (
+                id,
+                event_id,
+                user_id,
+                response,
+                created_at,
+                profiles (
+                  full_name,
+                  username
+                )
               )
-            )
-          `)
-          .order('date');
+            `)
+            .order('date');
+        } else {
+          query = supabase
+            .from('event_public_view')
+            .select(`
+              *,
+              event_rsvps (
+                id,
+                event_id,
+                user_id,
+                response,
+                created_at,
+                profiles (
+                  full_name,
+                  username
+                )
+              )
+            `)
+            .order('date');
+        }
 
         // Only filter by date if a date is selected
         if (selectedDate) {
           const dateStr = selectedDate.toISOString().split('T')[0];
-          query.eq('date', dateStr);
+          query = query.eq('date', dateStr);
         }
 
         const { data, error } = await query;
