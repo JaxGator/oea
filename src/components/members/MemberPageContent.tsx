@@ -32,6 +32,11 @@ export function MemberPageContent({ members, currentUserIsAdmin, isMobile }: Mem
     setIsEditDialogOpen(true);
   };
 
+  const handleMemberUpdate = () => {
+    // Refresh the members list or update the local state as needed
+    console.log('Member updated, refreshing data...');
+  };
+
   return (
     <div className="container mx-auto px-4 py-8">
       <MemberList
@@ -39,6 +44,7 @@ export function MemberPageContent({ members, currentUserIsAdmin, isMobile }: Mem
         currentUserIsAdmin={currentUserIsAdmin}
         onViewMember={handleViewMember}
         onEditMember={handleEditMember}
+        isMobile={isMobile}
       />
 
       {selectedMember && (
@@ -54,6 +60,7 @@ export function MemberPageContent({ members, currentUserIsAdmin, isMobile }: Mem
               member={selectedMember}
               open={isEditDialogOpen}
               onOpenChange={setIsEditDialogOpen}
+              onUpdate={handleMemberUpdate}
             />
           )}
         </>

@@ -7,6 +7,7 @@ export interface Member {
   is_approved: boolean;
   is_member: boolean;
   created_at?: string;
+  event_reminders_enabled: boolean | null;
 }
 
 export interface MemberTableProps {
