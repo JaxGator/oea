@@ -45,3 +45,6 @@ export function ReportsTabs() {
     </TabsList>
   );
 }
+
+export { ReportsTabs };
+export default ReportsTabs;

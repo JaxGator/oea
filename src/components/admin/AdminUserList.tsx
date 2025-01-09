@@ -131,3 +131,6 @@ export function AdminUserList() {
     </div>
   );
 }
+
+export { AdminUserList };
+export default AdminUserList;

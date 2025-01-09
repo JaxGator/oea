@@ -77,3 +77,6 @@ export function GalleryManager() {
     </div>
   );
 }
+
+export { GalleryManager };
+export default GalleryManager;

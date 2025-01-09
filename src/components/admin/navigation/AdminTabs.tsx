@@ -4,13 +4,13 @@ import { Users, Settings, Image, DollarSign, BarChart3, TestTube2 } from "lucide
 import { ErrorBoundary } from "@/components/error/ErrorBoundary";
 import { Skeleton } from "@/components/ui/skeleton";
 
-// Lazy load admin components
-const AdminUserList = lazy(() => import("@/components/admin/AdminUserList"));
-const SiteConfigManager = lazy(() => import("@/components/admin/SiteConfigManager"));
-const GalleryManager = lazy(() => import("@/components/admin/GalleryManager"));
-const PaymentManager = lazy(() => import("@/components/admin/payments/PaymentManager"));
-const ReportsTabs = lazy(() => import("@/components/admin/reports/ReportsLayout"));
-const AdminTestRunner = lazy(() => import("@/components/admin/testing/AdminTestRunner"));
+// Lazy load admin components with proper default exports
+const AdminUserList = lazy(() => import("../AdminUserList").then(module => ({ default: module.AdminUserList })));
+const SiteConfigManager = lazy(() => import("../SiteConfigManager").then(module => ({ default: module.SiteConfigManager })));
+const GalleryManager = lazy(() => import("../GalleryManager").then(module => ({ default: module.GalleryManager })));
+const PaymentManager = lazy(() => import("../payments/PaymentManager").then(module => ({ default: module.PaymentManager })));
+const ReportsTabs = lazy(() => import("../reports/ReportsLayout").then(module => ({ default: module.ReportsTabs })));
+const AdminTestRunner = lazy(() => import("../testing/AdminTestRunner").then(module => ({ default: module.AdminTestRunner })));
 
 // Loading fallback component
 const TabLoader = () => (
