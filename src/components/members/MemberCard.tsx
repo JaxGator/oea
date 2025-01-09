@@ -1,78 +1,58 @@
-import { Card, CardContent } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { UserCircle, MessageSquare } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { MemberActions } from "./MemberActions";
-import { Profile } from "@/types/auth";
+import { Card } from "@/components/ui/card";
 import { Member } from "./types";
+import { MemberStatusBadges } from "./MemberStatusBadges";
+import { MemberActions } from "./MemberActions";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { UserCircle } from "lucide-react";
 
 interface MemberCardProps {
-  member: Profile;
+  member: Member;
   currentUserIsAdmin: boolean;
-  onEdit: (member: Profile) => void;
-  onDelete: (memberId: string) => void;
-  onClick?: () => void;  // Made optional to maintain backward compatibility
+  onEdit: (member: Member) => void;
+  onClick?: () => void;
 }
 
-export function MemberCard({ member, currentUserIsAdmin, onEdit, onDelete, onClick }: MemberCardProps) {
-  // Convert Profile to Member type for MemberActions
-  const memberData: Member = {
-    id: member.id,
-    username: member.username,
-    full_name: member.full_name,
-    avatar_url: member.avatar_url,
-    is_admin: member.is_admin || false,
-    is_approved: member.is_approved || false,
-    is_member: member.is_member || false,
-    created_at: member.created_at,
-    event_reminders_enabled: member.event_reminders_enabled
-  };
-
+export function MemberCard({ 
+  member, 
+  currentUserIsAdmin,
+  onEdit,
+  onClick 
+}: MemberCardProps) {
   return (
-    <Card className="w-full" onClick={onClick}>
-      <CardContent className="p-4">
-        <div className="flex items-center space-x-4">
-          <Avatar className="h-12 w-12">
+    <Card 
+      className="p-4 hover:shadow-md transition-shadow cursor-pointer"
+      onClick={onClick}
+    >
+      <div className="flex items-start justify-between">
+        <div className="flex items-center space-x-3">
+          <Avatar className="h-10 w-10">
             <AvatarImage 
               src={member.avatar_url || ''} 
-              alt={`${member.username}'s profile picture`} 
+              alt={`${member.username}'s profile picture`}
             />
             <AvatarFallback>
-              <UserCircle className="h-12 w-12" aria-hidden="true" />
+              <UserCircle className="h-10 w-10" />
             </AvatarFallback>
           </Avatar>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2">
-              <p className="text-sm font-medium truncate">{member.username}</p>
-              {member.has_unread_messages && (
-                <MessageSquare className="h-4 w-4 text-primary animate-pulse" />
-              )}
-            </div>
-            <p className="text-sm text-gray-500 truncate">{member.full_name || '-'}</p>
-            <div className="flex flex-wrap gap-2 mt-2">
-              {member.is_admin && (
-                <Badge variant="default">Admin</Badge>
-              )}
-              {member.is_approved ? (
-                <Badge variant="secondary">Approved</Badge>
-              ) : (
-                <Badge variant="outline">Pending</Badge>
-              )}
-              {member.is_member && (
-                <Badge variant="default" className="bg-green-500 hover:bg-green-600">
-                  Member
-                </Badge>
-              )}
-            </div>
+          <div>
+            <h3 className="font-medium">{member.username}</h3>
+            {member.full_name && (
+              <p className="text-sm text-gray-500">{member.full_name}</p>
+            )}
           </div>
-          {currentUserIsAdmin && (
-            <MemberActions
-              member={memberData}
-              onEdit={() => onEdit(member)}
-            />
-          )}
         </div>
-      </CardContent>
+        <div className="flex flex-col items-end gap-2">
+          <MemberStatusBadges
+            isAdmin={member.is_admin}
+            isApproved={member.is_approved}
+            isMember={member.is_member}
+          />
+          <MemberActions
+            member={member}
+            onEdit={() => onEdit(member)}
+          />
+        </div>
+      </div>
     </Card>
   );
 }

@@ -3,6 +3,7 @@ import { Member } from "./types";
 import { MemberList } from "./MemberList";
 import { EditMemberDialog } from "./EditMemberDialog";
 import { ViewMemberDialog } from "./ViewMemberDialog";
+import { Users } from "lucide-react";
 
 interface MemberPageContentProps {
   members: Member[];
@@ -39,6 +40,11 @@ export function MemberPageContent({ members, currentUserIsAdmin, isMobile }: Mem
 
   return (
     <div className="container mx-auto px-4 py-8">
+      <div className="flex items-center gap-2 mb-6">
+        <Users className="h-6 w-6" />
+        <h1 className="text-2xl font-semibold">Members Directory</h1>
+      </div>
+
       <MemberList
         members={members}
         currentUserIsAdmin={currentUserIsAdmin}
