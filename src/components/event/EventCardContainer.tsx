@@ -87,6 +87,7 @@ export function EventCardContainer({
               onCancelRSVP={() => onCancelRSVP(event.id)}
               onEdit={() => setShowEditDialog(true)}
               onDelete={handleDelete}
+              onViewDetails={() => setShowDetailsDialog(true)}
             />
           </EventCardWrapper>
 

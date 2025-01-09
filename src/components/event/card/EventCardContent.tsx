@@ -2,6 +2,8 @@ import { CardContent, CardFooter } from "@/components/ui/card";
 import { EventCardBasicInfo } from "./EventCardBasicInfo";
 import { FeaturedEventBadge } from "./FeaturedEventBadge";
 import { EventCardActions } from "./EventCardActions";
+import { Button } from "@/components/ui/button";
+import { Eye } from "lucide-react";
 
 interface EventCardContentProps {
   date: string;
@@ -21,6 +23,7 @@ interface EventCardContentProps {
   onCancelRSVP: () => void;
   onEdit: () => void;
   onDelete: () => void;
+  onViewDetails: () => void;
 }
 
 export function EventCardContent({
@@ -41,6 +44,7 @@ export function EventCardContent({
   onCancelRSVP,
   onEdit,
   onDelete,
+  onViewDetails,
 }: EventCardContentProps) {
   const isFullyBooked = rsvpCount >= maxGuests;
   const canJoinWaitlist = waitlistEnabled && isFullyBooked && 
@@ -62,6 +66,15 @@ export function EventCardContent({
           />
           {isFeatured && <FeaturedEventBadge />}
         </div>
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={onViewDetails}
+          className="w-full mt-2"
+        >
+          <Eye className="mr-2 h-4 w-4" />
+          View Details
+        </Button>
       </CardContent>
 
       <CardFooter className="p-4 pt-0">
