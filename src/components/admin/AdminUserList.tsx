@@ -5,12 +5,12 @@ import { EditMemberHandler } from "./user-management/EditMemberHandler";
 import { useSessionCheck } from "@/hooks/auth/useSessionCheck";
 import { UserListHeader } from "./user-management/UserListHeader";
 import { UserListContent } from "./user-management/UserListContent";
-import { useUserManagement } from "@/hooks/admin/useUserManagement";
 import { useNotifications } from "@/components/providers/NotificationProvider";
 import { useViewMemberDialog } from "@/hooks/admin/useViewMemberDialog";
 import { UserListError } from "./user-management/UserListError";
 import { useUserList } from "@/hooks/admin/useUserList";
-import { Skeleton } from "@/components/ui/skeleton";
+import { useUserActions } from "@/hooks/admin/useUserActions";
+import { useUserManagement } from "@/hooks/admin/useUserManagement";
 
 export type UserFilters = {
   isAdmin?: boolean;
@@ -20,6 +20,8 @@ export type UserFilters = {
 
 export default function AdminUserList() {
   const { notify } = useNotifications();
+  useSessionCheck();
+
   const {
     data,
     isLoading,
@@ -31,12 +33,11 @@ export default function AdminUserList() {
     page,
     filters
   } = useUserList();
-  
+
   const {
     editingMember,
     handleEditMember,
     handleCloseEdit,
-    handleDeleteMember,
     handleUpdateComplete,
   } = useUserManagement(refetch);
 
@@ -47,7 +48,11 @@ export default function AdminUserList() {
     handleCloseView
   } = useViewMemberDialog();
 
-  useSessionCheck();
+  const {
+    isUpdating,
+    handleUpdateUserStatus,
+    handleDeleteUser
+  } = useUserActions(refetch);
 
   const handleEdit = useCallback((member: Member) => {
     if (!member?.id || !member?.username) {
@@ -64,20 +69,6 @@ export default function AdminUserList() {
     return <UserListError onRetry={refetch} />;
   }
 
-  if (isLoading) {
-    return (
-      <div className="space-y-4">
-        <div className="flex justify-between items-center">
-          <Skeleton className="h-10 w-[200px]" />
-          <Skeleton className="h-10 w-[100px]" />
-        </div>
-        {[1, 2, 3].map((i) => (
-          <Skeleton key={i} className="h-16 w-full" />
-        ))}
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-4">
       <UserListHeader 
@@ -92,7 +83,7 @@ export default function AdminUserList() {
         isLoading={isLoading}
         error={error}
         onEditMember={handleEdit}
-        onDeleteMember={handleDeleteMember}
+        onDeleteMember={handleDeleteUser}
         onViewMember={handleViewMember}
         currentPage={page}
         totalPages={data?.totalPages ?? 1}
@@ -103,7 +94,7 @@ export default function AdminUserList() {
         <ViewMemberDialog
           member={viewingMember}
           open={isViewDialogOpen}
-          onOpenChange={() => handleCloseView()}
+          onOpenChange={handleCloseView}
         />
       )}
 
