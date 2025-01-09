@@ -68,14 +68,14 @@ export const GallerySection: React.FC<GallerySectionProps> = ({
       </Card>
 
       <Dialog open={!!selectedImage} onOpenChange={onImageDeselect}>
-        <DialogContent className="max-w-[90vw] max-h-[90vh] p-0">
-          <div className="relative w-full h-full flex items-center justify-center bg-black/50">
+        <DialogContent className="max-w-[95vw] max-h-[95vh] p-0 bg-transparent border-none">
+          <div className="relative w-full h-full flex items-center justify-center">
             {selectedImage && (
               <>
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/20 rounded-full"
+                  className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full z-50"
                   onClick={handlePrevious}
                   disabled={currentImageIndex <= 0}
                 >
@@ -91,7 +91,7 @@ export const GallerySection: React.FC<GallerySectionProps> = ({
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/20 rounded-full"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full z-50"
                   onClick={handleNext}
                   disabled={currentImageIndex >= images.length - 1}
                 >
