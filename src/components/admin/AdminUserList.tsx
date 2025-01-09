@@ -54,7 +54,7 @@ export default function AdminUserList() {
 
   const handleFilterChange = useCallback((newFilters: UserFilters) => {
     console.log('AdminUserList: Applying filters:', newFilters);
-    setFilters((prevFilters) => ({ ...prevFilters, ...newFilters }));
+    setFilters(prevFilters => ({ ...prevFilters, ...newFilters }));
     setPage(1);
   }, []);
 
