@@ -67,41 +67,39 @@ export const GallerySection: React.FC<GallerySectionProps> = ({
         </CardContent>
       </Card>
 
-      <Dialog open={!!selectedImage} onOpenChange={onImageDeselect}>
-        <DialogContent className="max-w-[95vw] max-h-[95vh] p-0 bg-transparent border-none">
-          <div className="relative w-full h-full flex items-center justify-center">
-            {selectedImage && (
-              <>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full z-50"
-                  onClick={handlePrevious}
-                  disabled={currentImageIndex <= 0}
-                >
-                  <ChevronLeft className="h-8 w-8" />
-                </Button>
-                
-                <img
-                  src={selectedImage}
-                  alt="Full size gallery image"
-                  className="max-w-full max-h-[85vh] object-contain"
-                />
-                
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full z-50"
-                  onClick={handleNext}
-                  disabled={currentImageIndex >= images.length - 1}
-                >
-                  <ChevronRight className="h-8 w-8" />
-                </Button>
-              </>
-            )}
-          </div>
-        </DialogContent>
-      </Dialog>
+      {selectedImage && (
+        <Dialog open={!!selectedImage} onOpenChange={onImageDeselect}>
+          <DialogContent className="max-w-[95vw] max-h-[95vh] p-0 bg-transparent border-none">
+            <div className="relative w-full h-full flex items-center justify-center">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full z-[60]"
+                onClick={handlePrevious}
+                disabled={currentImageIndex <= 0}
+              >
+                <ChevronLeft className="h-8 w-8" />
+              </Button>
+              
+              <img
+                src={selectedImage}
+                alt="Full size gallery image"
+                className="max-w-full max-h-[85vh] object-contain relative z-[55]"
+              />
+              
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full z-[60]"
+                onClick={handleNext}
+                disabled={currentImageIndex >= images.length - 1}
+              >
+                <ChevronRight className="h-8 w-8" />
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 };
