@@ -18,6 +18,7 @@ interface UserListContentProps {
   error: Error | null;
   onEditMember: (member: Member) => void;
   onDeleteMember: (userId: string) => void;
+  onViewMember: (member: Member) => void;
   currentPage: number;
   totalPages: number;
   onPageChange: (page: number) => void;
@@ -29,6 +30,7 @@ export function UserListContent({
   error,
   onEditMember,
   onDeleteMember,
+  onViewMember,
   currentPage,
   totalPages,
   onPageChange,
@@ -51,7 +53,7 @@ export function UserListContent({
         <MemberTable 
           members={members} 
           currentUserIsAdmin={true} 
-          onViewMember={() => {}}
+          onViewMember={onViewMember}
           onEditMember={onEditMember}
           onDeleteMember={onDeleteMember}
         />

@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback } from "react";
 import { Member } from "@/components/members/types";
 import { ViewMemberDialog } from "@/components/members/ViewMemberDialog";
 import { EditMemberHandler } from "./user-management/EditMemberHandler";
@@ -10,6 +10,8 @@ import { useUserManagement } from "@/hooks/admin/useUserManagement";
 import { useNotifications } from "@/components/providers/NotificationProvider";
 import { useDebounce } from "@/hooks/use-debounce";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useViewMemberDialog } from "@/hooks/admin/useViewMemberDialog";
+import { UserListError } from "./user-management/UserListError";
 
 export type UserFilters = {
   isAdmin?: boolean;
@@ -18,11 +20,9 @@ export type UserFilters = {
 };
 
 export default function AdminUserList() {
-  const [viewingMember, setViewingMember] = useState<Member | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [filters, setFilters] = useState<UserFilters>({});
   const [page, setPage] = useState(1);
-  const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
   const debouncedSearch = useDebounce(searchTerm, 300);
   const { notify } = useNotifications();
   
@@ -36,15 +36,22 @@ export default function AdminUserList() {
     handleUpdateComplete,
   } = useUserManagement(refetch);
 
+  const {
+    viewingMember,
+    isViewDialogOpen,
+    handleViewMember,
+    handleCloseView
+  } = useViewMemberDialog();
+
   useSessionCheck();
 
   const handleEdit = useCallback((member: Member) => {
     if (!member?.id || !member?.username) {
-      console.error('AdminUserList: Invalid member data for edit:', member);
+      console.error('Invalid member data for edit:', member);
       notify("error", "Invalid Data", "Member data is incomplete. Please try again.");
       return;
     }
-    console.log('AdminUserList: Handling edit for member:', member);
+    console.log('Handling edit for member:', member);
     handleEditMember(member);
   }, [handleEditMember, notify]);
 
@@ -54,44 +61,19 @@ export default function AdminUserList() {
   }, []);
 
   const handleFilterChange = useCallback((newFilters: UserFilters) => {
-    console.log('AdminUserList: Applying filters:', newFilters);
+    console.log('Applying filters:', newFilters);
     setFilters(prevFilters => ({ ...prevFilters, ...newFilters }));
     setPage(1);
   }, []);
 
   const handlePageChange = useCallback((newPage: number) => {
-    console.log('AdminUserList: Changing page to:', newPage);
+    console.log('Changing page to:', newPage);
     setPage(newPage);
   }, []);
 
-  const handleViewMember = useCallback((member: Member) => {
-    console.log('AdminUserList: Opening view dialog for member:', member);
-    setViewingMember(member);
-    setIsViewDialogOpen(true);
-  }, []);
-
-  const handleCloseView = useCallback((open: boolean) => {
-    console.log('AdminUserList: Dialog state changing to:', open);
-    setIsViewDialogOpen(open);
-    if (!open) {
-      setViewingMember(null);
-    }
-  }, []);
-
   if (error) {
-    console.error('AdminUserList: Error fetching members:', error);
-    return (
-      <div className="p-6 bg-destructive/10 rounded-lg border border-destructive/20">
-        <h3 className="text-lg font-semibold text-destructive mb-2">Error Loading Users</h3>
-        <p className="text-destructive/80 mb-4">There was a problem loading the user list.</p>
-        <button 
-          onClick={() => refetch()}
-          className="px-4 py-2 bg-background hover:bg-muted transition-colors rounded-md"
-        >
-          Try Again
-        </button>
-      </div>
-    );
+    console.error('Error fetching members:', error);
+    return <UserListError onRetry={refetch} />;
   }
 
   if (isLoading) {
@@ -123,6 +105,7 @@ export default function AdminUserList() {
         error={error}
         onEditMember={handleEdit}
         onDeleteMember={handleDeleteMember}
+        onViewMember={handleViewMember}
         currentPage={page}
         totalPages={data?.totalPages ?? 1}
         onPageChange={handlePageChange}
