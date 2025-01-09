@@ -3,14 +3,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { Member } from "@/components/members/types";
 import { UserFilters } from "@/components/admin/AdminUserList";
 import { useToast } from "@/hooks/use-toast";
-import { handleQueryResult } from "@/utils/supabase-helpers";
-
-const ITEMS_PER_PAGE = 10;
 
 interface MemberQueryResult {
   members: Member[];
   totalPages: number;
 }
+
+const ITEMS_PER_PAGE = 10;
 
 export function useMemberManagement(searchTerm: string = "", filters: UserFilters = {}, page: number = 1) {
   const { toast } = useToast();
@@ -47,18 +46,7 @@ export function useMemberManagement(searchTerm: string = "", filters: UserFilter
         const { data, error, count } = await query;
         
         if (error) {
-          console.error('Error fetching members:', {
-            error,
-            params: { searchTerm, filters, page },
-            timestamp: new Date().toISOString()
-          });
-          
-          toast({
-            title: "Error",
-            description: "Failed to load members. Please try again.",
-            variant: "destructive",
-          });
-          
+          console.error('Error fetching members:', error);
           throw error;
         }
 
@@ -68,6 +56,11 @@ export function useMemberManagement(searchTerm: string = "", filters: UserFilter
         };
       } catch (error) {
         console.error('Unexpected error in useMemberManagement:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load members. Please try again.",
+          variant: "destructive",
+        });
         throw error;
       }
     },
