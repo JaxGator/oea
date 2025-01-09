@@ -50,11 +50,11 @@ export function EventCardContainer({
     return firstName;
   });
 
-  const handleCardClick = () => {
+  const handleCardClick = (e: React.MouseEvent | React.KeyboardEvent) => {
     if (onSelect) {
       onSelect();
     }
-    handleInteraction();
+    handleInteraction(e);
   };
 
   return (

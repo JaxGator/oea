@@ -7,6 +7,7 @@ interface EventCardWrapperProps {
   onInteraction?: (e: React.MouseEvent | React.KeyboardEvent) => void;
   onKeyDown?: (e: React.KeyboardEvent) => void;
   isFeatured?: boolean;
+  isSelected?: boolean;
 }
 
 export function EventCardWrapper({
@@ -14,7 +15,8 @@ export function EventCardWrapper({
   title,
   onInteraction,
   onKeyDown,
-  isFeatured = false
+  isFeatured = false,
+  isSelected = false
 }: EventCardWrapperProps) {
   return (
     <Card
@@ -25,7 +27,8 @@ export function EventCardWrapper({
       aria-label={`View details for ${title}`}
       className={cn(
         "relative overflow-hidden transition-shadow hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 cursor-pointer",
-        isFeatured && "border-2 border-yellow-500"
+        isFeatured && "border-2 border-yellow-500",
+        isSelected && "ring-2 ring-primary ring-offset-2"
       )}
     >
       {children}
