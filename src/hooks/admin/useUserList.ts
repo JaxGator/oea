@@ -12,6 +12,7 @@ export function useUserList() {
   const { data, isLoading, error, refetch } = useMemberManagement(debouncedSearch, filters, page);
 
   const handleSearch = useCallback((term: string) => {
+    console.log('Search term changed:', term);
     setSearchTerm(term);
     setPage(1);
   }, []);

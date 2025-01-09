@@ -50,8 +50,6 @@ export default function AdminUserList() {
   } = useViewMemberDialog();
 
   const {
-    isUpdating,
-    handleUpdateUserStatus,
     handleDeleteUser
   } = useUserActions(refetch);
 
@@ -61,11 +59,18 @@ export default function AdminUserList() {
       notify("error", "Invalid Data", "Member data is incomplete. Please try again.");
       return;
     }
-    console.log('Handling edit for member:', member);
     handleEditMember(member);
   }, [handleEditMember, notify]);
 
   const memoizedContent = useMemo(() => {
+    console.log('Rendering memoized content with:', { 
+      membersCount: data?.members?.length,
+      isLoading,
+      error,
+      page,
+      filters 
+    });
+
     if (error) {
       console.error('Error fetching members:', error);
       return <UserListError onRetry={refetch} />;
