@@ -65,15 +65,15 @@ export default function AdminUserList() {
   }, []);
 
   const handleViewMember = useCallback((member: Member) => {
+    console.log('AdminUserList: Opening view dialog for member:', member);
     setViewingMember(member);
     setIsViewDialogOpen(true);
   }, []);
 
-  const handleCloseView = useCallback((open: boolean) => {
-    setIsViewDialogOpen(open);
-    if (!open) {
-      setViewingMember(null);
-    }
+  const handleCloseView = useCallback(() => {
+    console.log('AdminUserList: Closing view dialog');
+    setIsViewDialogOpen(false);
+    setViewingMember(null);
   }, []);
 
   if (error) {
@@ -130,7 +130,7 @@ export default function AdminUserList() {
         <ViewMemberDialog
           member={viewingMember}
           open={isViewDialogOpen}
-          onOpenChange={handleCloseView}
+          onOpenChange={setIsViewDialogOpen}
         />
       )}
 
