@@ -11,6 +11,13 @@ interface MemberQueryResult {
 
 const ITEMS_PER_PAGE = 10;
 
+// Map filter keys to database column names
+const filterToColumnMap = {
+  isAdmin: 'is_admin',
+  isApproved: 'is_approved',
+  isMember: 'is_member'
+};
+
 export function useMemberManagement(searchTerm: string = "", filters: UserFilters = {}, page: number = 1) {
   const { toast } = useToast();
 
@@ -34,10 +41,11 @@ export function useMemberManagement(searchTerm: string = "", filters: UserFilter
         const activeFilters = Object.entries(filters).filter(([_, value]) => value === true);
         
         if (activeFilters.length > 0) {
-          // Build filter conditions
+          // Build filter conditions using the correct column names
           activeFilters.forEach(([key, value]) => {
             if (value === true) {
-              query = query.eq(key, true);
+              const columnName = filterToColumnMap[key as keyof typeof filterToColumnMap];
+              query = query.eq(columnName, true);
             }
           });
         }
