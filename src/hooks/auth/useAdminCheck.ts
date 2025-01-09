@@ -6,13 +6,24 @@ export function useAdminCheck() {
   const { profile, isLoading, error } = useAuthState();
 
   useEffect(() => {
-    console.log('useAdminCheck - Profile state:', {
+    // Detailed logging of profile state
+    console.log('useAdminCheck - Current state:', {
       hasProfile: !!profile,
+      profileId: profile?.id,
       isAdmin: profile?.is_admin,
-      userId: profile?.id,
+      isApproved: profile?.is_approved,
+      error: error?.message,
       timestamp: new Date().toISOString()
     });
-  }, [profile]);
+
+    // Log any errors that might prevent admin access
+    if (error) {
+      console.error('useAdminCheck - Error fetching profile:', {
+        error,
+        timestamp: new Date().toISOString()
+      });
+    }
+  }, [profile, error]);
 
   return {
     isAdmin: profile?.is_admin ?? false,

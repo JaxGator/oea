@@ -1,78 +1,51 @@
-import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
-import { Profile } from "@/types/auth";
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { handleQueryResult } from '@/utils/supabase-helpers';
+import type { Profile } from '@/types/auth';
+import { toast } from '@/hooks/use-toast';
 
 export function useProfile(userId: string | undefined) {
-  const [profile, setProfile] = useState<Profile | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
-  const { toast } = useToast();
-
-  useEffect(() => {
-    if (!userId) {
-      console.log('useProfile - No userId provided, skipping fetch');
-      setProfile(null);
-      setIsLoading(false);
-      return;
-    }
-
-    const fetchProfile = async () => {
+  return useQuery({
+    queryKey: ['profile', userId],
+    queryFn: async () => {
+      if (!userId) return null;
+      
+      console.log('Fetching profile for user:', userId);
+      
       try {
-        console.log('useProfile - Fetching profile for userId:', userId);
-        
-        const { data, error } = await supabase
-          .from("profiles")
-          .select("*")
-          .eq("id", userId)
+        const result = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', userId)
           .maybeSingle();
-
-        if (error) {
-          console.error('useProfile - Error fetching profile:', error);
-          setError(error);
+        
+        if (result.error) {
+          console.error('Profile fetch error:', {
+            error: result.error,
+            userId,
+            timestamp: new Date().toISOString()
+          });
+          
+          // Show user-friendly error message
           toast({
             title: "Error loading profile",
             description: "Please try refreshing the page",
             variant: "destructive",
           });
-          return;
+          
+          throw result.error;
         }
-
-        if (!data) {
-          console.error('useProfile - No profile found for user:', userId);
-          setError(new Error('Profile not found'));
-          toast({
-            title: "Profile Not Found",
-            description: "Your profile could not be loaded",
-            variant: "destructive",
-          });
-          return;
-        }
-
-        console.log('useProfile - Profile data:', {
-          id: data.id,
-          username: data.username,
-          isAdmin: data.is_admin,
-          isApproved: data.is_approved,
-          timestamp: new Date().toISOString()
-        });
         
-        setProfile(data);
-
-      } catch (err) {
-        console.error('useProfile - Unexpected error:', err);
-        setError(err instanceof Error ? err : new Error('Unknown error'));
-      } finally {
-        setIsLoading(false);
+        console.log('Profile fetch result:', result.data);
+        return result.data as Profile;
+      } catch (error) {
+        console.error('Profile fetch failed:', error);
+        throw error;
       }
-    };
-
-    fetchProfile();
-  }, [userId, toast]);
-
-  return {
-    profile,
-    isLoading,
-    error
-  };
+    },
+    enabled: !!userId,
+    retry: 3,
+    retryDelay: (attemptIndex) => Math.min(1000 * Math.pow(2, attemptIndex), 10000),
+    staleTime: 1000 * 60 * 5, // Cache for 5 minutes
+  });
 }
