@@ -4,17 +4,22 @@ import { EditMemberDialog } from "../EditMemberDialog";
 import { useMembers } from "@/hooks/useMembers";
 import { useQueryClient } from "@tanstack/react-query";
 import { useMessageSubscription } from "@/hooks/members/useMessageSubscription";
+import { Member } from "../types";
 
 interface MemberListContainerProps {
-  members: Profile[];
+  members: Member[];
   currentUserIsAdmin: boolean;
   isMobile: boolean;
+  onViewMember: (member: Member) => void;
+  onEditMember: (member: Member) => void;
 }
 
 export function MemberListContainer({ 
   members: initialMembers, 
   currentUserIsAdmin, 
-  isMobile 
+  isMobile,
+  onViewMember,
+  onEditMember
 }: MemberListContainerProps) {
   const { editingMember, setEditingMember, handleDeleteMember } = useMembers();
   const queryClient = useQueryClient();
@@ -25,8 +30,9 @@ export function MemberListContainer({
       <MemberListContent
         members={members}
         currentUserIsAdmin={currentUserIsAdmin}
-        onEdit={setEditingMember}
+        onEdit={onEditMember}
         onDelete={handleDeleteMember}
+        onView={onViewMember}
       />
 
       {editingMember && (

@@ -1,11 +1,13 @@
 import { Profile } from "@/types/auth";
 import { MemberCard } from "../MemberCard";
+import { Member } from "../types";
 
 interface MemberListContentProps {
-  members: Profile[];
+  members: Member[];
   currentUserIsAdmin: boolean;
-  onEdit: (member: Profile) => void;
+  onEdit: (member: Member) => void;
   onDelete: (memberId: string) => void;
+  onView: (member: Member) => void;
 }
 
 export function MemberListContent({
@@ -13,6 +15,7 @@ export function MemberListContent({
   currentUserIsAdmin,
   onEdit,
   onDelete,
+  onView
 }: MemberListContentProps) {
   return (
     <div className="space-y-4">
@@ -23,6 +26,7 @@ export function MemberListContent({
           currentUserIsAdmin={currentUserIsAdmin}
           onEdit={onEdit}
           onDelete={onDelete}
+          onClick={() => onView(member)}
         />
       ))}
     </div>
