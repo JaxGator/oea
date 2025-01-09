@@ -62,7 +62,7 @@ export const GalleryContainer: React.FC<GalleryContainerProps> = ({ children }) 
   return <>{children({ 
     images: galleryImages, 
     isLoading, 
-    error, 
+    error: error as Error | null, 
     isCarouselEnabled: config 
   })}</>;
 };
