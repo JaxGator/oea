@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import { Member } from "@/components/members/types";
 import { ViewMemberDialog } from "@/components/members/ViewMemberDialog";
 import { EditMemberHandler } from "./user-management/EditMemberHandler";
@@ -55,7 +55,7 @@ export default function AdminUserList() {
     handleDeleteUser
   } = useUserActions(refetch);
 
-  const handleEdit = useCallback((member: Member) => {
+  const memoizedHandleEdit = useCallback((member: Member) => {
     if (!member?.id || !member?.username) {
       console.error('Invalid member data for edit:', member);
       notify("error", "Invalid Data", "Member data is incomplete. Please try again.");
@@ -65,13 +65,13 @@ export default function AdminUserList() {
     handleEditMember(member);
   }, [handleEditMember, notify]);
 
-  if (error) {
-    console.error('Error fetching members:', error);
-    return <UserListError onRetry={refetch} />;
-  }
+  const memoizedContent = useMemo(() => {
+    if (error) {
+      console.error('Error fetching members:', error);
+      return <UserListError onRetry={refetch} />;
+    }
 
-  return (
-    <AdminErrorBoundary>
+    return (
       <div className="space-y-4">
         <UserListHeader 
           onUserCreated={refetch}
@@ -84,7 +84,7 @@ export default function AdminUserList() {
           members={data?.members ?? []}
           isLoading={isLoading}
           error={error}
-          onEditMember={handleEdit}
+          onEditMember={memoizedHandleEdit}
           onDeleteMember={handleDeleteUser}
           onViewMember={handleViewMember}
           currentPage={page}
@@ -108,6 +108,27 @@ export default function AdminUserList() {
           />
         )}
       </div>
-    </AdminErrorBoundary>
-  );
+    );
+  }, [
+    data,
+    error,
+    filters,
+    handleCloseEdit,
+    handleCloseView,
+    handleDeleteUser,
+    handleFilterChange,
+    handlePageChange,
+    handleSearch,
+    handleUpdateComplete,
+    handleViewMember,
+    isLoading,
+    isViewDialogOpen,
+    memoizedHandleEdit,
+    page,
+    refetch,
+    viewingMember,
+    editingMember
+  ]);
+
+  return <AdminErrorBoundary>{memoizedContent}</AdminErrorBoundary>;
 }

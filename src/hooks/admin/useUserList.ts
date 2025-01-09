@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import { UserFilters } from "@/components/admin/AdminUserList";
 import { useDebounce } from "@/hooks/use-debounce";
 import { useMemberManagement } from "./useMemberManagement";
