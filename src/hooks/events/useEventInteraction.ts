@@ -3,7 +3,9 @@ import { useState } from "react";
 export function useEventInteraction() {
   const [showDetailsDialog, setShowDetailsDialog] = useState(false);
 
-  const handleInteraction = (e: React.KeyboardEvent | React.MouseEvent) => {
+  const handleInteraction = (e: React.MouseEvent | React.KeyboardEvent | undefined) => {
+    if (!e) return;
+    
     // Check if the event is coming from an interactive element
     const target = e.target as HTMLElement;
     const isInteractiveElement = 
