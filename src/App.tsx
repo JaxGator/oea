@@ -2,6 +2,7 @@ import { Routes, Route } from "react-router-dom";
 import { AppProviders } from "./components/providers/AppProviders";
 import { AppLayout } from "./components/layout/AppLayout";
 import { RequireAuth } from "./components/auth/RequireAuth";
+import { RequireAdmin } from "./components/auth/RequireAdmin";
 import Index from "./pages/Index";
 import About from "./pages/About";
 import Auth from "./pages/Auth";
@@ -46,7 +47,13 @@ const App = () => {
             <Route path="events/:id" element={<RequireAuth><EventDetails /></RequireAuth>} />
             <Route path="members" element={<RequireAuth><Members /></RequireAuth>} />
             <Route path="profile" element={<RequireAuth><Profile /></RequireAuth>} />
-            <Route path="admin" element={<RequireAuth><Admin /></RequireAuth>} />
+            <Route path="admin" element={
+              <RequireAuth>
+                <RequireAdmin>
+                  <Admin />
+                </RequireAdmin>
+              </RequireAuth>
+            } />
             <Route path="test" element={<RequireAuth><Test /></RequireAuth>} />
             <Route path="store" element={<RequireAuth><Store /></RequireAuth>} />
             <Route path="maintenance" element={<RequireAuth><Maintenance /></RequireAuth>} />
