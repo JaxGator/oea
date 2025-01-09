@@ -34,21 +34,38 @@ export const GalleryContainer: React.FC<GalleryContainerProps> = ({ children }) 
     queryKey: ['gallery-images'],
     queryFn: async () => {
       try {
-        const { data, error } = await supabase
+        console.log('Fetching gallery images...');
+        
+        // First get the ordered list of images from gallery_images table
+        const { data: galleryData, error: dbError } = await supabase
           .from('gallery_images')
           .select('*')
           .order('display_order', { ascending: true });
 
-        if (error) throw error;
-        if (!data) return [];
+        if (dbError) {
+          console.error('Error fetching gallery data:', dbError);
+          throw dbError;
+        }
+
+        console.log('Gallery data fetched:', galleryData);
+
+        if (!galleryData || galleryData.length === 0) {
+          console.log('No gallery images found in database');
+          return [];
+        }
 
         // Transform the data to return the full public URLs for the images
-        return data.map(image => {
+        const imageUrls = galleryData.map(image => {
           const { data: urlData } = supabase.storage
             .from('gallery')
             .getPublicUrl(image.file_name);
+            
+          console.log('Generated URL for image:', image.file_name, urlData.publicUrl);
           return urlData.publicUrl;
         });
+
+        console.log('Final image URLs:', imageUrls);
+        return imageUrls;
       } catch (err) {
         console.error('Failed to fetch gallery images:', err);
         toast.error('Failed to load gallery images');
@@ -62,7 +79,7 @@ export const GalleryContainer: React.FC<GalleryContainerProps> = ({ children }) 
   return <>{children({ 
     images: galleryImages, 
     isLoading, 
-    error: error as Error | null, 
+    error: error as Error | null,
     isCarouselEnabled: config 
   })}</>;
 };
