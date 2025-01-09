@@ -23,10 +23,7 @@ export function useGalleryManager() {
         .eq('key', 'gallery_carousel_enabled')
         .single();
 
-      if (error) {
-        console.error('Error fetching carousel config:', error);
-        throw error;
-      }
+      if (error) throw error;
       
       console.log('Carousel config fetched:', data?.value);
       setCarouselEnabled(data?.value === 'true');
@@ -45,16 +42,12 @@ export function useGalleryManager() {
       setIsLoading(true);
       console.log('Fetching gallery images...');
       
-      // First get the gallery images data
       const { data: galleryData, error: galleryError } = await supabase
         .from('gallery_images')
         .select('*')
         .order('display_order', { ascending: true });
 
-      if (galleryError) {
-        console.error('Error fetching gallery data:', galleryError);
-        throw galleryError;
-      }
+      if (galleryError) throw galleryError;
 
       console.log('Gallery data fetched:', galleryData);
 
@@ -64,24 +57,28 @@ export function useGalleryManager() {
         return;
       }
 
+      // Get the bucket URL directly from Supabase
+      const { data: { publicUrl: bucketUrl } } = supabase.storage
+        .from('gallery')
+        .getPublicUrl('');
+
+      console.log('Bucket public URL:', bucketUrl);
+
       // Transform the data to include public URLs
       const imageUrls = galleryData.map((image) => {
-        const { data: urlData } = supabase.storage
-          .from('gallery')
-          .getPublicUrl(image.file_name);
-
+        const fullUrl = `${bucketUrl}${image.file_name}`;
         console.log('Generated URL for image:', {
           fileName: image.file_name,
-          url: urlData.publicUrl
+          url: fullUrl
         });
 
         return {
           id: image.id,
-          url: urlData.publicUrl
+          url: fullUrl
         };
       });
 
-      console.log('Processed image URLs:', imageUrls);
+      console.log('Final processed image URLs:', imageUrls);
       setImages(imageUrls);
     } catch (error) {
       console.error('Error fetching images:', error);
