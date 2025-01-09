@@ -24,20 +24,22 @@ export function useMemberManagement(searchTerm: string = "", filters: UserFilter
           .from('profiles')
           .select('*', { count: 'exact' });
 
-        // Search only by username
+        // Apply search filter
         if (searchTerm) {
           query = query.ilike('username', `%${searchTerm}%`);
         }
 
-        // Apply filters one by one to ensure proper query construction
-        if (filters.isAdmin !== undefined) {
-          query = query.eq('is_admin', filters.isAdmin);
-        }
-        if (filters.isApproved !== undefined) {
-          query = query.eq('is_approved', filters.isApproved);
-        }
-        if (filters.isMember !== undefined) {
-          query = query.eq('is_member', filters.isMember);
+        // Only apply filters that are explicitly set to true
+        // If no filters are selected, show all users
+        const activeFilters = Object.entries(filters).filter(([_, value]) => value === true);
+        
+        if (activeFilters.length > 0) {
+          // Build filter conditions
+          activeFilters.forEach(([key, value]) => {
+            if (value === true) {
+              query = query.eq(key, true);
+            }
+          });
         }
 
         // Add pagination
@@ -65,7 +67,7 @@ export function useMemberManagement(searchTerm: string = "", filters: UserFilter
           count,
           dataLength: data.length,
           page,
-          filters
+          filters: activeFilters
         });
 
         return {
