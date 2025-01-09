@@ -10,9 +10,10 @@ export interface Event {
   created_at: string;
   image_url: string;
   rsvps?: EventRSVP[];
+  imported_rsvp_count?: number | null;
+  is_featured?: boolean | null;
   waitlist_enabled?: boolean;
   waitlist_capacity?: number | null;
-  is_featured?: boolean;
   display_order?: number | null;
 }
 

@@ -1,5 +1,4 @@
 import { Event, EventRSVP } from "@/types/event";
-import { TablesRow } from "@/utils/supabase-helpers";
 
 type EventWithRsvps = {
   id: string;
@@ -14,6 +13,9 @@ type EventWithRsvps = {
   image_url: string;
   imported_rsvp_count: number | null;
   is_featured: boolean | null;
+  waitlist_enabled?: boolean;
+  waitlist_capacity?: number | null;
+  display_order?: number | null;
   event_rsvps?: Array<{
     id: string;
     event_id: string;
@@ -41,6 +43,9 @@ export const transformEventData = (data: EventWithRsvps[]): Event[] => {
     image_url: event.image_url,
     imported_rsvp_count: event.imported_rsvp_count,
     is_featured: event.is_featured,
+    waitlist_enabled: event.waitlist_enabled,
+    waitlist_capacity: event.waitlist_capacity,
+    display_order: event.display_order,
     rsvps: event.event_rsvps?.map((rsvp): EventRSVP => ({
       id: rsvp.id,
       event_id: rsvp.event_id,
