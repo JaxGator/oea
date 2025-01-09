@@ -55,7 +55,7 @@ export function FullGalleryDialog({ open, onOpenChange }: FullGalleryDialogProps
           <h2 className="text-2xl font-bold mb-6">Photo Gallery</h2>
           <GalleryGrid 
             images={images} 
-            onImageClick={(imageUrl) => setSelectedImage(imageUrl)}
+            onImageSelect={setSelectedImage}
           />
         </DialogContent>
       </Dialog>

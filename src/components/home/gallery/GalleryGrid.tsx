@@ -1,16 +1,16 @@
 interface GalleryGridProps {
   images: string[];
   onImageSelect: (imageUrl: string) => void;
-  onKeyPress: (imageUrl: string) => (e: React.KeyboardEvent) => void;
-  isLoading: boolean;
+  onKeyPress?: (imageUrl: string) => (e: React.KeyboardEvent) => void;
+  isLoading?: boolean;
   isAdmin?: boolean;
 }
 
 export function GalleryGrid({ 
   images, 
-  onImageSelect, 
-  onKeyPress,
-  isLoading,
+  onImageSelect,
+  onKeyPress = () => () => {},
+  isLoading = false,
   isAdmin = false 
 }: GalleryGridProps) {
   if (isLoading) {
