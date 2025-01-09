@@ -1,17 +1,9 @@
 import { TableRow, TableCell } from "@/components/ui/table";
 import { UserStatusBadges } from "./UserStatusBadges";
 import { AdminUserActions } from "../AdminUserActions";
+import { Member } from "@/components/members/types";
 
-interface Profile {
-  id: string;
-  username: string;
-  full_name: string | null;
-  avatar_url: string | null;
-  is_admin: boolean;
-  is_approved: boolean;
-  is_member: boolean;
-  created_at: string;
-}
+interface Profile extends Member {}
 
 interface AdminUserTableRowProps {
   profile: Profile;

@@ -6,7 +6,7 @@ export interface Member {
   is_admin: boolean;
   is_approved: boolean;
   is_member: boolean;
-  created_at?: string;
+  created_at: string;
   event_reminders_enabled: boolean | null;
 }
 
@@ -15,4 +15,5 @@ export interface MemberTableProps {
   currentUserIsAdmin: boolean;
   onViewMember: (member: Member) => void;
   onEditMember: (member: Member) => void;
+  onDeleteMember?: (userId: string) => void;
 }

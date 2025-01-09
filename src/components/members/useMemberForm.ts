@@ -11,6 +11,8 @@ const DEFAULT_MEMBER: Member = {
   is_admin: false,
   is_approved: false,
   is_member: false,
+  created_at: new Date().toISOString(),
+  event_reminders_enabled: false
 };
 
 export function useMemberForm(member: Member | null, onUpdate: () => void, onClose: () => void) {

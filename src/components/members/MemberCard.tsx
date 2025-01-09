@@ -22,7 +22,9 @@ export function MemberCard({ member, currentUserIsAdmin, onEdit, onDelete }: Mem
     avatar_url: member.avatar_url,
     is_admin: member.is_admin || false,
     is_approved: member.is_approved || false,
-    is_member: member.is_member || false
+    is_member: member.is_member || false,
+    created_at: member.created_at,
+    event_reminders_enabled: member.event_reminders_enabled
   };
 
   return (
