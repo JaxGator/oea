@@ -15,6 +15,8 @@ interface EventCardContainerProps {
   onCancelRSVP: (eventId: string) => void;
   userRSVPStatus?: string | null;
   onUpdate?: () => void;
+  onSelect?: () => void;
+  isSelected?: boolean;
 }
 
 export function EventCardContainer({
@@ -22,7 +24,9 @@ export function EventCardContainer({
   onRSVP,
   onCancelRSVP,
   userRSVPStatus,
-  onUpdate
+  onUpdate,
+  onSelect,
+  isSelected = false
 }: EventCardContainerProps) {
   const { 
     isAdmin,
@@ -46,15 +50,23 @@ export function EventCardContainer({
     return firstName;
   });
 
+  const handleCardClick = () => {
+    if (onSelect) {
+      onSelect();
+    }
+    handleInteraction();
+  };
+
   return (
     <EventRSVPHandler eventId={event.id} onRSVP={onRSVP}>
       {(handleRSVP) => (
         <>
           <EventCardWrapper
             title={event.title}
-            onInteraction={handleInteraction}
-            onKeyDown={handleInteraction}
+            onInteraction={handleCardClick}
+            onKeyDown={handleCardClick}
             isFeatured={event.is_featured}
+            isSelected={isSelected}
           >
             <EventCardHeader imageUrl={event.image_url} title={event.title} />
             <EventCardContent
