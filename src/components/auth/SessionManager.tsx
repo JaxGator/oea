@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { isProtectedRoute } from "@/utils/routeConfig";
 import { QueryClient } from "@tanstack/react-query";
+import { AuthError } from "@supabase/supabase-js";
 
 interface SessionManagerProps {
   children: ReactNode;
@@ -24,34 +25,39 @@ export function SessionManager({ children, queryClient }: SessionManagerProps) {
         
         if (error) {
           console.error('Session check error:', error);
-          // Clear data and redirect on session error
-          queryClient.clear();
-          localStorage.clear();
-          if (isProtectedRoute(location.pathname)) {
-            navigate('/auth');
-          }
-          throw error;
+          handleSessionError(error);
+          return;
         }
 
-        // Handle no session case
         if (!session && isProtectedRoute(location.pathname)) {
           console.log('No active session, redirecting to auth');
+          clearSessionData();
           navigate('/auth');
           return;
         }
 
       } catch (err) {
         console.error('Session check failed:', err);
-        toast({
-          title: "Session Error",
-          description: "Please sign in again",
-          variant: "destructive",
-        });
-        
-        if (isProtectedRoute(location.pathname)) {
-          navigate('/auth');
-        }
+        handleSessionError(err as AuthError);
       }
+    };
+
+    const handleSessionError = (error: AuthError) => {
+      clearSessionData();
+      toast({
+        title: "Session Error",
+        description: "Please sign in again",
+        variant: "destructive",
+      });
+      
+      if (isProtectedRoute(location.pathname)) {
+        navigate('/auth');
+      }
+    };
+
+    const clearSessionData = () => {
+      queryClient.clear();
+      localStorage.clear();
     };
 
     // Set up auth state change listener
@@ -62,10 +68,8 @@ export function SessionManager({ children, queryClient }: SessionManagerProps) {
       
       switch (event) {
         case 'SIGNED_OUT':
-        case 'USER_DELETED':
-          console.log('User signed out or deleted, clearing data');
-          queryClient.clear();
-          localStorage.clear();
+          console.log('User signed out, clearing data');
+          clearSessionData();
           if (isProtectedRoute(location.pathname)) {
             navigate('/auth');
           }
