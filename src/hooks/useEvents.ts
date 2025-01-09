@@ -13,9 +13,9 @@ export function useEvents(selectedDate?: Date) {
     queryKey: ['events', selectedDate?.toISOString(), isApproved],
     queryFn: async () => {
       try {
-        const tableName = isApproved ? 'events' : 'event_public_view' as const;
+        // Type assertion to help TypeScript understand this is a valid table
         const query = supabase
-          .from(tableName)
+          .from(isApproved ? 'events' : 'event_public_view')
           .select(`
             *,
             event_rsvps (
