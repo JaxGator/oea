@@ -21,15 +21,15 @@ export function MemberTableRow({
   onDelete,
   onView
 }: MemberTableRowProps) {
-  const { session } = useSession();
+  const { user } = useSession();
   const { markMessagesAsRead } = useMessageReading();
 
   const handleView = () => {
     onView(member);
     // Mark messages as read when viewing a member's profile
-    if (session?.user.id) {
+    if (user?.id) {
       markMessagesAsRead({
-        receiverId: session.user.id,
+        receiverId: user.id,
         senderId: member.id
       });
     }
