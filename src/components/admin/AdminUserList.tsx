@@ -70,10 +70,12 @@ export default function AdminUserList() {
     setIsViewDialogOpen(true);
   }, []);
 
-  const handleCloseView = useCallback(() => {
-    console.log('AdminUserList: Closing view dialog');
-    setIsViewDialogOpen(false);
-    setViewingMember(null);
+  const handleCloseView = useCallback((open: boolean) => {
+    console.log('AdminUserList: Dialog state changing to:', open);
+    setIsViewDialogOpen(open);
+    if (!open) {
+      setViewingMember(null);
+    }
   }, []);
 
   if (error) {
@@ -130,7 +132,7 @@ export default function AdminUserList() {
         <ViewMemberDialog
           member={viewingMember}
           open={isViewDialogOpen}
-          onOpenChange={setIsViewDialogOpen}
+          onOpenChange={handleCloseView}
         />
       )}
 
