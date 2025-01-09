@@ -13,12 +13,13 @@ export function MemberActions({ member, onEdit }: MemberActionsProps) {
   const { user } = useSession();
   const { profile } = useProfile(user?.id);
 
-  if (!profile?.is_admin) return null;
+  // Return null if no profile or trying to message self
+  if (!profile || profile.id === member.id) return null;
 
   return (
     <div className="flex items-center gap-2">
-      <SendMessageDialog member={member} />
-      {onEdit && (
+      {profile.is_approved && <SendMessageDialog member={member} />}
+      {profile.is_admin && onEdit && (
         <Button
           variant="outline"
           size="sm"
