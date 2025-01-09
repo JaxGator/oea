@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Member } from "./types";
 import { MemberList } from "./MemberList";
 import { EditMemberDialog } from "./EditMemberDialog";
@@ -28,7 +28,7 @@ export function MemberPageContent({ members, currentUserIsAdmin, isMobile }: Mem
     selectedMember
   });
 
-  const handleViewMember = (member: Member) => {
+  const handleViewMember = useCallback((member: Member) => {
     if (!member?.id) {
       console.error('Invalid member data:', member);
       toast({
@@ -40,9 +40,9 @@ export function MemberPageContent({ members, currentUserIsAdmin, isMobile }: Mem
     }
     setSelectedMember(member);
     setIsViewDialogOpen(true);
-  };
+  }, [toast]);
 
-  const handleEditMember = (member: Member) => {
+  const handleEditMember = useCallback((member: Member) => {
     if (!member?.id) {
       console.error('Invalid member data:', member);
       toast({
@@ -54,15 +54,15 @@ export function MemberPageContent({ members, currentUserIsAdmin, isMobile }: Mem
     }
     setSelectedMember(member);
     setIsEditDialogOpen(true);
-  };
+  }, [toast]);
 
-  const handleMemberUpdate = () => {
+  const handleMemberUpdate = useCallback(() => {
     console.log('Member updated, refreshing data...');
     toast({
       title: "Success",
       description: "Member details updated successfully.",
     });
-  };
+  }, [toast]);
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 space-y-8">
