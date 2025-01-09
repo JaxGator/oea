@@ -39,10 +39,10 @@ export function MemberPageContent({ members, currentUserIsAdmin, isMobile }: Mem
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="flex items-center gap-2 mb-6">
+    <div className="max-w-7xl mx-auto px-4 py-8">
+      <div className="flex items-center gap-2 mb-8">
         <Users className="h-6 w-6" />
-        <h1 className="text-2xl font-semibold">Members Directory</h1>
+        <h2 className="text-2xl font-semibold">Members Directory</h2>
       </div>
 
       <MemberList
