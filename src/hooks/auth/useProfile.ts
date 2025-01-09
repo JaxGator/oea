@@ -11,6 +11,7 @@ export function useProfile(userId: string | undefined) {
 
   useEffect(() => {
     if (!userId) {
+      console.log('useProfile - No userId provided, skipping fetch');
       setProfile(null);
       setIsLoading(false);
       return;
@@ -18,6 +19,8 @@ export function useProfile(userId: string | undefined) {
 
     const fetchProfile = async () => {
       try {
+        console.log('useProfile - Fetching profile for userId:', userId);
+        
         const { data, error } = await supabase
           .from("profiles")
           .select("*")
@@ -25,26 +28,30 @@ export function useProfile(userId: string | undefined) {
           .maybeSingle();
 
         if (error) {
-          console.error('Profile fetch error:', {
-            error,
-            userId,
-            timestamp: new Date().toISOString()
-          });
+          console.error('useProfile - Error fetching profile:', error);
           setError(error);
           toast({
             title: "Error loading profile",
             description: "Please try refreshing the page",
             variant: "destructive",
           });
-        } else {
-          setProfile(data);
+          return;
         }
+
+        console.log('useProfile - Profile data:', data);
+        setProfile(data);
+        
+        // Log admin status for debugging
+        if (data) {
+          console.log('useProfile - Admin status:', {
+            userId,
+            isAdmin: data.is_admin,
+            profile: data
+          });
+        }
+
       } catch (err) {
-        console.error('Error fetching profile:', {
-          error: err,
-          userId,
-          timestamp: new Date().toISOString()
-        });
+        console.error('useProfile - Unexpected error:', err);
         setError(err instanceof Error ? err : new Error('Unknown error'));
       } finally {
         setIsLoading(false);
