@@ -17,7 +17,7 @@ export function useUserList() {
   }, []);
 
   const handleFilterChange = useCallback((newFilters: UserFilters) => {
-    setFilters(prevFilters => ({ ...prevFilters, ...newFilters }));
+    setFilters(newFilters);
     setPage(1);
   }, []);
 
@@ -26,15 +26,14 @@ export function useUserList() {
   }, []);
 
   return {
-    searchTerm,
-    filters,
-    page,
     data,
     isLoading,
     error,
     refetch,
     handleSearch,
     handleFilterChange,
-    handlePageChange
+    handlePageChange,
+    page,
+    filters
   };
 }

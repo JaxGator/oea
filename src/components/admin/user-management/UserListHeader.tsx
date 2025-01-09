@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Input } from "@/components/ui/input";
 import { CreateUserDialog } from "./CreateUserDialog";
 import { BulkUserCreation } from "./BulkUserCreation";
@@ -18,24 +18,23 @@ export function UserListHeader({
   onUserCreated, 
   onSearch, 
   onFilterChange,
-  filters = {} // Provide default empty object
+  filters = {} 
 }: UserListHeaderProps) {
   const [searchTerm, setSearchTerm] = useState("");
 
-  const handleSearch = (value: string) => {
+  const handleSearch = useCallback((value: string) => {
     setSearchTerm(value);
     onSearch(value);
-  };
+  }, [onSearch]);
 
-  const handleFilterChange = (key: keyof UserFilters) => {
-    // Ensure filters object exists before accessing
+  const handleFilterChange = useCallback((key: keyof UserFilters) => {
     const currentFilters = filters || {};
     const newFilters = {
       ...currentFilters,
       [key]: !currentFilters[key]
     };
     onFilterChange(newFilters);
-  };
+  }, [filters, onFilterChange]);
 
   return (
     <div className="space-y-4">
