@@ -21,7 +21,7 @@ export function GalleryModalContent({
       <Button
         variant="ghost"
         size="icon"
-        className="absolute top-2 right-2 z-50"
+        className="absolute top-2 right-2 z-50 bg-white/80 hover:bg-white"
         onClick={onClose}
       >
         <X className="h-6 w-6" />
@@ -31,7 +31,7 @@ export function GalleryModalContent({
         <Button
           variant="ghost"
           size="icon"
-          className="absolute left-2 top-1/2 -translate-y-1/2 z-50"
+          className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full z-50"
           onClick={() => onNavigate('prev')}
         >
           <ChevronLeft className="h-8 w-8" />
@@ -42,7 +42,7 @@ export function GalleryModalContent({
         <Button
           variant="ghost"
           size="icon"
-          className="absolute right-2 top-1/2 -translate-y-1/2 z-50"
+          className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full z-50"
           onClick={() => onNavigate('next')}
         >
           <ChevronRight className="h-8 w-8" />

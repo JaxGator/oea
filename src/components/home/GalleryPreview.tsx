@@ -47,6 +47,14 @@ export const GalleryPreview = () => {
             handleKeyPress,
           } = useGalleryState(images);
 
+          const handleNavigate = (direction: 'next' | 'prev') => {
+            if (direction === 'next') {
+              handleNext();
+            } else {
+              handlePrevious();
+            }
+          };
+
           return (
             <>
               <GalleryHeader 
@@ -109,8 +117,7 @@ export const GalleryPreview = () => {
                     <GalleryModalContent
                       selectedImage={selectedImage}
                       onClose={() => setSelectedImage(null)}
-                      onPrevious={handlePrevious}
-                      onNext={handleNext}
+                      onNavigate={handleNavigate}
                       isFirstImage={isFirstImage}
                       isLastImage={isLastImage}
                     />
