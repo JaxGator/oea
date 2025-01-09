@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
-import type { Database } from './types';
+import { Database } from './types/database';
+import { supabaseConfig } from './config/client-config';
 import { toast } from '@/hooks/use-toast';
 
 const SUPABASE_URL = "https://qegpuqitjfocyyrivlhv.supabase.co";
@@ -8,25 +9,11 @@ const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 if (!SUPABASE_URL) throw new Error('Missing SUPABASE_URL');
 if (!SUPABASE_ANON_KEY) throw new Error('Missing SUPABASE_ANON_KEY');
 
-export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, {
-  auth: {
-    persistSession: true,
-    autoRefreshToken: true,
-    detectSessionInUrl: true,
-    flowType: 'pkce',
-    storage: typeof window !== 'undefined' ? window.localStorage : undefined,
-    storageKey: 'supabase.auth.token',
-    debug: true
-  },
-  global: {
-    headers: {
-      'X-Client-Info': 'supabase-js-web',
-    },
-  },
-  db: {
-    schema: 'public'
-  }
-});
+export const supabase = createClient<Database>(
+  SUPABASE_URL, 
+  SUPABASE_ANON_KEY, 
+  supabaseConfig
+);
 
 // Add error handling and logging for auth state changes
 supabase.auth.onAuthStateChange((event, session) => {
