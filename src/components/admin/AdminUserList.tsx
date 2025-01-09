@@ -20,8 +20,8 @@ export type UserFilters = {
 };
 
 export default function AdminUserList() {
-  const { notify } = useNotifications();
   useSessionCheck();
+  const { notify } = useNotifications();
 
   const {
     data,
@@ -49,72 +49,54 @@ export default function AdminUserList() {
     handleCloseView
   } = useViewMemberDialog();
 
-  const {
-    handleDeleteUser
-  } = useUserActions(refetch);
+  const { handleDeleteUser } = useUserActions(refetch);
 
   const memoizedHandleEdit = useCallback((member: Member) => {
     if (!member?.id || !member?.username) {
-      console.error('Invalid member data for edit:', member);
       notify("error", "Invalid Data", "Member data is incomplete. Please try again.");
       return;
     }
     handleEditMember(member);
   }, [handleEditMember, notify]);
 
-  const memoizedContent = useMemo(() => {
-    console.log('Rendering memoized content with:', { 
-      membersCount: data?.members?.length,
-      isLoading,
-      error,
-      page,
-      filters 
-    });
+  const content = useMemo(() => (
+    <div className="space-y-4">
+      <UserListHeader 
+        onUserCreated={refetch}
+        onSearch={handleSearch}
+        onFilterChange={handleFilterChange}
+        filters={filters}
+      />
+      
+      <UserListContent
+        members={data?.members ?? []}
+        isLoading={isLoading}
+        error={error}
+        onEditMember={memoizedHandleEdit}
+        onDeleteMember={handleDeleteUser}
+        onViewMember={handleViewMember}
+        currentPage={page}
+        totalPages={data?.totalPages ?? 1}
+        onPageChange={handlePageChange}
+      />
 
-    if (error) {
-      console.error('Error fetching members:', error);
-      return <UserListError onRetry={refetch} />;
-    }
-
-    return (
-      <div className="space-y-4">
-        <UserListHeader 
-          onUserCreated={refetch}
-          onSearch={handleSearch}
-          onFilterChange={handleFilterChange}
-          filters={filters}
+      {viewingMember && (
+        <ViewMemberDialog
+          member={viewingMember}
+          open={isViewDialogOpen}
+          onOpenChange={handleCloseView}
         />
-        
-        <UserListContent
-          members={data?.members ?? []}
-          isLoading={isLoading}
-          error={error}
-          onEditMember={memoizedHandleEdit}
-          onDeleteMember={handleDeleteUser}
-          onViewMember={handleViewMember}
-          currentPage={page}
-          totalPages={data?.totalPages ?? 1}
-          onPageChange={handlePageChange}
+      )}
+
+      {editingMember && (
+        <EditMemberHandler
+          member={editingMember}
+          onClose={handleCloseEdit}
+          onUpdate={handleUpdateComplete}
         />
-
-        {viewingMember && (
-          <ViewMemberDialog
-            member={viewingMember}
-            open={isViewDialogOpen}
-            onOpenChange={handleCloseView}
-          />
-        )}
-
-        {editingMember && (
-          <EditMemberHandler
-            member={editingMember}
-            onClose={handleCloseEdit}
-            onUpdate={handleUpdateComplete}
-          />
-        )}
-      </div>
-    );
-  }, [
+      )}
+    </div>
+  ), [
     data,
     error,
     filters,
@@ -135,5 +117,9 @@ export default function AdminUserList() {
     editingMember
   ]);
 
-  return <AdminErrorBoundary>{memoizedContent}</AdminErrorBoundary>;
+  if (error) {
+    return <UserListError onRetry={refetch} />;
+  }
+
+  return <AdminErrorBoundary>{content}</AdminErrorBoundary>;
 }

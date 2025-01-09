@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { Member } from "@/components/members/types";
 import { MemberTable } from "@/components/members/MemberTable";
 import { AdminUserTableWrapper } from "./AdminUserTableWrapper";
@@ -17,7 +18,7 @@ interface UserListContentProps {
   onPageChange: (page: number) => void;
 }
 
-export function UserListContent({
+export const UserListContent = memo(function UserListContent({
   members,
   isLoading,
   error,
@@ -28,17 +29,13 @@ export function UserListContent({
   totalPages,
   onPageChange,
 }: UserListContentProps) {
-  console.log('UserListContent render:', { members, isLoading, error });
-
   if (isLoading) return <LoadingState />;
   
   if (error) {
-    console.error('Error loading members:', error);
     return <ErrorState message="Error loading members. Please try refreshing the page." />;
   }
 
   if (!Array.isArray(members)) {
-    console.error('Members is not an array:', members);
     return <ErrorState message="Invalid data format. Please try refreshing the page." />;
   }
 
@@ -63,4 +60,4 @@ export function UserListContent({
       )}
     </div>
   );
-}
+});
