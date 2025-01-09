@@ -29,17 +29,33 @@ export function SessionManager({ children, queryClient }: SessionManagerProps) {
           return;
         }
 
-        // Always try to refresh the session first if it exists
-        if (session) {
+        if (!session) {
+          console.log('No active session found');
+          if (isProtectedRoute(location.pathname)) {
+            console.log('Protected route - redirecting to auth');
+            await clearSessionData();
+            navigate('/auth');
+          }
+          return;
+        }
+
+        // Try to refresh the session
+        try {
           console.log('Attempting to refresh session...');
           const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession();
           
           if (refreshError) {
-            console.error('Session refresh error:', refreshError);
-            await handleSessionError(refreshError);
-            return;
+            if (refreshError.message.includes('refresh_token_not_found')) {
+              console.log('No refresh token found - clearing session');
+              await clearSessionData();
+              if (isProtectedRoute(location.pathname)) {
+                navigate('/auth');
+              }
+              return;
+            }
+            throw refreshError;
           }
-          
+
           if (!refreshData.session) {
             console.log('Session refresh failed - no new session');
             await clearSessionData();
@@ -50,11 +66,9 @@ export function SessionManager({ children, queryClient }: SessionManagerProps) {
           }
           
           console.log('Session refreshed successfully');
-        } else if (isProtectedRoute(location.pathname)) {
-          console.log('No active session, redirecting to auth');
-          await clearSessionData();
-          navigate('/auth');
-          return;
+        } catch (refreshErr) {
+          console.error('Session refresh failed:', refreshErr);
+          await handleSessionError(refreshErr as AuthError);
         }
 
       } catch (err) {
@@ -67,9 +81,13 @@ export function SessionManager({ children, queryClient }: SessionManagerProps) {
       console.error('Session error:', error);
       await clearSessionData();
       
+      const errorMessage = error.message.includes('refresh_token_not_found') 
+        ? "Your session has expired. Please sign in again."
+        : "Authentication error. Please sign in again.";
+      
       toast({
         title: "Session Error",
-        description: "Please sign in again",
+        description: errorMessage,
         variant: "destructive",
       });
       
