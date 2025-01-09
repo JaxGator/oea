@@ -3,6 +3,7 @@ import { EventList } from "@/components/event/EventList";
 import { EventsMap } from "@/components/event/EventsMap";
 import { ErrorBoundary } from "@/components/error/ErrorBoundary";
 import { CalendarFold } from "lucide-react";
+import { useState } from "react";
 
 interface EventsContentProps {
   upcomingEvents: Event[];
@@ -17,12 +18,21 @@ export function EventsContent({
   onRSVP,
   onCancelRSVP,
 }: EventsContentProps) {
+  const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
+
+  const handleEventSelect = (eventId: string) => {
+    setSelectedEventId(eventId === selectedEventId ? null : eventId);
+  };
+
   return (
     <>
       {upcomingEvents.length > 0 && (
         <div className="mb-8">
           <ErrorBoundary fallback={<div>Error loading map. Please try again later.</div>}>
-            <EventsMap events={upcomingEvents} />
+            <EventsMap 
+              events={upcomingEvents} 
+              selectedEventId={selectedEventId}
+            />
           </ErrorBoundary>
         </div>
       )}
@@ -32,6 +42,8 @@ export function EventsContent({
           events={upcomingEvents}
           onRSVP={onRSVP}
           onCancelRSVP={onCancelRSVP}
+          onEventSelect={handleEventSelect}
+          selectedEventId={selectedEventId}
         />
       </ErrorBoundary>
 
@@ -46,6 +58,8 @@ export function EventsContent({
               events={pastEvents}
               onRSVP={onRSVP}
               onCancelRSVP={onCancelRSVP}
+              onEventSelect={handleEventSelect}
+              selectedEventId={selectedEventId}
             />
           </ErrorBoundary>
         </div>

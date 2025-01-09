@@ -6,9 +6,17 @@ interface EventListProps {
   events: Event[];
   onRSVP: (eventId: string, guests?: { firstName: string }[]) => Promise<void>;
   onCancelRSVP: (eventId: string) => Promise<void>;
+  onEventSelect?: (eventId: string) => void;
+  selectedEventId?: string | null;
 }
 
-export function EventList({ events = [], onRSVP, onCancelRSVP }: EventListProps) {
+export function EventList({ 
+  events = [], 
+  onRSVP, 
+  onCancelRSVP,
+  onEventSelect,
+  selectedEventId 
+}: EventListProps) {
   const { userRSVPs } = useRSVPManagement();
 
   if (!Array.isArray(events)) {
@@ -37,6 +45,8 @@ export function EventList({ events = [], onRSVP, onCancelRSVP }: EventListProps)
           onRSVP={onRSVP}
           onCancelRSVP={() => onCancelRSVP(event.id)}
           userRSVPStatus={userRSVPs[event.id]}
+          onSelect={() => onEventSelect?.(event.id)}
+          isSelected={event.id === selectedEventId}
         />
       ))}
     </div>

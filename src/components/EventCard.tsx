@@ -6,6 +6,8 @@ interface EventCardProps {
   onRSVP: (eventId: string, guests?: { firstName: string }[]) => void;
   onCancelRSVP: (eventId: string) => void;
   userRSVPStatus?: string | null;
+  onSelect?: () => void;
+  isSelected?: boolean;
   onUpdate?: () => void;
 }
 
@@ -14,6 +16,8 @@ export function EventCard({
   onRSVP,
   onCancelRSVP,
   userRSVPStatus = null,
+  onSelect,
+  isSelected = false,
   onUpdate
 }: EventCardProps) {
   if (!event) {
@@ -27,6 +31,8 @@ export function EventCard({
       onRSVP={onRSVP}
       onCancelRSVP={onCancelRSVP}
       userRSVPStatus={userRSVPStatus}
+      onSelect={onSelect}
+      isSelected={isSelected}
       onUpdate={onUpdate}
     />
   );
