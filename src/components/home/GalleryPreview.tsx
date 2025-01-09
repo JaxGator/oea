@@ -79,6 +79,7 @@ export const GalleryPreview = () => {
                 />
               )}
 
+              {/* Full Gallery Dialog */}
               <Dialog 
                 open={showFullGallery} 
                 onOpenChange={(open) => {
@@ -98,12 +99,13 @@ export const GalleryPreview = () => {
                 </DialogContent>
               </Dialog>
 
-              <Dialog 
-                open={!!selectedImage} 
-                onOpenChange={(open) => !open && setSelectedImage(null)}
-              >
-                <DialogContent className="max-w-[95vw] max-h-[95vh] p-2 bg-[#F1F1F1] relative">
-                  {selectedImage && (
+              {/* Image Preview Dialog */}
+              {selectedImage && (
+                <Dialog 
+                  open={!!selectedImage} 
+                  onOpenChange={(open) => !open && setSelectedImage(null)}
+                >
+                  <DialogContent className="max-w-[95vw] max-h-[95vh] p-2 bg-transparent border-none">
                     <GalleryModalContent
                       selectedImage={selectedImage}
                       onClose={() => setSelectedImage(null)}
@@ -112,9 +114,9 @@ export const GalleryPreview = () => {
                       isFirstImage={isFirstImage}
                       isLastImage={isLastImage}
                     />
-                  )}
-                </DialogContent>
-              </Dialog>
+                  </DialogContent>
+                </Dialog>
+              )}
             </>
           );
         }}
