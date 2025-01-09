@@ -57,7 +57,7 @@ export function SendMessageDialog({ member }: SendMessageDialogProps) {
           subject: `Message from ${user.email}`,
           content: message,
           sender_id: user.id,
-          recipient_type: 'user',
+          recipient_type: 'individual', // Changed from 'user' to 'individual'
           recipient_data: { user_id: member.id },
           status: 'sent'
         });
