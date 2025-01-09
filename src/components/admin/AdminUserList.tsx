@@ -17,7 +17,7 @@ export type UserFilters = {
   isMember?: boolean;
 };
 
-export function AdminUserList() {
+export default function AdminUserList() {
   const [viewingMember, setViewingMember] = useState<Member | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [filters, setFilters] = useState<UserFilters>({});

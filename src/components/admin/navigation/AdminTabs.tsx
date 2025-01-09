@@ -1,15 +1,15 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Users, Settings, Image, DollarSign, BarChart3, TestTube2 } from "lucide-react";
-import { AdminUserList } from "@/components/admin/AdminUserList";
-import { SiteConfigManager } from "@/components/admin/SiteConfigManager";
-import { GalleryManager } from "@/components/admin/GalleryManager";
-import { PaymentManager } from "@/components/admin/payments/PaymentManager";
+import AdminUserList from "@/components/admin/AdminUserList";
+import SiteConfigManager from "@/components/admin/SiteConfigManager";
+import GalleryManager from "@/components/admin/GalleryManager";
+import PaymentManager from "@/components/admin/payments/PaymentManager";
 import { ErrorBoundary } from "@/components/error/ErrorBoundary";
-import { ReportsTabs } from "@/components/admin/reports/ReportsLayout";
+import ReportsTabs from "@/components/admin/reports/ReportsLayout";
 import { UserActivityReport } from "@/components/admin/reports/UserActivityReport";
 import { EventParticipationReport } from "@/components/admin/reports/EventParticipationReport";
 import { SystemUsageReport } from "@/components/admin/reports/SystemUsageReport";
-import { AdminTestRunner } from "../testing/AdminTestRunner";
+import AdminTestRunner from "@/components/admin/testing/AdminTestRunner";
 
 interface AdminTabsProps {
   defaultTab?: string;

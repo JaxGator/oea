@@ -9,7 +9,7 @@ import { useConfigManager } from "./site-config/useConfigManager";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { HelpCircle } from "lucide-react";
 
-export function SiteConfigManager() {
+export default function SiteConfigManager() {
   const { configs, setConfigs, updateConfig, isLoading } = useConfigManager();
 
   if (isLoading) {

@@ -7,7 +7,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 
-export function PaymentManager() {
+export default function PaymentManager() {
   const [isProcessing, setIsProcessing] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -89,5 +89,4 @@ export function PaymentManager() {
         />
       </CardContent>
     </Card>
-  );
 }

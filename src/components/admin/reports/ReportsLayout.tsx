@@ -2,7 +2,7 @@ import { TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BarChart3, Users, Calendar, Activity } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
-export function ReportsTabs() {
+export default function ReportsTabs() {
   return (
     <TabsList className="grid w-full grid-cols-2 md:grid-cols-3 gap-2">
       <TooltipProvider>

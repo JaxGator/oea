@@ -7,7 +7,7 @@ import { toast } from "@/hooks/use-toast";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { HelpCircle } from "lucide-react";
 
-export function GalleryManager() {
+export default function GalleryManager() {
   const {
     images,
     isLoading,
