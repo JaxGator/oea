@@ -8,6 +8,7 @@ import { Member } from "./types";
 import { ErrorBoundary } from "@/components/error/ErrorBoundary";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LeaderboardPage } from "./leaderboard/LeaderboardPage";
+import { useToast } from "@/hooks/use-toast";
 
 interface MemberPageContentProps {
   members: any[];
@@ -18,13 +19,24 @@ interface MemberPageContentProps {
 export function MemberPageContent({ members, currentUserIsAdmin, isMobile }: MemberPageContentProps) {
   const [viewingMember, setViewingMember] = useState<Member | null>(null);
   const [editingMember, setEditingMember] = useState<Member | null>(null);
+  const { toast } = useToast();
 
   const handleEditMember = (member: Member) => {
     setEditingMember(member);
   };
 
+  const handleError = (error: Error) => {
+    console.error('MemberPageContent error:', error);
+    toast({
+      title: "Error",
+      description: "An error occurred while displaying members. Please try refreshing the page.",
+      variant: "destructive",
+    });
+  };
+
   return (
     <ErrorBoundary
+      onError={handleError}
       fallback={
         <div className="text-center py-8 text-gray-500">
           An error occurred while displaying members. Please try refreshing the page.

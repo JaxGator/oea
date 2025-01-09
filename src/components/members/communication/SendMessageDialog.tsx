@@ -1,134 +1,125 @@
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useCommunications } from "@/hooks/admin/useCommunications";
-import { Member } from "@/components/members/types";
-import { Mail } from "lucide-react";
-import { toast } from "sonner";
+import { Member } from "../types";
 import { useSession } from "@/hooks/auth/useSession";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import { MessageCircle } from "lucide-react";
 
 interface SendMessageDialogProps {
   member: Member;
 }
 
 export function SendMessageDialog({ member }: SendMessageDialogProps) {
-  const [open, setOpen] = useState(false);
-  const [subject, setSubject] = useState("");
-  const [content, setContent] = useState("");
-  const [templateId, setTemplateId] = useState<string>("");
-  
-  const { templates, sendMessage, isLoading } = useCommunications();
+  const [message, setMessage] = useState("");
+  const [isOpen, setIsOpen] = useState(false);
+  const [isSending, setIsSending] = useState(false);
   const { user } = useSession();
+  const { toast } = useToast();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!user?.id) {
-      toast.error("You must be logged in to send messages");
+  const handleSendMessage = async () => {
+    if (!user?.id || !member?.id) {
+      toast({
+        title: "Error",
+        description: "Missing user information",
+        variant: "destructive",
+      });
       return;
     }
 
+    setIsSending(true);
     try {
-      await sendMessage({
-        subject,
-        content,
-        recipient_type: "individual",
-        recipient_data: { member_id: member.id },
-        template_id: templateId || null,
-        status: "draft",
-        sender_id: user.id // Explicitly set the sender_id
+      // First check if the user can message the recipient
+      const { data: canMessage, error: checkError } = await supabase
+        .rpc('can_message_user', {
+          target_user_id: member.id
+        });
+
+      if (checkError) {
+        throw new Error(checkError.message);
+      }
+
+      if (!canMessage) {
+        toast({
+          title: "Cannot Send Message",
+          description: "You cannot send messages to this user. Both users must be approved members.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Create the communication record
+      const { error: sendError } = await supabase
+        .from('communications')
+        .insert({
+          subject: `Message from ${user.email}`,
+          content: message,
+          sender_id: user.id,
+          recipient_type: 'user',
+          recipient_data: { user_id: member.id },
+          status: 'sent'
+        });
+
+      if (sendError) {
+        throw new Error(sendError.message);
+      }
+
+      toast({
+        title: "Success",
+        description: "Message sent successfully",
       });
-
-      toast.success("Message sent successfully");
-      setOpen(false);
-      setSubject("");
-      setContent("");
-      setTemplateId("");
+      
+      setMessage("");
+      setIsOpen(false);
     } catch (error) {
-      console.error("Error sending message:", error);
-      toast.error("Failed to send message. Please try again.");
-    }
-  };
-
-  const handleTemplateChange = (value: string) => {
-    setTemplateId(value);
-    const template = templates.find(t => t.id === value);
-    if (template) {
-      setSubject(template.subject);
-      setContent(template.content);
+      console.error('Error sending message:', error);
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to send message. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSending(false);
     }
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm">
-          <Mail className="w-4 h-4 mr-2" />
-          Send Message
+        <Button variant="outline" size="sm" className="gap-2">
+          <MessageCircle className="h-4 w-4" />
+          Message
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent>
         <DialogHeader>
           <DialogTitle>Send Message to {member.username}</DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="template">Template</Label>
-            <Select value={templateId} onValueChange={handleTemplateChange}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select a template" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="">No template</SelectItem>
-                {templates.map((template) => (
-                  <SelectItem key={template.id} value={template.id}>
-                    {template.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="subject">Subject</Label>
-            <Input
-              id="subject"
-              value={subject}
-              onChange={(e) => setSubject(e.target.value)}
-              placeholder="Message subject"
-              required
-            />
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="content">Message</Label>
-            <Textarea
-              id="content"
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              placeholder="Type your message here..."
-              required
-              rows={5}
-            />
-          </div>
-          
-          <div className="flex justify-end space-x-2">
+        <div className="space-y-4 pt-4">
+          <Textarea
+            placeholder="Type your message here..."
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            className="min-h-[100px]"
+          />
+          <div className="flex justify-end gap-2">
             <Button
-              type="button"
               variant="outline"
-              onClick={() => setOpen(false)}
+              onClick={() => setIsOpen(false)}
+              disabled={isSending}
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={isLoading}>
-              {isLoading ? "Sending..." : "Send Message"}
+            <Button
+              onClick={handleSendMessage}
+              disabled={!message.trim() || isSending}
+            >
+              {isSending ? "Sending..." : "Send Message"}
             </Button>
           </div>
-        </form>
+        </div>
       </DialogContent>
     </Dialog>
   );
