@@ -36,6 +36,16 @@ export function SessionManager({ children, queryClient }: SessionManagerProps) {
           return;
         }
 
+        // Refresh session if it exists
+        if (session) {
+          const { error: refreshError } = await supabase.auth.refreshSession();
+          if (refreshError) {
+            console.error('Session refresh error:', refreshError);
+            handleSessionError(refreshError);
+            return;
+          }
+        }
+
       } catch (err) {
         console.error('Session check failed:', err);
         handleSessionError(err as AuthError);
@@ -58,6 +68,7 @@ export function SessionManager({ children, queryClient }: SessionManagerProps) {
     const clearSessionData = () => {
       queryClient.clear();
       localStorage.clear();
+      supabase.auth.signOut(); // Ensure complete sign out
     };
 
     // Set up auth state change listener
