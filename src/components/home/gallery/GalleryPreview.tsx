@@ -5,30 +5,45 @@ import { FullGalleryDialog } from "./FullGalleryDialog";
 import { GalleryGrid } from "./GalleryGrid";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
+import { toast } from "sonner";
 
 export function GalleryPreview() {
   const [showFullGallery, setShowFullGallery] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
-  const { data: images = [] } = useQuery({
+  const { data: images = [], isError } = useQuery({
     queryKey: ['gallery-preview'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('gallery_images')
-        .select('*')
-        .order('display_order', { ascending: true })
-        .limit(6);
+      try {
+        const { data, error } = await supabase
+          .from('gallery_images')
+          .select('*')
+          .order('display_order', { ascending: true })
+          .limit(6);
 
-      if (error) throw error;
+        if (error) {
+          console.error('Error fetching gallery images:', error);
+          toast.error('Failed to load gallery images');
+          throw error;
+        }
 
-      // Transform the data to return the full public URLs for the images
-      return data.map(image => {
-        const { data: urlData } = supabase.storage
-          .from('gallery')
-          .getPublicUrl(image.file_name);
-        return urlData.publicUrl;
-      });
+        if (!data) return [];
+
+        // Transform the data to return the full public URLs for the images
+        return data.map(image => {
+          const { data: urlData } = supabase.storage
+            .from('gallery')
+            .getPublicUrl(image.file_name);
+          return urlData.publicUrl;
+        });
+      } catch (error) {
+        console.error('Gallery fetch error:', error);
+        toast.error('Failed to load gallery images');
+        throw error;
+      }
     },
+    retry: 1,
+    refetchOnWindowFocus: false
   });
 
   const handleImageSelect = (imageUrl: string) => {
@@ -48,6 +63,18 @@ export function GalleryPreview() {
 
   const isFirstImage = selectedImage === images[0];
   const isLastImage = selectedImage === images[images.length - 1];
+
+  if (isError) {
+    return (
+      <div className="py-12 bg-white">
+        <div className="container mx-auto px-4">
+          <div className="text-center text-red-500">
+            Failed to load gallery images. Please try again later.
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="py-12 bg-white">
