@@ -1,17 +1,16 @@
-import { useState, useCallback } from "react";
+import { useCallback } from "react";
 import { Member } from "@/components/members/types";
 import { ViewMemberDialog } from "@/components/members/ViewMemberDialog";
 import { EditMemberHandler } from "./user-management/EditMemberHandler";
-import { useMemberManagement } from "@/hooks/admin/useMemberManagement";
 import { useSessionCheck } from "@/hooks/auth/useSessionCheck";
 import { UserListHeader } from "./user-management/UserListHeader";
 import { UserListContent } from "./user-management/UserListContent";
 import { useUserManagement } from "@/hooks/admin/useUserManagement";
 import { useNotifications } from "@/components/providers/NotificationProvider";
-import { useDebounce } from "@/hooks/use-debounce";
-import { Skeleton } from "@/components/ui/skeleton";
 import { useViewMemberDialog } from "@/hooks/admin/useViewMemberDialog";
 import { UserListError } from "./user-management/UserListError";
+import { useUserList } from "@/hooks/admin/useUserList";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export type UserFilters = {
   isAdmin?: boolean;
@@ -20,13 +19,18 @@ export type UserFilters = {
 };
 
 export default function AdminUserList() {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [filters, setFilters] = useState<UserFilters>({});
-  const [page, setPage] = useState(1);
-  const debouncedSearch = useDebounce(searchTerm, 300);
   const { notify } = useNotifications();
-  
-  const { data, isLoading, error, refetch } = useMemberManagement(debouncedSearch, filters, page);
+  const {
+    data,
+    isLoading,
+    error,
+    refetch,
+    handleSearch,
+    handleFilterChange,
+    handlePageChange,
+    page,
+    filters
+  } = useUserList();
   
   const {
     editingMember,
@@ -54,22 +58,6 @@ export default function AdminUserList() {
     console.log('Handling edit for member:', member);
     handleEditMember(member);
   }, [handleEditMember, notify]);
-
-  const handleSearch = useCallback((term: string) => {
-    setSearchTerm(term);
-    setPage(1);
-  }, []);
-
-  const handleFilterChange = useCallback((newFilters: UserFilters) => {
-    console.log('Applying filters:', newFilters);
-    setFilters(prevFilters => ({ ...prevFilters, ...newFilters }));
-    setPage(1);
-  }, []);
-
-  const handlePageChange = useCallback((newPage: number) => {
-    console.log('Changing page to:', newPage);
-    setPage(newPage);
-  }, []);
 
   if (error) {
     console.error('Error fetching members:', error);
