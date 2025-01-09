@@ -2,39 +2,17 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.ico" />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Outdoor Energy Adventures - Connect, Explore, Adventure</title>
-    <style>
-      #lovable-badge {
-        display: none !important;
-      }
-    </style>
-    <!-- Add error tracking script -->
-    <script>
-      window.onerror = function(msg, url, lineNo, columnNo, error) {
-        console.error('Error: ' + msg + '\nURL: ' + url + '\nLine: ' + lineNo + '\nColumn: ' + columnNo + '\nError object: ' + JSON.stringify(error));
-        return false;
-      };
-      window.addEventListener('unhandledrejection', function(event) {
-        console.error('Unhandled promise rejection:', event.reason);
-      });
-    </script>
+    <title>OEA</title>
   </head>
   <body>
     <div id="root"></div>
-    <!-- Load GPT Engineer script first -->
     <script 
       src="https://cdn.gpteng.co/gptengineer.js" 
       type="module"
       crossorigin="anonymous"
-      onerror="console.error('Failed to load GPT Engineer script')"
     ></script>
-    <!-- Then load the main application -->
-    <script 
-      type="module" 
-      src="/src/main.tsx"
-      onerror="console.error('Failed to load main application script')"
-    ></script>
+    <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
