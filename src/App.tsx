@@ -37,12 +37,12 @@ const App = () => {
             {/* Public Routes */}
             <Route index element={<Index />} />
             <Route path="about" element={<About />} />
+            <Route path="events" element={<Events />} />
             <Route path="privacy" element={<PrivacyPolicy />} />
             <Route path="terms" element={<TermsAndConditions />} />
             <Route path="resources" element={<Resources />} />
             
             {/* Protected Routes */}
-            <Route path="events" element={<RequireAuth><Events /></RequireAuth>} />
             <Route path="events/:id" element={<RequireAuth><EventDetails /></RequireAuth>} />
             <Route path="members" element={<RequireAuth><Members /></RequireAuth>} />
             <Route path="profile" element={<RequireAuth><Profile /></RequireAuth>} />
