@@ -49,15 +49,15 @@ export function useProfile(userId: string | undefined) {
           return;
         }
 
-        console.log('useProfile - Profile data:', data);
-        setProfile(data);
-        
-        // Log admin status for debugging
-        console.log('useProfile - Admin status:', {
-          userId,
+        console.log('useProfile - Profile data:', {
+          id: data.id,
+          username: data.username,
           isAdmin: data.is_admin,
-          profile: data
+          isApproved: data.is_approved,
+          timestamp: new Date().toISOString()
         });
+        
+        setProfile(data);
 
       } catch (err) {
         console.error('useProfile - Unexpected error:', err);

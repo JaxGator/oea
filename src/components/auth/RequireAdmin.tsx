@@ -11,12 +11,14 @@ export function RequireAdmin({ children }: RequireAdminProps) {
   const { profile, isLoading, error } = useAuthState();
   const location = useLocation();
 
-  // Add debug logs
-  console.log("RequireAdmin - Current state:", {
+  // Enhanced debug logs
+  console.log("RequireAdmin - Auth state:", {
     profile,
+    isAdmin: profile?.is_admin,
     isLoading,
     error,
-    pathname: location.pathname
+    pathname: location.pathname,
+    timestamp: new Date().toISOString()
   });
 
   if (isLoading) {
@@ -38,7 +40,7 @@ export function RequireAdmin({ children }: RequireAdminProps) {
     return <Navigate to="/auth" state={{ from: location }} replace />;
   }
 
-  // Check if user has a profile and is an admin
+  // Check if user has a profile
   if (!profile) {
     console.log("RequireAdmin - No profile found, redirecting to auth");
     toast({
@@ -48,6 +50,14 @@ export function RequireAdmin({ children }: RequireAdminProps) {
     });
     return <Navigate to="/auth" state={{ from: location }} replace />;
   }
+
+  // Enhanced admin check logging
+  console.log("RequireAdmin - Admin check:", {
+    userId: profile.id,
+    username: profile.username,
+    isAdmin: profile.is_admin,
+    timestamp: new Date().toISOString()
+  });
 
   if (!profile.is_admin) {
     console.log("RequireAdmin - User is not an admin, redirecting to home");

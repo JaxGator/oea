@@ -41,7 +41,25 @@ export function GalleryPreview() {
             .from('gallery')
             .getPublicUrl(image.file_name);
           
-          console.log('Generated URL for preview image:', image.file_name, urlData.publicUrl);
+          console.log('Generated URL for preview image:', {
+            fileName: image.file_name,
+            url: urlData.publicUrl,
+            timestamp: new Date().toISOString()
+          });
+          
+          // Validate URL accessibility
+          fetch(urlData.publicUrl, { method: 'HEAD' })
+            .then(response => {
+              if (!response.ok) {
+                console.error(`Image URL not accessible: ${urlData.publicUrl}`, response.status);
+              } else {
+                console.log(`Image URL accessible: ${urlData.publicUrl}`);
+              }
+            })
+            .catch(error => {
+              console.error(`Failed to validate image URL: ${urlData.publicUrl}`, error);
+            });
+
           return urlData.publicUrl;
         });
 
