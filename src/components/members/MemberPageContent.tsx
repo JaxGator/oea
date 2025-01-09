@@ -1,102 +1,63 @@
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { MemberList } from "./MemberList";
-import { MemberTable } from "./MemberTable";
-import { Users } from "lucide-react";
 import { useState } from "react";
-import { ViewMemberDialog } from "./ViewMemberDialog";
 import { Member } from "./types";
-import { ErrorBoundary } from "@/components/error/ErrorBoundary";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { LeaderboardPage } from "./leaderboard/LeaderboardPage";
-import { useToast } from "@/hooks/use-toast";
+import { MemberList } from "./MemberList";
+import { EditMemberDialog } from "./EditMemberDialog";
+import { ViewMemberDialog } from "./ViewMemberDialog";
 
 interface MemberPageContentProps {
-  members: any[];
+  members: Member[];
   currentUserIsAdmin: boolean;
   isMobile: boolean;
 }
 
 export function MemberPageContent({ members, currentUserIsAdmin, isMobile }: MemberPageContentProps) {
-  const [viewingMember, setViewingMember] = useState<Member | null>(null);
-  const [editingMember, setEditingMember] = useState<Member | null>(null);
-  const { toast } = useToast();
+  const [selectedMember, setSelectedMember] = useState<Member | null>(null);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
 
-  const handleEditMember = (member: Member) => {
-    setEditingMember(member);
+  console.log('MemberPageContent - Render:', {
+    memberCount: members.length,
+    currentUserIsAdmin,
+    isMobile,
+    selectedMember
+  });
+
+  const handleViewMember = (member: Member) => {
+    setSelectedMember(member);
+    setIsViewDialogOpen(true);
   };
 
-  const handleError = (error: Error) => {
-    console.error('MemberPageContent error:', error);
-    toast({
-      title: "Error",
-      description: "An error occurred while displaying members. Please try refreshing the page.",
-      variant: "destructive",
-    });
+  const handleEditMember = (member: Member) => {
+    setSelectedMember(member);
+    setIsEditDialogOpen(true);
   };
 
   return (
-    <ErrorBoundary
-      onError={handleError}
-      fallback={
-        <div className="text-center py-8 text-gray-500">
-          An error occurred while displaying members. Please try refreshing the page.
-        </div>
-      }
-    >
-      <div className="min-h-screen bg-[#222222] py-12 px-4">
-        <div className="max-w-6xl mx-auto">
-          <div className="bg-white rounded-lg p-6 shadow-lg">
-            <div className="flex items-center gap-2 mb-6">
-              <Users className="h-6 w-6" aria-hidden="true" />
-              <h1 className="text-2xl font-bold" id="members-heading">Member Directory</h1>
-            </div>
-            
-            <Tabs defaultValue="directory" className="w-full">
-              <TabsList className="grid w-full grid-cols-2 mb-6">
-                <TabsTrigger value="directory">Directory</TabsTrigger>
-                <TabsTrigger value="leaderboard">Leaderboard</TabsTrigger>
-              </TabsList>
+    <div className="container mx-auto px-4 py-8">
+      <MemberList
+        members={members}
+        currentUserIsAdmin={currentUserIsAdmin}
+        onViewMember={handleViewMember}
+        onEditMember={handleEditMember}
+      />
 
-              <TabsContent value="directory">
-                {members.length === 0 ? (
-                  <div className="text-center py-8 text-gray-500" role="status">
-                    No members found.
-                  </div>
-                ) : (
-                  <div role="region" aria-labelledby="members-heading">
-                    {isMobile ? (
-                      <MemberList 
-                        members={members}
-                        currentUserIsAdmin={currentUserIsAdmin}
-                        isMobile={isMobile}
-                      />
-                    ) : (
-                      <ScrollArea className="rounded-md border">
-                        <MemberTable 
-                          members={members}
-                          currentUserIsAdmin={currentUserIsAdmin}
-                          onViewMember={setViewingMember}
-                          onEditMember={handleEditMember}
-                        />
-                      </ScrollArea>
-                    )}
-                  </div>
-                )}
-              </TabsContent>
-
-              <TabsContent value="leaderboard">
-                <LeaderboardPage />
-              </TabsContent>
-            </Tabs>
-          </div>
-        </div>
-
-        <ViewMemberDialog
-          member={viewingMember}
-          open={!!viewingMember}
-          onOpenChange={(open) => !open && setViewingMember(null)}
-        />
-      </div>
-    </ErrorBoundary>
+      {selectedMember && (
+        <>
+          <ViewMemberDialog
+            member={selectedMember}
+            open={isViewDialogOpen}
+            onOpenChange={setIsViewDialogOpen}
+          />
+          
+          {currentUserIsAdmin && (
+            <EditMemberDialog
+              member={selectedMember}
+              open={isEditDialogOpen}
+              onOpenChange={setIsEditDialogOpen}
+            />
+          )}
+        </>
+      )}
+    </div>
   );
 }

@@ -33,6 +33,15 @@ export default function Members() {
   const navigate = useNavigate();
   const { profileQuery, membersQuery } = useMemberQueries(user?.id);
 
+  console.log('Members Page - Initial render:', {
+    hasUser: !!user,
+    userId: user?.id,
+    profileQueryData: profileQuery.data,
+    membersQueryData: membersQuery.data,
+    isProfileLoading: profileQuery.isLoading,
+    isMembersLoading: membersQuery.isLoading
+  });
+
   // Global error handler
   useEffect(() => {
     const handleError = (event: ErrorEvent) => {
@@ -102,6 +111,10 @@ export default function Members() {
   }, [user?.id, toast, navigate]);
 
   if (membersQuery.error || profileQuery.error) {
+    console.error('Query error:', {
+      membersError: membersQuery.error,
+      profileError: profileQuery.error
+    });
     return (
       <div className="min-h-screen bg-[#222222] flex items-center justify-center">
         <div className="text-white">Error loading members. Please try again.</div>
