@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { Member } from "@/components/members/types";
 import { ViewMemberDialog } from "@/components/members/ViewMemberDialog";
 import { EditMemberHandler } from "./user-management/EditMemberHandler";
@@ -37,7 +37,7 @@ export default function AdminUserList() {
 
   useSessionCheck();
 
-  const handleEdit = (member: Member) => {
+  const handleEdit = useCallback((member: Member) => {
     if (!member?.id || !member?.username) {
       console.error('AdminUserList: Invalid member data for edit:', member);
       notify("error", "Invalid Data", "Member data is incomplete. Please try again.");
@@ -45,7 +45,7 @@ export default function AdminUserList() {
     }
     console.log('AdminUserList: Handling edit for member:', member);
     handleEditMember(member);
-  };
+  }, [handleEditMember, notify]);
 
   const handleSearch = useCallback((term: string) => {
     setSearchTerm(term);
