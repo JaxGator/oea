@@ -164,6 +164,13 @@ export type Database = {
             foreignKeyName: "event_reminders_event_id_fkey"
             columns: ["event_id"]
             isOneToOne: false
+            referencedRelation: "event_public_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_reminders_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
             referencedRelation: "events"
             referencedColumns: ["id"]
           },
@@ -202,6 +209,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "event_rsvps_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "event_public_view"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "event_rsvps_event_id_fkey"
             columns: ["event_id"]
@@ -318,6 +332,13 @@ export type Database = {
             columns: ["created_by"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "gallery_albums_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "event_public_view"
             referencedColumns: ["id"]
           },
           {
@@ -621,6 +642,13 @@ export type Database = {
             foreignKeyName: "payments_event_id_fkey"
             columns: ["event_id"]
             isOneToOne: false
+            referencedRelation: "event_public_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payments_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
             referencedRelation: "events"
             referencedColumns: ["id"]
           },
@@ -883,6 +911,13 @@ export type Database = {
             foreignKeyName: "waitlist_notifications_event_id_fkey"
             columns: ["event_id"]
             isOneToOne: false
+            referencedRelation: "event_public_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "waitlist_notifications_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
             referencedRelation: "events"
             referencedColumns: ["id"]
           },
@@ -897,7 +932,60 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      event_public_view: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          date: string | null
+          description: string | null
+          display_order: number | null
+          id: string | null
+          image_url: string | null
+          imported_rsvp_count: number | null
+          is_featured: boolean | null
+          location: string | null
+          max_guests: number | null
+          time: string | null
+          title: string | null
+          waitlist_capacity: number | null
+          waitlist_enabled: boolean | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          date?: string | null
+          description?: string | null
+          display_order?: number | null
+          id?: string | null
+          image_url?: string | null
+          imported_rsvp_count?: number | null
+          is_featured?: boolean | null
+          location?: never
+          max_guests?: number | null
+          time?: string | null
+          title?: string | null
+          waitlist_capacity?: number | null
+          waitlist_enabled?: boolean | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          date?: string | null
+          description?: string | null
+          display_order?: number | null
+          id?: string | null
+          image_url?: string | null
+          imported_rsvp_count?: number | null
+          is_featured?: boolean | null
+          location?: never
+          max_guests?: number | null
+          time?: string | null
+          title?: string | null
+          waitlist_capacity?: number | null
+          waitlist_enabled?: boolean | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       admin_update_user: {
