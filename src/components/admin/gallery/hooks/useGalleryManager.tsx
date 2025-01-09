@@ -83,14 +83,21 @@ export function useGalleryManager() {
             console.warn(`File not found in storage: ${galleryImage.file_name}`);
             return null;
           }
+
+          const publicUrl = supabase.storage
+            .from('gallery')
+            .getPublicUrl(galleryImage.file_name);
+
+          console.log(`Generated public URL for ${galleryImage.file_name}:`, publicUrl.data.publicUrl);
+          
           return {
             id: galleryImage.id,
-            url: supabase.storage.from('gallery').getPublicUrl(galleryImage.file_name).data.publicUrl
+            url: publicUrl.data.publicUrl
           };
         })
         .filter((image): image is { url: string; id: string } => image !== null);
 
-      console.log(`Found ${imageUrls.length} valid images in gallery`);
+      console.log(`Found ${imageUrls.length} valid images in gallery:`, imageUrls);
       setImages(imageUrls);
     } catch (error) {
       console.error('Error fetching images:', error);
