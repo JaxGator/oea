@@ -5,7 +5,7 @@ import { useToast } from "@/hooks/use-toast";
 export function useAuthState() {
   const { toast } = useToast();
   const { user, isLoading: isSessionLoading, error: sessionError } = useSession();
-  const { profile, isLoading: isProfileLoading, error: profileError } = useProfile(user?.id);
+  const { data: profile, isLoading: isProfileLoading, error: profileError } = useProfile(user?.id);
 
   // Enhanced logging for authentication state
   console.log('useAuthState - Current state:', {

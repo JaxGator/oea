@@ -9,7 +9,7 @@ import { useSession } from "@/hooks/auth/useSession";
 
 export function UserReminderPreferences() {
   const { user } = useSession();
-  const { profile } = useProfile(user?.id);
+  const { data: profile } = useProfile(user?.id);
   const [enabled, setEnabled] = useState(false);
   const { toast } = useToast();
 

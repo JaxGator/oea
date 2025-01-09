@@ -12,7 +12,7 @@ interface MemberActionsProps {
 
 export function MemberActions({ member, onEdit, onDelete }: MemberActionsProps) {
   const { user } = useSession();
-  const { profile, isLoading } = useProfile(user?.id);
+  const { data: profile, isLoading } = useProfile(user?.id);
 
   console.log('MemberActions - Initial render:', {
     userId: user?.id,

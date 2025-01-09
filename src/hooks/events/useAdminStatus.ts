@@ -3,7 +3,7 @@ import { useSession } from "@/hooks/auth/useSession";
 
 export function useAdminStatus() {
   const { user } = useSession();
-  const { profile, isLoading } = useProfile(user?.id);
+  const { data: profile, isLoading } = useProfile(user?.id);
 
   return {
     isAdmin: !!profile?.is_admin,
