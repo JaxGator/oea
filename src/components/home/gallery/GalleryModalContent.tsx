@@ -20,7 +20,7 @@ export const GalleryModalContent: React.FC<GalleryModalContentProps> = ({
   isLastImage,
 }) => {
   return (
-    <div className="relative w-full h-full flex items-center justify-center bg-black/50">
+    <div className="relative w-full h-full flex items-center justify-center">
       <Button
         variant="ghost"
         size="icon"
@@ -34,7 +34,7 @@ export const GalleryModalContent: React.FC<GalleryModalContentProps> = ({
       <Button
         variant="ghost"
         size="icon"
-        className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/20 rounded-full"
+        className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full"
         onClick={onPrevious}
         disabled={isFirstImage}
         aria-label="Previous image"
@@ -51,7 +51,7 @@ export const GalleryModalContent: React.FC<GalleryModalContentProps> = ({
       <Button
         variant="ghost"
         size="icon"
-        className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/20 rounded-full"
+        className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full"
         onClick={onNext}
         disabled={isLastImage}
         aria-label="Next image"
