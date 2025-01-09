@@ -38,17 +38,26 @@ export function useProfile(userId: string | undefined) {
           return;
         }
 
+        if (!data) {
+          console.error('useProfile - No profile found for user:', userId);
+          setError(new Error('Profile not found'));
+          toast({
+            title: "Profile Not Found",
+            description: "Your profile could not be loaded",
+            variant: "destructive",
+          });
+          return;
+        }
+
         console.log('useProfile - Profile data:', data);
         setProfile(data);
         
         // Log admin status for debugging
-        if (data) {
-          console.log('useProfile - Admin status:', {
-            userId,
-            isAdmin: data.is_admin,
-            profile: data
-          });
-        }
+        console.log('useProfile - Admin status:', {
+          userId,
+          isAdmin: data.is_admin,
+          profile: data
+        });
 
       } catch (err) {
         console.error('useProfile - Unexpected error:', err);

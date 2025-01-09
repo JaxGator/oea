@@ -7,6 +7,18 @@ export function useAuthState() {
   const { user, isLoading: isSessionLoading, error: sessionError } = useSession();
   const { profile, isLoading: isProfileLoading, error: profileError } = useProfile(user?.id);
 
+  // Log authentication state for debugging
+  console.log('useAuthState - Current state:', {
+    hasUser: !!user,
+    userId: user?.id,
+    hasProfile: !!profile,
+    isAdmin: profile?.is_admin,
+    isLoading: isSessionLoading || isProfileLoading,
+    sessionError,
+    profileError,
+    timestamp: new Date().toISOString()
+  });
+
   // Handle and log any errors
   if (sessionError) {
     console.error('Session error:', sessionError);

@@ -23,13 +23,26 @@ export function useSession() {
         setState({ user: null, isLoading: false, error });
         return;
       }
+      
+      console.log('Initial session state:', {
+        hasSession: !!session,
+        user: session?.user,
+        timestamp: new Date().toISOString()
+      });
+      
       setState({ user: session?.user ?? null, isLoading: false, error: null });
     });
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('Auth state changed:', event, session?.user);
+        console.log('Auth state changed:', {
+          event,
+          hasSession: !!session,
+          user: session?.user,
+          timestamp: new Date().toISOString()
+        });
+        
         setState({
           user: session?.user ?? null,
           isLoading: false,
