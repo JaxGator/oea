@@ -24,11 +24,12 @@ export function useMemberManagement(searchTerm: string = "", filters: UserFilter
           .from('profiles')
           .select('*', { count: 'exact' });
 
-        // Only search by username since email is not in profiles table
+        // Search only by username
         if (searchTerm) {
           query = query.ilike('username', `%${searchTerm}%`);
         }
 
+        // Apply filters one by one to ensure proper query construction
         if (filters.isAdmin !== undefined) {
           query = query.eq('is_admin', filters.isAdmin);
         }
@@ -39,6 +40,7 @@ export function useMemberManagement(searchTerm: string = "", filters: UserFilter
           query = query.eq('is_member', filters.isMember);
         }
 
+        // Add pagination
         const start = (page - 1) * ITEMS_PER_PAGE;
         query = query
           .range(start, start + ITEMS_PER_PAGE - 1)
@@ -48,12 +50,20 @@ export function useMemberManagement(searchTerm: string = "", filters: UserFilter
         
         if (error) {
           console.error('Error fetching members:', error);
-          throw error;
+          throw new Error(`Failed to fetch members: ${error.message}`);
+        }
+
+        if (!data) {
+          console.warn('No data returned from query');
+          return {
+            members: [],
+            totalPages: 0
+          };
         }
 
         console.log('Members fetch result:', {
           count,
-          data,
+          dataLength: data.length,
           page,
           filters
         });
