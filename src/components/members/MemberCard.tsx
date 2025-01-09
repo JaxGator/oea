@@ -26,7 +26,7 @@ export function MemberCard({
       onClick={onClick}
     >
       <div className="flex items-start justify-between">
-        <div className="flex items-center space-x-3">
+        <div className="flex items-start space-x-3">
           <Avatar className="h-10 w-10">
             <AvatarImage 
               src={member.avatar_url || ''} 
@@ -36,19 +36,19 @@ export function MemberCard({
               <UserCircle className="h-10 w-10" />
             </AvatarFallback>
           </Avatar>
-          <div>
+          <div className="space-y-1">
             <h3 className="font-medium">{member.username}</h3>
             {member.full_name && (
               <p className="text-sm text-gray-500">{member.full_name}</p>
             )}
+            <MemberStatusBadges
+              isAdmin={member.is_admin}
+              isApproved={member.is_approved}
+              isMember={member.is_member}
+            />
           </div>
         </div>
-        <div className="flex flex-col items-end gap-2">
-          <MemberStatusBadges
-            isAdmin={member.is_admin}
-            isApproved={member.is_approved}
-            isMember={member.is_member}
-          />
+        <div>
           <MemberActions
             member={member}
             onEdit={() => onEdit(member)}
