@@ -12,33 +12,40 @@ export function useProfile(userId: string | undefined) {
       
       console.log('Fetching profile for user:', userId);
       
-      const result = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .maybeSingle();
-      
-      if (result.error) {
-        console.error('Profile fetch error:', {
-          error: result.error,
-          userId,
-          timestamp: new Date().toISOString()
-        });
+      try {
+        const result = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', userId)
+          .maybeSingle();
         
-        toast({
-          title: "Error loading profile",
-          description: "Please try refreshing the page",
-          variant: "destructive",
-        });
+        if (result.error) {
+          console.error('Profile fetch error:', {
+            error: result.error,
+            userId,
+            timestamp: new Date().toISOString()
+          });
+          
+          // Show user-friendly error message
+          toast({
+            title: "Error loading profile",
+            description: "Please try refreshing the page",
+            variant: "destructive",
+          });
+          
+          throw result.error;
+        }
         
-        throw result.error;
+        console.log('Profile fetch result:', result.data);
+        return result.data as Profile;
+      } catch (error) {
+        console.error('Profile fetch failed:', error);
+        throw error;
       }
-      
-      console.log('Profile fetch result:', result.data);
-      return result.data as Profile;
     },
     enabled: !!userId,
     retry: 3,
-    retryDelay: (attemptIndex) => Math.min(1000 * Math.pow(2, attemptIndex), 10000)
+    retryDelay: (attemptIndex) => Math.min(1000 * Math.pow(2, attemptIndex), 10000),
+    staleTime: 1000 * 60 * 5, // Cache for 5 minutes
   });
 }
