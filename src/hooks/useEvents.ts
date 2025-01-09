@@ -1,17 +1,23 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { handleQueryResult } from '@/utils/supabase-helpers';
 import { transformEventData } from './events/useEventTransform';
 import type { Event } from '@/types/event';
 import { toast } from 'sonner';
+import { useAuthState } from './useAuthState';
 
 export function useEvents(selectedDate?: Date) {
+  const { profile } = useAuthState();
+  const isApproved = profile?.is_approved;
+
   return useQuery({
-    queryKey: ['events', selectedDate?.toISOString()],
+    queryKey: ['events', selectedDate?.toISOString(), isApproved],
     queryFn: async () => {
       try {
+        // Choose the appropriate table based on user's approval status
+        const tableName = isApproved ? 'events' : 'event_public_view';
+        
         let query = supabase
-          .from('events')
+          .from(tableName)
           .select(`
             *,
             event_rsvps (
