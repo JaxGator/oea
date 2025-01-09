@@ -6,6 +6,7 @@ import { useAuthState } from "@/hooks/useAuthState";
 import { EventsHeader } from "@/components/event/sections/EventsHeader";
 import { EventsContent } from "@/components/event/sections/EventsContent";
 import { filterEventsByDate } from "@/utils/dateUtils";
+import { Event } from "@/types/event";
 
 export default function Events() {
   const { isAuthenticated } = useAuthState();
@@ -18,11 +19,17 @@ export default function Events() {
   // Only filter by date if a date is selected, otherwise show all events
   const filteredEvents = selectedDate ? filterEventsByDate(events, selectedDate) : events;
   
-  // Separate upcoming and past events
+  // Separate upcoming and past events, with featured events first
   const now = new Date();
   const upcomingEvents = filteredEvents
     .filter(event => new Date(event.date) >= now)
-    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    .sort((a, b) => {
+      // Sort featured events first
+      if (a.is_featured && !b.is_featured) return -1;
+      if (!a.is_featured && b.is_featured) return 1;
+      // Then sort by date
+      return new Date(a.date).getTime() - new Date(b.date).getTime();
+    });
 
   const pastEvents = filteredEvents
     .filter(event => new Date(event.date) < now)
