@@ -22,6 +22,7 @@ export default function AdminUserList() {
   const [searchTerm, setSearchTerm] = useState("");
   const [filters, setFilters] = useState<UserFilters>({});
   const [page, setPage] = useState(1);
+  const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
   const debouncedSearch = useDebounce(searchTerm, 300);
   const { notify } = useNotifications();
   
@@ -63,7 +64,13 @@ export default function AdminUserList() {
     setPage(newPage);
   }, []);
 
+  const handleViewMember = useCallback((member: Member) => {
+    setViewingMember(member);
+    setIsViewDialogOpen(true);
+  }, []);
+
   const handleCloseView = useCallback((open: boolean) => {
+    setIsViewDialogOpen(open);
     if (!open) {
       setViewingMember(null);
     }
@@ -122,7 +129,7 @@ export default function AdminUserList() {
       {viewingMember && (
         <ViewMemberDialog
           member={viewingMember}
-          open={!!viewingMember}
+          open={isViewDialogOpen}
           onOpenChange={handleCloseView}
         />
       )}
