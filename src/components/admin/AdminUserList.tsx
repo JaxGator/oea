@@ -11,6 +11,7 @@ import { UserListError } from "./user-management/UserListError";
 import { useUserList } from "@/hooks/admin/useUserList";
 import { useUserActions } from "@/hooks/admin/useUserActions";
 import { useUserManagement } from "@/hooks/admin/useUserManagement";
+import { AdminErrorBoundary } from "./error/AdminErrorBoundary";
 
 export type UserFilters = {
   isAdmin?: boolean;
@@ -70,41 +71,43 @@ export default function AdminUserList() {
   }
 
   return (
-    <div className="space-y-4">
-      <UserListHeader 
-        onUserCreated={refetch}
-        onSearch={handleSearch}
-        onFilterChange={handleFilterChange}
-        filters={filters}
-      />
-      
-      <UserListContent
-        members={data?.members ?? []}
-        isLoading={isLoading}
-        error={error}
-        onEditMember={handleEdit}
-        onDeleteMember={handleDeleteUser}
-        onViewMember={handleViewMember}
-        currentPage={page}
-        totalPages={data?.totalPages ?? 1}
-        onPageChange={handlePageChange}
-      />
-
-      {viewingMember && (
-        <ViewMemberDialog
-          member={viewingMember}
-          open={isViewDialogOpen}
-          onOpenChange={handleCloseView}
+    <AdminErrorBoundary>
+      <div className="space-y-4">
+        <UserListHeader 
+          onUserCreated={refetch}
+          onSearch={handleSearch}
+          onFilterChange={handleFilterChange}
+          filters={filters}
         />
-      )}
-
-      {editingMember && (
-        <EditMemberHandler
-          member={editingMember}
-          onClose={handleCloseEdit}
-          onUpdate={handleUpdateComplete}
+        
+        <UserListContent
+          members={data?.members ?? []}
+          isLoading={isLoading}
+          error={error}
+          onEditMember={handleEdit}
+          onDeleteMember={handleDeleteUser}
+          onViewMember={handleViewMember}
+          currentPage={page}
+          totalPages={data?.totalPages ?? 1}
+          onPageChange={handlePageChange}
         />
-      )}
-    </div>
+
+        {viewingMember && (
+          <ViewMemberDialog
+            member={viewingMember}
+            open={isViewDialogOpen}
+            onOpenChange={handleCloseView}
+          />
+        )}
+
+        {editingMember && (
+          <EditMemberHandler
+            member={editingMember}
+            onClose={handleCloseEdit}
+            onUpdate={handleUpdateComplete}
+          />
+        )}
+      </div>
+    </AdminErrorBoundary>
   );
 }

@@ -4,24 +4,16 @@ import AdminUserList from "@/components/admin/AdminUserList";
 import SiteConfigManager from "@/components/admin/SiteConfigManager";
 import GalleryManager from "@/components/admin/GalleryManager";
 import PaymentManager from "@/components/admin/payments/PaymentManager";
-import { ErrorBoundary } from "@/components/error/ErrorBoundary";
 import ReportsTabs from "@/components/admin/reports/ReportsLayout";
 import { UserActivityReport } from "@/components/admin/reports/UserActivityReport";
 import { EventParticipationReport } from "@/components/admin/reports/EventParticipationReport";
 import { SystemUsageReport } from "@/components/admin/reports/SystemUsageReport";
 import AdminTestRunner from "@/components/admin/testing/AdminTestRunner";
+import { AdminErrorBoundary } from "../error/AdminErrorBoundary";
 
 interface AdminTabsProps {
   defaultTab?: string;
 }
-
-const TabErrorFallback = ({ error }: { error: Error }) => (
-  <div className="p-4 rounded-lg bg-red-50 text-red-800">
-    <h2 className="text-lg font-semibold mb-2">Error loading content</h2>
-    <p>{error.message}</p>
-    <p>Please try refreshing the page.</p>
-  </div>
-);
 
 export function AdminTabs({ defaultTab = "users" }: AdminTabsProps) {
   return (
@@ -53,26 +45,20 @@ export function AdminTabs({ defaultTab = "users" }: AdminTabsProps) {
         </TabsTrigger>
       </TabsList>
 
-      <TabsContent value="users" className="space-y-4 min-h-[300px]">
-        <ErrorBoundary fallback={TabErrorFallback}>
+      <AdminErrorBoundary>
+        <TabsContent value="users" className="space-y-4 min-h-[300px]">
           <AdminUserList />
-        </ErrorBoundary>
-      </TabsContent>
+        </TabsContent>
 
-      <TabsContent value="gallery" className="space-y-4 min-h-[300px]">
-        <ErrorBoundary fallback={TabErrorFallback}>
+        <TabsContent value="gallery" className="space-y-4 min-h-[300px]">
           <GalleryManager />
-        </ErrorBoundary>
-      </TabsContent>
+        </TabsContent>
 
-      <TabsContent value="payments" className="space-y-4 min-h-[300px]">
-        <ErrorBoundary fallback={TabErrorFallback}>
+        <TabsContent value="payments" className="space-y-4 min-h-[300px]">
           <PaymentManager />
-        </ErrorBoundary>
-      </TabsContent>
+        </TabsContent>
 
-      <TabsContent value="reports" className="space-y-4 min-h-[300px]">
-        <ErrorBoundary fallback={TabErrorFallback}>
+        <TabsContent value="reports" className="space-y-4 min-h-[300px]">
           <Tabs defaultValue="user-activity" className="space-y-4">
             <ReportsTabs />
             
@@ -88,20 +74,16 @@ export function AdminTabs({ defaultTab = "users" }: AdminTabsProps) {
               <SystemUsageReport />
             </TabsContent>
           </Tabs>
-        </ErrorBoundary>
-      </TabsContent>
+        </TabsContent>
 
-      <TabsContent value="testing" className="space-y-4 min-h-[300px]">
-        <ErrorBoundary fallback={TabErrorFallback}>
+        <TabsContent value="testing" className="space-y-4 min-h-[300px]">
           <AdminTestRunner />
-        </ErrorBoundary>
-      </TabsContent>
+        </TabsContent>
 
-      <TabsContent value="site-config" className="space-y-4 min-h-[300px]">
-        <ErrorBoundary fallback={TabErrorFallback}>
+        <TabsContent value="site-config" className="space-y-4 min-h-[300px]">
           <SiteConfigManager />
-        </ErrorBoundary>
-      </TabsContent>
+        </TabsContent>
+      </AdminErrorBoundary>
     </Tabs>
   );
 }
