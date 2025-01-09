@@ -11,12 +11,10 @@ export function useViewMemberDialog() {
     setIsViewDialogOpen(true);
   }, []);
 
-  const handleCloseView = useCallback((open: boolean) => {
-    console.log('Dialog state changing to:', open);
-    setIsViewDialogOpen(open);
-    if (!open) {
-      setViewingMember(null);
-    }
+  const handleCloseView = useCallback(() => {
+    console.log('Closing view dialog');
+    setIsViewDialogOpen(false);
+    setViewingMember(null);
   }, []);
 
   return {

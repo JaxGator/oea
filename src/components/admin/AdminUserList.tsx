@@ -115,7 +115,7 @@ export default function AdminUserList() {
         <ViewMemberDialog
           member={viewingMember}
           open={isViewDialogOpen}
-          onOpenChange={handleCloseView}
+          onOpenChange={() => handleCloseView()}
         />
       )}
 

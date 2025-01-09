@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/pagination";
 
 interface UserListContentProps {
-  members: Member[] | null;
+  members: Member[];
   isLoading: boolean;
   error: Error | null;
   onEditMember: (member: Member) => void;
