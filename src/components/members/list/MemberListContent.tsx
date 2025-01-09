@@ -1,4 +1,3 @@
-import { Profile } from "@/types/auth";
 import { MemberCard } from "../MemberCard";
 import { Member } from "../types";
 
