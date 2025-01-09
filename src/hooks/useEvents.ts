@@ -13,11 +13,8 @@ export function useEvents(selectedDate?: Date) {
     queryKey: ['events', selectedDate?.toISOString(), isApproved],
     queryFn: async () => {
       try {
-        // Choose the appropriate table based on user's approval status
-        const tableName = isApproved ? 'events' : 'event_public_view';
-        
-        let query = supabase
-          .from(tableName)
+        const query = supabase
+          .from(isApproved ? 'events' : 'event_public_view')
           .select(`
             *,
             event_rsvps (
@@ -37,7 +34,7 @@ export function useEvents(selectedDate?: Date) {
         // Only filter by date if a date is selected
         if (selectedDate) {
           const dateStr = selectedDate.toISOString().split('T')[0];
-          query = query.eq('date', dateStr);
+          query.eq('date', dateStr);
         }
 
         const { data, error } = await query;
