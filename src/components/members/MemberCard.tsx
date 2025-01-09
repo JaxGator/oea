@@ -11,9 +11,10 @@ interface MemberCardProps {
   currentUserIsAdmin: boolean;
   onEdit: (member: Profile) => void;
   onDelete: (memberId: string) => void;
+  onClick?: () => void;  // Made optional to maintain backward compatibility
 }
 
-export function MemberCard({ member, currentUserIsAdmin, onEdit, onDelete }: MemberCardProps) {
+export function MemberCard({ member, currentUserIsAdmin, onEdit, onDelete, onClick }: MemberCardProps) {
   // Convert Profile to Member type for MemberActions
   const memberData: Member = {
     id: member.id,
@@ -28,7 +29,7 @@ export function MemberCard({ member, currentUserIsAdmin, onEdit, onDelete }: Mem
   };
 
   return (
-    <Card className="w-full">
+    <Card className="w-full" onClick={onClick}>
       <CardContent className="p-4">
         <div className="flex items-center space-x-4">
           <Avatar className="h-12 w-12">
