@@ -63,6 +63,10 @@ export default function AdminUserList() {
     setPage(newPage);
   }, []);
 
+  const handleCloseView = useCallback(() => {
+    setViewingMember(null);
+  }, []);
+
   if (error) {
     console.error('AdminUserList: Error fetching members:', error);
     return (
@@ -117,7 +121,7 @@ export default function AdminUserList() {
         <ViewMemberDialog
           member={viewingMember}
           open={!!viewingMember}
-          onOpenChange={(open) => !open && setViewingMember(null)}
+          onOpenChange={handleCloseView}
         />
       )}
 
