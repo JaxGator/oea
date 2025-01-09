@@ -63,8 +63,10 @@ export default function AdminUserList() {
     setPage(newPage);
   }, []);
 
-  const handleCloseView = useCallback(() => {
-    setViewingMember(null);
+  const handleCloseView = useCallback((open: boolean) => {
+    if (!open) {
+      setViewingMember(null);
+    }
   }, []);
 
   if (error) {
