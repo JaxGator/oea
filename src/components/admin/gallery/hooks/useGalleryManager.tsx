@@ -42,9 +42,9 @@ export function useGalleryManager() {
 
   const fetchImages = async () => {
     try {
+      setIsLoading(true);
       console.log('Fetching gallery images...');
       
-      // First, get the ordered list of images from the gallery_images table
       const { data: galleryData, error: galleryError } = await supabase
         .from('gallery_images')
         .select('*')
@@ -63,7 +63,6 @@ export function useGalleryManager() {
         return;
       }
 
-      // Then get the actual files from storage
       const { data: storageData, error: storageError } = await supabase.storage
         .from('gallery')
         .list();
@@ -75,30 +74,48 @@ export function useGalleryManager() {
 
       console.log('Storage data fetched:', storageData);
 
-      // Map the files to their public URLs, maintaining the order from gallery_images
-      const imageUrls = galleryData
-        .map(galleryImage => {
+      const imageUrls = await Promise.all(
+        galleryData.map(async (galleryImage) => {
           const storageFile = storageData.find(file => file.name === galleryImage.file_name);
           if (!storageFile) {
             console.warn(`File not found in storage: ${galleryImage.file_name}`);
             return null;
           }
 
-          const publicUrl = supabase.storage
+          const { data: publicUrlData } = supabase.storage
             .from('gallery')
             .getPublicUrl(galleryImage.file_name);
 
-          console.log(`Generated public URL for ${galleryImage.file_name}:`, publicUrl.data.publicUrl);
-          
+          if (!publicUrlData.publicUrl) {
+            console.warn(`Could not generate public URL for: ${galleryImage.file_name}`);
+            return null;
+          }
+
+          // Verify the image is accessible
+          try {
+            const response = await fetch(publicUrlData.publicUrl, { method: 'HEAD' });
+            if (!response.ok) {
+              console.warn(`Image not accessible: ${publicUrlData.publicUrl}`);
+              return null;
+            }
+          } catch (error) {
+            console.error(`Error verifying image accessibility: ${galleryImage.file_name}`, error);
+            return null;
+          }
+
           return {
             id: galleryImage.id,
-            url: publicUrl.data.publicUrl
+            url: publicUrlData.publicUrl
           };
         })
-        .filter((image): image is { url: string; id: string } => image !== null);
+      );
 
-      console.log(`Found ${imageUrls.length} valid images in gallery:`, imageUrls);
-      setImages(imageUrls);
+      const validImages = imageUrls.filter((image): image is { url: string; id: string } => 
+        image !== null && image.url !== null
+      );
+
+      console.log(`Found ${validImages.length} valid images in gallery:`, validImages);
+      setImages(validImages);
     } catch (error) {
       console.error('Error fetching images:', error);
       toast({
@@ -139,7 +156,6 @@ export function useGalleryManager() {
         description: "Failed to update carousel settings",
         variant: "destructive",
       });
-      // Revert the UI state on error
       setCarouselEnabled(!enabled);
     }
   };

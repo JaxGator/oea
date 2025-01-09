@@ -1,4 +1,5 @@
 import { X } from "lucide-react";
+import { useState } from "react";
 
 interface GalleryGridContainerProps {
   images: Array<{ url: string; id: string }>;
@@ -6,14 +7,31 @@ interface GalleryGridContainerProps {
 }
 
 export function GalleryGridContainer({ images, onImageDelete }: GalleryGridContainerProps) {
+  const [loadedImages, setLoadedImages] = useState<Set<string>>(new Set());
+
+  const handleImageLoad = (imageId: string) => {
+    setLoadedImages(prev => new Set([...prev, imageId]));
+  };
+
+  const handleImageError = (imageUrl: string) => {
+    console.error(`Failed to load image: ${imageUrl}`);
+  };
+
   return (
     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
       {images.map((image) => (
         <div key={image.id} className="relative group aspect-square">
+          <div className={`w-full h-full bg-gray-100 rounded-lg ${
+            loadedImages.has(image.id) ? 'hidden' : 'block'
+          }`} />
           <img
             src={image.url}
             alt={`Gallery image`}
-            className="w-full h-full object-cover rounded-lg"
+            className={`w-full h-full object-cover rounded-lg transition-opacity duration-300 ${
+              loadedImages.has(image.id) ? 'opacity-100' : 'opacity-0'
+            }`}
+            onLoad={() => handleImageLoad(image.id)}
+            onError={() => handleImageError(image.url)}
           />
           <button
             onClick={(e) => {
