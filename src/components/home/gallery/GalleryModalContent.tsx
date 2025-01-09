@@ -38,6 +38,12 @@ export function GalleryModalContent({
         </Button>
       )}
 
+      <img
+        src={selectedImage}
+        alt="Selected gallery image"
+        className="max-w-full max-h-[85vh] object-contain"
+      />
+
       {!isLastImage && (
         <Button
           variant="ghost"
@@ -48,12 +54,6 @@ export function GalleryModalContent({
           <ChevronRight className="h-8 w-8" />
         </Button>
       )}
-
-      <img
-        src={selectedImage}
-        alt="Selected gallery image"
-        className="max-w-full max-h-[85vh] object-contain"
-      />
     </div>
   );
 }

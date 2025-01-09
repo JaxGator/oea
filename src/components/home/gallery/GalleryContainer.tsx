@@ -30,24 +30,21 @@ export const GalleryContainer: React.FC<GalleryContainerProps> = ({ children }) 
     refetchOnWindowFocus: false
   });
 
-  const { data: images = [], isLoading, error } = useQuery({
+  const { data: galleryImages = [], isLoading, error } = useQuery({
     queryKey: ['gallery-images'],
     queryFn: async () => {
       try {
-        const { data: storageData, error: storageError } = await supabase.storage
-          .from('gallery')
-          .list();
+        const { data, error } = await supabase
+          .from('gallery_images')
+          .select('*')
+          .order('display_order', { ascending: true });
 
-        if (storageError) throw storageError;
+        if (error) throw error;
 
-        if (!storageData) return [];
+        if (!data) return [];
 
-        return storageData
-          .filter(file => file.name.match(/\.(jpg|jpeg|png|gif)$/i))
-          .map(file => {
-            const { data } = supabase.storage.from('gallery').getPublicUrl(file.name);
-            return data.publicUrl;
-          });
+        // Transform the data to return just the file_name strings
+        return data.map(image => image.file_name);
       } catch (err) {
         console.error('Failed to fetch gallery images:', err);
         toast.error('Failed to load gallery images');
@@ -58,5 +55,10 @@ export const GalleryContainer: React.FC<GalleryContainerProps> = ({ children }) 
     retry: 1
   });
 
-  return <>{children({ images, isLoading, error, isCarouselEnabled: config })}</>;
+  return <>{children({ 
+    images: galleryImages, 
+    isLoading, 
+    error, 
+    isCarouselEnabled: config 
+  })}</>;
 };
