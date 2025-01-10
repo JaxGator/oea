@@ -21,6 +21,7 @@ interface EventCardDetailedViewProps {
   isPastEvent: boolean;
   isWixEvent: boolean;
   canAddGuests: boolean;
+  currentGuests?: { firstName: string }[];
   onRSVP: (guests?: { firstName: string }[]) => void;
   onCancelRSVP: () => void;
   onEdit: () => void;
@@ -36,6 +37,7 @@ export function EventCardDetailedView({
   isPastEvent,
   isWixEvent,
   canAddGuests,
+  currentGuests = [],
   onRSVP,
   onCancelRSVP,
   onEdit,
@@ -96,6 +98,7 @@ export function EventCardDetailedView({
           isWixEvent={isWixEvent}
           showDelete={isAdmin && (isPastEvent || isWixEvent)}
           canAddGuests={canAddGuests}
+          currentGuests={currentGuests}
         />
       </div>
     </div>

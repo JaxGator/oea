@@ -48,19 +48,21 @@ export function EventCardContainer({
     queryFn: async () => {
       if (!userRSVPStatus) return [];
       
-      const { data: rsvp } = await supabase
+      // First get all RSVPs for this event and user
+      const { data: rsvps } = await supabase
         .from('event_rsvps')
         .select('id')
         .eq('event_id', event.id)
-        .eq('response', 'attending')
-        .single();
+        .eq('response', 'attending');
 
-      if (!rsvp) return [];
+      if (!rsvps?.length) return [];
 
+      // Then get all guests for these RSVPs
+      const rsvpIds = rsvps.map(rsvp => rsvp.id);
       const { data: guestData } = await supabase
         .from('event_guests')
         .select('first_name')
-        .eq('rsvp_id', rsvp.id);
+        .in('rsvp_id', rsvpIds);
 
       return guestData?.map(guest => ({ firstName: guest.first_name })) || [];
     },
