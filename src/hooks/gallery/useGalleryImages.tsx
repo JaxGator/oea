@@ -14,7 +14,7 @@ export function useGalleryImages() {
       const { data: galleryData, error: dbError } = await supabase
         .from('gallery_images')
         .select('*')
-        .order('display_order', { ascending: true });
+        .order('created_at', { ascending: false });
 
       if (dbError) {
         console.error('Database error:', dbError);

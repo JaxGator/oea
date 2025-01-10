@@ -19,12 +19,11 @@ export function FullGalleryDialog({ open, onOpenChange }: FullGalleryDialogProps
       const { data, error } = await supabase
         .from('gallery_images')
         .select('*')
-        .order('display_order', { ascending: true });
+        .order('created_at', { ascending: false });
 
       if (error) throw error;
       if (!data) return [];
 
-      // Transform the data to return the full public URLs for the images
       return data.map(image => {
         const { data: urlData } = supabase.storage
           .from('gallery')
@@ -51,14 +50,16 @@ export function FullGalleryDialog({ open, onOpenChange }: FullGalleryDialogProps
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-[95vw] max-h-[95vh] p-6">
+        <DialogContent className="max-w-[95vw] max-h-[90vh] p-6 overflow-y-auto">
           <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
             Photo Gallery
           </h2>
-          <GalleryGrid 
-            images={images} 
-            onImageSelect={setSelectedImage}
-          />
+          <div className="overflow-y-auto max-h-[calc(90vh-8rem)]">
+            <GalleryGrid 
+              images={images} 
+              onImageSelect={setSelectedImage}
+            />
+          </div>
         </DialogContent>
       </Dialog>
 
