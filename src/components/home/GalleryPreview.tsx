@@ -19,8 +19,9 @@ export function GalleryPreview() {
         const { data, error } = await supabase
           .from('gallery_images')
           .select('*')
+          .not('file_name', 'like', 'event-pics/%')
           .order('created_at', { ascending: false })
-          .limit(4); // Updated to fetch 4 images for preview
+          .limit(4);
 
         if (error) {
           console.error('Error fetching gallery images:', error);

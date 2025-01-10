@@ -19,6 +19,7 @@ export function FullGalleryDialog({ open, onOpenChange }: FullGalleryDialogProps
       const { data, error } = await supabase
         .from('gallery_images')
         .select('*')
+        .not('file_name', 'like', 'event-pics/%')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
