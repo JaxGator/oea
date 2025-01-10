@@ -38,6 +38,7 @@ export function ImageUploadForm({ onUploadSuccess }: ImageUploadFormProps) {
     }
 
     setIsUploading(true);
+
     try {
       // Create a timestamp-based filename with original extension
       const timestamp = Date.now();
@@ -51,40 +52,40 @@ export function ImageUploadForm({ onUploadSuccess }: ImageUploadFormProps) {
         userId: user.id
       });
 
-      // Upload file to storage
+      // First create the database record with user_id
+      const { data: dbData, error: dbError } = await supabase
+        .from('gallery_images')
+        .insert({
+          file_name: fileName,
+          display_order: timestamp,
+          user_id: user.id
+        })
+        .select()
+        .single();
+
+      if (dbError) {
+        console.error('Database error:', dbError);
+        throw dbError;
+      }
+
+      console.log('Database record created:', dbData);
+
+      // Then upload file to storage
       const { error: uploadError } = await supabase.storage
         .from('gallery')
         .upload(fileName, file);
 
       if (uploadError) {
         console.error('Storage upload error:', uploadError);
+        // Clean up the database record if storage upload fails
+        await supabase
+          .from('gallery_images')
+          .delete()
+          .eq('file_name', fileName);
         throw uploadError;
       }
 
-      // Get the public URL
-      const { data: { publicUrl } } = supabase.storage
-        .from('gallery')
-        .getPublicUrl(fileName);
-
-      console.log('File uploaded successfully, public URL:', publicUrl);
-
-      // Create database record with user_id
-      const { error: dbError } = await supabase
-        .from('gallery_images')
-        .insert({
-          file_name: fileName,
-          display_order: timestamp,
-          user_id: user.id // Explicitly set the user_id
-        });
-
-      if (dbError) {
-        console.error('Database error:', dbError);
-        // Clean up the uploaded file if database insert fails
-        await supabase.storage
-          .from('gallery')
-          .remove([fileName]);
-        throw dbError;
-      }
+      console.log('File uploaded successfully');
 
       toast({
         title: "Success",
