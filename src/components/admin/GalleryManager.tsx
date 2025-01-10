@@ -1,4 +1,3 @@
-import { useGalleryManager } from "./gallery/hooks/useGalleryManager";
 import { ImageUploadForm } from "./gallery/ImageUploadForm";
 import { ImageGrid } from "./gallery/ImageGrid";
 import { CarouselToggle } from "./gallery/CarouselToggle";
@@ -6,15 +5,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { HelpCircle } from "lucide-react";
+import { useGalleryImages } from "@/hooks/gallery/useGalleryImages";
+import { useCarouselConfig } from "@/hooks/gallery/useCarouselConfig";
 
 export default function GalleryManager() {
-  const {
-    images,
-    isLoading,
-    carouselEnabled,
-    fetchImages,
-    updateCarouselConfig
-  } = useGalleryManager();
+  const { images, isLoading, fetchImages } = useGalleryImages();
+  const { carouselEnabled, updateCarouselConfig } = useCarouselConfig();
 
   if (isLoading) {
     return <div>Loading gallery...</div>;
