@@ -45,7 +45,11 @@ export function useGalleryImages() {
         try {
           const response = await fetch(urlData.publicUrl, { method: 'HEAD' });
           if (!response.ok) {
-            console.error('URL not accessible:', urlData.publicUrl);
+            console.error('URL not accessible:', {
+              url: urlData.publicUrl,
+              status: response.status,
+              statusText: response.statusText
+            });
             return null;
           }
           
@@ -59,7 +63,10 @@ export function useGalleryImages() {
             url: urlData.publicUrl
           };
         } catch (error) {
-          console.error('Error validating URL:', error);
+          console.error('Error validating URL:', {
+            url: urlData.publicUrl,
+            error: error.message
+          });
           return null;
         }
       }));

@@ -25,12 +25,36 @@ export function GalleryGridContainer({ images, onImageDelete }: GalleryGridConta
     console.error('Failed to load image:', {
       id: imageId,
       url: imageUrl,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
+      headers: new Headers()
     });
+    
+    // Attempt to fetch image details
+    fetch(imageUrl, { method: 'HEAD' })
+      .then(response => {
+        console.log('Image HEAD request result:', {
+          url: imageUrl,
+          status: response.status,
+          statusText: response.statusText,
+          headers: Object.fromEntries(response.headers.entries())
+        });
+      })
+      .catch(error => {
+        console.error('Image HEAD request failed:', {
+          url: imageUrl,
+          error: error.message
+        });
+      });
+
     setErrorImages(prev => new Set([...prev, imageId]));
   };
 
-  console.log('Rendering GalleryGridContainer with images:', images);
+  console.log('Rendering GalleryGridContainer with images:', {
+    totalImages: images.length,
+    loadedImages: loadedImages.size,
+    errorImages: errorImages.size,
+    imageUrls: images.map(img => img.url)
+  });
 
   if (images.length === 0) {
     return (
@@ -73,7 +97,10 @@ export function GalleryGridContainer({ images, onImageDelete }: GalleryGridConta
             size="icon"
             onClick={(e) => {
               e.stopPropagation();
-              console.log('Deleting image:', image.url);
+              console.log('Deleting image:', {
+                id: image.id,
+                url: image.url
+              });
               onImageDelete(image.url);
             }}
             className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
