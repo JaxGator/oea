@@ -17,6 +17,7 @@ export function SessionManager({ children, queryClient }: SessionManagerProps) {
 
   useEffect(() => {
     let mounted = true;
+    let refreshTimeout: NodeJS.Timeout;
 
     const checkSession = async () => {
       try {
@@ -39,36 +40,43 @@ export function SessionManager({ children, queryClient }: SessionManagerProps) {
           return;
         }
 
-        // Try to refresh the session
-        try {
-          console.log('Attempting to refresh session...');
-          const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession();
-          
-          if (refreshError) {
-            if (refreshError.message.includes('refresh_token_not_found')) {
-              console.log('No refresh token found - clearing session');
+        // Calculate time until token expires
+        const expiresAt = new Date(session.expires_at! * 1000);
+        const now = new Date();
+        const timeUntilExpiry = expiresAt.getTime() - now.getTime();
+        
+        // If token expires in less than 5 minutes, refresh it
+        if (timeUntilExpiry < 5 * 60 * 1000) {
+          try {
+            console.log('Token expiring soon, refreshing...');
+            const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession();
+            
+            if (refreshError) {
+              if (refreshError.message.includes('refresh_token_not_found')) {
+                console.log('No refresh token found - clearing session');
+                await clearSessionData();
+                if (isProtectedRoute(location.pathname)) {
+                  navigate('/auth');
+                }
+                return;
+              }
+              throw refreshError;
+            }
+
+            if (!refreshData.session) {
+              console.log('Session refresh failed - no new session');
               await clearSessionData();
               if (isProtectedRoute(location.pathname)) {
                 navigate('/auth');
               }
               return;
             }
-            throw refreshError;
+            
+            console.log('Session refreshed successfully');
+          } catch (refreshErr) {
+            console.error('Session refresh failed:', refreshErr);
+            await handleSessionError(refreshErr as AuthError);
           }
-
-          if (!refreshData.session) {
-            console.log('Session refresh failed - no new session');
-            await clearSessionData();
-            if (isProtectedRoute(location.pathname)) {
-              navigate('/auth');
-            }
-            return;
-          }
-          
-          console.log('Session refreshed successfully');
-        } catch (refreshErr) {
-          console.error('Session refresh failed:', refreshErr);
-          await handleSessionError(refreshErr as AuthError);
         }
 
       } catch (err) {
@@ -125,10 +133,6 @@ export function SessionManager({ children, queryClient }: SessionManagerProps) {
           if (isProtectedRoute(location.pathname)) {
             navigate('/auth');
           }
-          toast({
-            title: "Signed out",
-            description: "You have been signed out",
-          });
           break;
           
         case 'SIGNED_IN':
@@ -136,10 +140,6 @@ export function SessionManager({ children, queryClient }: SessionManagerProps) {
           if (location.pathname === '/auth') {
             navigate('/');
           }
-          toast({
-            title: "Signed in",
-            description: "Welcome back!",
-          });
           break;
           
         case 'TOKEN_REFRESHED':
@@ -155,12 +155,13 @@ export function SessionManager({ children, queryClient }: SessionManagerProps) {
     // Initial session check
     checkSession();
 
-    // Periodic session check every 5 minutes
-    const intervalId = setInterval(checkSession, 5 * 60 * 1000);
+    // Set up periodic session checks every minute
+    const intervalId = setInterval(checkSession, 60 * 1000);
 
     return () => {
       mounted = false;
       clearInterval(intervalId);
+      if (refreshTimeout) clearTimeout(refreshTimeout);
       subscription.unsubscribe();
     };
   }, [navigate, location, queryClient]);
