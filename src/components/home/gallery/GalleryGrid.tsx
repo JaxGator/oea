@@ -17,8 +17,8 @@ export function GalleryGrid({
 }: GalleryGridProps) {
   if (isLoading) {
     return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 animate-pulse">
-        {[1, 2, 3].map((index) => (
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 animate-pulse">
+        {[1, 2, 3, 4].map((index) => (
           <div 
             key={index}
             className="aspect-square bg-gray-200 rounded-lg"
@@ -36,10 +36,10 @@ export function GalleryGrid({
     );
   }
 
-  const displayImages = isPreview ? images.slice(0, 3) : images;
+  const displayImages = isPreview ? images.slice(0, 4) : images;
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
       {displayImages.map((imageUrl, index) => (
         <div 
           key={`${imageUrl}-${index}`}

@@ -19,8 +19,8 @@ export function GalleryPreview() {
         const { data, error } = await supabase
           .from('gallery_images')
           .select('*')
-          .order('display_order', { ascending: true })
-          .limit(3); // Only fetch 3 images for preview
+          .order('created_at', { ascending: false })
+          .limit(4); // Updated to fetch 4 images for preview
 
         if (error) {
           console.error('Error fetching gallery images:', error);
@@ -30,8 +30,6 @@ export function GalleryPreview() {
 
         if (!data) return [];
 
-        // Transform the data to return the full public URLs for the images
-        // Only get images from the gallery bucket
         return data.map(image => {
           const { data: urlData } = supabase.storage
             .from('gallery')
