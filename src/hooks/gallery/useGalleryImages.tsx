@@ -29,49 +29,44 @@ export function useGalleryImages() {
         return;
       }
 
-      const imageUrls = await Promise.all(galleryData.map(async (image) => {
-        // Log the file name being processed
-        console.log('Processing file:', image.file_name);
+      const processedImages = await Promise.all(galleryData.map(async (image) => {
+        console.log('Processing image:', image);
 
-        // Get the public URL
         const { data: urlData } = supabase.storage
           .from('gallery')
           .getPublicUrl(image.file_name);
 
-        // Validate the URL
         if (!urlData?.publicUrl) {
-          console.error('Failed to generate public URL for:', image.file_name);
+          console.error('Failed to generate URL for:', image.file_name);
           return null;
         }
 
-        // Log the generated URL
-        console.log('Generated URL:', {
-          fileName: image.file_name,
-          url: urlData.publicUrl
-        });
-
-        // Verify the URL is accessible
+        // Test URL accessibility
         try {
           const response = await fetch(urlData.publicUrl, { method: 'HEAD' });
           if (!response.ok) {
             console.error('URL not accessible:', urlData.publicUrl);
             return null;
           }
+          
+          console.log('Successfully validated URL:', {
+            fileName: image.file_name,
+            url: urlData.publicUrl
+          });
+
+          return {
+            id: image.id,
+            url: urlData.publicUrl
+          };
         } catch (error) {
-          console.error('Error checking URL accessibility:', error);
+          console.error('Error validating URL:', error);
           return null;
         }
-
-        return {
-          id: image.id,
-          url: urlData.publicUrl
-        };
       }));
 
-      // Filter out any null values from failed URL generations
-      const validImages = imageUrls.filter((img): img is { id: string; url: string } => img !== null);
+      const validImages = processedImages.filter((img): img is { id: string; url: string } => img !== null);
       
-      console.log('Final processed image URLs:', validImages);
+      console.log('Final processed images:', validImages);
       setImages(validImages);
 
     } catch (error) {

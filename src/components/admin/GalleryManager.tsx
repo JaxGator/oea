@@ -15,7 +15,8 @@ export default function GalleryManager() {
   console.log('GalleryManager rendering with:', {
     imageCount: images.length,
     isLoading,
-    carouselEnabled
+    carouselEnabled,
+    images
   });
 
   if (isLoading) {
@@ -28,6 +29,59 @@ export default function GalleryManager() {
       </div>
     );
   }
+
+  const handleImageDelete = async (imageUrl: string) => {
+    try {
+      const fileName = imageUrl.split('/').pop()?.split('?')[0];
+      if (!fileName) {
+        throw new Error('Invalid image URL');
+      }
+
+      console.log('Attempting to delete image:', {
+        fileName,
+        fullUrl: imageUrl
+      });
+
+      // First try to delete from storage
+      const { error: storageError } = await supabase.storage
+        .from('gallery')
+        .remove([fileName]);
+
+      if (storageError) {
+        console.error('Storage deletion error:', storageError);
+        throw storageError;
+      }
+
+      console.log('Successfully deleted from storage:', fileName);
+
+      // Then delete from database
+      const { error: dbError } = await supabase
+        .from('gallery_images')
+        .delete()
+        .eq('file_name', fileName);
+
+      if (dbError) {
+        console.error('Database deletion error:', dbError);
+        throw dbError;
+      }
+
+      console.log('Successfully deleted from database:', fileName);
+      
+      toast({
+        title: "Success",
+        description: "Image deleted successfully",
+      });
+      
+      fetchImages();
+    } catch (error) {
+      console.error('Error deleting image:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete image. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -55,49 +109,7 @@ export default function GalleryManager() {
       
       <ImageGrid 
         images={images} 
-        onImageDelete={async (imageUrl: string) => {
-          try {
-            const fileName = imageUrl.split('/').pop()?.split('?')[0];
-            if (!fileName) {
-              throw new Error('Invalid image URL');
-            }
-
-            console.log('Deleting image:', fileName);
-            const { error: storageError } = await supabase.storage
-              .from('gallery')
-              .remove([fileName]);
-
-            if (storageError) {
-              console.error('Storage error:', storageError);
-              throw storageError;
-            }
-
-            const { error: dbError } = await supabase
-              .from('gallery_images')
-              .delete()
-              .eq('file_name', fileName);
-
-            if (dbError) {
-              console.error('Database error:', dbError);
-              throw dbError;
-            }
-
-            console.log('Image deleted successfully');
-            toast({
-              title: "Success",
-              description: "Image deleted successfully",
-            });
-            
-            fetchImages();
-          } catch (error) {
-            console.error('Error deleting image:', error);
-            toast({
-              title: "Error",
-              description: "Failed to delete image. Please try again.",
-              variant: "destructive",
-            });
-          }
-        }}
+        onImageDelete={handleImageDelete}
       />
     </div>
   );
