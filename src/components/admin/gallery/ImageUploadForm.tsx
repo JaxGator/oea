@@ -28,47 +28,48 @@ export function ImageUploadForm({ onUploadSuccess }: ImageUploadFormProps) {
 
     setIsUploading(true);
     try {
+      console.log('Starting file upload process...');
+
       // Create a timestamp-based filename with original extension
       const timestamp = Date.now();
       const fileExt = file.name.split('.').pop()?.toLowerCase();
       const fileName = `${timestamp}.${fileExt}`;
 
-      // First, insert the record into gallery_images
-      const { data: imageRecord, error: dbError } = await supabase
-        .from('gallery_images')
-        .insert({
-          file_name: fileName,
-          display_order: timestamp // Using timestamp as display order for now
-        })
-        .select()
-        .single();
+      console.log('Uploading file:', fileName);
 
-      if (dbError) {
-        console.error('Database error:', dbError);
-        throw new Error('Failed to create image record');
-      }
-
-      // Convert file to ArrayBuffer
-      const arrayBuffer = await file.arrayBuffer();
-      const fileData = new Uint8Array(arrayBuffer);
-
-      // Then upload the file to storage
-      const { error: uploadError } = await supabase.storage
+      // Upload the file to storage first
+      const { data: uploadData, error: uploadError } = await supabase.storage
         .from('gallery')
-        .upload(fileName, fileData, {
-          contentType: file.type,
-          duplex: 'half',
-          cacheControl: '3600'
+        .upload(fileName, file, {
+          cacheControl: '3600',
+          upsert: false
         });
 
       if (uploadError) {
-        // If upload fails, clean up the database record
-        await supabase
-          .from('gallery_images')
-          .delete()
-          .eq('id', imageRecord.id);
+        console.error('Storage error:', uploadError);
         throw uploadError;
       }
+
+      console.log('File uploaded successfully:', uploadData);
+
+      // Then create the database record
+      const { error: dbError } = await supabase
+        .from('gallery_images')
+        .insert({
+          file_name: fileName,
+          display_order: timestamp
+        });
+
+      if (dbError) {
+        console.error('Database error:', dbError);
+        // If database insert fails, clean up the uploaded file
+        await supabase.storage
+          .from('gallery')
+          .remove([fileName]);
+        throw dbError;
+      }
+
+      console.log('Database record created successfully');
 
       toast({
         title: "Success",
@@ -80,7 +81,7 @@ export function ImageUploadForm({ onUploadSuccess }: ImageUploadFormProps) {
       console.error('Error uploading image:', error);
       toast({
         title: "Error",
-        description: "Failed to upload image",
+        description: "Failed to upload image. Please try again.",
         variant: "destructive",
       });
     } finally {
