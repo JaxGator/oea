@@ -53,7 +53,6 @@ export function ImageUploadForm({ onUploadSuccess }: ImageUploadFormProps) {
       });
 
       // First create the database record with user_id
-      // Use Math.floor(Date.now() / 1000) to get a reasonable integer for display_order
       const { data: dbData, error: dbError } = await supabase
         .from('gallery_images')
         .insert({
@@ -74,7 +73,10 @@ export function ImageUploadForm({ onUploadSuccess }: ImageUploadFormProps) {
       // Then upload file to storage
       const { error: uploadError } = await supabase.storage
         .from('gallery')
-        .upload(fileName, file);
+        .upload(fileName, file, {
+          cacheControl: '3600',
+          upsert: false
+        });
 
       if (uploadError) {
         console.error('Storage upload error:', uploadError);
