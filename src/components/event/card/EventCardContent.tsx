@@ -19,6 +19,7 @@ interface EventCardContentProps {
   waitlistCount?: number;
   waitlistCapacity?: number | null;
   isFeatured?: boolean;
+  currentGuests?: { firstName: string }[];
   onRSVP: (guests?: { firstName: string }[]) => void;
   onCancelRSVP: () => void;
   onEdit: () => void;
@@ -40,6 +41,7 @@ export function EventCardContent({
   waitlistCount = 0,
   waitlistCapacity,
   isFeatured = false,
+  currentGuests = [],
   onRSVP,
   onCancelRSVP,
   onEdit,
@@ -90,6 +92,7 @@ export function EventCardContent({
           isPastEvent={isPastEvent}
           isWixEvent={isWixEvent}
           canAddGuests={canAddGuests}
+          currentGuests={currentGuests}
         />
       </CardFooter>
     </>

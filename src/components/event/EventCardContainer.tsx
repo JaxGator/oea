@@ -8,6 +8,8 @@ import { useEventDialogs } from "@/hooks/useEventDialogs";
 import { useEventInteraction } from "@/hooks/events/useEventInteraction";
 import { EventRSVPHandler } from "./rsvp/EventRSVPHandler";
 import { useEventWaitlist } from "@/hooks/events/useEventWaitlist";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 interface EventCardContainerProps {
   event: Event;
@@ -39,6 +41,31 @@ export function EventCardContainer({
   const { showEditDialog, setShowEditDialog } = useEventDialogs();
   const { showDetailsDialog, setShowDetailsDialog, handleInteraction } = useEventInteraction();
   const { waitlistCount } = useEventWaitlist(event.id, event.waitlist_enabled);
+
+  // Fetch guests for this RSVP
+  const { data: guests = [] } = useQuery({
+    queryKey: ['event-guests', event.id, userRSVPStatus],
+    queryFn: async () => {
+      if (!userRSVPStatus) return [];
+      
+      const { data: rsvp } = await supabase
+        .from('event_rsvps')
+        .select('id')
+        .eq('event_id', event.id)
+        .eq('response', 'attending')
+        .single();
+
+      if (!rsvp) return [];
+
+      const { data: guestData } = await supabase
+        .from('event_guests')
+        .select('first_name')
+        .eq('rsvp_id', rsvp.id);
+
+      return guestData?.map(guest => ({ firstName: guest.first_name })) || [];
+    },
+    enabled: !!userRSVPStatus
+  });
 
   const isPastEvent = new Date(event.date) < new Date(new Date().setHours(0, 0, 0, 0));
   const isWixEvent = event.description === 'Imported from Wix';
@@ -83,6 +110,7 @@ export function EventCardContainer({
               waitlistCount={waitlistCount}
               waitlistCapacity={event.waitlist_capacity}
               isFeatured={event.is_featured}
+              currentGuests={guests}
               onRSVP={handleRSVP}
               onCancelRSVP={() => onCancelRSVP(event.id)}
               onEdit={() => setShowEditDialog(true)}
@@ -104,6 +132,7 @@ export function EventCardContainer({
             isPastEvent={isPastEvent}
             isWixEvent={isWixEvent}
             canAddGuests={canAddGuests}
+            currentGuests={guests}
             onRSVP={handleRSVP}
             onCancelRSVP={() => onCancelRSVP(event.id)}
             onDelete={handleDelete}

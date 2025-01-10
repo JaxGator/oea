@@ -12,6 +12,7 @@ interface EventCardActionsProps {
   isPastEvent: boolean;
   isWixEvent: boolean;
   canAddGuests: boolean;
+  currentGuests?: { firstName: string }[];
 }
 
 export function EventCardActions({
@@ -26,6 +27,7 @@ export function EventCardActions({
   isPastEvent,
   isWixEvent,
   canAddGuests,
+  currentGuests = [],
 }: EventCardActionsProps) {
   return (
     <EventActions
@@ -41,6 +43,7 @@ export function EventCardActions({
       isWixEvent={isWixEvent}
       showDelete={isAdmin && (isPastEvent || isWixEvent)}
       canAddGuests={canAddGuests}
+      currentGuests={currentGuests}
     />
   );
 }
