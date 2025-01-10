@@ -42,6 +42,29 @@ export function EventCardContainer({
   const { showDetailsDialog, setShowDetailsDialog, handleInteraction } = useEventInteraction();
   const { waitlistCount } = useEventWaitlist(event.id, event.waitlist_enabled);
 
+  // Fetch total RSVP count including guests
+  const { data: totalRsvpCount = 0 } = useQuery({
+    queryKey: ['total-rsvp-count', event.id],
+    queryFn: async () => {
+      const { data: rsvps } = await supabase
+        .from('event_rsvps')
+        .select('id')
+        .eq('event_id', event.id)
+        .eq('response', 'attending')
+        .eq('status', 'confirmed');
+
+      if (!rsvps?.length) return 0;
+
+      const rsvpIds = rsvps.map(rsvp => rsvp.id);
+      const { count: guestCount } = await supabase
+        .from('event_guests')
+        .select('*', { count: 'exact', head: true })
+        .in('rsvp_id', rsvpIds);
+
+      return (rsvps.length + (guestCount || 0));
+    }
+  });
+
   // Fetch guests for this RSVP
   const { data: guests = [] } = useQuery({
     queryKey: ['event-guests', event.id, userRSVPStatus],
@@ -99,7 +122,7 @@ export function EventCardContainer({
             <EventCardContent
               date={event.date}
               location={event.location}
-              rsvpCount={rsvpCount}
+              rsvpCount={totalRsvpCount}
               maxGuests={event.max_guests}
               isWixEvent={isWixEvent}
               isAdmin={isAdmin}
@@ -126,7 +149,7 @@ export function EventCardContainer({
             setShowDetailsDialog={setShowDetailsDialog}
             showEditDialog={showEditDialog}
             setShowEditDialog={setShowEditDialog}
-            rsvpCount={rsvpCount}
+            rsvpCount={totalRsvpCount}
             attendeeNames={attendeeNames}
             userRSVPStatus={userRSVPStatus || null}
             isAdmin={isAdmin}

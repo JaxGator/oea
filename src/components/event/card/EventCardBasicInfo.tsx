@@ -34,6 +34,8 @@ export function EventCardBasicInfo({
 
   // Use imported count for past events if available
   const displayCount = importedRsvpCount !== null ? importedRsvpCount : rsvpCount;
+  const spotsRemaining = Math.max(0, maxGuests - displayCount);
+  const isFull = displayCount >= maxGuests;
 
   return (
     <div className="space-y-2">
@@ -44,6 +46,8 @@ export function EventCardBasicInfo({
       <div className="text-sm">
         <p>
           {displayCount} / {maxGuests} spots filled
+          {spotsRemaining > 0 && !isFull && ` (${spotsRemaining} spots remaining)`}
+          {isFull && " (Event Full)"}
           {isWixEvent && " (imported from Wix)"}
         </p>
         {waitlistEnabled && (
