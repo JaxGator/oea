@@ -66,51 +66,47 @@ export function GalleryPreview() {
 
   if (isError) {
     return (
-      <div className="py-12 bg-white">
-        <div className="container mx-auto px-4">
-          <div className="text-center text-red-500">
-            Failed to load gallery images. Please try again later.
-          </div>
+      <div className="container mx-auto px-4">
+        <div className="text-center text-red-500">
+          Failed to load gallery images. Please try again later.
         </div>
       </div>
     );
   }
 
   return (
-    <div className="py-12 bg-white">
-      <div className="container mx-auto px-4">
-        <div className="flex justify-between items-center mb-8">
-          <div className="flex items-center gap-2">
-            <Camera className="h-6 w-6 text-gray-900" />
-            <h2 className="text-2xl font-bold text-gray-900">Photo Gallery</h2>
-          </div>
-          <Button 
-            onClick={() => setShowFullGallery(true)}
-            className="bg-primary hover:bg-primary/90 text-white"
-          >
-            View All
-          </Button>
-        </div>
-
-        <GalleryGrid 
-          images={images} 
-          onImageSelect={handleImageSelect}
-          isPreview={true}
-        />
-
-        <FullGalleryDialog
-          open={showFullGallery}
-          onOpenChange={setShowFullGallery}
-        />
-
-        <ImagePreviewDialog
-          selectedImage={selectedImage}
-          onClose={() => setSelectedImage(null)}
-          onNavigate={handleNavigate}
-          isFirstImage={isFirstImage}
-          isLastImage={isLastImage}
-        />
+    <div className="container mx-auto px-4">
+      <div className="flex justify-between items-center mb-8">
+        <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+          <Camera className="h-6 w-6" />
+          Photo Gallery
+        </h2>
+        <Button 
+          onClick={() => setShowFullGallery(true)}
+          variant="outline"
+        >
+          View All
+        </Button>
       </div>
+
+      <GalleryGrid 
+        images={images} 
+        onImageSelect={handleImageSelect}
+        isPreview={true}
+      />
+
+      <FullGalleryDialog
+        open={showFullGallery}
+        onOpenChange={setShowFullGallery}
+      />
+
+      <ImagePreviewDialog
+        selectedImage={selectedImage}
+        onClose={() => setSelectedImage(null)}
+        onNavigate={handleNavigate}
+        isFirstImage={isFirstImage}
+        isLastImage={isLastImage}
+      />
     </div>
   );
 }

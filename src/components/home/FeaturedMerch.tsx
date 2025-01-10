@@ -27,10 +27,10 @@ export const FeaturedMerch = () => {
   ];
 
   return (
-    <div className="mt-16 space-y-4">
-      <div className="flex justify-between items-center mb-6">
+    <div className="container mx-auto px-4">
+      <div className="flex justify-between items-center mb-8">
         <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-          <ShoppingBag className="h-6 w-6" role="presentation" />
+          <ShoppingBag className="h-6 w-6" />
           Member-Only Merch
         </h2>
         {canAccessStore && (

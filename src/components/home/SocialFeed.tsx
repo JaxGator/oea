@@ -73,10 +73,12 @@ export function SocialFeed() {
   }
 
   return (
-    <div className="mt-16 space-y-8">
-      <div className="flex items-center gap-2">
-        <Rss className="h-6 w-6" />
-        <h2 className="text-2xl font-bold">Social Feed</h2>
+    <div className="container mx-auto px-4">
+      <div className="flex items-center gap-2 mb-8">
+        <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+          <Rss className="h-6 w-6" />
+          Social Feed
+        </h2>
       </div>
       <div className="w-full">
         <div 
