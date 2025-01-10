@@ -1,88 +1,40 @@
-import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "@/hooks/use-toast";
+import { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { ImageType } from '@/components/admin/gallery/types/gallery';
 
 export function useGalleryImages() {
-  const [images, setImages] = useState<Array<{ url: string; id: string }>>([]);
+  const [images, setImages] = useState<ImageType[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchImages = async () => {
     try {
       setIsLoading(true);
-      console.log('Fetching gallery images...');
-      
-      const { data: galleryData, error: dbError } = await supabase
+      const { data, error } = await supabase
         .from('gallery_images')
         .select('*')
-        .order('created_at', { ascending: false });
+        .not('file_name', 'like', 'event-pics/%')
+        .order('display_order', { ascending: true });
 
-      if (dbError) {
-        console.error('Database error:', dbError);
-        throw dbError;
+      if (error) {
+        throw error;
       }
 
-      console.log('Raw gallery data:', galleryData);
-
-      if (!galleryData || galleryData.length === 0) {
-        console.log('No gallery images found in database');
-        setImages([]);
-        return;
-      }
-
-      const processedImages = await Promise.all(galleryData.map(async (image) => {
-        console.log('Processing image:', image);
-
-        const { data: urlData } = supabase.storage
+      const processedImages = data.map(image => {
+        const { data: { publicUrl } } = supabase.storage
           .from('gallery')
           .getPublicUrl(image.file_name);
 
-        if (!urlData?.publicUrl) {
-          console.error('Failed to generate URL for:', image.file_name);
-          return null;
-        }
-
-        // Test URL accessibility
-        try {
-          const response = await fetch(urlData.publicUrl, { method: 'HEAD' });
-          if (!response.ok) {
-            console.error('URL not accessible:', {
-              url: urlData.publicUrl,
-              status: response.status,
-              statusText: response.statusText
-            });
-            return null;
-          }
-          
-          console.log('Successfully validated URL:', {
-            fileName: image.file_name,
-            url: urlData.publicUrl
-          });
-
-          return {
-            id: image.id,
-            url: urlData.publicUrl
-          };
-        } catch (error) {
-          console.error('Error validating URL:', {
-            url: urlData.publicUrl,
-            error: error.message
-          });
-          return null;
-        }
-      }));
-
-      const validImages = processedImages.filter((img): img is { id: string; url: string } => img !== null);
-      
-      console.log('Final processed images:', validImages);
-      setImages(validImages);
-
-    } catch (error) {
-      console.error('Error fetching images:', error);
-      toast({
-        title: "Error",
-        description: "Failed to fetch images. Please try refreshing the page.",
-        variant: "destructive",
+        return {
+          id: image.id,
+          url: publicUrl,
+          fileName: image.file_name,
+          displayOrder: image.display_order
+        };
       });
+
+      setImages(processedImages);
+    } catch (error) {
+      console.error('Error fetching gallery images:', error);
     } finally {
       setIsLoading(false);
     }
