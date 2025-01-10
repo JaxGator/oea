@@ -23,12 +23,9 @@ export function useGalleryImageValidation() {
       const { data: galleryData, error: dbError } = await supabase
         .from('gallery_images')
         .select('*')
-        .order('display_order', { ascending: true })
-        .limit(6);
+        .order('display_order', { ascending: true });
 
       if (dbError) throw dbError;
-
-      console.log('Gallery data fetched:', galleryData);
 
       if (!galleryData || galleryData.length === 0) {
         setValidatedUrls([]);
@@ -42,16 +39,15 @@ export function useGalleryImageValidation() {
             .from('gallery')
             .getPublicUrl(image.file_name);
 
-          console.log('Generated URL:', {
-            fileName: image.file_name,
-            url: urlData.publicUrl,
-            timestamp: new Date().toISOString()
-          });
+          if (!urlData?.publicUrl) {
+            console.error('Failed to generate URL for:', image.file_name);
+            return null;
+          }
 
           const isValid = await validateImageUrl(urlData.publicUrl);
           
           if (!isValid) {
-            console.error(`Invalid image URL: ${urlData.publicUrl}`);
+            console.error('Invalid image URL:', urlData.publicUrl);
             return null;
           }
 
@@ -60,13 +56,13 @@ export function useGalleryImageValidation() {
       );
 
       const validUrls = urls.filter((url): url is string => url !== null);
-      console.log('Validated URLs:', validUrls);
+      console.log('Valid gallery URLs:', validUrls);
       setValidatedUrls(validUrls);
     } catch (error) {
       console.error('Gallery validation error:', error);
       toast({
         title: "Error",
-        description: "Failed to load gallery images",
+        description: "Failed to load gallery images. Please try again later.",
         variant: "destructive",
       });
     } finally {
@@ -80,6 +76,7 @@ export function useGalleryImageValidation() {
 
   return {
     validatedUrls,
-    isValidating
+    isValidating,
+    refetch: validateAndFetchImages
   };
 }

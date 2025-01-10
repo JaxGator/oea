@@ -4,6 +4,7 @@ import { GalleryGrid } from "./gallery/GalleryGrid";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { useGalleryImageValidation } from "@/hooks/gallery/useGalleryImageValidation";
+import { Loader2 } from "lucide-react";
 
 export function GalleryPreview() {
   const [showFullGallery, setShowFullGallery] = useState(false);
@@ -28,6 +29,28 @@ export function GalleryPreview() {
 
   const isFirstImage = selectedImage === images[0];
   const isLastImage = selectedImage === images[images.length - 1];
+
+  if (isValidating) {
+    return (
+      <div className="py-12 bg-white">
+        <div className="container mx-auto px-4 flex items-center justify-center min-h-[300px]">
+          <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
+        </div>
+      </div>
+    );
+  }
+
+  if (!images.length) {
+    return (
+      <div className="py-12 bg-white">
+        <div className="container mx-auto px-4">
+          <div className="text-center text-gray-500">
+            No images available in the gallery.
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="py-12 bg-white">
