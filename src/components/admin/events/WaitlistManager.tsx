@@ -28,11 +28,11 @@ export function WaitlistManager({
         .select(`
           id,
           created_at,
-          profiles:user_id (
+          profiles:profiles (
             username,
             full_name,
             email_notifications,
-            user_id
+            id
           )
         `)
         .eq('event_id', eventId)
@@ -45,7 +45,10 @@ export function WaitlistManager({
       return (data as any[]).map(entry => ({
         id: entry.id,
         created_at: entry.created_at,
-        profiles: entry.profiles[0] // Take the first profile since it's returned as an array
+        profiles: {
+          ...entry.profiles,
+          user_id: entry.profiles.id // Map the id to user_id for compatibility
+        }
       })) as WaitlistEntry[];
     },
   });
