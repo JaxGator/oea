@@ -100,7 +100,7 @@ export function ImageUploadForm({ onUploadSuccess }: ImageUploadFormProps) {
         variant: "destructive",
       });
     } finally {
-      setIsLoading(false);
+      setIsUploading(false);
       // Reset the input
       event.target.value = '';
     }
