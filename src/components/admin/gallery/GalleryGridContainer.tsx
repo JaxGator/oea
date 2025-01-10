@@ -1,6 +1,7 @@
 import { X } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
 
 interface GalleryGridContainerProps {
   images: Array<{ url: string; id: string }>;
@@ -10,6 +11,45 @@ interface GalleryGridContainerProps {
 export function GalleryGridContainer({ images, onImageDelete }: GalleryGridContainerProps) {
   const [loadedImages, setLoadedImages] = useState<Set<string>>(new Set());
   const [errorImages, setErrorImages] = useState<Set<string>>(new Set());
+  const [signedUrls, setSignedUrls] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    const fetchSignedUrls = async () => {
+      const urlPromises = images.map(async (image) => {
+        try {
+          // Extract the file path from the URL
+          const filePath = image.url.split('/').pop();
+          if (!filePath) return null;
+
+          const { data: { signedUrl }, error } = await supabase
+            .storage
+            .from('gallery')
+            .createSignedUrl(filePath, 3600); // 1 hour expiry
+
+          if (error) {
+            console.error('Error getting signed URL:', error);
+            return null;
+          }
+
+          return { id: image.id, signedUrl };
+        } catch (error) {
+          console.error('Error processing URL:', error);
+          return null;
+        }
+      });
+
+      const results = await Promise.all(urlPromises);
+      const urlMap: Record<string, string> = {};
+      results.forEach(result => {
+        if (result) {
+          urlMap[result.id] = result.signedUrl;
+        }
+      });
+      setSignedUrls(urlMap);
+    };
+
+    fetchSignedUrls();
+  }, [images]);
 
   const handleImageLoad = (imageId: string) => {
     console.log('Image loaded successfully:', imageId);
@@ -25,36 +65,12 @@ export function GalleryGridContainer({ images, onImageDelete }: GalleryGridConta
     console.error('Failed to load image:', {
       id: imageId,
       url: imageUrl,
-      timestamp: new Date().toISOString(),
-      headers: new Headers()
+      signedUrl: signedUrls[imageId],
+      timestamp: new Date().toISOString()
     });
     
-    // Attempt to fetch image details
-    fetch(imageUrl, { method: 'HEAD' })
-      .then(response => {
-        console.log('Image HEAD request result:', {
-          url: imageUrl,
-          status: response.status,
-          statusText: response.statusText,
-          headers: Object.fromEntries(response.headers.entries())
-        });
-      })
-      .catch(error => {
-        console.error('Image HEAD request failed:', {
-          url: imageUrl,
-          error: error.message
-        });
-      });
-
     setErrorImages(prev => new Set([...prev, imageId]));
   };
-
-  console.log('Rendering GalleryGridContainer with images:', {
-    totalImages: images.length,
-    loadedImages: loadedImages.size,
-    errorImages: errorImages.size,
-    imageUrls: images.map(img => img.url)
-  });
 
   if (images.length === 0) {
     return (
@@ -81,15 +97,17 @@ export function GalleryGridContainer({ images, onImageDelete }: GalleryGridConta
           </div>
           
           {/* Actual image */}
-          <img
-            src={image.url}
-            alt={`Gallery image`}
-            className={`w-full h-full object-cover rounded-lg transition-opacity duration-300 ${
-              loadedImages.has(image.id) ? 'opacity-100' : 'opacity-0'
-            }`}
-            onLoad={() => handleImageLoad(image.id)}
-            onError={() => handleImageError(image.id, image.url)}
-          />
+          {signedUrls[image.id] && (
+            <img
+              src={signedUrls[image.id]}
+              alt={`Gallery image`}
+              className={`w-full h-full object-cover rounded-lg transition-opacity duration-300 ${
+                loadedImages.has(image.id) ? 'opacity-100' : 'opacity-0'
+              }`}
+              onLoad={() => handleImageLoad(image.id)}
+              onError={() => handleImageError(image.id, image.url)}
+            />
+          )}
           
           {/* Delete button */}
           <Button
