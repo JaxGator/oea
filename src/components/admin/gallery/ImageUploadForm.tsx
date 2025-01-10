@@ -70,12 +70,17 @@ export function ImageUploadForm({ onUploadSuccess }: ImageUploadFormProps) {
 
       console.log('Database record created:', dbData);
 
-      // Then upload file to storage
+      // Then upload file to storage with owner metadata
       const { error: uploadError } = await supabase.storage
         .from('gallery')
         .upload(fileName, file, {
           cacheControl: '3600',
-          upsert: false
+          upsert: false,
+          contentType: file.type,
+          duplex: 'half',
+          metadata: {
+            owner: user.id // Set the owner metadata
+          }
         });
 
       if (uploadError) {
