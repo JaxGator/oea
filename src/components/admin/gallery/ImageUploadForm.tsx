@@ -39,10 +39,7 @@ export function ImageUploadForm({ onUploadComplete }: ImageUploadFormProps) {
       // Upload to storage
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('gallery')
-        .upload(fileName, file, {
-          cacheControl: '3600',
-          upsert: false
-        });
+        .upload(fileName, file);
 
       if (uploadError) {
         console.error('Storage upload error:', uploadError);
