@@ -58,24 +58,22 @@ export function useGalleryManager() {
         return;
       }
 
-      // Transform the data to include public URLs
-      const imageUrls = await Promise.all(
-        galleryData.map(async (image) => {
-          const { data: { publicUrl } } = supabase.storage
-            .from('gallery')
-            .getPublicUrl(image.file_name);
+      // Get the public URL for each image
+      const imageUrls = galleryData.map((image) => {
+        const { data: { publicUrl } } = supabase.storage
+          .from('gallery')
+          .getPublicUrl(image.file_name);
 
-          console.log('Generated URL for image:', {
-            fileName: image.file_name,
-            url: publicUrl
-          });
+        console.log('Generated URL for image:', {
+          fileName: image.file_name,
+          url: publicUrl
+        });
 
-          return {
-            id: image.id,
-            url: publicUrl
-          };
-        })
-      );
+        return {
+          id: image.id,
+          url: publicUrl
+        };
+      });
 
       console.log('Final processed image URLs:', imageUrls);
       setImages(imageUrls);
