@@ -1,18 +1,54 @@
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { ImagePreviewDialog } from "./gallery/ImagePreviewDialog";
 import { FullGalleryDialog } from "./gallery/FullGalleryDialog";
 import { GalleryGrid } from "./gallery/GalleryGrid";
 import { Button } from "@/components/ui/button";
+import { Camera } from "lucide-react";
 import { useState } from "react";
-import { useGalleryImageValidation } from "@/hooks/gallery/useGalleryImageValidation";
-import { Loader2 } from "lucide-react";
+import { toast } from "sonner";
 
 export function GalleryPreview() {
   const [showFullGallery, setShowFullGallery] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
-  const { validatedUrls: images, isValidating } = useGalleryImageValidation();
+
+  const { data: images = [], isError } = useQuery({
+    queryKey: ['gallery-preview'],
+    queryFn: async () => {
+      try {
+        const { data, error } = await supabase
+          .from('gallery_images')
+          .select('*')
+          .order('display_order', { ascending: true })
+          .limit(3); // Only fetch 3 images for preview
+
+        if (error) {
+          console.error('Error fetching gallery images:', error);
+          toast.error('Failed to load gallery images');
+          throw error;
+        }
+
+        if (!data) return [];
+
+        // Transform the data to return the full public URLs for the images
+        // Only get images from the gallery bucket
+        return data.map(image => {
+          const { data: urlData } = supabase.storage
+            .from('gallery')
+            .getPublicUrl(image.file_name);
+          return urlData.publicUrl;
+        });
+      } catch (error) {
+        console.error('Gallery fetch error:', error);
+        toast.error('Failed to load gallery images');
+        throw error;
+      }
+    },
+    retry: 1,
+    refetchOnWindowFocus: false
+  });
 
   const handleImageSelect = (imageUrl: string) => {
-    console.log('Selected image:', imageUrl);
     setSelectedImage(imageUrl);
   };
 
@@ -30,22 +66,12 @@ export function GalleryPreview() {
   const isFirstImage = selectedImage === images[0];
   const isLastImage = selectedImage === images[images.length - 1];
 
-  if (isValidating) {
-    return (
-      <div className="py-12 bg-white">
-        <div className="container mx-auto px-4 flex items-center justify-center min-h-[300px]">
-          <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
-        </div>
-      </div>
-    );
-  }
-
-  if (!images.length) {
+  if (isError) {
     return (
       <div className="py-12 bg-white">
         <div className="container mx-auto px-4">
-          <div className="text-center text-gray-500">
-            No images available in the gallery.
+          <div className="text-center text-red-500">
+            Failed to load gallery images. Please try again later.
           </div>
         </div>
       </div>
@@ -56,10 +82,13 @@ export function GalleryPreview() {
     <div className="py-12 bg-white">
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-center mb-8">
-          <h2 className="text-3xl font-bold text-gray-900">Photo Gallery</h2>
+          <div className="flex items-center gap-2">
+            <Camera className="h-6 w-6 text-gray-900" />
+            <h2 className="text-2xl font-bold text-gray-900">Photo Gallery</h2>
+          </div>
           <Button 
             onClick={() => setShowFullGallery(true)}
-            className="bg-[#0d97d1] hover:bg-[#0d97d1]/90 text-white"
+            className="bg-primary hover:bg-primary/90 text-white"
           >
             View All
           </Button>
@@ -68,7 +97,7 @@ export function GalleryPreview() {
         <GalleryGrid 
           images={images} 
           onImageSelect={handleImageSelect}
-          isLoading={isValidating}
+          isPreview={true}
         />
 
         <FullGalleryDialog

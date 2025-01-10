@@ -4,6 +4,7 @@ interface GalleryGridProps {
   onKeyPress?: (imageUrl: string) => (e: React.KeyboardEvent) => void;
   isLoading?: boolean;
   isAdmin?: boolean;
+  isPreview?: boolean;
 }
 
 export function GalleryGrid({ 
@@ -11,12 +12,13 @@ export function GalleryGrid({
   onImageSelect,
   onKeyPress = () => () => {},
   isLoading = false,
-  isAdmin = false 
+  isAdmin = false,
+  isPreview = false
 }: GalleryGridProps) {
   if (isLoading) {
     return (
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 animate-pulse">
-        {[1, 2, 3, 4, 5, 6].map((index) => (
+        {[1, 2, 3].map((index) => (
           <div 
             key={index}
             className="aspect-square bg-gray-200 rounded-lg"
@@ -34,9 +36,11 @@ export function GalleryGrid({
     );
   }
 
+  const displayImages = isPreview ? images.slice(0, 3) : images;
+
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-      {images.map((imageUrl, index) => (
+      {displayImages.map((imageUrl, index) => (
         <div 
           key={`${imageUrl}-${index}`}
           className="relative aspect-square overflow-hidden rounded-lg cursor-pointer group"
@@ -45,11 +49,10 @@ export function GalleryGrid({
           tabIndex={0}
           role="button"
         >
-          <div className="absolute inset-0 bg-gray-100 animate-pulse" />
           <img
             src={imageUrl}
             alt={`Gallery image ${index + 1}`}
-            className="object-cover w-full h-full transition-opacity duration-300 group-hover:opacity-90"
+            className="object-cover w-full h-full transition-all duration-300 group-hover:scale-105 animate-fade-in"
             onError={(e) => {
               console.error('Failed to load image:', imageUrl);
               const img = e.target as HTMLImageElement;

@@ -52,7 +52,9 @@ export function FullGalleryDialog({ open, onOpenChange }: FullGalleryDialogProps
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="max-w-[95vw] max-h-[95vh] p-6">
-          <h2 className="text-2xl font-bold mb-6">Photo Gallery</h2>
+          <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
+            Photo Gallery
+          </h2>
           <GalleryGrid 
             images={images} 
             onImageSelect={setSelectedImage}
