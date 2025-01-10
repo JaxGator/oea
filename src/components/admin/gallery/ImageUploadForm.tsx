@@ -30,13 +30,29 @@ export function ImageUploadForm({ onUploadSuccess }: ImageUploadFormProps) {
     try {
       // Create a timestamp-based filename with original extension
       const timestamp = Date.now();
-      const fileExt = file.name.split('.').pop();
+      const fileExt = file.name.split('.').pop()?.toLowerCase();
       const fileName = `${timestamp}.${fileExt}`;
+
+      // First, insert the record into gallery_images
+      const { data: imageRecord, error: dbError } = await supabase
+        .from('gallery_images')
+        .insert({
+          file_name: fileName,
+          display_order: timestamp // Using timestamp as display order for now
+        })
+        .select()
+        .single();
+
+      if (dbError) {
+        console.error('Database error:', dbError);
+        throw new Error('Failed to create image record');
+      }
 
       // Convert file to ArrayBuffer
       const arrayBuffer = await file.arrayBuffer();
       const fileData = new Uint8Array(arrayBuffer);
 
+      // Then upload the file to storage
       const { error: uploadError } = await supabase.storage
         .from('gallery')
         .upload(fileName, fileData, {
@@ -45,7 +61,14 @@ export function ImageUploadForm({ onUploadSuccess }: ImageUploadFormProps) {
           cacheControl: '3600'
         });
 
-      if (uploadError) throw uploadError;
+      if (uploadError) {
+        // If upload fails, clean up the database record
+        await supabase
+          .from('gallery_images')
+          .delete()
+          .eq('id', imageRecord.id);
+        throw uploadError;
+      }
 
       toast({
         title: "Success",
