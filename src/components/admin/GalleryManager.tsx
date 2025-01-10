@@ -12,6 +12,12 @@ export default function GalleryManager() {
   const { images, isLoading, fetchImages } = useGalleryImages();
   const { carouselEnabled, updateCarouselConfig } = useCarouselConfig();
 
+  console.log('GalleryManager rendering with:', {
+    imageCount: images.length,
+    isLoading,
+    carouselEnabled
+  });
+
   if (isLoading) {
     return <div>Loading gallery...</div>;
   }
@@ -51,14 +57,20 @@ export default function GalleryManager() {
               .from('gallery')
               .remove([fileName]);
 
-            if (storageError) throw storageError;
+            if (storageError) {
+              console.error('Storage error:', storageError);
+              throw storageError;
+            }
 
             const { error: dbError } = await supabase
               .from('gallery_images')
               .delete()
               .eq('file_name', fileName);
 
-            if (dbError) throw dbError;
+            if (dbError) {
+              console.error('Database error:', dbError);
+              throw dbError;
+            }
 
             console.log('Image deleted successfully');
             toast({

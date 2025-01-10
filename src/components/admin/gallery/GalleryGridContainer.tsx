@@ -21,9 +21,15 @@ export function GalleryGridContainer({ images, onImageDelete }: GalleryGridConta
   };
 
   const handleImageError = (imageId: string, imageUrl: string) => {
-    console.error(`Failed to load image: ${imageUrl}`);
+    console.error('Failed to load image:', {
+      id: imageId,
+      url: imageUrl,
+      timestamp: new Date().toISOString()
+    });
     setErrorImages(prev => new Set([...prev, imageId]));
   };
+
+  console.log('Rendering GalleryGridContainer with images:', images);
 
   if (images.length === 0) {
     return (
@@ -63,6 +69,7 @@ export function GalleryGridContainer({ images, onImageDelete }: GalleryGridConta
           <button
             onClick={(e) => {
               e.stopPropagation();
+              console.log('Deleting image:', image.url);
               onImageDelete(image.url);
             }}
             className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
