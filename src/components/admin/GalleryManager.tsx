@@ -38,7 +38,11 @@ export default function GalleryManager() {
         throw new Error('User not authenticated');
       }
 
-      const fileName = imageUrl.split('/').pop()?.split('?')[0];
+      // Extract the filename from the URL - handle both URL formats
+      const fileName = imageUrl.includes('?') 
+        ? imageUrl.split('/').pop()?.split('?')[0]
+        : imageUrl.split('/').pop();
+
       if (!fileName) {
         throw new Error('Invalid image URL');
       }

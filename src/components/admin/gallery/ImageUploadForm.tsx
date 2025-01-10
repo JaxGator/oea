@@ -26,8 +26,19 @@ export function ImageUploadForm({ onUploadComplete }: ImageUploadFormProps) {
         throw new Error('User not authenticated');
       }
 
-      const { fileName, error: uploadError } = await uploadImage(file);
-      
+      // Generate a unique filename
+      const timestamp = Date.now();
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${timestamp}.${fileExt}`;
+
+      // Upload to storage
+      const { error: uploadError } = await supabase.storage
+        .from('gallery')
+        .upload(fileName, file, {
+          cacheControl: '3600',
+          upsert: false
+        });
+
       if (uploadError) {
         throw uploadError;
       }
