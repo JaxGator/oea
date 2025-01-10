@@ -20,18 +20,25 @@ export function ImageUploadForm({ onUploadComplete }: ImageUploadFormProps) {
 
     setIsUploading(true);
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        throw new Error('User not authenticated');
+      }
+
       const { fileName, error: uploadError } = await uploadImage(file);
       
       if (uploadError) {
         throw uploadError;
       }
 
-      // Create database record
+      // Create database record with user_id
       const { error: dbError } = await supabase
         .from('gallery_images')
         .insert([{
           file_name: fileName,
-          display_order: 0
+          display_order: 0,
+          user_id: user.id
         }]);
 
       if (dbError) {

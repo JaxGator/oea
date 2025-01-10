@@ -3,17 +3,11 @@ import { toast } from "@/hooks/use-toast";
 
 export async function getSignedUrl(fileName: string): Promise<string | null> {
   try {
-    const { data: { signedUrl }, error } = await supabase
-      .storage
+    const { data: { publicUrl } } = supabase.storage
       .from('gallery')
-      .createSignedUrl(fileName, 3600);
+      .getPublicUrl(fileName);
 
-    if (error) {
-      console.error('Error getting signed URL:', { error, fileName });
-      return null;
-    }
-
-    return signedUrl;
+    return publicUrl;
   } catch (error) {
     console.error('Error in getSignedUrl:', error);
     return null;
@@ -24,6 +18,12 @@ export async function uploadImage(file: File): Promise<{ fileName: string; error
   const fileName = `${Date.now()}-${file.name}`;
 
   try {
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) {
+      throw new Error('User not authenticated');
+    }
+
     const { error: uploadError } = await supabase.storage
       .from('gallery')
       .upload(fileName, file);
@@ -41,6 +41,12 @@ export async function uploadImage(file: File): Promise<{ fileName: string; error
 
 export async function deleteImage(fileName: string): Promise<boolean> {
   try {
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) {
+      throw new Error('User not authenticated');
+    }
+
     const { error } = await supabase.storage
       .from('gallery')
       .remove([fileName]);

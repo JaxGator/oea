@@ -32,6 +32,12 @@ export default function GalleryManager() {
 
   const handleImageDelete = async (imageUrl: string) => {
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        throw new Error('User not authenticated');
+      }
+
       const fileName = imageUrl.split('/').pop()?.split('?')[0];
       if (!fileName) {
         throw new Error('Invalid image URL');
@@ -58,7 +64,8 @@ export default function GalleryManager() {
       const { error: dbError } = await supabase
         .from('gallery_images')
         .delete()
-        .eq('file_name', fileName);
+        .eq('file_name', fileName)
+        .eq('user_id', user.id);
 
       if (dbError) {
         console.error('Database deletion error:', dbError);
