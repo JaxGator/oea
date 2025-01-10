@@ -42,16 +42,16 @@ export function EventCardContainer({
   const { showDetailsDialog, setShowDetailsDialog, handleInteraction } = useEventInteraction();
   const { waitlistCount } = useEventWaitlist(event.id, event.waitlist_enabled);
 
-  // Fetch total RSVP count including guests
+  // Fetch total RSVP count including guests and all attending RSVPs (both confirmed and waitlisted)
   const { data: totalRsvpCount = 0 } = useQuery({
     queryKey: ['total-rsvp-count', event.id],
     queryFn: async () => {
+      // Get all attending RSVPs (both confirmed and waitlisted)
       const { data: rsvps } = await supabase
         .from('event_rsvps')
         .select('id')
         .eq('event_id', event.id)
-        .eq('response', 'attending')
-        .eq('status', 'confirmed');
+        .eq('response', 'attending');
 
       if (!rsvps?.length) return 0;
 
