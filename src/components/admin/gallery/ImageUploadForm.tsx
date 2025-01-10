@@ -39,40 +39,33 @@ export function ImageUploadForm({ onUploadSuccess }: ImageUploadFormProps) {
 
     setIsUploading(true);
     try {
-      console.log('Starting file upload process...', {
-        fileName: file.name,
-        fileType: file.type,
-        fileSize: file.size
-      });
-
       // Create a timestamp-based filename with original extension
       const timestamp = Date.now();
       const fileExt = file.name.split('.').pop()?.toLowerCase();
       const fileName = `${timestamp}.${fileExt}`;
 
-      console.log('Uploading file to storage:', fileName);
+      console.log('Starting file upload:', {
+        fileName,
+        fileType: file.type,
+        fileSize: file.size
+      });
 
-      // First, upload the file to storage
-      const { data: uploadData, error: uploadError } = await supabase.storage
+      // Upload file to storage
+      const { error: uploadError } = await supabase.storage
         .from('gallery')
-        .upload(fileName, file, {
-          cacheControl: '3600',
-          upsert: false
-        });
+        .upload(fileName, file);
 
       if (uploadError) {
         console.error('Storage upload error:', uploadError);
         throw uploadError;
       }
 
-      console.log('File uploaded successfully:', uploadData);
-
       // Get the public URL
       const { data: { publicUrl } } = supabase.storage
         .from('gallery')
         .getPublicUrl(fileName);
 
-      console.log('Generated public URL:', publicUrl);
+      console.log('File uploaded successfully, public URL:', publicUrl);
 
       // Create database record
       const { error: dbError } = await supabase
@@ -85,14 +78,12 @@ export function ImageUploadForm({ onUploadSuccess }: ImageUploadFormProps) {
 
       if (dbError) {
         console.error('Database error:', dbError);
-        // Clean up the uploaded file
+        // Clean up the uploaded file if database insert fails
         await supabase.storage
           .from('gallery')
           .remove([fileName]);
         throw dbError;
       }
-
-      console.log('Database record created successfully');
 
       toast({
         title: "Success",
