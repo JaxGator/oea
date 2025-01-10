@@ -6,15 +6,13 @@ interface RSVPProfile {
   username: string;
 }
 
-interface RSVPGuest {
-  id: string;
-  first_name: string;
-}
-
 interface RSVPWithProfile {
   id: string;
   profiles: RSVPProfile;
-  event_guests: RSVPGuest[];
+  event_guests: {
+    id: string;
+    first_name: string;
+  }[];
 }
 
 interface Attendee {
@@ -28,11 +26,11 @@ export function useRSVPDetails(eventId: string) {
   const { data: rsvpData } = useQuery({
     queryKey: ['event-rsvps', eventId],
     queryFn: async () => {
+      // Get RSVPs with profiles and guests
       const { data: rsvps, error: rsvpError } = await supabase
         .from('event_rsvps')
         .select(`
           id,
-          response,
           profiles (
             full_name,
             username
@@ -43,7 +41,8 @@ export function useRSVPDetails(eventId: string) {
           )
         `)
         .eq('event_id', eventId)
-        .eq('response', 'attending');
+        .eq('response', 'attending')
+        .eq('status', 'confirmed');
 
       if (rsvpError) {
         console.error('Error fetching RSVPs:', rsvpError);
@@ -53,7 +52,7 @@ export function useRSVPDetails(eventId: string) {
       // Transform the data to match our expected types
       const typedRsvps = (rsvps as any[]).map(rsvp => ({
         ...rsvp,
-        profiles: rsvp.profiles[0], // Take first profile since it's returned as an array
+        profiles: rsvp.profiles,
         event_guests: rsvp.event_guests || []
       })) as RSVPWithProfile[];
 
