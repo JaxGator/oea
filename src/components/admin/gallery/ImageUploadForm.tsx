@@ -68,12 +68,13 @@ export function ImageUploadForm({ onUploadSuccess }: ImageUploadFormProps) {
         .from('gallery')
         .getPublicUrl(fileName);
 
-      // Then create the database record
+      // Then create the database record with user_id
       const { error: dbError } = await supabase
         .from('gallery_images')
         .insert({
           file_name: fileName,
-          display_order: timestamp
+          display_order: timestamp,
+          user_id: user.id // Add the user_id to track ownership
         });
 
       if (dbError) {
