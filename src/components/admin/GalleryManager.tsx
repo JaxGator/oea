@@ -105,7 +105,7 @@ export default function GalleryManager() {
         />
       </div>
 
-      <ImageUploadForm onUploadSuccess={fetchImages} />
+      <ImageUploadForm onUploadComplete={fetchImages} />
       
       <ImageGrid 
         images={images} 
