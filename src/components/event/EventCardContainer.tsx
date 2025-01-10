@@ -42,26 +42,42 @@ export function EventCardContainer({
   const { showDetailsDialog, setShowDetailsDialog, handleInteraction } = useEventInteraction();
   const { waitlistCount } = useEventWaitlist(event.id, event.waitlist_enabled);
 
-  // Fetch total RSVP count including guests and all attending RSVPs (both confirmed and waitlisted)
-  const { data: totalRsvpCount = 0 } = useQuery({
+  // Fetch total RSVP count including guests and determine waitlist status
+  const { data: rsvpData = { confirmedCount: 0, waitlistCount: 0 } } = useQuery({
     queryKey: ['total-rsvp-count', event.id],
     queryFn: async () => {
-      // Get all attending RSVPs (both confirmed and waitlisted)
+      // Get all attending RSVPs
       const { data: rsvps } = await supabase
         .from('event_rsvps')
-        .select('id')
+        .select(`
+          id,
+          status
+        `)
         .eq('event_id', event.id)
         .eq('response', 'attending');
 
-      if (!rsvps?.length) return 0;
+      if (!rsvps?.length) return { confirmedCount: 0, waitlistCount: 0 };
 
       const rsvpIds = rsvps.map(rsvp => rsvp.id);
+      
+      // Get guest count for these RSVPs
       const { count: guestCount } = await supabase
         .from('event_guests')
         .select('*', { count: 'exact', head: true })
         .in('rsvp_id', rsvpIds);
 
-      return (rsvps.length + (guestCount || 0));
+      // Count confirmed and waitlisted RSVPs
+      const confirmedRsvps = rsvps.filter(rsvp => rsvp.status === 'confirmed').length;
+      const waitlistedRsvps = rsvps.filter(rsvp => rsvp.status === 'waitlisted').length;
+
+      // Calculate total confirmed (up to max_guests) and waitlisted
+      const totalConfirmed = Math.min(confirmedRsvps + (guestCount || 0), event.max_guests);
+      const totalWaitlisted = Math.max(0, (confirmedRsvps + (guestCount || 0)) - event.max_guests) + waitlistedRsvps;
+
+      return {
+        confirmedCount: totalConfirmed,
+        waitlistCount: totalWaitlisted
+      };
     }
   });
 
@@ -122,7 +138,7 @@ export function EventCardContainer({
             <EventCardContent
               date={event.date}
               location={event.location}
-              rsvpCount={totalRsvpCount}
+              rsvpCount={rsvpData.confirmedCount}
               maxGuests={event.max_guests}
               isWixEvent={isWixEvent}
               isAdmin={isAdmin}
@@ -130,7 +146,7 @@ export function EventCardContainer({
               isPastEvent={isPastEvent}
               canAddGuests={canAddGuests}
               waitlistEnabled={event.waitlist_enabled}
-              waitlistCount={waitlistCount}
+              waitlistCount={rsvpData.waitlistCount}
               waitlistCapacity={event.waitlist_capacity}
               isFeatured={event.is_featured}
               currentGuests={guests}
@@ -149,7 +165,7 @@ export function EventCardContainer({
             setShowDetailsDialog={setShowDetailsDialog}
             showEditDialog={showEditDialog}
             setShowEditDialog={setShowEditDialog}
-            rsvpCount={totalRsvpCount}
+            rsvpCount={rsvpData.confirmedCount}
             attendeeNames={attendeeNames}
             userRSVPStatus={userRSVPStatus || null}
             isAdmin={isAdmin}
