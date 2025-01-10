@@ -47,7 +47,8 @@ export function ImageUploadForm({ onUploadSuccess }: ImageUploadFormProps) {
       console.log('Starting file upload:', {
         fileName,
         fileType: file.type,
-        fileSize: file.size
+        fileSize: file.size,
+        userId: user.id
       });
 
       // Upload file to storage
@@ -67,13 +68,13 @@ export function ImageUploadForm({ onUploadSuccess }: ImageUploadFormProps) {
 
       console.log('File uploaded successfully, public URL:', publicUrl);
 
-      // Create database record
+      // Create database record with user_id
       const { error: dbError } = await supabase
         .from('gallery_images')
         .insert({
           file_name: fileName,
           display_order: timestamp,
-          user_id: user.id
+          user_id: user.id // Explicitly set the user_id
         });
 
       if (dbError) {
@@ -99,7 +100,7 @@ export function ImageUploadForm({ onUploadSuccess }: ImageUploadFormProps) {
         variant: "destructive",
       });
     } finally {
-      setIsUploading(false);
+      setIsLoading(false);
       // Reset the input
       event.target.value = '';
     }
