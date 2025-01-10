@@ -20,7 +20,7 @@ export function GalleryGridContainer({ images, onImageDelete }: GalleryGridConta
         const urlPromises = images.map(async (image) => {
           try {
             // Extract the file name from the URL
-            const fileName = image.url.split('/').pop();
+            const fileName = image.url.split('/').pop()?.split('?')[0];
             if (!fileName) {
               console.error('Invalid file name:', image.url);
               return null;
@@ -38,13 +38,6 @@ export function GalleryGridContainer({ images, onImageDelete }: GalleryGridConta
                 fileName,
                 imageId: image.id
               });
-              
-              toast({
-                title: "Error",
-                description: "Failed to load some images. Please try refreshing.",
-                variant: "destructive",
-              });
-              
               return null;
             }
 

@@ -68,11 +68,6 @@ export function ImageUploadForm({ onUploadSuccess }: ImageUploadFormProps) {
 
       console.log('File uploaded successfully');
 
-      // Get the public URL for the uploaded file
-      const { data: { publicUrl } } = supabase.storage
-        .from('gallery')
-        .getPublicUrl(fileName);
-
       // Create database record
       const { error: dbError } = await supabase
         .from('gallery_images')
