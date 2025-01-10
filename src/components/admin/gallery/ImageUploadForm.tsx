@@ -1,88 +1,42 @@
 import { useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
-import { Upload } from "lucide-react";
-import { useSession } from "@/hooks/auth/useSession";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
+import { uploadImage } from "@/utils/supabaseStorage";
+import { Loader2 } from "lucide-react";
 
 interface ImageUploadFormProps {
-  onUploadSuccess: () => void;
+  onUploadComplete: () => void;
 }
 
-export function ImageUploadForm({ onUploadSuccess }: ImageUploadFormProps) {
+export function ImageUploadForm({ onUploadComplete }: ImageUploadFormProps) {
   const [isUploading, setIsUploading] = useState(false);
-  const { toast } = useToast();
-  const { user } = useSession();
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    // Validate file type
-    if (!file.type.startsWith('image/')) {
-      toast({
-        title: "Error",
-        description: "Please upload an image file",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (!user) {
-      toast({
-        title: "Error",
-        description: "You must be logged in to upload images",
-        variant: "destructive",
-      });
-      return;
-    }
-
     setIsUploading(true);
-
     try {
-      // Create a timestamp-based filename with original extension
-      const timestamp = Date.now();
-      const fileExt = file.name.split('.').pop()?.toLowerCase();
-      const fileName = `${timestamp}.${fileExt}`;
-
-      console.log('Starting file upload:', {
-        fileName,
-        fileType: file.type,
-        fileSize: file.size,
-        userId: user.id
-      });
-
-      // Upload file to storage with owner metadata
-      const { error: uploadError } = await supabase.storage
-        .from('gallery')
-        .upload(fileName, file, {
-          cacheControl: '3600',
-          upsert: false,
-          contentType: file.type
-        });
-
+      const { fileName, error: uploadError } = await uploadImage(file);
+      
       if (uploadError) {
-        console.error('Storage upload error:', uploadError);
         throw uploadError;
       }
-
-      console.log('File uploaded successfully');
 
       // Create database record
       const { error: dbError } = await supabase
         .from('gallery_images')
-        .insert({
+        .insert([{
           file_name: fileName,
-          display_order: Math.floor(Date.now() / 1000), // Convert to seconds to fit in integer
-          user_id: user.id
-        });
+          display_order: 0
+        }]);
 
       if (dbError) {
-        console.error('Database error:', dbError);
-        // Clean up the storage file if database insert fails
-        await supabase.storage
-          .from('gallery')
-          .remove([fileName]);
+        // If database insert fails, we should clean up the uploaded file
+        await supabase.storage.from('gallery').remove([fileName]);
         throw dbError;
       }
 
@@ -91,9 +45,9 @@ export function ImageUploadForm({ onUploadSuccess }: ImageUploadFormProps) {
         description: "Image uploaded successfully",
       });
       
-      onUploadSuccess();
+      onUploadComplete();
     } catch (error) {
-      console.error('Error uploading image:', error);
+      console.error('Upload error:', error);
       toast({
         title: "Error",
         description: "Failed to upload image. Please try again.",
@@ -101,29 +55,28 @@ export function ImageUploadForm({ onUploadSuccess }: ImageUploadFormProps) {
       });
     } finally {
       setIsUploading(false);
-      // Reset the input
       event.target.value = '';
     }
   };
 
   return (
-    <div className="flex items-center gap-4">
-      <input
-        type="file"
-        accept="image/*"
-        onChange={handleFileUpload}
-        className="hidden"
-        id="gallery-upload"
-        disabled={isUploading}
-      />
-      <label htmlFor="gallery-upload">
-        <Button asChild disabled={isUploading}>
-          <span>
-            <Upload className="h-4 w-4 mr-2" />
-            {isUploading ? 'Uploading...' : 'Upload Image'}
-          </span>
-        </Button>
-      </label>
+    <div className="space-y-4">
+      <div className="grid w-full max-w-sm items-center gap-1.5">
+        <Label htmlFor="image">Upload Image</Label>
+        <Input
+          id="image"
+          type="file"
+          accept="image/*"
+          onChange={handleFileUpload}
+          disabled={isUploading}
+        />
+      </div>
+      {isUploading && (
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <Loader2 className="h-4 w-4 animate-spin" />
+          <span>Uploading...</span>
+        </div>
+      )}
     </div>
   );
 }
