@@ -16,6 +16,7 @@ interface EventDialogsProps {
   isPastEvent: boolean;
   isWixEvent: boolean;
   canAddGuests: boolean;
+  currentGuests?: { firstName: string }[];
   onRSVP: (guests?: { firstName: string }[]) => void;
   onCancelRSVP: () => void;
   onDelete: () => void;
@@ -35,6 +36,7 @@ export function EventDialogs({
   isPastEvent,
   isWixEvent,
   canAddGuests,
+  currentGuests = [],
   onRSVP,
   onCancelRSVP,
   onDelete,
@@ -55,6 +57,7 @@ export function EventDialogs({
                 isPastEvent={isPastEvent}
                 isWixEvent={isWixEvent}
                 canAddGuests={canAddGuests}
+                currentGuests={currentGuests}
                 onRSVP={onRSVP}
                 onCancelRSVP={onCancelRSVP}
                 onEdit={() => setShowEditDialog(true)}
