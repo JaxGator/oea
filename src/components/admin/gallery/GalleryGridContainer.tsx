@@ -16,11 +16,22 @@ export function GalleryGridContainer({ images, onImageDelete }: GalleryGridConta
       const urlMap: Record<string, string> = {};
       
       images.forEach(image => {
-        const { data: { publicUrl } } = supabase.storage
-          .from('gallery')
-          .getPublicUrl(image.url.split('/').pop()?.split('?')[0] || '');
-          
-        urlMap[image.id] = publicUrl;
+        // Extract filename, handling both full URLs and direct filenames
+        const fileName = image.url.includes('/')
+          ? image.url.split('/').pop()?.split('?')[0]
+          : image.url;
+
+        if (fileName) {
+          const { data: { publicUrl } } = supabase.storage
+            .from('gallery')
+            .getPublicUrl(fileName);
+            
+          if (publicUrl) {
+            urlMap[image.id] = publicUrl;
+          } else {
+            console.error('Failed to generate public URL for:', fileName);
+          }
+        }
       });
       
       setPublicUrls(urlMap);
