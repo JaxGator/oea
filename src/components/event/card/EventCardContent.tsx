@@ -20,6 +20,7 @@ interface EventCardContentProps {
   waitlistCapacity?: number | null;
   isFeatured?: boolean;
   currentGuests?: { firstName: string }[];
+  importedRsvpCount?: number | null;
   onRSVP: (guests?: { firstName: string }[]) => void;
   onCancelRSVP: () => void;
   onEdit: () => void;
@@ -42,6 +43,7 @@ export function EventCardContent({
   waitlistCapacity,
   isFeatured = false,
   currentGuests = [],
+  importedRsvpCount,
   onRSVP,
   onCancelRSVP,
   onEdit,
@@ -65,6 +67,7 @@ export function EventCardContent({
             waitlistEnabled={waitlistEnabled}
             waitlistCount={waitlistCount}
             waitlistCapacity={waitlistCapacity}
+            importedRsvpCount={importedRsvpCount}
           />
           {isFeatured && <FeaturedEventBadge />}
         </div>

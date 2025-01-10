@@ -9,6 +9,7 @@ interface EventCardBasicInfoProps {
   waitlistEnabled?: boolean;
   waitlistCount?: number;
   waitlistCapacity?: number | null;
+  importedRsvpCount?: number | null;
 }
 
 export function EventCardBasicInfo({
@@ -19,7 +20,8 @@ export function EventCardBasicInfo({
   isWixEvent,
   waitlistEnabled,
   waitlistCount = 0,
-  waitlistCapacity
+  waitlistCapacity,
+  importedRsvpCount
 }: EventCardBasicInfoProps) {
   const { isAuthenticated } = useAuthState();
   
@@ -30,6 +32,9 @@ export function EventCardBasicInfo({
     day: 'numeric'
   });
 
+  // Use imported count for past events if available
+  const displayCount = importedRsvpCount !== null ? importedRsvpCount : rsvpCount;
+
   return (
     <div className="space-y-2">
       <div className="text-sm text-gray-600">
@@ -38,7 +43,7 @@ export function EventCardBasicInfo({
       </div>
       <div className="text-sm">
         <p>
-          {rsvpCount} / {maxGuests} spots filled
+          {displayCount} / {maxGuests} spots filled
           {isWixEvent && " (imported from Wix)"}
         </p>
         {waitlistEnabled && (

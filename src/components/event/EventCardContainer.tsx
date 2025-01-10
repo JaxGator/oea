@@ -48,7 +48,6 @@ export function EventCardContainer({
     queryFn: async () => {
       if (!userRSVPStatus) return [];
       
-      // First get all RSVPs for this event and user
       const { data: rsvps } = await supabase
         .from('event_rsvps')
         .select('id')
@@ -57,7 +56,6 @@ export function EventCardContainer({
 
       if (!rsvps?.length) return [];
 
-      // Then get all guests for these RSVPs
       const rsvpIds = rsvps.map(rsvp => rsvp.id);
       const { data: guestData } = await supabase
         .from('event_guests')
@@ -113,6 +111,7 @@ export function EventCardContainer({
               waitlistCapacity={event.waitlist_capacity}
               isFeatured={event.is_featured}
               currentGuests={guests}
+              importedRsvpCount={event.imported_rsvp_count}
               onRSVP={handleRSVP}
               onCancelRSVP={() => onCancelRSVP(event.id)}
               onEdit={() => setShowEditDialog(true)}
