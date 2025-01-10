@@ -52,48 +52,44 @@ export function ImageUploadForm({ onUploadSuccess }: ImageUploadFormProps) {
         userId: user.id
       });
 
-      // First create the database record with user_id
-      const { data: dbData, error: dbError } = await supabase
-        .from('gallery_images')
-        .insert({
-          file_name: fileName,
-          display_order: Math.floor(Date.now() / 1000), // Convert to seconds to fit in integer
-          user_id: user.id
-        })
-        .select()
-        .single();
-
-      if (dbError) {
-        console.error('Database error:', dbError);
-        throw dbError;
-      }
-
-      console.log('Database record created:', dbData);
-
-      // Then upload file to storage with owner metadata
+      // Upload file to storage with owner metadata
       const { error: uploadError } = await supabase.storage
         .from('gallery')
         .upload(fileName, file, {
           cacheControl: '3600',
           upsert: false,
-          contentType: file.type,
-          duplex: 'half',
-          metadata: {
-            owner: user.id // Set the owner metadata
-          }
+          contentType: file.type
         });
 
       if (uploadError) {
         console.error('Storage upload error:', uploadError);
-        // Clean up the database record if storage upload fails
-        await supabase
-          .from('gallery_images')
-          .delete()
-          .eq('file_name', fileName);
         throw uploadError;
       }
 
       console.log('File uploaded successfully');
+
+      // Get the public URL for the uploaded file
+      const { data: { publicUrl } } = supabase.storage
+        .from('gallery')
+        .getPublicUrl(fileName);
+
+      // Create database record
+      const { error: dbError } = await supabase
+        .from('gallery_images')
+        .insert({
+          file_name: fileName,
+          display_order: Math.floor(Date.now() / 1000), // Convert to seconds to fit in integer
+          user_id: user.id
+        });
+
+      if (dbError) {
+        console.error('Database error:', dbError);
+        // Clean up the storage file if database insert fails
+        await supabase.storage
+          .from('gallery')
+          .remove([fileName]);
+        throw dbError;
+      }
 
       toast({
         title: "Success",

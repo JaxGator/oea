@@ -2,6 +2,7 @@ import { X } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
 
 interface GalleryGridContainerProps {
   images: Array<{ url: string; id: string }>;
@@ -15,44 +16,74 @@ export function GalleryGridContainer({ images, onImageDelete }: GalleryGridConta
 
   useEffect(() => {
     const fetchSignedUrls = async () => {
-      const urlPromises = images.map(async (image) => {
-        try {
-          // Extract the file path from the URL
-          const filePath = image.url.split('/').pop();
-          if (!filePath) return null;
+      try {
+        const urlPromises = images.map(async (image) => {
+          try {
+            // Extract the file name from the URL
+            const fileName = image.url.split('/').pop();
+            if (!fileName) {
+              console.error('Invalid file name:', image.url);
+              return null;
+            }
 
-          const { data: { signedUrl }, error } = await supabase
-            .storage
-            .from('gallery')
-            .createSignedUrl(filePath, 3600); // 1 hour expiry
+            // Get a signed URL with a longer expiry
+            const { data: { signedUrl }, error } = await supabase
+              .storage
+              .from('gallery')
+              .createSignedUrl(fileName, 3600); // 1 hour expiry
 
-          if (error) {
-            console.error('Error getting signed URL:', error);
+            if (error) {
+              console.error('Error getting signed URL:', {
+                error,
+                fileName,
+                imageId: image.id
+              });
+              
+              toast({
+                title: "Error",
+                description: "Failed to load some images. Please try refreshing.",
+                variant: "destructive",
+              });
+              
+              return null;
+            }
+
+            return { id: image.id, signedUrl };
+          } catch (error) {
+            console.error('Error processing URL:', {
+              error,
+              imageUrl: image.url,
+              imageId: image.id
+            });
             return null;
           }
+        });
 
-          return { id: image.id, signedUrl };
-        } catch (error) {
-          console.error('Error processing URL:', error);
-          return null;
-        }
-      });
-
-      const results = await Promise.all(urlPromises);
-      const urlMap: Record<string, string> = {};
-      results.forEach(result => {
-        if (result) {
-          urlMap[result.id] = result.signedUrl;
-        }
-      });
-      setSignedUrls(urlMap);
+        const results = await Promise.all(urlPromises);
+        const urlMap: Record<string, string> = {};
+        results.forEach(result => {
+          if (result) {
+            urlMap[result.id] = result.signedUrl;
+          }
+        });
+        
+        setSignedUrls(urlMap);
+      } catch (error) {
+        console.error('Error fetching signed URLs:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load gallery images",
+          variant: "destructive",
+        });
+      }
     };
 
-    fetchSignedUrls();
+    if (images.length > 0) {
+      fetchSignedUrls();
+    }
   }, [images]);
 
   const handleImageLoad = (imageId: string) => {
-    console.log('Image loaded successfully:', imageId);
     setLoadedImages(prev => new Set([...prev, imageId]));
     setErrorImages(prev => {
       const newSet = new Set(prev);
@@ -100,7 +131,7 @@ export function GalleryGridContainer({ images, onImageDelete }: GalleryGridConta
           {signedUrls[image.id] && (
             <img
               src={signedUrls[image.id]}
-              alt={`Gallery image`}
+              alt="Gallery image"
               className={`w-full h-full object-cover rounded-lg transition-opacity duration-300 ${
                 loadedImages.has(image.id) ? 'opacity-100' : 'opacity-0'
               }`}
@@ -113,8 +144,7 @@ export function GalleryGridContainer({ images, onImageDelete }: GalleryGridConta
           <Button
             variant="destructive"
             size="icon"
-            onClick={(e) => {
-              e.stopPropagation();
+            onClick={() => {
               console.log('Deleting image:', {
                 id: image.id,
                 url: image.url
