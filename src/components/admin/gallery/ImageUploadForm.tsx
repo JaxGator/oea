@@ -4,7 +4,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
-import { uploadImage } from "@/utils/supabaseStorage";
 import { Loader2 } from "lucide-react";
 
 interface ImageUploadFormProps {
@@ -31,17 +30,26 @@ export function ImageUploadForm({ onUploadComplete }: ImageUploadFormProps) {
       const fileExt = file.name.split('.').pop();
       const fileName = `${timestamp}.${fileExt}`;
 
+      console.log('Attempting to upload file:', {
+        fileName,
+        userId: user.id,
+        fileSize: file.size
+      });
+
       // Upload to storage
       const { error: uploadError } = await supabase.storage
         .from('gallery')
-        .upload(fileName, file, {
+        .upload(`public/${fileName}`, file, {
           cacheControl: '3600',
           upsert: false
         });
 
       if (uploadError) {
+        console.error('Storage upload error:', uploadError);
         throw uploadError;
       }
+
+      console.log('File uploaded successfully:', fileName);
 
       // Create database record with user_id
       const { error: dbError } = await supabase
@@ -54,7 +62,8 @@ export function ImageUploadForm({ onUploadComplete }: ImageUploadFormProps) {
 
       if (dbError) {
         // If database insert fails, we should clean up the uploaded file
-        await supabase.storage.from('gallery').remove([fileName]);
+        await supabase.storage.from('gallery').remove([`public/${fileName}`]);
+        console.error('Database insert error:', dbError);
         throw dbError;
       }
 
