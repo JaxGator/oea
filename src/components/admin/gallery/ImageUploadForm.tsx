@@ -39,7 +39,7 @@ export function ImageUploadForm({ onUploadComplete }: ImageUploadFormProps) {
       // Upload to storage
       const { error: uploadError } = await supabase.storage
         .from('gallery')
-        .upload(`public/${fileName}`, file, {
+        .upload(fileName, file, {
           cacheControl: '3600',
           upsert: false
         });
@@ -62,7 +62,7 @@ export function ImageUploadForm({ onUploadComplete }: ImageUploadFormProps) {
 
       if (dbError) {
         // If database insert fails, we should clean up the uploaded file
-        await supabase.storage.from('gallery').remove([`public/${fileName}`]);
+        await supabase.storage.from('gallery').remove([fileName]);
         console.error('Database insert error:', dbError);
         throw dbError;
       }

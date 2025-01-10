@@ -13,14 +13,13 @@ export function useGalleryImages() {
       const { data, error } = await supabase
         .from('gallery_images')
         .select('*')
-        .not('file_name', 'like', 'event-pics/%')
         .order('display_order', { ascending: true });
 
       if (error) {
         throw error;
       }
 
-      const processedImages = data.map(image => {
+      const processedImages = await Promise.all(data.map(async (image) => {
         const { data: { publicUrl } } = supabase.storage
           .from('gallery')
           .getPublicUrl(image.file_name);
@@ -31,9 +30,10 @@ export function useGalleryImages() {
           fileName: image.file_name,
           displayOrder: image.display_order
         };
-      });
+      }));
 
-      setImages(processedImages);
+      console.log('Processed gallery images:', processedImages);
+      setImages(processedImages.filter(img => img.url));
     } catch (error) {
       console.error('Error fetching gallery images:', error);
       toast({
