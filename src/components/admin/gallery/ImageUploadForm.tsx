@@ -51,7 +51,7 @@ export function ImageUploadForm({ onUploadSuccess }: ImageUploadFormProps) {
       // First, upload the file to storage
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('gallery')
-        .upload(`gallery/${fileName}`, file, {
+        .upload(fileName, file, {
           cacheControl: '3600',
           upsert: false
         });
@@ -66,7 +66,7 @@ export function ImageUploadForm({ onUploadSuccess }: ImageUploadFormProps) {
       // Get the public URL for the uploaded file
       const { data: { publicUrl } } = supabase.storage
         .from('gallery')
-        .getPublicUrl(`gallery/${fileName}`);
+        .getPublicUrl(fileName);
 
       // Then create the database record
       const { error: dbError } = await supabase
@@ -81,7 +81,7 @@ export function ImageUploadForm({ onUploadSuccess }: ImageUploadFormProps) {
         // If database insert fails, clean up the uploaded file
         await supabase.storage
           .from('gallery')
-          .remove([`gallery/${fileName}`]);
+          .remove([fileName]);
         throw dbError;
       }
 
