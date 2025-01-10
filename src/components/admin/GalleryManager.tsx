@@ -19,30 +19,40 @@ export default function GalleryManager() {
   });
 
   if (isLoading) {
-    return <div>Loading gallery...</div>;
+    return (
+      <div className="flex items-center justify-center p-8">
+        <div className="text-center space-y-4">
+          <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full mx-auto"></div>
+          <p className="text-muted-foreground">Loading gallery...</p>
+        </div>
+      </div>
+    );
   }
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-2">
-        <h2 className="text-lg font-semibold">Gallery Management</h2>
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Upload and manage images for your site's gallery. Enable carousel mode for automatic image rotation.</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <h2 className="text-lg font-semibold">Gallery Management</h2>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Upload and manage images for your site's gallery. Enable carousel mode for automatic image rotation.</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </div>
+        <CarouselToggle 
+          enabled={carouselEnabled}
+          onToggle={updateCarouselConfig}
+        />
       </div>
 
-      <CarouselToggle 
-        enabled={carouselEnabled}
-        onToggle={updateCarouselConfig}
-      />
       <ImageUploadForm onUploadSuccess={fetchImages} />
+      
       <ImageGrid 
         images={images} 
         onImageDelete={async (imageUrl: string) => {

@@ -74,7 +74,7 @@ export function ImageUploadForm({ onUploadSuccess }: ImageUploadFormProps) {
         .insert({
           file_name: fileName,
           display_order: timestamp,
-          user_id: user.id // Add the user_id to track ownership
+          user_id: user.id
         });
 
       if (dbError) {
