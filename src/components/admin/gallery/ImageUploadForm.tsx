@@ -53,11 +53,12 @@ export function ImageUploadForm({ onUploadSuccess }: ImageUploadFormProps) {
       });
 
       // First create the database record with user_id
+      // Use Math.floor(Date.now() / 1000) to get a reasonable integer for display_order
       const { data: dbData, error: dbError } = await supabase
         .from('gallery_images')
         .insert({
           file_name: fileName,
-          display_order: timestamp,
+          display_order: Math.floor(Date.now() / 1000), // Convert to seconds to fit in integer
           user_id: user.id
         })
         .select()
