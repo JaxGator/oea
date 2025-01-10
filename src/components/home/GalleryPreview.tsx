@@ -31,12 +31,19 @@ export function GalleryPreview() {
 
         if (!data) return [];
 
+        // Transform the data to return the full public URLs
         return data.map(image => {
           const { data: urlData } = supabase.storage
             .from('gallery')
             .getPublicUrl(image.file_name);
+
+          if (!urlData.publicUrl) {
+            console.error('Failed to generate public URL for:', image.file_name);
+            return null;
+          }
+
           return urlData.publicUrl;
-        });
+        }).filter(Boolean); // Remove any null values
       } catch (error) {
         console.error('Gallery fetch error:', error);
         toast.error('Failed to load gallery images');
