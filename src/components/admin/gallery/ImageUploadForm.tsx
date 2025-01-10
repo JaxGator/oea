@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Upload } from "lucide-react";
+import { useSession } from "@/hooks/auth/useSession";
 
 interface ImageUploadFormProps {
   onUploadSuccess: () => void;
@@ -11,6 +12,7 @@ interface ImageUploadFormProps {
 export function ImageUploadForm({ onUploadSuccess }: ImageUploadFormProps) {
   const [isUploading, setIsUploading] = useState(false);
   const { toast } = useToast();
+  const { user } = useSession();
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -21,6 +23,15 @@ export function ImageUploadForm({ onUploadSuccess }: ImageUploadFormProps) {
       toast({
         title: "Error",
         description: "Please upload an image file",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!user) {
+      toast({
+        title: "Error",
+        description: "You must be logged in to upload images",
         variant: "destructive",
       });
       return;
@@ -37,10 +48,10 @@ export function ImageUploadForm({ onUploadSuccess }: ImageUploadFormProps) {
 
       console.log('Uploading file:', fileName);
 
-      // Upload the file to storage first
+      // First, upload the file to storage
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('gallery')
-        .upload(fileName, file, {
+        .upload(`gallery/${fileName}`, file, {
           cacheControl: '3600',
           upsert: false
         });
@@ -51,6 +62,11 @@ export function ImageUploadForm({ onUploadSuccess }: ImageUploadFormProps) {
       }
 
       console.log('File uploaded successfully:', uploadData);
+
+      // Get the public URL for the uploaded file
+      const { data: { publicUrl } } = supabase.storage
+        .from('gallery')
+        .getPublicUrl(`gallery/${fileName}`);
 
       // Then create the database record
       const { error: dbError } = await supabase
@@ -65,7 +81,7 @@ export function ImageUploadForm({ onUploadSuccess }: ImageUploadFormProps) {
         // If database insert fails, clean up the uploaded file
         await supabase.storage
           .from('gallery')
-          .remove([fileName]);
+          .remove([`gallery/${fileName}`]);
         throw dbError;
       }
 
