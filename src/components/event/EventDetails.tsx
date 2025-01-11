@@ -36,7 +36,6 @@ export function EventDetails({
   const { mapKey } = useGoogleMapsToken();
   const [coordinates, setCoordinates] = useState<{ lat: number; lng: number } | null>(null);
 
-  // Parse the date string and create a new Date object in local timezone
   const eventDate = parseISO(date);
 
   useEffect(() => {
@@ -61,7 +60,6 @@ export function EventDetails({
     geocodeLocation();
   }, [location, mapKey, showLocation]);
 
-  // Convert time from 24-hour to 12-hour format
   const formatTime = (timeStr: string) => {
     const [hours, minutes] = timeStr.split(':');
     const hour = parseInt(hours, 10);
@@ -106,11 +104,11 @@ export function EventDetails({
         </span>
       </div>
       
-      <div className="flex flex-col md:flex-row md:gap-8">
-        <div className="flex-1">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+        <div className="space-y-4">
           <LocationDisplay />
 
-          <div className="flex items-center gap-2 text-gray-600 mt-4">
+          <div className="flex items-center gap-2 text-gray-600">
             <UsersIcon className="w-4 h-4" />
             <span className="text-sm">
               {isWixEvent ? (
@@ -121,16 +119,32 @@ export function EventDetails({
             </span>
           </div>
 
+          {description && (
+            <div className={`prose prose-sm max-w-none ${showFullDescription ? '' : 'line-clamp-3'}`}>
+              <div dangerouslySetInnerHTML={{ __html: description }} />
+            </div>
+          )}
+
+          {userRSVPStatus && (
+            <Badge variant="secondary" className="mt-2">
+              Your RSVP: {userRSVPStatus}
+            </Badge>
+          )}
+
           {attendeeNames.length > 0 && (
-            <div className="text-sm text-gray-600 mt-4">
-              <p className="font-medium mb-1">Attending:</p>
-              <p>{attendeeNames.join(', ')}</p>
+            <div className="text-sm text-gray-600">
+              <p className="font-medium mb-2">Attendees:</p>
+              <ul className="list-disc pl-5 space-y-1">
+                {attendeeNames.map((name, index) => (
+                  <li key={index}>{name}</li>
+                ))}
+              </ul>
             </div>
           )}
         </div>
 
         {showLocation && coordinates && mapKey && (
-          <div className="w-full md:w-64 h-48 rounded-lg overflow-hidden mt-4 md:mt-0">
+          <div className="h-[300px] rounded-lg overflow-hidden shadow-lg">
             <LoadScript googleMapsApiKey={mapKey}>
               <GoogleMap
                 mapContainerStyle={{ width: '100%', height: '100%' }}
@@ -148,18 +162,6 @@ export function EventDetails({
           </div>
         )}
       </div>
-      
-      {description && (
-        <div className={`prose prose-sm max-w-none ${showFullDescription ? '' : 'line-clamp-3'}`}>
-          <div dangerouslySetInnerHTML={{ __html: description }} />
-        </div>
-      )}
-      
-      {userRSVPStatus && (
-        <Badge variant="secondary" className="mt-2">
-          Your RSVP: {userRSVPStatus}
-        </Badge>
-      )}
     </div>
   );
 }
