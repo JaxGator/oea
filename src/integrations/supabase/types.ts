@@ -718,6 +718,7 @@ export type Database = {
           full_name: string | null
           id: string
           in_app_notifications: boolean | null
+          interests: string[] | null
           is_admin: boolean | null
           is_approved: boolean | null
           is_member: boolean | null
@@ -732,6 +733,7 @@ export type Database = {
           full_name?: string | null
           id: string
           in_app_notifications?: boolean | null
+          interests?: string[] | null
           is_admin?: boolean | null
           is_approved?: boolean | null
           is_member?: boolean | null
@@ -746,6 +748,7 @@ export type Database = {
           full_name?: string | null
           id?: string
           in_app_notifications?: boolean | null
+          interests?: string[] | null
           is_admin?: boolean | null
           is_approved?: boolean | null
           is_member?: boolean | null

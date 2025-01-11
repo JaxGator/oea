@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { ProfileHeader } from "@/components/profile/ProfileHeader";
 import { ProfileForm } from "@/components/profile/ProfileForm";
+import { InterestsSection } from "@/components/profile/InterestsSection";
 
 export default function Profile() {
   const [loading, setLoading] = useState(true);
@@ -14,6 +15,9 @@ export default function Profile() {
   const [newPassword, setNewPassword] = useState("");
   const [userId, setUserId] = useState<string | null>(null);
   const [isApproved, setIsApproved] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [isMember, setIsMember] = useState(false);
+  const [interests, setInterests] = useState<string[]>([]);
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -36,7 +40,7 @@ export default function Profile() {
       
       const { data, error } = await supabase
         .from("profiles")
-        .select("username, full_name, avatar_url, is_approved")
+        .select("username, full_name, avatar_url, is_approved, is_admin, is_member, interests")
         .eq("id", session.user.id)
         .single();
 
@@ -46,6 +50,9 @@ export default function Profile() {
       setFullName(data.full_name || "");
       setAvatarUrl(data.avatar_url || "");
       setIsApproved(data.is_approved || false);
+      setIsAdmin(data.is_admin || false);
+      setIsMember(data.is_member || false);
+      setInterests(data.interests || []);
     } catch (error) {
       console.error("Error loading profile:", error);
       toast({
@@ -83,6 +90,32 @@ export default function Profile() {
       console.error("Error updating profile:", error);
       toast({
         title: "Error updating profile",
+        description: "Please try again later.",
+        variant: "destructive",
+      });
+    }
+  }
+
+  async function updateInterests(newInterests: string[]) {
+    try {
+      if (!userId) throw new Error("No user ID");
+
+      const { error } = await supabase
+        .from("profiles")
+        .update({ interests: newInterests })
+        .eq("id", userId);
+
+      if (error) throw error;
+
+      setInterests(newInterests);
+      toast({
+        title: "Interests updated",
+        description: "Your interests have been updated successfully.",
+      });
+    } catch (error) {
+      console.error("Error updating interests:", error);
+      toast({
+        title: "Error updating interests",
         description: "Please try again later.",
         variant: "destructive",
       });
@@ -138,7 +171,7 @@ export default function Profile() {
     );
   }
 
-  if (!isApproved) {
+  if (!isApproved && !isAdmin && !isMember) {
     return (
       <div className="min-h-screen bg-[#222222] py-12 px-4">
         <div className="max-w-2xl mx-auto">
@@ -156,7 +189,7 @@ export default function Profile() {
   return (
     <div className="min-h-screen bg-[#222222] py-12 px-4">
       <div className="max-w-2xl mx-auto">
-        <div className="bg-white rounded-lg p-6 shadow-lg">
+        <div className="bg-white rounded-lg p-6 shadow-lg space-y-8">
           <ProfileHeader
             avatarUrl={avatarUrl}
             fullName={fullName}
@@ -177,6 +210,12 @@ export default function Profile() {
             onUpdateEmail={updateEmail}
             onUpdatePassword={updatePassword}
           />
+          {(isApproved || isAdmin || isMember) && (
+            <InterestsSection
+              interests={interests}
+              onUpdateInterests={updateInterests}
+            />
+          )}
         </div>
       </div>
     </div>
