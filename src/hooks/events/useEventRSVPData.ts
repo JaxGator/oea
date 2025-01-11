@@ -5,6 +5,17 @@ export function useEventRSVPData(eventId: string) {
   return useQuery({
     queryKey: ['total-rsvp-count', eventId],
     queryFn: async () => {
+      // First get the event details
+      const { data: eventData } = await supabase
+        .from('events')
+        .select('max_guests')
+        .eq('id', eventId)
+        .single();
+
+      if (!eventData) {
+        throw new Error('Event not found');
+      }
+
       // Get all attending RSVPs
       const { data: rsvps } = await supabase
         .from('event_rsvps')
@@ -30,8 +41,8 @@ export function useEventRSVPData(eventId: string) {
       const waitlistedRsvps = rsvps.filter(rsvp => rsvp.status === 'waitlisted').length;
 
       return {
-        confirmedCount: Math.min(confirmedRsvps + (guestCount || 0), event.max_guests),
-        waitlistCount: Math.max(0, (confirmedRsvps + (guestCount || 0)) - event.max_guests) + waitlistedRsvps
+        confirmedCount: Math.min(confirmedRsvps + (guestCount || 0), eventData.max_guests),
+        waitlistCount: Math.max(0, (confirmedRsvps + (guestCount || 0)) - eventData.max_guests) + waitlistedRsvps
       };
     }
   });
