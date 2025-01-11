@@ -7,12 +7,19 @@ export async function handleImageDelete(imageUrl: string, onSuccess: (imageUrl: 
     const urlParts = imageUrl.split('/');
     const fileName = urlParts[urlParts.length - 1];
 
+    if (!fileName) {
+      throw new Error('Invalid image URL');
+    }
+
     // First delete from storage
     const { error: storageError } = await supabase.storage
       .from('gallery')
       .remove([fileName]);
 
-    if (storageError) throw storageError;
+    if (storageError) {
+      console.error('Storage deletion error:', storageError);
+      throw storageError;
+    }
 
     // Then delete from the database
     const { error: dbError } = await supabase
@@ -20,7 +27,10 @@ export async function handleImageDelete(imageUrl: string, onSuccess: (imageUrl: 
       .delete()
       .eq('file_name', fileName);
 
-    if (dbError) throw dbError;
+    if (dbError) {
+      console.error('Database deletion error:', dbError);
+      throw dbError;
+    }
 
     onSuccess(imageUrl);
     toast({
@@ -31,7 +41,7 @@ export async function handleImageDelete(imageUrl: string, onSuccess: (imageUrl: 
     console.error('Error deleting image:', error);
     toast({
       title: "Error",
-      description: "Failed to delete image",
+      description: error instanceof Error ? error.message : "Failed to delete image",
       variant: "destructive",
     });
   }
