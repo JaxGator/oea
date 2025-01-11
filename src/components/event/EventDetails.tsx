@@ -6,7 +6,6 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api';
 import { useGoogleMapsToken } from "@/hooks/useGoogleMapsToken";
 import { useState, useEffect } from "react";
-import { Separator } from "@/components/ui/separator";
 
 interface EventDetailsProps {
   date: string;
@@ -18,7 +17,6 @@ interface EventDetailsProps {
   attendeeNames: string[];
   userRSVPStatus?: string | null;
   showFullDescription?: boolean;
-  waitlistedNames?: string[];
 }
 
 export function EventDetails({
@@ -31,11 +29,9 @@ export function EventDetails({
   attendeeNames,
   userRSVPStatus,
   showFullDescription = false,
-  waitlistedNames = [],
 }: EventDetailsProps) {
   const { user, profile } = useAuthState();
   const showLocation = user && profile?.is_approved;
-  const canViewAttendees = profile?.is_approved || profile?.is_member || profile?.is_admin;
   const isWixEvent = description === 'Imported from Wix';
   const { mapKey } = useGoogleMapsToken();
   const [coordinates, setCoordinates] = useState<{ lat: number; lng: number } | null>(null);
@@ -101,55 +97,6 @@ export function EventDetails({
     );
   };
 
-  const AttendeesList = () => {
-    if (!canViewAttendees) {
-      return (
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div className="text-sm text-gray-600">
-                <span className="italic">Attendee list visible after approval</span>
-              </div>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Please request approval to view attendee details</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-      );
-    }
-
-    return (
-      <div className="space-y-4">
-        {attendeeNames.length > 0 && (
-          <div className="text-sm text-gray-600">
-            <p className="font-medium mb-2">Confirmed Attendees ({attendeeNames.length}):</p>
-            <div className="flex flex-wrap gap-2">
-              {attendeeNames.map((name, index) => (
-                <Badge key={index} variant="secondary">
-                  {name}
-                </Badge>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {waitlistedNames.length > 0 && (
-          <div className="text-sm text-gray-600">
-            <p className="font-medium mb-2">Waitlist ({waitlistedNames.length}):</p>
-            <div className="flex flex-wrap gap-2">
-              {waitlistedNames.map((name, index) => (
-                <Badge key={index} variant="outline" className="border-yellow-500">
-                  {name}
-                </Badge>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
-    );
-  };
-
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-2 text-gray-600">
@@ -174,9 +121,12 @@ export function EventDetails({
             </span>
           </div>
 
-          <Separator className="my-4" />
-          
-          <AttendeesList />
+          {attendeeNames.length > 0 && (
+            <div className="text-sm text-gray-600 mt-4">
+              <p className="font-medium mb-1">Attending:</p>
+              <p>{attendeeNames.join(', ')}</p>
+            </div>
+          )}
         </div>
 
         {showLocation && coordinates && mapKey && (

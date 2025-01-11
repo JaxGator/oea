@@ -17,7 +17,6 @@ interface EventCardDetailedViewProps {
   };
   rsvpCount: number;
   attendeeNames: string[];
-  waitlistedNames: string[];
   userRSVPStatus: string | null;
   isAdmin: boolean;
   isPastEvent: boolean;
@@ -34,7 +33,6 @@ export function EventCardDetailedView({
   event,
   rsvpCount,
   attendeeNames,
-  waitlistedNames,
   userRSVPStatus,
   isAdmin,
   isPastEvent,
@@ -71,7 +69,6 @@ export function EventCardDetailedView({
           maxGuests={event.max_guests}
           description={event.description || ""}
           attendeeNames={attendeeNames}
-          waitlistedNames={waitlistedNames}
           userRSVPStatus={userRSVPStatus}
           showFullDescription
         />
