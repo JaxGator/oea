@@ -16,6 +16,7 @@ export function GalleryItem({ imageUrl, imageId, onDelete }: GalleryItemProps) {
     console.error('Failed to load image:', imageUrl);
     setHasError(true);
     setIsLoaded(false);
+    onDelete(); // Automatically remove invalid images
   };
 
   const handleImageLoad = () => {

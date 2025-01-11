@@ -44,11 +44,18 @@ export function GalleryGridContainer({ images, onImageDelete }: GalleryGridConta
                 .getPublicUrl(fileName);
                 
               if (publicUrl) {
-                urlMap[image.id] = publicUrl;
+                // Verify the image URL is accessible
+                const response = await fetch(publicUrl, { method: 'HEAD' });
+                if (response.ok) {
+                  urlMap[image.id] = publicUrl;
+                } else {
+                  console.warn('Image URL not accessible:', fileName);
+                  onImageDelete(image.url); // Remove invalid image
+                }
               }
             } else {
               console.warn('File not found in storage:', fileName);
-              // Optionally notify about invalid image
+              onImageDelete(image.url); // Remove invalid image
               toast({
                 title: "Invalid Image",
                 description: `Image ${fileName} not found in gallery`,
@@ -58,6 +65,7 @@ export function GalleryGridContainer({ images, onImageDelete }: GalleryGridConta
           }
         } catch (error) {
           console.error('Error processing image:', error);
+          onImageDelete(image.url); // Remove invalid image
         }
       }
       
@@ -70,7 +78,7 @@ export function GalleryGridContainer({ images, onImageDelete }: GalleryGridConta
     } else {
       setIsLoading(false);
     }
-  }, [images]);
+  }, [images, onImageDelete]);
 
   if (isLoading) {
     return (
