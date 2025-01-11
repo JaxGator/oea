@@ -8,8 +8,8 @@ import { useEventDialogs } from "@/hooks/useEventDialogs";
 import { useEventInteraction } from "@/hooks/events/useEventInteraction";
 import { EventRSVPHandler } from "./rsvp/EventRSVPHandler";
 import { useEventWaitlist } from "@/hooks/events/useEventWaitlist";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { useEventRSVPData } from "@/hooks/events/useEventRSVPData";
+import { useEventGuestData } from "@/hooks/events/useEventGuestData";
 
 interface EventCardContainerProps {
   event: Event;
@@ -41,70 +41,8 @@ export function EventCardContainer({
   const { showEditDialog, setShowEditDialog } = useEventDialogs();
   const { showDetailsDialog, setShowDetailsDialog, handleInteraction } = useEventInteraction();
   const { waitlistCount } = useEventWaitlist(event.id, event.waitlist_enabled);
-
-  // Fetch total RSVP count including guests and determine waitlist status
-  const { data: rsvpData = { confirmedCount: 0, waitlistCount: 0 } } = useQuery({
-    queryKey: ['total-rsvp-count', event.id],
-    queryFn: async () => {
-      // Get all attending RSVPs
-      const { data: rsvps } = await supabase
-        .from('event_rsvps')
-        .select(`
-          id,
-          status
-        `)
-        .eq('event_id', event.id)
-        .eq('response', 'attending');
-
-      if (!rsvps?.length) return { confirmedCount: 0, waitlistCount: 0 };
-
-      const rsvpIds = rsvps.map(rsvp => rsvp.id);
-      
-      // Get guest count for these RSVPs
-      const { count: guestCount } = await supabase
-        .from('event_guests')
-        .select('*', { count: 'exact', head: true })
-        .in('rsvp_id', rsvpIds);
-
-      // Count confirmed and waitlisted RSVPs
-      const confirmedRsvps = rsvps.filter(rsvp => rsvp.status === 'confirmed').length;
-      const waitlistedRsvps = rsvps.filter(rsvp => rsvp.status === 'waitlisted').length;
-
-      // Calculate total confirmed (up to max_guests) and waitlisted
-      const totalConfirmed = Math.min(confirmedRsvps + (guestCount || 0), event.max_guests);
-      const totalWaitlisted = Math.max(0, (confirmedRsvps + (guestCount || 0)) - event.max_guests) + waitlistedRsvps;
-
-      return {
-        confirmedCount: totalConfirmed,
-        waitlistCount: totalWaitlisted
-      };
-    }
-  });
-
-  // Fetch guests for this RSVP
-  const { data: guests = [] } = useQuery({
-    queryKey: ['event-guests', event.id, userRSVPStatus],
-    queryFn: async () => {
-      if (!userRSVPStatus) return [];
-      
-      const { data: rsvps } = await supabase
-        .from('event_rsvps')
-        .select('id')
-        .eq('event_id', event.id)
-        .eq('response', 'attending');
-
-      if (!rsvps?.length) return [];
-
-      const rsvpIds = rsvps.map(rsvp => rsvp.id);
-      const { data: guestData } = await supabase
-        .from('event_guests')
-        .select('first_name')
-        .in('rsvp_id', rsvpIds);
-
-      return guestData?.map(guest => ({ firstName: guest.first_name })) || [];
-    },
-    enabled: !!userRSVPStatus
-  });
+  const { data: rsvpData = { confirmedCount: 0, waitlistCount: 0 } } = useEventRSVPData(event.id);
+  const { data: guests = [] } = useEventGuestData(event.id, userRSVPStatus);
 
   const isPastEvent = new Date(event.date) < new Date(new Date().setHours(0, 0, 0, 0));
   const isWixEvent = event.description === 'Imported from Wix';
