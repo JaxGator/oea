@@ -21,20 +21,11 @@ export function ImageUploadForm({ onUploadComplete }: ImageUploadFormProps) {
 
     setIsUploading(true);
     try {
-      // Generate a unique filename
       const timestamp = Date.now();
       const randomString = Math.random().toString(36).substring(2, 8);
       const fileExt = file.name.split('.').pop();
       const fileName = `${timestamp}-${randomString}.${fileExt}`;
 
-      console.log('Starting file upload:', {
-        fileName,
-        userId: user.id,
-        fileSize: file.size,
-        contentType: file.type
-      });
-
-      // Upload to storage
       const { error: uploadError } = await supabase.storage
         .from('gallery')
         .upload(fileName, file, {
@@ -43,23 +34,12 @@ export function ImageUploadForm({ onUploadComplete }: ImageUploadFormProps) {
           upsert: false
         });
 
-      if (uploadError) {
-        console.error('Storage upload error:', uploadError);
-        throw uploadError;
-      }
+      if (uploadError) throw uploadError;
 
-      // Get the public URL
       const { data: { publicUrl } } = supabase.storage
         .from('gallery')
         .getPublicUrl(fileName);
 
-      console.log('File uploaded successfully:', {
-        fileName,
-        publicUrl,
-        userId: user.id
-      });
-
-      // Create database record
       const { error: dbError } = await supabase
         .from('gallery_images')
         .insert([{
@@ -69,9 +49,7 @@ export function ImageUploadForm({ onUploadComplete }: ImageUploadFormProps) {
         }]);
 
       if (dbError) {
-        // Clean up the uploaded file if database insert fails
         await supabase.storage.from('gallery').remove([fileName]);
-        console.error('Database insert error:', dbError);
         throw dbError;
       }
 

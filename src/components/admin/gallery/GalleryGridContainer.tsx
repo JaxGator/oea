@@ -3,6 +3,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { GalleryItem } from "./GalleryItem";
 import { toast } from "@/hooks/use-toast";
 import { useSession } from "@/hooks/auth/useSession";
+import { useImageValidation } from "@/hooks/gallery/useImageValidation";
+import { GalleryLoadingState } from "./GalleryLoadingState";
+import { useGalleryImageUrls } from "@/hooks/gallery/useGalleryImageUrls";
 
 interface GalleryGridContainerProps {
   images: Array<{ url: string; id: string }>;
@@ -10,58 +13,8 @@ interface GalleryGridContainerProps {
 }
 
 export function GalleryGridContainer({ images, onImageDelete }: GalleryGridContainerProps) {
-  const [validImages, setValidImages] = useState<Record<string, string>>({});
-  const [isLoading, setIsLoading] = useState(true);
   const { user } = useSession();
-
-  useEffect(() => {
-    const validateAndGetPublicUrls = async () => {
-      if (!user) {
-        setIsLoading(false);
-        return;
-      }
-
-      setIsLoading(true);
-      const urlMap: Record<string, string> = {};
-      
-      for (const image of images) {
-        try {
-          let fileName = image.url;
-          
-          if (image.url.includes('supabase.co')) {
-            const urlParts = image.url.split('/');
-            fileName = urlParts[urlParts.length - 1].split('?')[0];
-          } else if (image.url.includes('/')) {
-            fileName = image.url.split('/').pop() || '';
-          }
-
-          if (!fileName) {
-            console.error('Invalid file name:', image.url);
-            continue;
-          }
-
-          const { data } = supabase.storage
-            .from('gallery')
-            .getPublicUrl(fileName);
-
-          if (data?.publicUrl) {
-            urlMap[image.id] = data.publicUrl;
-          }
-        } catch (error) {
-          console.error('Error processing image:', error);
-        }
-      }
-      
-      setValidImages(urlMap);
-      setIsLoading(false);
-    };
-
-    if (images.length > 0) {
-      validateAndGetPublicUrls();
-    } else {
-      setIsLoading(false);
-    }
-  }, [images, user]);
+  const { validUrls, isLoading } = useGalleryImageUrls(images);
 
   const handleImageDelete = async (url: string) => {
     try {
@@ -114,10 +67,10 @@ export function GalleryGridContainer({ images, onImageDelete }: GalleryGridConta
   return (
     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
       {images.map((image) => (
-        validImages[image.id] ? (
+        validUrls[image.id] ? (
           <GalleryItem
             key={image.id}
-            imageUrl={validImages[image.id]}
+            imageUrl={validUrls[image.id]}
             imageId={image.id}
             onDelete={() => handleImageDelete(image.url)}
           />

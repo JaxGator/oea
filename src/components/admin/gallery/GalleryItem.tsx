@@ -1,7 +1,6 @@
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
-import { useImageValidation } from "@/hooks/gallery/useImageValidation";
 
 interface GalleryItemProps {
   imageUrl: string;
@@ -11,15 +10,6 @@ interface GalleryItemProps {
 
 export function GalleryItem({ imageUrl, imageId, onDelete }: GalleryItemProps) {
   const [isLoaded, setIsLoaded] = useState(false);
-  const { isValid, isLoading } = useImageValidation(imageUrl, imageId);
-
-  const handleImageLoad = () => {
-    setIsLoaded(true);
-  };
-
-  if (!isValid || isLoading) {
-    return null;
-  }
 
   return (
     <div className="relative group aspect-square">
@@ -35,7 +25,7 @@ export function GalleryItem({ imageUrl, imageId, onDelete }: GalleryItemProps) {
         className={`w-full h-full object-cover rounded-lg transition-opacity duration-300 ${
           isLoaded ? 'opacity-100' : 'opacity-0'
         }`}
-        onLoad={handleImageLoad}
+        onLoad={() => setIsLoaded(true)}
       />
       
       {isLoaded && (
