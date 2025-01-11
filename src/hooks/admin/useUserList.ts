@@ -5,7 +5,11 @@ import { useMemberManagement } from "./useMemberManagement";
 
 export function useUserList() {
   const [searchTerm, setSearchTerm] = useState("");
-  const [filters, setFilters] = useState<UserFilters>({});
+  const [filters, setFilters] = useState<UserFilters>({
+    isAdmin: false,
+    isApproved: false,
+    isMember: false
+  });
   const [page, setPage] = useState(1);
   const debouncedSearch = useDebounce(searchTerm, 300);
   

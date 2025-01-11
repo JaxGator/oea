@@ -18,7 +18,7 @@ export function UserListHeader({
   onUserCreated, 
   onSearch, 
   onFilterChange,
-  filters = {} 
+  filters
 }: UserListHeaderProps) {
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -28,10 +28,9 @@ export function UserListHeader({
   }, [onSearch]);
 
   const handleFilterChange = useCallback((key: keyof UserFilters) => {
-    const currentFilters = filters || {};
     const newFilters = {
-      ...currentFilters,
-      [key]: !currentFilters[key]
+      ...filters,
+      [key]: !filters[key]
     };
     onFilterChange(newFilters);
   }, [filters, onFilterChange]);
@@ -61,7 +60,7 @@ export function UserListHeader({
           <div className="flex items-center space-x-2">
             <Checkbox 
               id="admin-filter"
-              checked={filters?.isAdmin || false}
+              checked={filters.isAdmin}
               onCheckedChange={() => handleFilterChange('isAdmin')}
             />
             <Label htmlFor="admin-filter">Admins</Label>
@@ -70,7 +69,7 @@ export function UserListHeader({
           <div className="flex items-center space-x-2">
             <Checkbox 
               id="approved-filter"
-              checked={filters?.isApproved || false}
+              checked={filters.isApproved}
               onCheckedChange={() => handleFilterChange('isApproved')}
             />
             <Label htmlFor="approved-filter">Approved</Label>
@@ -79,7 +78,7 @@ export function UserListHeader({
           <div className="flex items-center space-x-2">
             <Checkbox 
               id="member-filter"
-              checked={filters?.isMember || false}
+              checked={filters.isMember}
               onCheckedChange={() => handleFilterChange('isMember')}
             />
             <Label htmlFor="member-filter">Members</Label>
