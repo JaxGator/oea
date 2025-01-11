@@ -2,6 +2,7 @@ import { format, parseISO } from "date-fns";
 import { EventDetails } from "../EventDetails";
 import { EventActions } from "../EventActions";
 import { AddToCalendar } from "../AddToCalendar";
+import { EventShareMenu } from "../share/EventShareMenu";
 
 interface EventCardDetailedViewProps {
   event: {
@@ -56,6 +57,9 @@ export function EventCardDetailedView({
             alt={event.title}
             className="absolute inset-0 w-full h-full object-cover rounded-lg"
           />
+          <div className="absolute top-4 right-4">
+            <EventShareMenu eventId={event.id} title={event.title} />
+          </div>
         </div>
         
         <h2 className="text-2xl font-bold">{event.title}</h2>
