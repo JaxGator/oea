@@ -1,11 +1,12 @@
-import { CalendarIcon, MapPinIcon, UsersIcon } from "lucide-react";
+import { CalendarIcon, UsersIcon } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { useAuthState } from "@/hooks/useAuthState";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api';
 import { useGoogleMapsToken } from "@/hooks/useGoogleMapsToken";
 import { useState, useEffect } from "react";
+import { LocationDisplay } from "./details/LocationDisplay";
+import { AttendeeList } from "./details/AttendeeList";
+import { EventMap } from "./details/EventMap";
 
 interface EventDetailsProps {
   date: string;
@@ -68,33 +69,6 @@ export function EventDetails({
     return `${hour12}:${minutes} ${ampm}`;
   };
 
-  const LocationDisplay = () => {
-    if (!showLocation) {
-      return (
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div className="flex items-center gap-2 text-gray-600">
-                <MapPinIcon className="w-4 h-4" />
-                <span className="text-sm italic">Location visible after approval</span>
-              </div>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Please log in and request approval to view event locations</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-      );
-    }
-
-    return (
-      <div className="flex items-center gap-2 text-gray-600">
-        <MapPinIcon className="w-4 h-4" />
-        <span className="text-sm">{location}</span>
-      </div>
-    );
-  };
-
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-2 text-gray-600">
@@ -106,7 +80,7 @@ export function EventDetails({
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
         <div className="space-y-4">
-          <LocationDisplay />
+          <LocationDisplay showLocation={showLocation} location={location} />
 
           <div className="flex items-center gap-2 text-gray-600">
             <UsersIcon className="w-4 h-4" />
@@ -131,35 +105,11 @@ export function EventDetails({
             </Badge>
           )}
 
-          {attendeeNames.length > 0 && (
-            <div className="text-sm text-gray-600">
-              <p className="font-medium mb-2">Attendees:</p>
-              <ul className="list-disc pl-5 space-y-1">
-                {attendeeNames.map((name, index) => (
-                  <li key={index}>{name}</li>
-                ))}
-              </ul>
-            </div>
-          )}
+          <AttendeeList attendeeNames={attendeeNames} />
         </div>
 
         {showLocation && coordinates && mapKey && (
-          <div className="h-[300px] rounded-lg overflow-hidden shadow-lg">
-            <LoadScript googleMapsApiKey={mapKey}>
-              <GoogleMap
-                mapContainerStyle={{ width: '100%', height: '100%' }}
-                zoom={14}
-                center={coordinates}
-                options={{
-                  disableDefaultUI: true,
-                  zoomControl: true,
-                  styles: [{ featureType: 'all', elementType: 'geometry', stylers: [{ lightness: 20 }] }],
-                }}
-              >
-                <Marker position={coordinates} />
-              </GoogleMap>
-            </LoadScript>
-          </div>
+          <EventMap mapKey={mapKey} coordinates={coordinates} />
         )}
       </div>
     </div>
