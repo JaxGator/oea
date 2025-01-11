@@ -21,10 +21,6 @@ const ErrorFallback = () => (
 export default function Index() {
   return (
     <HomeLayout>
-      <ErrorBoundary fallback={<ErrorFallback />}>
-        <Hero />
-      </ErrorBoundary>
-      
       <HomeSection title="Events">
         <FeaturedEvents />
       </HomeSection>

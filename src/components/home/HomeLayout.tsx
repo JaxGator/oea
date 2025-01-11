@@ -3,6 +3,7 @@ import { Suspense } from 'react';
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { ErrorInfo } from 'react';
+import { Hero } from './Hero';
 
 interface SectionProps {
   children: React.ReactNode;
@@ -43,7 +44,7 @@ const Section = ({ children, title }: SectionProps) => (
 
 export const HomeLayout = ({ children }: { children: React.ReactNode }) => (
   <div className="bg-background">
-    {children}
+    <Hero />
     <div className="container mx-auto px-4 py-8">
       <div className="space-y-8">
         {children}
