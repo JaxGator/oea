@@ -4,7 +4,6 @@ import { GalleryItem } from "./GalleryItem";
 import { toast } from "@/hooks/use-toast";
 import { useSession } from "@/hooks/auth/useSession";
 import { GalleryLoadingState } from "./GalleryLoadingState";
-import { useGalleryImageUrls } from "@/hooks/gallery/useGalleryImageUrls";
 
 interface GalleryGridContainerProps {
   images: Array<{ url: string; id: string }>;
@@ -13,7 +12,6 @@ interface GalleryGridContainerProps {
 
 export function GalleryGridContainer({ images, onImageDelete }: GalleryGridContainerProps) {
   const { user } = useSession();
-  const { validUrls, isLoading } = useGalleryImageUrls(images);
   const [deletingImages, setDeletingImages] = useState<Set<string>>(new Set());
 
   const handleImageDelete = async (url: string, imageId: string) => {
@@ -67,10 +65,6 @@ export function GalleryGridContainer({ images, onImageDelete }: GalleryGridConta
     }
   };
 
-  if (isLoading) {
-    return <GalleryLoadingState />;
-  }
-
   if (!user) {
     return (
       <div className="text-center py-8 text-muted-foreground border-2 border-dashed rounded-lg">
@@ -82,15 +76,13 @@ export function GalleryGridContainer({ images, onImageDelete }: GalleryGridConta
   return (
     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
       {images.map((image) => (
-        validUrls[image.id] ? (
-          <GalleryItem
-            key={image.id}
-            imageUrl={validUrls[image.id]}
-            imageId={image.id}
-            onDelete={() => handleImageDelete(image.url, image.id)}
-            isDeleting={deletingImages.has(image.id)}
-          />
-        ) : null
+        <GalleryItem
+          key={image.id}
+          imageUrl={image.url}
+          imageId={image.id}
+          onDelete={() => handleImageDelete(image.url, image.id)}
+          isDeleting={deletingImages.has(image.id)}
+        />
       ))}
     </div>
   );
