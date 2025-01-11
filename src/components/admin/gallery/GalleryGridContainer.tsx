@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { GalleryItem } from "./GalleryItem";
 import { toast } from "@/hooks/use-toast";
+import { useSession } from "@/hooks/auth/useSession";
 
 interface GalleryGridContainerProps {
   images: Array<{ url: string; id: string }>;
@@ -11,9 +12,16 @@ interface GalleryGridContainerProps {
 export function GalleryGridContainer({ images, onImageDelete }: GalleryGridContainerProps) {
   const [validImages, setValidImages] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(true);
+  const { user } = useSession();
 
   useEffect(() => {
     const validateAndGetPublicUrls = async () => {
+      if (!user) {
+        console.error('No authenticated user found');
+        setIsLoading(false);
+        return;
+      }
+
       setIsLoading(true);
       const urlMap: Record<string, string> = {};
       
@@ -25,47 +33,30 @@ export function GalleryGridContainer({ images, onImageDelete }: GalleryGridConta
             : image.url;
 
           if (fileName) {
-            // Check if the file exists in the gallery bucket
-            const { data: existsData, error: existsError } = await supabase.storage
+            // Get the public URL first
+            const { data: { publicUrl } } = supabase.storage
               .from('gallery')
-              .list('', {
-                search: fileName
-              });
+              .getPublicUrl(fileName);
 
-            if (existsError) {
-              console.error('Error checking file existence:', existsError);
-              continue;
-            }
-
-            // Only proceed if the file exists
-            if (existsData && existsData.some(file => file.name === fileName)) {
-              const { data: { publicUrl } } = supabase.storage
-                .from('gallery')
-                .getPublicUrl(fileName);
-                
-              if (publicUrl) {
-                // Verify the image URL is accessible
+            if (publicUrl) {
+              // Verify the image URL is accessible
+              try {
                 const response = await fetch(publicUrl, { method: 'HEAD' });
                 if (response.ok) {
                   urlMap[image.id] = publicUrl;
                 } else {
                   console.warn('Image URL not accessible:', fileName);
-                  onImageDelete(image.url); // Remove invalid image
+                  onImageDelete(image.url);
                 }
+              } catch (error) {
+                console.error('Error verifying image URL:', error);
+                onImageDelete(image.url);
               }
-            } else {
-              console.warn('File not found in storage:', fileName);
-              onImageDelete(image.url); // Remove invalid image
-              toast({
-                title: "Invalid Image",
-                description: `Image ${fileName} not found in gallery`,
-                variant: "destructive",
-              });
             }
           }
         } catch (error) {
           console.error('Error processing image:', error);
-          onImageDelete(image.url); // Remove invalid image
+          onImageDelete(image.url);
         }
       }
       
@@ -78,12 +69,20 @@ export function GalleryGridContainer({ images, onImageDelete }: GalleryGridConta
     } else {
       setIsLoading(false);
     }
-  }, [images, onImageDelete]);
+  }, [images, onImageDelete, user]);
 
   if (isLoading) {
     return (
       <div className="text-center py-8 text-muted-foreground">
         <p>Loading gallery images...</p>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="text-center py-8 text-muted-foreground border-2 border-dashed rounded-lg">
+        <p>Please sign in to view the gallery.</p>
       </div>
     );
   }
