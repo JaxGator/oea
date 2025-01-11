@@ -89,7 +89,7 @@ export function ImageUploadForm({ onUploadComplete }: ImageUploadFormProps) {
         variant: "destructive",
       });
     } finally {
-      setIsUploading(false);
+      setIsLoading(false);
       event.target.value = '';
     }
   };
