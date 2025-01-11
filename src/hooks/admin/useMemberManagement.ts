@@ -18,7 +18,15 @@ const filterToColumnMap = {
   isMember: 'is_member'
 };
 
-export function useMemberManagement(searchTerm: string = "", filters: UserFilters = {}, page: number = 1) {
+export function useMemberManagement(
+  searchTerm: string = "", 
+  filters: UserFilters = {
+    isAdmin: false,
+    isApproved: false,
+    isMember: false
+  }, 
+  page: number = 1
+) {
   const { toast } = useToast();
 
   return useQuery<MemberQueryResult, Error>({
