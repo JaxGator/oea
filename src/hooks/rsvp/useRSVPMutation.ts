@@ -15,23 +15,56 @@ export const useRSVPMutation = () => {
     if (!user) return;
 
     try {
-      // First create the RSVP
-      const { data: rsvp, error: rsvpError } = await supabase
+      // Check if user already has an RSVP for this event
+      const { data: existingRSVP } = await supabase
         .from('event_rsvps')
-        .insert({
-          event_id: eventId,
-          user_id: user.id,
-          response: 'attending'
-        })
-        .select()
-        .single();
+        .select('id')
+        .eq('event_id', eventId)
+        .eq('user_id', user.id)
+        .maybeSingle();
 
-      if (rsvpError) throw rsvpError;
+      let rsvpId;
 
-      // Then add guests if there are any
+      if (existingRSVP) {
+        // Update existing RSVP
+        const { data: updatedRSVP, error: updateError } = await supabase
+          .from('event_rsvps')
+          .update({
+            response: 'attending',
+            status: 'confirmed'
+          })
+          .eq('id', existingRSVP.id)
+          .select()
+          .single();
+
+        if (updateError) throw updateError;
+        rsvpId = existingRSVP.id;
+
+        // Delete existing guests
+        await supabase
+          .from('event_guests')
+          .delete()
+          .eq('rsvp_id', rsvpId);
+      } else {
+        // Create new RSVP
+        const { data: newRSVP, error: rsvpError } = await supabase
+          .from('event_rsvps')
+          .insert({
+            event_id: eventId,
+            user_id: user.id,
+            response: 'attending'
+          })
+          .select()
+          .single();
+
+        if (rsvpError) throw rsvpError;
+        rsvpId = newRSVP.id;
+      }
+
+      // Add guests if there are any
       if (guests.length > 0) {
         const guestRecords = guests.map(guest => ({
-          rsvp_id: rsvp.id,
+          rsvp_id: rsvpId,
           first_name: guest.firstName
         }));
 
@@ -48,7 +81,7 @@ export const useRSVPMutation = () => {
       });
       
       queryClient.invalidateQueries({ queryKey: ['events'] });
-      queryClient.invalidateQueries({ queryKey: ['event-rsvps', eventId] });
+      queryClient.invalidateQueries({ queryKey: ['event-rsvps'] });
     } catch (error: any) {
       toast({
         title: "Error",
