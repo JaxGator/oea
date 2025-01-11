@@ -24,6 +24,7 @@ export function GalleryGridContainer({ images, onImageDelete }: GalleryGridConta
 
       setIsLoading(true);
       const urlMap: Record<string, string> = {};
+      const invalidImages: string[] = [];
       
       for (const image of images) {
         try {
@@ -32,7 +33,8 @@ export function GalleryGridContainer({ images, onImageDelete }: GalleryGridConta
           
           // Handle full URLs
           if (image.url.includes('supabase.co')) {
-            fileName = image.url.split('/').pop()?.split('?')[0] || '';
+            const urlParts = image.url.split('/');
+            fileName = urlParts[urlParts.length - 1].split('?')[0];
           }
           // Handle relative paths
           else if (image.url.includes('/')) {
@@ -41,6 +43,7 @@ export function GalleryGridContainer({ images, onImageDelete }: GalleryGridConta
 
           if (!fileName) {
             console.error('Invalid file name:', image.url);
+            invalidImages.push(image.url);
             continue;
           }
 
@@ -51,60 +54,52 @@ export function GalleryGridContainer({ images, onImageDelete }: GalleryGridConta
           });
 
           // Get the public URL
-          const { data: { publicUrl } } = supabase.storage
+          const { data } = supabase.storage
             .from('gallery')
             .getPublicUrl(fileName);
 
-          if (!publicUrl) {
+          if (!data.publicUrl) {
             console.error('Failed to generate public URL for:', fileName);
+            invalidImages.push(image.url);
             continue;
           }
 
-          // Verify the image exists and is accessible
-          try {
-            const response = await fetch(publicUrl, { method: 'HEAD' });
-            if (response.ok) {
-              // Additional check for image MIME type
-              const contentType = response.headers.get('content-type');
-              if (contentType && contentType.startsWith('image/')) {
-                urlMap[image.id] = publicUrl;
-                console.log('Successfully validated image:', {
-                  fileName,
-                  publicUrl,
-                  imageId: image.id,
-                  contentType
-                });
-              } else {
-                console.warn('Invalid content type for image:', {
-                  fileName,
-                  contentType,
-                  imageId: image.id
-                });
-                onImageDelete(image.url);
-              }
-            } else {
-              console.warn('Image not accessible:', {
-                fileName,
-                status: response.status,
-                imageId: image.id
-              });
-              onImageDelete(image.url);
-            }
-          } catch (error) {
-            console.error('Error verifying image:', {
-              fileName,
-              error,
-              imageId: image.id
-            });
-            onImageDelete(image.url);
-          }
+          // Add to valid images without HEAD request
+          urlMap[image.id] = data.publicUrl;
+          console.log('Successfully processed image:', {
+            fileName,
+            publicUrl: data.publicUrl,
+            imageId: image.id
+          });
+
         } catch (error) {
           console.error('Error processing image:', {
             imageUrl: image.url,
             error,
             imageId: image.id
           });
-          onImageDelete(image.url);
+          invalidImages.push(image.url);
+        }
+      }
+      
+      // Clean up invalid images
+      if (invalidImages.length > 0) {
+        console.log('Cleaning up invalid images:', invalidImages);
+        invalidImages.forEach(url => {
+          onImageDelete(url);
+        });
+        
+        if (invalidImages.length === images.length) {
+          toast({
+            title: "Gallery Update",
+            description: "All images were invalid and have been cleaned up.",
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Gallery Update",
+            description: `${invalidImages.length} invalid images have been cleaned up.`,
+          });
         }
       }
       
