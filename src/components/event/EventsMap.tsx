@@ -10,10 +10,13 @@ interface EventsMapProps {
   selectedEventId?: string | null;
 }
 
+const libraries: ("places" | "geometry" | "drawing" | "visualization")[] = ["places"];
+
 export function EventsMap({ events, selectedEventId }: EventsMapProps) {
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const { mapKey, isLoading, error } = useGoogleMapsToken();
   const locations = useEventLocations(events, mapKey);
+  const [mapLoaded, setMapLoaded] = useState(false);
 
   if (isLoading || error || locations.length === 0) {
     return null;
@@ -34,7 +37,11 @@ export function EventsMap({ events, selectedEventId }: EventsMapProps) {
 
   return (
     <div className="w-full rounded-lg overflow-hidden shadow-lg mb-8">
-      <LoadScript googleMapsApiKey={mapKey}>
+      <LoadScript 
+        googleMapsApiKey={mapKey}
+        libraries={libraries}
+        onLoad={() => setMapLoaded(true)}
+      >
         <GoogleMap
           mapContainerStyle={mapContainerStyle}
           zoom={selectedLocation ? 14 : 12}
@@ -49,16 +56,16 @@ export function EventsMap({ events, selectedEventId }: EventsMapProps) {
             ],
           }}
         >
-          {locations.map((location) => (
+          {mapLoaded && locations.map((location) => (
             <Marker
               key={location.event.id}
               position={location}
               onClick={() => setSelectedEvent(location.event)}
-              animation={location.event.id === selectedEventId ? google.maps.Animation.BOUNCE : undefined}
+              animation={location.event.id === selectedEventId ? 2 : undefined} // Use numeric value instead of google.maps.Animation.BOUNCE
             />
           ))}
 
-          {selectedEvent && (
+          {mapLoaded && selectedEvent && (
             <EventInfoWindow
               event={selectedEvent}
               locations={locations}
