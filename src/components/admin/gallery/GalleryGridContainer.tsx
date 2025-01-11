@@ -64,12 +64,24 @@ export function GalleryGridContainer({ images, onImageDelete }: GalleryGridConta
           try {
             const response = await fetch(publicUrl, { method: 'HEAD' });
             if (response.ok) {
-              urlMap[image.id] = publicUrl;
-              console.log('Successfully validated image:', {
-                fileName,
-                publicUrl,
-                imageId: image.id
-              });
+              // Additional check for image MIME type
+              const contentType = response.headers.get('content-type');
+              if (contentType && contentType.startsWith('image/')) {
+                urlMap[image.id] = publicUrl;
+                console.log('Successfully validated image:', {
+                  fileName,
+                  publicUrl,
+                  imageId: image.id,
+                  contentType
+                });
+              } else {
+                console.warn('Invalid content type for image:', {
+                  fileName,
+                  contentType,
+                  imageId: image.id
+                });
+                onImageDelete(image.url);
+              }
             } else {
               console.warn('Image not accessible:', {
                 fileName,
