@@ -1,9 +1,12 @@
 import { useState, useCallback, useMemo } from 'react';
-import { useLoadScript, GoogleMap, Marker } from '@react-google-maps/api';
+import { useLoadScript, GoogleMap } from '@react-google-maps/api';
 import { Event } from '@/types/event';
 import { useGoogleMapsToken } from '@/hooks/useGoogleMapsToken';
 import { useEventLocations } from '@/hooks/useEventLocations';
 import { EventInfoWindow } from './EventInfoWindow';
+import { MapLoadingState } from './map/MapLoadingState';
+import { MapErrorState } from './map/MapErrorState';
+import { MapMarkers } from './map/MapMarkers';
 
 interface EventsMapProps {
   events: Event[];
@@ -17,13 +20,11 @@ export function EventsMap({ events, selectedEventId }: EventsMapProps) {
   const { mapKey, isLoading: isKeyLoading, error: keyError } = useGoogleMapsToken();
   const locations = useEventLocations(events, mapKey);
 
-  // Use useLoadScript hook instead of LoadScript component
   const { isLoaded, loadError } = useLoadScript({
     googleMapsApiKey: mapKey || '',
     libraries,
   });
 
-  // Memoize the map options
   const mapOptions = useMemo(() => ({
     styles: [
       {
@@ -34,7 +35,6 @@ export function EventsMap({ events, selectedEventId }: EventsMapProps) {
     ],
   }), []);
 
-  // Memoize the center location
   const center = useMemo(() => {
     const selectedLocation = selectedEventId 
       ? locations.find(loc => loc.event.id === selectedEventId)
@@ -46,45 +46,24 @@ export function EventsMap({ events, selectedEventId }: EventsMapProps) {
     setSelectedEvent(event);
   }, []);
 
-  // Don't render anything if there are no events or locations
   if (events.length === 0 || locations.length === 0) {
     return null;
   }
 
-  // Show loading state when fetching the API key
   if (isKeyLoading) {
-    return (
-      <div className="w-full h-[400px] rounded-lg overflow-hidden shadow-lg mb-8 bg-gray-100 flex items-center justify-center">
-        <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div>
-      </div>
-    );
+    return <MapLoadingState />;
   }
 
-  // Show error state if there's an API key error
   if (keyError || !mapKey) {
-    return (
-      <div className="w-full h-[400px] rounded-lg overflow-hidden shadow-lg mb-8 bg-red-50 flex items-center justify-center">
-        <div className="text-red-600">Failed to load map configuration</div>
-      </div>
-    );
+    return <MapErrorState message="Failed to load map configuration" />;
   }
 
-  // Show error state if there's a script loading error
   if (loadError) {
-    return (
-      <div className="w-full h-[400px] rounded-lg overflow-hidden shadow-lg mb-8 bg-red-50 flex items-center justify-center">
-        <div className="text-red-600">Error loading map</div>
-      </div>
-    );
+    return <MapErrorState message="Error loading map" />;
   }
 
-  // Show loading state while the script is loading
   if (!isLoaded) {
-    return (
-      <div className="w-full h-[400px] rounded-lg overflow-hidden shadow-lg mb-8 bg-gray-100 flex items-center justify-center">
-        <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div>
-      </div>
-    );
+    return <MapLoadingState />;
   }
 
   return (
@@ -98,18 +77,11 @@ export function EventsMap({ events, selectedEventId }: EventsMapProps) {
         center={center}
         options={mapOptions}
       >
-        {locations.map((location) => (
-          <Marker
-            key={location.event.id}
-            position={location}
-            onClick={() => handleMarkerClick(location.event)}
-            animation={
-              selectedEventId === location.event.id 
-                ? 1 // BOUNCE animation
-                : undefined
-            }
-          />
-        ))}
+        <MapMarkers 
+          locations={locations}
+          selectedEventId={selectedEventId}
+          onMarkerClick={handleMarkerClick}
+        />
 
         {selectedEvent && (
           <EventInfoWindow
