@@ -73,7 +73,7 @@ export function LeaderboardPage() {
   return (
     <Card className="w-full">
       <CardHeader>
-        <CardTitle>Member Leaderboard</CardTitle>
+        <CardTitle>Leaderboard</CardTitle>
       </CardHeader>
       <CardContent>
         <Tabs defaultValue="attendance" className="w-full">
