@@ -1,14 +1,16 @@
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
+import { Loader2 } from "lucide-react";
 
 interface GalleryItemProps {
   imageUrl: string;
   imageId: string;
   onDelete: () => void;
+  isDeleting?: boolean;
 }
 
-export function GalleryItem({ imageUrl, imageId, onDelete }: GalleryItemProps) {
+export function GalleryItem({ imageUrl, imageId, onDelete, isDeleting = false }: GalleryItemProps) {
   const [isLoaded, setIsLoaded] = useState(false);
 
   return (
@@ -26,6 +28,11 @@ export function GalleryItem({ imageUrl, imageId, onDelete }: GalleryItemProps) {
           isLoaded ? 'opacity-100' : 'opacity-0'
         }`}
         onLoad={() => setIsLoaded(true)}
+        onError={(e) => {
+          console.error('Failed to load image:', imageUrl);
+          e.currentTarget.src = '/placeholder.svg';
+          setIsLoaded(true);
+        }}
       />
       
       {isLoaded && (
@@ -33,9 +40,14 @@ export function GalleryItem({ imageUrl, imageId, onDelete }: GalleryItemProps) {
           variant="destructive"
           size="icon"
           onClick={onDelete}
+          disabled={isDeleting}
           className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
         >
-          <X className="h-4 w-4" />
+          {isDeleting ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <X className="h-4 w-4" />
+          )}
         </Button>
       )}
     </div>
