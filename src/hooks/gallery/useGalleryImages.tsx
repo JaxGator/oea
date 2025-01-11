@@ -14,6 +14,7 @@ export function useGalleryImages() {
       const { data: galleryData, error: dbError } = await supabase
         .from('gallery_images')
         .select('*')
+        .not('file_name', 'like', 'event-pics/%')
         .order('display_order', { ascending: true });
 
       if (dbError) {
@@ -23,9 +24,32 @@ export function useGalleryImages() {
       const processedImages = await Promise.all(
         galleryData.map(async (image) => {
           try {
+            // First check if the file exists in storage
+            const { data: fileData, error: fileError } = await supabase
+              .storage
+              .from('gallery')
+              .list('', {
+                search: image.file_name
+              });
+
+            // Skip if file doesn't exist in storage
+            if (fileError || !fileData || fileData.length === 0) {
+              console.log('File not found in storage:', image.file_name);
+              return null;
+            }
+
             const { data: { publicUrl } } = supabase.storage
               .from('gallery')
               .getPublicUrl(image.file_name);
+
+            // Verify the URL is valid
+            const urlCheck = await fetch(publicUrl, { method: 'HEAD' })
+              .catch(() => null);
+
+            if (!urlCheck?.ok) {
+              console.log('Invalid URL:', publicUrl);
+              return null;
+            }
 
             return {
               id: image.id,
