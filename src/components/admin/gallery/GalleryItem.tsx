@@ -24,42 +24,32 @@ export function GalleryItem({ imageUrl, imageId, onDelete }: GalleryItemProps) {
     setHasError(false);
   };
 
+  if (hasError) {
+    return null; // Don't render anything if the image failed to load
+  }
+
   return (
     <div className="relative group aspect-square">
-      {/* Loading/Error state */}
-      <div className={`w-full h-full bg-muted rounded-lg flex items-center justify-center ${
-        isLoaded && !hasError ? 'hidden' : 'block'
-      }`}>
-        {hasError ? (
-          <div className="text-center p-2">
-            <span className="text-destructive text-sm">Failed to load image</span>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => onDelete()}
-              className="mt-2"
-            >
-              Remove
-            </Button>
-          </div>
-        ) : (
+      {/* Loading state */}
+      {!isLoaded && (
+        <div className="w-full h-full bg-muted rounded-lg flex items-center justify-center">
           <span className="text-muted-foreground">Loading...</span>
-        )}
-      </div>
+        </div>
+      )}
       
       {/* Image */}
       <img
         src={imageUrl}
         alt={`Gallery image ${imageId}`}
         className={`w-full h-full object-cover rounded-lg transition-opacity duration-300 ${
-          isLoaded && !hasError ? 'opacity-100' : 'opacity-0'
+          isLoaded ? 'opacity-100' : 'opacity-0'
         }`}
         onLoad={handleImageLoad}
         onError={handleImageError}
       />
       
       {/* Delete button */}
-      {!hasError && (
+      {isLoaded && (
         <Button
           variant="destructive"
           size="icon"

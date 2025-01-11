@@ -18,7 +18,6 @@ export default function GalleryManager() {
     imageCount: images?.length || 0,
     isLoading,
     carouselEnabled,
-    images,
     userId: user?.id
   });
 
@@ -50,15 +49,7 @@ export default function GalleryManager() {
       }
 
       // Extract the filename from the URL
-      let fileName = imageUrl;
-      
-      if (imageUrl.includes('supabase.co')) {
-        const urlParts = imageUrl.split('/');
-        const fileNameWithParams = urlParts[urlParts.length - 1];
-        fileName = fileNameWithParams.split('?')[0];
-      } else if (imageUrl.includes('/')) {
-        fileName = imageUrl.split('/').pop() || '';
-      }
+      const fileName = imageUrl.includes('/') ? imageUrl.split('/').pop()?.split('?')[0] : imageUrl;
 
       if (!fileName) {
         throw new Error('Invalid image URL');
@@ -70,7 +61,7 @@ export default function GalleryManager() {
         userId: user.id
       });
 
-      // First delete from database to maintain referential integrity
+      // First delete from database
       const { error: dbError } = await supabase
         .from('gallery_images')
         .delete()
@@ -82,19 +73,16 @@ export default function GalleryManager() {
         throw dbError;
       }
 
-      console.log('Successfully deleted from database:', fileName);
-
       // Then delete from storage
       const { error: storageError } = await supabase.storage
         .from('gallery')
         .remove([fileName]);
 
       if (storageError) {
-        console.warn('Storage deletion warning:', storageError);
-      } else {
-        console.log('Successfully deleted from storage:', fileName);
+        console.error('Storage deletion error:', storageError);
+        throw storageError;
       }
-      
+
       toast({
         title: "Success",
         description: "Image deleted successfully",
