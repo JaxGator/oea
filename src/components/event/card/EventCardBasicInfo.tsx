@@ -10,6 +10,7 @@ interface EventCardBasicInfoProps {
   waitlistCount?: number;
   waitlistCapacity?: number | null;
   importedRsvpCount?: number | null;
+  isPastEvent?: boolean;
 }
 
 export function EventCardBasicInfo({
@@ -21,7 +22,8 @@ export function EventCardBasicInfo({
   waitlistEnabled,
   waitlistCount = 0,
   waitlistCapacity,
-  importedRsvpCount
+  importedRsvpCount,
+  isPastEvent = false
 }: EventCardBasicInfoProps) {
   const { isAuthenticated } = useAuthState();
   
@@ -46,7 +48,7 @@ export function EventCardBasicInfo({
       <div className="text-sm">
         <p>
           {displayCount} / {maxGuests} spots filled
-          {spotsRemaining > 0 && !isFull && ` (${spotsRemaining} spots remaining)`}
+          {!isPastEvent && spotsRemaining > 0 && !isFull && ` (${spotsRemaining} spots remaining)`}
           {isFull && " (Event Full)"}
           {isWixEvent && " (imported from Wix)"}
         </p>

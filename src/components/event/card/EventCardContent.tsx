@@ -68,6 +68,7 @@ export function EventCardContent({
             waitlistCount={waitlistCount}
             waitlistCapacity={waitlistCapacity}
             importedRsvpCount={importedRsvpCount}
+            isPastEvent={isPastEvent}
           />
           {isFeatured && <FeaturedEventBadge />}
         </div>
