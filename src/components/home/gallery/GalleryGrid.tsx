@@ -38,6 +38,11 @@ export function GalleryGrid({
 
   const displayImages = isPreview ? images.slice(0, 4) : images;
 
+  const handleContextMenu = (e: React.MouseEvent, imageUrl: string) => {
+    e.preventDefault(); // Prevent default context menu
+    // If you want to show a custom context menu, you can implement it here
+  };
+
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
       {displayImages.map((imageUrl, index) => (
@@ -46,6 +51,7 @@ export function GalleryGrid({
           className="relative aspect-square overflow-hidden rounded-lg cursor-pointer group"
           onClick={() => onImageSelect(imageUrl)}
           onKeyPress={onKeyPress(imageUrl)}
+          onContextMenu={(e) => handleContextMenu(e, imageUrl)}
           tabIndex={0}
           role="button"
         >
@@ -53,11 +59,6 @@ export function GalleryGrid({
             src={imageUrl}
             alt={`Gallery image ${index + 1}`}
             className="object-cover w-full h-full transition-all duration-300 group-hover:scale-105 animate-fade-in"
-            onError={(e) => {
-              console.error('Failed to load image:', imageUrl);
-              const img = e.target as HTMLImageElement;
-              img.src = '/placeholder.svg';
-            }}
             loading="lazy"
           />
         </div>
