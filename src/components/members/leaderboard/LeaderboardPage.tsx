@@ -20,7 +20,7 @@ export function LeaderboardPage() {
     queryFn: async () => {
       console.log("Fetching leaderboard data with filters:", { timeFilter, categoryFilter });
       
-      const { data, error } = await supabase
+      let query = supabase
         .from("leaderboard_metrics")
         .select(`
           *,
@@ -30,14 +30,18 @@ export function LeaderboardPage() {
             full_name
           )
         `)
-        .order(
-          categoryFilter === "attendance"
-            ? "events_attended"
-            : categoryFilter === "hosting"
-            ? "events_hosted"
-            : "total_contributions",
-          { ascending: false }
-        );
+        .gt('events_attended', 0); // Only show users who have attended events
+
+      // Apply ordering based on category
+      if (categoryFilter === "attendance") {
+        query = query.order('events_attended', { ascending: false });
+      } else if (categoryFilter === "hosting") {
+        query = query.order('events_hosted', { ascending: false });
+      } else {
+        query = query.order('total_contributions', { ascending: false });
+      }
+
+      const { data, error } = await query;
 
       if (error) {
         console.error("Error fetching leaderboard data:", error);
@@ -49,8 +53,18 @@ export function LeaderboardPage() {
         throw error;
       }
 
-      console.log("Leaderboard data received:", data);
-      return data;
+      console.log("Raw leaderboard data received:", data);
+      
+      // Filter out users with no metrics
+      const filteredData = data.filter(item => {
+        const hasMetrics = item.events_attended > 0 || 
+                          item.events_hosted > 0 || 
+                          item.total_contributions > 0;
+        return hasMetrics;
+      });
+
+      console.log("Filtered leaderboard data:", filteredData);
+      return filteredData;
     },
   });
 
