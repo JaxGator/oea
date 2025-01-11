@@ -15,7 +15,7 @@ export function AboutHero({ imageUrl, imageAlt }: AboutHeroProps) {
       />
       <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center space-y-6">
         <h1 className={cn(
-          "text-4xl md:text-5xl font-bold text-white",
+          "text-4xl md:text-5xl font-bold text-white tracking-tight",
           "animate-fade-in"
         )}>
           About Us
