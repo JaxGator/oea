@@ -3,6 +3,9 @@ import { format, parseISO } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { useAuthState } from "@/hooks/useAuthState";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api';
+import { useGoogleMapsToken } from "@/hooks/useGoogleMapsToken";
+import { useState, useEffect } from "react";
 
 interface EventDetailsProps {
   date: string;
@@ -30,9 +33,33 @@ export function EventDetails({
   const { user, profile } = useAuthState();
   const showLocation = user && profile?.is_approved;
   const isWixEvent = description === 'Imported from Wix';
+  const { mapKey } = useGoogleMapsToken();
+  const [coordinates, setCoordinates] = useState<{ lat: number; lng: number } | null>(null);
 
   // Parse the date string and create a new Date object in local timezone
   const eventDate = parseISO(date);
+
+  useEffect(() => {
+    const geocodeLocation = async () => {
+      if (!showLocation || !location || !mapKey) return;
+      
+      try {
+        const response = await fetch(
+          `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(location)}&key=${mapKey}`
+        );
+        const data = await response.json();
+
+        if (data.results && data.results.length > 0) {
+          const { lat, lng } = data.results[0].geometry.location;
+          setCoordinates({ lat, lng });
+        }
+      } catch (error) {
+        console.error('Error geocoding location:', error);
+      }
+    };
+
+    geocodeLocation();
+  }, [location, mapKey, showLocation]);
 
   // Convert time from 24-hour to 12-hour format
   const formatTime = (timeStr: string) => {
@@ -79,25 +106,48 @@ export function EventDetails({
         </span>
       </div>
       
-      <LocationDisplay />
+      <div className="flex flex-col md:flex-row md:gap-8">
+        <div className="flex-1">
+          <LocationDisplay />
 
-      <div className="flex items-center gap-2 text-gray-600">
-        <UsersIcon className="w-4 h-4" />
-        <span className="text-sm">
-          {isWixEvent ? (
-            `${rsvpCount} attendees`
-          ) : (
-            `${rsvpCount} / ${maxGuests} attendees`
+          <div className="flex items-center gap-2 text-gray-600 mt-4">
+            <UsersIcon className="w-4 h-4" />
+            <span className="text-sm">
+              {isWixEvent ? (
+                `${rsvpCount} attendees`
+              ) : (
+                `${rsvpCount} / ${maxGuests} attendees`
+              )}
+            </span>
+          </div>
+
+          {attendeeNames.length > 0 && (
+            <div className="text-sm text-gray-600 mt-4">
+              <p className="font-medium mb-1">Attending:</p>
+              <p>{attendeeNames.join(', ')}</p>
+            </div>
           )}
-        </span>
-      </div>
-
-      {attendeeNames.length > 0 && (
-        <div className="text-sm text-gray-600">
-          <p className="font-medium mb-1">Attending:</p>
-          <p>{attendeeNames.join(', ')}</p>
         </div>
-      )}
+
+        {showLocation && coordinates && mapKey && (
+          <div className="w-full md:w-64 h-48 rounded-lg overflow-hidden mt-4 md:mt-0">
+            <LoadScript googleMapsApiKey={mapKey}>
+              <GoogleMap
+                mapContainerStyle={{ width: '100%', height: '100%' }}
+                zoom={14}
+                center={coordinates}
+                options={{
+                  disableDefaultUI: true,
+                  zoomControl: true,
+                  styles: [{ featureType: 'all', elementType: 'geometry', stylers: [{ lightness: 20 }] }],
+                }}
+              >
+                <Marker position={coordinates} />
+              </GoogleMap>
+            </LoadScript>
+          </div>
+        )}
+      </div>
       
       {description && (
         <div className={`prose prose-sm max-w-none ${showFullDescription ? '' : 'line-clamp-3'}`}>
