@@ -46,6 +46,7 @@ export function AdminUserList() {
         onSearch={handleSearch}
         filters={filters}
         onFilterChange={handleFilterChange}
+        onUserCreated={refetch}
       />
 
       <UserListContent
