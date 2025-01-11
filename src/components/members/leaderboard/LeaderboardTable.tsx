@@ -47,7 +47,7 @@ export function LeaderboardTable({
           <TableHead className="w-12">Rank</TableHead>
           <TableHead>Member</TableHead>
           <TableHead className="text-right">Events Attended</TableHead>
-          <TableHead className="text-right">Streak</TableHead>
+          <TableHead className="text-right">Current Streak</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -91,8 +91,12 @@ export function LeaderboardTable({
               <Badge variant="secondary">{getMetricValue(item)}</Badge>
             </TableCell>
             <TableCell className="text-right">
-              {item.current_streak > 0 && (
-                <Badge variant="outline">🔥 {item.current_streak}</Badge>
+              {item.current_streak > 0 ? (
+                <Badge variant="outline" className="font-medium">
+                  🔥 {item.current_streak} event{item.current_streak !== 1 ? 's' : ''} in a row
+                </Badge>
+              ) : (
+                <span className="text-gray-500 text-sm">No active streak</span>
               )}
             </TableCell>
           </TableRow>
