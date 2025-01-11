@@ -46,7 +46,7 @@ export const createNavigationItems = (
     label: "Store",
     path: "https://outdoorenergyadventures.printful.me/",
     external: true,
-    show: (user) => !!user
+    show: (user, profile) => !!user && !!profile?.is_member
   },
   {
     icon: LayoutDashboard,
