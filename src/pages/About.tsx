@@ -15,8 +15,30 @@ export default function About() {
 
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-5xl mx-auto space-y-8">
-          <AboutContent content={content} />
+          <div className="prose max-w-none bg-white p-8 rounded-lg shadow-sm animate-fade-in">
+            <div 
+              className="text-2xl font-semibold mb-6 tracking-tight"
+              dangerouslySetInnerHTML={{ __html: content.missionTitle }}
+            />
+            <div 
+              className="text-lg leading-relaxed"
+              dangerouslySetInnerHTML={{ __html: content.mission }}
+            />
+          </div>
+          
           <ActivityTypes />
+
+          <div className="prose max-w-none bg-white p-8 rounded-lg shadow-sm animate-fade-in">
+            <div 
+              className="text-2xl font-semibold mb-6 tracking-tight"
+            >
+              Group Guidelines
+            </div>
+            <div 
+              className="text-lg leading-relaxed"
+              dangerouslySetInnerHTML={{ __html: content.guidelines }}
+            />
+          </div>
         </div>
       </div>
     </div>
