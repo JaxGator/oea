@@ -36,12 +36,15 @@ export function AttendeeList({ attendeeNames, waitlistNames = [] }: AttendeeList
           <p className="font-medium mb-2">Attendees:</p>
           <ul className="list-disc pl-5 space-y-2">
             {sortedHosts.map(({ host, guests }, index) => (
-              <li key={index}>
+              <li key={index} className="space-y-1">
                 {host}
                 {guests.length > 0 && (
-                  <ul className="pl-5 mt-1 space-y-1">
+                  <ul className="pl-4 mt-1">
                     {guests.map((guest, guestIndex) => (
-                      <li key={guestIndex} className="list-[circle] marker:text-gray-400">
+                      <li 
+                        key={guestIndex} 
+                        className="list-[circle] marker:text-gray-400 ml-2"
+                      >
                         {guest}
                       </li>
                     ))}
