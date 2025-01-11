@@ -9,16 +9,14 @@ import { Loader2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
 type TimeFilter = "all" | "monthly" | "weekly";
-type CategoryFilter = "attendance" | "hosting" | "contributions";
 
 export function LeaderboardPage() {
   const [timeFilter, setTimeFilter] = useState<TimeFilter>("all");
-  const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>("attendance");
 
   const { data: leaderboardData, isLoading, error } = useQuery({
-    queryKey: ["leaderboard", timeFilter, categoryFilter],
+    queryKey: ["leaderboard", timeFilter],
     queryFn: async () => {
-      console.log("Fetching leaderboard data with filters:", { timeFilter, categoryFilter });
+      console.log("Fetching leaderboard data with filters:", { timeFilter });
       
       let query = supabase
         .from("leaderboard_metrics")
@@ -30,16 +28,8 @@ export function LeaderboardPage() {
             full_name
           )
         `)
-        .gt('events_attended', 0); // Only show users who have attended events
-
-      // Apply ordering based on category
-      if (categoryFilter === "attendance") {
-        query = query.order('events_attended', { ascending: false });
-      } else if (categoryFilter === "hosting") {
-        query = query.order('events_hosted', { ascending: false });
-      } else {
-        query = query.order('total_contributions', { ascending: false });
-      }
+        .gt('events_attended', 0)
+        .order('events_attended', { ascending: false });
 
       const { data, error } = await query;
 
@@ -56,12 +46,7 @@ export function LeaderboardPage() {
       console.log("Raw leaderboard data received:", data);
       
       // Filter out users with no metrics
-      const filteredData = data.filter(item => {
-        const hasMetrics = item.events_attended > 0 || 
-                          item.events_hosted > 0 || 
-                          item.total_contributions > 0;
-        return hasMetrics;
-      });
+      const filteredData = data.filter(item => item.events_attended > 0);
 
       console.log("Filtered leaderboard data:", filteredData);
       return filteredData;
@@ -91,11 +76,9 @@ export function LeaderboardPage() {
         <CardTitle>Member Leaderboard</CardTitle>
       </CardHeader>
       <CardContent>
-        <Tabs defaultValue="attendance" className="w-full" onValueChange={(value) => setCategoryFilter(value as CategoryFilter)}>
-          <TabsList className="grid w-full grid-cols-3">
+        <Tabs defaultValue="attendance" className="w-full">
+          <TabsList className="grid w-full grid-cols-1">
             <TabsTrigger value="attendance">Attendance</TabsTrigger>
-            <TabsTrigger value="hosting">Hosting</TabsTrigger>
-            <TabsTrigger value="contributions">Contributions</TabsTrigger>
           </TabsList>
           <div className="mt-4">
             <LeaderboardFilters
@@ -107,20 +90,6 @@ export function LeaderboardPage() {
             <LeaderboardTable
               data={leaderboardData || []}
               category="attendance"
-              timeFilter={timeFilter}
-            />
-          </TabsContent>
-          <TabsContent value="hosting">
-            <LeaderboardTable
-              data={leaderboardData || []}
-              category="hosting"
-              timeFilter={timeFilter}
-            />
-          </TabsContent>
-          <TabsContent value="contributions">
-            <LeaderboardTable
-              data={leaderboardData || []}
-              category="contributions"
               timeFilter={timeFilter}
             />
           </TabsContent>

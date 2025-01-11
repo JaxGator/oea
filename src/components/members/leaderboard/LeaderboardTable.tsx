@@ -12,16 +12,15 @@ import { Badge } from "@/components/ui/badge";
 
 interface LeaderboardTableProps {
   data: any[];
-  category: "attendance" | "hosting" | "contributions";
+  category: "attendance";
   timeFilter: "all" | "monthly" | "weekly";
 }
 
 export function LeaderboardTable({
   data,
-  category,
   timeFilter,
 }: LeaderboardTableProps) {
-  console.log("LeaderboardTable render:", { data, category, timeFilter });
+  console.log("LeaderboardTable render:", { data, timeFilter });
 
   const getMetricValue = (item: any) => {
     if (timeFilter === "weekly") {
@@ -30,29 +29,7 @@ export function LeaderboardTable({
     if (timeFilter === "monthly") {
       return item.monthly_points || 0;
     }
-    switch (category) {
-      case "attendance":
-        return item.events_attended || 0;
-      case "hosting":
-        return item.events_hosted || 0;
-      case "contributions":
-        return item.total_contributions || 0;
-      default:
-        return 0;
-    }
-  };
-
-  const getMetricLabel = () => {
-    switch (category) {
-      case "attendance":
-        return "Events Attended";
-      case "hosting":
-        return "Events Hosted";
-      case "contributions":
-        return "Total Contributions";
-      default:
-        return "Score";
-    }
+    return item.events_attended || 0;
   };
 
   if (!data.length) {
@@ -69,7 +46,7 @@ export function LeaderboardTable({
         <TableRow>
           <TableHead className="w-12">Rank</TableHead>
           <TableHead>Member</TableHead>
-          <TableHead className="text-right">{getMetricLabel()}</TableHead>
+          <TableHead className="text-right">Events Attended</TableHead>
           <TableHead className="text-right">Streak</TableHead>
         </TableRow>
       </TableHeader>
