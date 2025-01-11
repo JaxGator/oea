@@ -62,6 +62,7 @@ export function GalleryPreview() {
         <GalleryGrid 
           images={images} 
           onImageSelect={handleImageSelect}
+          isPreview={true}
         />
 
         <FullGalleryDialog
