@@ -4,7 +4,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { LeaderboardTable } from "./LeaderboardTable";
 import { LeaderboardFilters } from "./LeaderboardFilters";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Loader2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
@@ -76,24 +75,17 @@ export function LeaderboardPage() {
         <CardTitle>Leaderboard</CardTitle>
       </CardHeader>
       <CardContent>
-        <Tabs defaultValue="attendance" className="w-full">
-          <TabsList className="grid w-full grid-cols-1">
-            <TabsTrigger value="attendance">Attendance</TabsTrigger>
-          </TabsList>
-          <div className="mt-4">
-            <LeaderboardFilters
-              timeFilter={timeFilter}
-              onTimeFilterChange={setTimeFilter}
-            />
-          </div>
-          <TabsContent value="attendance">
-            <LeaderboardTable
-              data={leaderboardData || []}
-              category="attendance"
-              timeFilter={timeFilter}
-            />
-          </TabsContent>
-        </Tabs>
+        <div className="mt-4">
+          <LeaderboardFilters
+            timeFilter={timeFilter}
+            onTimeFilterChange={setTimeFilter}
+          />
+        </div>
+        <LeaderboardTable
+          data={leaderboardData || []}
+          category="attendance"
+          timeFilter={timeFilter}
+        />
       </CardContent>
     </Card>
   );
