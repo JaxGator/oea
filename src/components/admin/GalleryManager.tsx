@@ -45,10 +45,14 @@ export default function GalleryManager() {
 
   const handleImageDelete = async (imageUrl: string) => {
     try {
-      // Extract the filename from the URL - handle both URL formats
-      const fileName = imageUrl.includes('?') 
-        ? imageUrl.split('/').pop()?.split('?')[0]
-        : imageUrl.split('/').pop();
+      // Extract the filename from the URL, handling multiple formats
+      let fileName = imageUrl;
+      
+      if (imageUrl.includes('supabase.co')) {
+        fileName = imageUrl.split('/').pop()?.split('?')[0] || '';
+      } else if (imageUrl.includes('/')) {
+        fileName = imageUrl.split('/').pop() || '';
+      }
 
       if (!fileName) {
         throw new Error('Invalid image URL');
@@ -67,10 +71,10 @@ export default function GalleryManager() {
 
       if (storageError) {
         console.error('Storage deletion error:', storageError);
-        throw storageError;
+        // Don't throw here - continue to database cleanup even if storage fails
+      } else {
+        console.log('Successfully deleted from storage:', fileName);
       }
-
-      console.log('Successfully deleted from storage:', fileName);
 
       // Then delete from database
       const { error: dbError } = await supabase

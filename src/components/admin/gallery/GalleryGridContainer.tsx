@@ -27,35 +27,71 @@ export function GalleryGridContainer({ images, onImageDelete }: GalleryGridConta
       
       for (const image of images) {
         try {
-          // Extract filename, handling both full URLs and direct filenames
-          const fileName = image.url.includes('/')
-            ? image.url.split('/').pop()?.split('?')[0]
-            : image.url;
+          // Extract filename from URL or path, handling multiple formats
+          let fileName = image.url;
+          
+          // Handle full URLs
+          if (image.url.includes('supabase.co')) {
+            fileName = image.url.split('/').pop()?.split('?')[0] || '';
+          }
+          // Handle relative paths
+          else if (image.url.includes('/')) {
+            fileName = image.url.split('/').pop() || '';
+          }
 
-          if (fileName) {
-            // Get the public URL first
-            const { data: { publicUrl } } = supabase.storage
-              .from('gallery')
-              .getPublicUrl(fileName);
+          if (!fileName) {
+            console.error('Invalid file name:', image.url);
+            continue;
+          }
 
-            if (publicUrl) {
-              // Verify the image URL is accessible
-              try {
-                const response = await fetch(publicUrl, { method: 'HEAD' });
-                if (response.ok) {
-                  urlMap[image.id] = publicUrl;
-                } else {
-                  console.warn('Image URL not accessible:', fileName);
-                  onImageDelete(image.url);
-                }
-              } catch (error) {
-                console.error('Error verifying image URL:', error);
-                onImageDelete(image.url);
-              }
+          console.log('Processing image:', {
+            originalUrl: image.url,
+            extractedFileName: fileName,
+            imageId: image.id
+          });
+
+          // Get the public URL
+          const { data: { publicUrl } } = supabase.storage
+            .from('gallery')
+            .getPublicUrl(fileName);
+
+          if (!publicUrl) {
+            console.error('Failed to generate public URL for:', fileName);
+            continue;
+          }
+
+          // Verify the image exists and is accessible
+          try {
+            const response = await fetch(publicUrl, { method: 'HEAD' });
+            if (response.ok) {
+              urlMap[image.id] = publicUrl;
+              console.log('Successfully validated image:', {
+                fileName,
+                publicUrl,
+                imageId: image.id
+              });
+            } else {
+              console.warn('Image not accessible:', {
+                fileName,
+                status: response.status,
+                imageId: image.id
+              });
+              onImageDelete(image.url);
             }
+          } catch (error) {
+            console.error('Error verifying image:', {
+              fileName,
+              error,
+              imageId: image.id
+            });
+            onImageDelete(image.url);
           }
         } catch (error) {
-          console.error('Error processing image:', error);
+          console.error('Error processing image:', {
+            imageUrl: image.url,
+            error,
+            imageId: image.id
+          });
           onImageDelete(image.url);
         }
       }
