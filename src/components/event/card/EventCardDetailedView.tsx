@@ -57,9 +57,6 @@ export function EventCardDetailedView({
             alt={event.title}
             className="absolute inset-0 w-full h-full object-cover rounded-lg"
           />
-          <div className="absolute top-4 right-4">
-            <EventShareMenu eventId={event.id} title={event.title} />
-          </div>
         </div>
         
         <h2 className="text-2xl font-bold">{event.title}</h2>
@@ -90,20 +87,23 @@ export function EventCardDetailedView({
       </div>
 
       <div className="sticky bottom-0 bg-white py-4 border-t mt-6">
-        <EventActions
-          isAdmin={isAdmin}
-          userRSVPStatus={userRSVPStatus}
-          isFullyBooked={isFullyBooked}
-          onRSVP={onRSVP}
-          onCancelRSVP={onCancelRSVP}
-          onEdit={onEdit}
-          onDelete={onDelete}
-          isPastEvent={isPastEvent}
-          isWixEvent={isWixEvent}
-          showDelete={isAdmin && (isPastEvent || isWixEvent)}
-          canAddGuests={canAddGuests}
-          currentGuests={currentGuests}
-        />
+        <div className="flex flex-wrap items-center gap-2">
+          <EventActions
+            isAdmin={isAdmin}
+            userRSVPStatus={userRSVPStatus}
+            isFullyBooked={isFullyBooked}
+            onRSVP={onRSVP}
+            onCancelRSVP={onCancelRSVP}
+            onEdit={onEdit}
+            onDelete={onDelete}
+            isPastEvent={isPastEvent}
+            isWixEvent={isWixEvent}
+            showDelete={isAdmin && (isPastEvent || isWixEvent)}
+            canAddGuests={canAddGuests}
+            currentGuests={currentGuests}
+          />
+          <EventShareMenu eventId={event.id} title={event.title} />
+        </div>
       </div>
     </div>
   );
