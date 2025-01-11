@@ -4,16 +4,7 @@ import { FeaturedEvents } from "@/components/home/FeaturedEvents";
 import { GalleryPreview } from "@/components/home/GalleryPreview";
 import { SocialFeed } from "@/components/home/SocialFeed";
 import { FeaturedMerch } from "@/components/home/FeaturedMerch";
-import { Suspense } from 'react';
-import { Loader2 } from "lucide-react";
-import { toast } from "sonner";
-import { ErrorInfo } from 'react';
-
-const LoadingSpinner = () => (
-  <div className="flex justify-center items-center min-h-[200px]">
-    <Loader2 className="h-8 w-8 animate-spin" />
-  </div>
-);
+import { HomeLayout, HomeSection } from '@/components/home/HomeLayout';
 
 const ErrorFallback = () => (
   <div className="p-4 text-center">
@@ -29,62 +20,26 @@ const ErrorFallback = () => (
 
 export default function Index() {
   return (
-    <div className="bg-background">
+    <HomeLayout>
       <ErrorBoundary fallback={<ErrorFallback />}>
         <Hero />
       </ErrorBoundary>
       
-      <div className="container mx-auto px-4 py-8">
-        <div className="space-y-8">
-          <ErrorBoundary 
-            fallback={<ErrorFallback />}
-            onError={(error: Error, errorInfo: ErrorInfo) => {
-              console.error('Featured Events Error:', error, errorInfo);
-              toast.error('Failed to load events');
-            }}
-          >
-            <Suspense fallback={<LoadingSpinner />}>
-              <FeaturedEvents />
-            </Suspense>
-          </ErrorBoundary>
+      <HomeSection title="Events">
+        <FeaturedEvents />
+      </HomeSection>
 
-          <ErrorBoundary 
-            fallback={<ErrorFallback />}
-            onError={(error: Error, errorInfo: ErrorInfo) => {
-              console.error('Gallery Preview Error:', error, errorInfo);
-              toast.error('Failed to load gallery');
-            }}
-          >
-            <Suspense fallback={<LoadingSpinner />}>
-              <GalleryPreview />
-            </Suspense>
-          </ErrorBoundary>
+      <HomeSection title="Gallery">
+        <GalleryPreview />
+      </HomeSection>
 
-          <ErrorBoundary 
-            fallback={<ErrorFallback />}
-            onError={(error: Error, errorInfo: ErrorInfo) => {
-              console.error('Social Feed Error:', error, errorInfo);
-              toast.error('Failed to load social feeds');
-            }}
-          >
-            <Suspense fallback={<LoadingSpinner />}>
-              <SocialFeed />
-            </Suspense>
-          </ErrorBoundary>
+      <HomeSection title="Social Feed">
+        <SocialFeed />
+      </HomeSection>
 
-          <ErrorBoundary 
-            fallback={<ErrorFallback />}
-            onError={(error: Error, errorInfo: ErrorInfo) => {
-              console.error('Featured Merch Error:', error, errorInfo);
-              toast.error('Failed to load merchandise');
-            }}
-          >
-            <Suspense fallback={<LoadingSpinner />}>
-              <FeaturedMerch />
-            </Suspense>
-          </ErrorBoundary>
-        </div>
-      </div>
-    </div>
+      <HomeSection title="Merchandise">
+        <FeaturedMerch />
+      </HomeSection>
+    </HomeLayout>
   );
 }
