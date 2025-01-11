@@ -34,6 +34,7 @@ export function EventCardContainer({
     isAdmin,
     rsvpCount,
     attendees,
+    waitlistedAttendees,
     handleEditSuccess,
     handleDelete,
   } = useEventCard(event.id, onUpdate);
@@ -49,6 +50,12 @@ export function EventCardContainer({
   const canAddGuests = isAdmin || userRSVPStatus === 'attending';
 
   const attendeeNames = attendees.map(attendee => {
+    const fullName = attendee.profile.full_name;
+    const firstName = fullName ? fullName.split(' ')[0] : attendee.profile.username;
+    return firstName;
+  });
+
+  const waitlistedNames = waitlistedAttendees.map(attendee => {
     const fullName = attendee.profile.full_name;
     const firstName = fullName ? fullName.split(' ')[0] : attendee.profile.username;
     return firstName;
@@ -106,6 +113,7 @@ export function EventCardContainer({
             setShowEditDialog={setShowEditDialog}
             rsvpCount={rsvpData.confirmedCount}
             attendeeNames={attendeeNames}
+            waitlistedNames={waitlistedNames}
             userRSVPStatus={userRSVPStatus || null}
             isAdmin={isAdmin}
             isPastEvent={isPastEvent}
