@@ -8,8 +8,10 @@ import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { Event } from "@/types/event";
 
 interface EventCardContentProps {
+  event: Event;
   date: string;
   location: string;
   rsvpCount: number;
@@ -33,6 +35,7 @@ interface EventCardContentProps {
 }
 
 export function EventCardContent({
+  event,
   date,
   location,
   rsvpCount,
