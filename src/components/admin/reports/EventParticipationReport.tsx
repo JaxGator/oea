@@ -32,8 +32,6 @@ export function EventParticipationReport() {
       const processedEvents = events.map((event: any) => ({
         name: event.title,
         attending: event.event_rsvps.filter((rsvp: any) => rsvp.response === 'attending').length,
-        notAttending: event.event_rsvps.filter((rsvp: any) => rsvp.response === 'not_attending').length,
-        maybe: event.event_rsvps.filter((rsvp: any) => rsvp.response === 'maybe').length,
         date: format(new Date(event.date), 'MMM dd, yyyy')
       }));
 
@@ -88,8 +86,6 @@ export function EventParticipationReport() {
               <YAxis />
               <Tooltip />
               <Bar dataKey="attending" fill="#4CAF50" name="Attending" />
-              <Bar dataKey="notAttending" fill="#f44336" name="Not Attending" />
-              <Bar dataKey="maybe" fill="#FFC107" name="Maybe" />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -104,8 +100,6 @@ export function EventParticipationReport() {
                 <th className="text-left p-2">Event Name</th>
                 <th className="text-left p-2">Date</th>
                 <th className="text-left p-2">Attending</th>
-                <th className="text-left p-2">Not Attending</th>
-                <th className="text-left p-2">Maybe</th>
               </tr>
             </thead>
             <tbody>
@@ -114,8 +108,6 @@ export function EventParticipationReport() {
                   <td className="p-2">{event.name}</td>
                   <td className="p-2">{event.date}</td>
                   <td className="p-2">{event.attending}</td>
-                  <td className="p-2">{event.notAttending}</td>
-                  <td className="p-2">{event.maybe}</td>
                 </tr>
               ))}
             </tbody>
