@@ -136,6 +136,7 @@ export function EventCardContainer({
           >
             <EventCardHeader imageUrl={event.image_url} title={event.title} />
             <EventCardContent
+              event={event}
               date={event.date}
               location={event.location}
               rsvpCount={rsvpData.confirmedCount}
