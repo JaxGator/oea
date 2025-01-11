@@ -1,6 +1,6 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Users, Settings, Image, DollarSign, BarChart3, TestTube2 } from "lucide-react";
-import AdminUserList from "@/components/admin/AdminUserList";
+import { AdminUserList } from "@/components/admin/AdminUserList";
 import SiteConfigManager from "@/components/admin/SiteConfigManager";
 import GalleryManager from "@/components/admin/GalleryManager";
 import PaymentManager from "@/components/admin/payments/PaymentManager";

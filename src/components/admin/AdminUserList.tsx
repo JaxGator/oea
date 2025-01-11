@@ -38,17 +38,15 @@ export function AdminUserList() {
 
   const handleViewMember = useCallback((member: Member) => {
     console.log('Viewing member:', member);
-    // Add view functionality if needed
   }, []);
 
   return (
     <div className="space-y-6">
-      <UserListHeader onSearch={handleSearch}>
-        <UserFilters
-          filters={filters}
-          onFilterChange={handleFilterChange}
-        />
-      </UserListHeader>
+      <UserListHeader 
+        onSearch={handleSearch}
+        filters={filters}
+        onFilterChange={handleFilterChange}
+      />
 
       <UserListContent
         members={data?.members || []}
