@@ -3,7 +3,11 @@ import { EventCardBasicInfo } from "./EventCardBasicInfo";
 import { FeaturedEventBadge } from "./FeaturedEventBadge";
 import { EventCardActions } from "./EventCardActions";
 import { Button } from "@/components/ui/button";
-import { Eye } from "lucide-react";
+import { Eye, Edit } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
 
 interface EventCardContentProps {
   date: string;
@@ -50,9 +54,46 @@ export function EventCardContent({
   onDelete,
   onViewDetails,
 }: EventCardContentProps) {
+  const [isEditingRSVP, setIsEditingRSVP] = useState(false);
+  const [editedRSVPCount, setEditedRSVPCount] = useState(rsvpCount.toString());
+
   const isFullyBooked = rsvpCount >= maxGuests;
   const canJoinWaitlist = waitlistEnabled && isFullyBooked && 
     (!waitlistCapacity || waitlistCount < waitlistCapacity);
+
+  const handleRSVPEdit = async () => {
+    const newCount = parseInt(editedRSVPCount);
+    if (isNaN(newCount) || newCount < 0) {
+      toast({
+        title: "Invalid count",
+        description: "Please enter a valid number",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('events')
+        .update({ imported_rsvp_count: newCount })
+        .eq('id', event.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "RSVP count updated successfully",
+      });
+      setIsEditingRSVP(false);
+    } catch (error) {
+      console.error('Error updating RSVP count:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update RSVP count",
+        variant: "destructive",
+      });
+    }
+  };
 
   return (
     <>
@@ -72,6 +113,46 @@ export function EventCardContent({
           />
           {isFeatured && <FeaturedEventBadge />}
         </div>
+
+        {isAdmin && isPastEvent && (
+          <div className="mt-2 mb-4">
+            {isEditingRSVP ? (
+              <div className="flex gap-2">
+                <Input
+                  type="number"
+                  value={editedRSVPCount}
+                  onChange={(e) => setEditedRSVPCount(e.target.value)}
+                  className="w-24"
+                  min="0"
+                />
+                <Button 
+                  size="sm" 
+                  onClick={handleRSVPEdit}
+                >
+                  Save
+                </Button>
+                <Button 
+                  size="sm" 
+                  variant="outline" 
+                  onClick={() => setIsEditingRSVP(false)}
+                >
+                  Cancel
+                </Button>
+              </div>
+            ) : (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsEditingRSVP(true)}
+                className="flex items-center gap-2"
+              >
+                <Edit className="h-4 w-4" />
+                Edit RSVP Count
+              </Button>
+            )}
+          </div>
+        )}
+
         <Button 
           variant="outline" 
           size="sm" 
