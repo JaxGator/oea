@@ -21,11 +21,13 @@ export function ImageUploadForm({ onUploadComplete }: ImageUploadFormProps) {
 
     setIsUploading(true);
     try {
+      // Generate unique filename
       const timestamp = Date.now();
       const randomString = Math.random().toString(36).substring(2, 8);
       const fileExt = file.name.split('.').pop();
       const fileName = `${timestamp}-${randomString}.${fileExt}`;
 
+      // First upload the file to storage
       const { error: uploadError } = await supabase.storage
         .from('gallery')
         .upload(fileName, file, {
@@ -36,19 +38,25 @@ export function ImageUploadForm({ onUploadComplete }: ImageUploadFormProps) {
 
       if (uploadError) throw uploadError;
 
+      // Get the public URL for the uploaded file
       const { data: { publicUrl } } = supabase.storage
         .from('gallery')
         .getPublicUrl(fileName);
 
+      console.log('File uploaded successfully, inserting record with user_id:', user.id);
+
+      // Then create the database record with the user_id
       const { error: dbError } = await supabase
         .from('gallery_images')
-        .insert([{
+        .insert({
           file_name: fileName,
           display_order: 0,
-          user_id: user.id
-        }]);
+          user_id: user.id // Explicitly set the user_id to match RLS policy
+        });
 
       if (dbError) {
+        console.error('Database error:', dbError);
+        // If database insert fails, clean up the uploaded file
         await supabase.storage.from('gallery').remove([fileName]);
         throw dbError;
       }
