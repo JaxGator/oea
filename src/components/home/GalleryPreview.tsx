@@ -31,19 +31,25 @@ export function GalleryPreview() {
 
         if (!data) return [];
 
-        // Transform the data to return the full public URLs
+        // Transform the data to return the full public URLs without Lovable metadata
         return data.map(image => {
           const { data: urlData } = supabase.storage
             .from('gallery')
-            .getPublicUrl(image.file_name);
+            .getPublicUrl(image.file_name, {
+              transform: {
+                quality: 80,
+                width: 800
+              }
+            });
 
           if (!urlData.publicUrl) {
             console.error('Failed to generate public URL for:', image.file_name);
             return null;
           }
 
+          // Return the clean URL without any Lovable metadata
           return urlData.publicUrl;
-        }).filter(Boolean); // Remove any null values
+        }).filter(Boolean);
       } catch (error) {
         console.error('Gallery fetch error:', error);
         toast.error('Failed to load gallery images');
