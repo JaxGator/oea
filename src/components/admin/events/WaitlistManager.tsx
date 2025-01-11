@@ -86,13 +86,13 @@ export function WaitlistManager({
 
       if (rsvpError) throw rsvpError;
 
-      // Create notification
+      // Create notification with explicit type casting for the ENUM
       const { error: notificationError } = await supabase
         .from('waitlist_notifications')
         .insert({
           event_id: eventId,
           user_id: entry.profiles.user_id,
-          notification_type: 'promoted'
+          notification_type: 'promoted'::waitlist_notification_type
         });
 
       if (notificationError) throw notificationError;
