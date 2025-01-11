@@ -55,7 +55,8 @@ export function ImageUploadForm({ onUploadComplete }: ImageUploadFormProps) {
 
       console.log('File uploaded successfully:', {
         fileName,
-        publicUrl
+        publicUrl,
+        userId: user.id
       });
 
       // Create database record with user_id
