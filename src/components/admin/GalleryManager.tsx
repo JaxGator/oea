@@ -45,7 +45,11 @@ export default function GalleryManager() {
 
   const handleImageDelete = async (imageUrl: string) => {
     try {
-      // Extract the filename from the URL, handling multiple formats
+      if (!user) {
+        throw new Error('User not authenticated');
+      }
+
+      // Extract the filename from the URL
       let fileName = imageUrl;
       
       if (imageUrl.includes('supabase.co')) {
@@ -80,13 +84,12 @@ export default function GalleryManager() {
 
       console.log('Successfully deleted from database:', fileName);
 
-      // Then try to delete from storage
+      // Then delete from storage
       const { error: storageError } = await supabase.storage
         .from('gallery')
         .remove([fileName]);
 
       if (storageError) {
-        // Log the error but don't throw - file might already be gone
         console.warn('Storage deletion warning:', storageError);
       } else {
         console.log('Successfully deleted from storage:', fileName);

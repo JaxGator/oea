@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
+import { useSession } from "@/hooks/auth/useSession";
 
 interface ImageUploadFormProps {
   onUploadComplete: () => void;
@@ -12,23 +13,19 @@ interface ImageUploadFormProps {
 
 export function ImageUploadForm({ onUploadComplete }: ImageUploadFormProps) {
   const [isUploading, setIsUploading] = useState(false);
+  const { user } = useSession();
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (!file) return;
+    if (!file || !user) return;
 
     setIsUploading(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (!user) {
-        throw new Error('User not authenticated');
-      }
-
-      // Generate a unique filename
+      // Generate a unique filename with timestamp and random string
       const timestamp = Date.now();
+      const randomString = Math.random().toString(36).substring(2, 8);
       const fileExt = file.name.split('.').pop();
-      const fileName = `${timestamp}.${fileExt}`;
+      const fileName = `${timestamp}-${randomString}.${fileExt}`;
 
       console.log('Attempting to upload file:', {
         fileName,
@@ -39,7 +36,10 @@ export function ImageUploadForm({ onUploadComplete }: ImageUploadFormProps) {
       // Upload to storage
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('gallery')
-        .upload(fileName, file);
+        .upload(fileName, file, {
+          cacheControl: '3600',
+          upsert: false
+        });
 
       if (uploadError) {
         console.error('Storage upload error:', uploadError);
@@ -48,7 +48,12 @@ export function ImageUploadForm({ onUploadComplete }: ImageUploadFormProps) {
 
       console.log('File uploaded successfully:', fileName);
 
-      // Create database record with user_id
+      // Get the public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('gallery')
+        .getPublicUrl(fileName);
+
+      // Create database record
       const { error: dbError } = await supabase
         .from('gallery_images')
         .insert([{
@@ -82,6 +87,14 @@ export function ImageUploadForm({ onUploadComplete }: ImageUploadFormProps) {
       event.target.value = '';
     }
   };
+
+  if (!user) {
+    return (
+      <div className="text-center py-4">
+        <p className="text-muted-foreground">Please sign in to upload images.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">
