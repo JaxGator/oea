@@ -2,6 +2,7 @@ import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/comp
 import { Input } from "@/components/ui/input";
 import { UseFormReturn } from "react-hook-form";
 import { EventFormValues } from "./EventFormTypes";
+import { useAdminStatus } from "@/hooks/events/useAdminStatus";
 
 interface EventLocationCapacityProps {
   form: UseFormReturn<EventFormValues>;
@@ -10,6 +11,8 @@ interface EventLocationCapacityProps {
 }
 
 export function EventLocationCapacity({ form, disableLocation, showMaxGuestsHint }: EventLocationCapacityProps) {
+  const { isAdmin } = useAdminStatus();
+
   return (
     <>
       <FormField
@@ -22,7 +25,7 @@ export function EventLocationCapacity({ form, disableLocation, showMaxGuestsHint
               <Input 
                 placeholder="Event location" 
                 {...field} 
-                disabled={disableLocation}
+                disabled={disableLocation && !isAdmin}
               />
             </FormControl>
             <FormMessage />
@@ -37,7 +40,10 @@ export function EventLocationCapacity({ form, disableLocation, showMaxGuestsHint
             <FormLabel>Maximum Guests</FormLabel>
             {showMaxGuestsHint && (
               <p className="text-sm text-muted-foreground mb-2">
-                You can adjust this number to match the actual attendance for this past event.
+                {isAdmin 
+                  ? "As an admin, you can adjust this number to match the actual attendance for this past event."
+                  : "This number reflects the maximum guest capacity for this past event."
+                }
               </p>
             )}
             <FormControl>
@@ -47,6 +53,7 @@ export function EventLocationCapacity({ form, disableLocation, showMaxGuestsHint
                 {...field}
                 onChange={(e) => field.onChange(parseInt(e.target.value))}
                 value={field.value}
+                disabled={showMaxGuestsHint && !isAdmin}
               />
             </FormControl>
             <FormMessage />
