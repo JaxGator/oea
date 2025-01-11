@@ -18,6 +18,7 @@ interface EventDetailsProps {
   attendeeNames: string[];
   userRSVPStatus?: string | null;
   showFullDescription?: boolean;
+  waitlistNames?: string[];
 }
 
 export function EventDetails({
@@ -30,6 +31,7 @@ export function EventDetails({
   attendeeNames,
   userRSVPStatus,
   showFullDescription = false,
+  waitlistNames = [],
 }: EventDetailsProps) {
   const { user, profile } = useAuthState();
   const showLocation = user && profile?.is_approved;
@@ -99,7 +101,7 @@ export function EventDetails({
             </Badge>
           )}
 
-          <AttendeeList attendeeNames={attendeeNames} />
+          <AttendeeList attendeeNames={attendeeNames} waitlistNames={waitlistNames} />
         </div>
 
         {showLocation && coordinates && mapKey && (
