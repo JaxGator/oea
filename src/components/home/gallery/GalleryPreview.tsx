@@ -1,50 +1,17 @@
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { useState } from "react";
 import { ImagePreviewDialog } from "./ImagePreviewDialog";
 import { FullGalleryDialog } from "./FullGalleryDialog";
 import { GalleryGrid } from "./GalleryGrid";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
-import { toast } from "sonner";
+import { Camera } from "lucide-react";
+import { useGalleryPreview } from "@/hooks/gallery/useGalleryPreview";
+import { GalleryPreviewModal } from "./GalleryPreviewModal";
 
 export function GalleryPreview() {
   const [showFullGallery, setShowFullGallery] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
-  const { data: images = [], isError } = useQuery({
-    queryKey: ['gallery-preview'],
-    queryFn: async () => {
-      try {
-        const { data, error } = await supabase
-          .from('gallery_images')
-          .select('*')
-          .order('display_order', { ascending: true })
-          .limit(6);
-
-        if (error) {
-          console.error('Error fetching gallery images:', error);
-          toast.error('Failed to load gallery images');
-          throw error;
-        }
-
-        if (!data) return [];
-
-        // Transform the data to return the full public URLs for the images
-        return data.map(image => {
-          const { data: urlData } = supabase.storage
-            .from('gallery')
-            .getPublicUrl(image.file_name);
-          return urlData.publicUrl;
-        });
-      } catch (error) {
-        console.error('Gallery fetch error:', error);
-        toast.error('Failed to load gallery images');
-        throw error;
-      }
-    },
-    retry: 1,
-    refetchOnWindowFocus: false
-  });
+  const { data: images = [], isError } = useGalleryPreview(6);
 
   const handleImageSelect = (imageUrl: string) => {
     setSelectedImage(imageUrl);
@@ -80,7 +47,10 @@ export function GalleryPreview() {
     <div className="py-12 bg-white">
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-center mb-8">
-          <h2 className="text-3xl font-bold text-gray-900">Photo Gallery</h2>
+          <h2 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
+            <Camera className="h-6 w-6" />
+            Photo Gallery
+          </h2>
           <Button 
             onClick={() => setShowFullGallery(true)}
             className="bg-[#0d97d1] hover:bg-[#0d97d1]/90 text-white"
@@ -99,7 +69,7 @@ export function GalleryPreview() {
           onOpenChange={setShowFullGallery}
         />
 
-        <ImagePreviewDialog
+        <GalleryPreviewModal
           selectedImage={selectedImage}
           onClose={() => setSelectedImage(null)}
           onNavigate={handleNavigate}
