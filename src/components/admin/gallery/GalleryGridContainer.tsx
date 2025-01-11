@@ -23,7 +23,6 @@ export function GalleryGridContainer({ images, onImageDelete }: GalleryGridConta
 
       setIsLoading(true);
       const urlMap: Record<string, string> = {};
-      const invalidImages: string[] = [];
       
       for (const image of images) {
         try {
@@ -38,7 +37,6 @@ export function GalleryGridContainer({ images, onImageDelete }: GalleryGridConta
 
           if (!fileName) {
             console.error('Invalid file name:', image.url);
-            invalidImages.push(image.url);
             continue;
           }
 
@@ -46,39 +44,11 @@ export function GalleryGridContainer({ images, onImageDelete }: GalleryGridConta
             .from('gallery')
             .getPublicUrl(fileName);
 
-          if (!data.publicUrl) {
-            console.error('Failed to generate public URL for:', fileName);
-            invalidImages.push(image.url);
-            continue;
+          if (data?.publicUrl) {
+            urlMap[image.id] = data.publicUrl;
           }
-
-          urlMap[image.id] = data.publicUrl;
-
         } catch (error) {
-          console.error('Error processing image:', {
-            imageUrl: image.url,
-            error,
-            imageId: image.id
-          });
-          invalidImages.push(image.url);
-        }
-      }
-      
-      if (invalidImages.length > 0) {
-        console.log('Invalid images found:', invalidImages);
-        await Promise.all(invalidImages.map(url => handleImageDelete(url)));
-        
-        if (invalidImages.length === images.length) {
-          toast({
-            title: "Gallery Update",
-            description: "All images were invalid and have been cleaned up.",
-            variant: "destructive",
-          });
-        } else {
-          toast({
-            title: "Gallery Update",
-            description: `${invalidImages.length} invalid images have been cleaned up.`,
-          });
+          console.error('Error processing image:', error);
         }
       }
       
@@ -115,6 +85,10 @@ export function GalleryGridContainer({ images, onImageDelete }: GalleryGridConta
       if (storageError) throw storageError;
 
       onImageDelete();
+      toast({
+        title: "Success",
+        description: "Image deleted successfully",
+      });
     } catch (error) {
       console.error('Error deleting image:', error);
       toast({
@@ -126,26 +100,13 @@ export function GalleryGridContainer({ images, onImageDelete }: GalleryGridConta
   };
 
   if (isLoading) {
-    return (
-      <div className="text-center py-8 text-muted-foreground">
-        <p>Loading gallery images...</p>
-      </div>
-    );
+    return <GalleryLoadingState />;
   }
 
   if (!user) {
     return (
       <div className="text-center py-8 text-muted-foreground border-2 border-dashed rounded-lg">
         <p>Please sign in to view the gallery.</p>
-      </div>
-    );
-  }
-
-  if (Object.keys(validImages).length === 0) {
-    return (
-      <div className="text-center py-8 text-muted-foreground border-2 border-dashed rounded-lg">
-        <p>No images available in the gallery.</p>
-        <p className="text-sm mt-2">Upload some images to get started.</p>
       </div>
     );
   }

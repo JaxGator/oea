@@ -6,6 +6,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { useGalleryImages } from "@/hooks/gallery/useGalleryImages";
 import { useCarouselConfig } from "@/hooks/gallery/useCarouselConfig";
 import { useSession } from "@/hooks/auth/useSession";
+import { GalleryLoadingState } from "./gallery/GalleryLoadingState";
 
 export default function GalleryManager() {
   const { images, isLoading, fetchImages } = useGalleryImages();
@@ -23,14 +24,7 @@ export default function GalleryManager() {
   }
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center p-8">
-        <div className="text-center space-y-4">
-          <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full mx-auto"></div>
-          <p className="text-muted-foreground">Loading gallery...</p>
-        </div>
-      </div>
-    );
+    return <GalleryLoadingState />;
   }
 
   return (

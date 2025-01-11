@@ -1,6 +1,7 @@
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
+import { useImageValidation } from "@/hooks/gallery/useImageValidation";
 
 interface GalleryItemProps {
   imageUrl: string;
@@ -10,21 +11,13 @@ interface GalleryItemProps {
 
 export function GalleryItem({ imageUrl, imageId, onDelete }: GalleryItemProps) {
   const [isLoaded, setIsLoaded] = useState(false);
-  const [hasError, setHasError] = useState(false);
-
-  const handleImageError = () => {
-    console.error('Failed to load image:', imageUrl);
-    setHasError(true);
-    setIsLoaded(false);
-    onDelete();
-  };
+  const { isValid, isLoading } = useImageValidation(imageUrl, imageId);
 
   const handleImageLoad = () => {
     setIsLoaded(true);
-    setHasError(false);
   };
 
-  if (hasError) {
+  if (!isValid || isLoading) {
     return null;
   }
 
@@ -43,7 +36,6 @@ export function GalleryItem({ imageUrl, imageId, onDelete }: GalleryItemProps) {
           isLoaded ? 'opacity-100' : 'opacity-0'
         }`}
         onLoad={handleImageLoad}
-        onError={handleImageError}
       />
       
       {isLoaded && (
