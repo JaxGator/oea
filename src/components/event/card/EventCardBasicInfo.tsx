@@ -1,4 +1,6 @@
 import { useAuthState } from "@/hooks/useAuthState";
+import { EventStatusDisplay } from "./EventStatusDisplay";
+import { WaitlistInfo } from "./WaitlistInfo";
 
 interface EventCardBasicInfoProps {
   date: string;
@@ -34,9 +36,7 @@ export function EventCardBasicInfo({
     day: 'numeric'
   });
 
-  // Use imported count for past events if available
   const displayCount = importedRsvpCount !== null ? importedRsvpCount : rsvpCount;
-  const spotsRemaining = Math.max(0, maxGuests - displayCount);
   const isFull = displayCount >= maxGuests;
 
   return (
@@ -46,17 +46,18 @@ export function EventCardBasicInfo({
         {isAuthenticated && <p>{location}</p>}
       </div>
       <div className="text-sm">
-        <p>
-          {displayCount} / {maxGuests} spots filled
-          {!isPastEvent && spotsRemaining > 0 && !isFull && ` (${spotsRemaining} spots remaining)`}
-          {isFull && " (Event Full)"}
-          {isWixEvent && " (imported from Wix)"}
-        </p>
-        {waitlistEnabled && (
-          <p className="text-gray-600">
-            Waitlist: {waitlistCount} {waitlistCapacity ? `/ ${waitlistCapacity}` : ''} people
-          </p>
-        )}
+        <EventStatusDisplay
+          displayCount={displayCount}
+          maxGuests={maxGuests}
+          isPastEvent={isPastEvent}
+          isWixEvent={isWixEvent}
+          isFull={isFull}
+        />
+        <WaitlistInfo
+          waitlistEnabled={waitlistEnabled}
+          waitlistCount={waitlistCount}
+          waitlistCapacity={waitlistCapacity}
+        />
       </div>
     </div>
   );
