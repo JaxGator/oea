@@ -70,7 +70,7 @@ export function EventDetails({
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <div className="flex items-center gap-2 text-gray-600">
         <CalendarIcon className="w-4 h-4" />
         <span className="text-sm">
@@ -78,11 +78,11 @@ export function EventDetails({
         </span>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
-        <div className="space-y-4">
+      <div className="space-y-6">
+        <div>
           <LocationDisplay showLocation={showLocation} location={location} />
 
-          <div className="flex items-center gap-2 text-gray-600">
+          <div className="flex items-center gap-2 text-gray-600 mt-4">
             <UsersIcon className="w-4 h-4" />
             <span className="text-sm">
               {isWixEvent ? (
@@ -92,12 +92,6 @@ export function EventDetails({
               )}
             </span>
           </div>
-
-          {description && (
-            <div className={`prose prose-sm max-w-none ${showFullDescription ? '' : 'line-clamp-3'}`}>
-              <div dangerouslySetInnerHTML={{ __html: description }} />
-            </div>
-          )}
 
           {userRSVPStatus && (
             <Badge variant="secondary" className="mt-2">
@@ -110,6 +104,12 @@ export function EventDetails({
 
         {showLocation && coordinates && mapKey && (
           <EventMap mapKey={mapKey} coordinates={coordinates} />
+        )}
+
+        {description && (
+          <div className={`prose prose-sm max-w-none ${showFullDescription ? '' : 'line-clamp-3'} mt-6`}>
+            <div dangerouslySetInnerHTML={{ __html: description }} />
+          </div>
         )}
       </div>
     </div>
