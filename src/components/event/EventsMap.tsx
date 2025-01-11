@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api';
 import { Event } from '@/types/event';
 import { useGoogleMapsToken } from '@/hooks/useGoogleMapsToken';
@@ -17,6 +17,14 @@ export function EventsMap({ events, selectedEventId }: EventsMapProps) {
   const { mapKey, isLoading: isKeyLoading } = useGoogleMapsToken();
   const locations = useEventLocations(events, mapKey);
   const [mapLoaded, setMapLoaded] = useState(false);
+
+  const handleLoad = useCallback(() => {
+    setMapLoaded(true);
+  }, []);
+
+  const handleUnmount = useCallback(() => {
+    setMapLoaded(false);
+  }, []);
 
   // Don't render anything if there are no events or locations
   if (events.length === 0 || locations.length === 0) {
@@ -55,7 +63,8 @@ export function EventsMap({ events, selectedEventId }: EventsMapProps) {
       <LoadScript 
         googleMapsApiKey={mapKey}
         libraries={libraries}
-        onLoad={() => setMapLoaded(true)}
+        onLoad={handleLoad}
+        onUnmount={handleUnmount}
       >
         <GoogleMap
           mapContainerStyle={mapContainerStyle}
@@ -77,8 +86,8 @@ export function EventsMap({ events, selectedEventId }: EventsMapProps) {
               position={location}
               onClick={() => setSelectedEvent(location.event)}
               animation={
-                mapLoaded && location.event.id === selectedEventId 
-                  ? 1 // Using the numeric value for BOUNCE animation
+                selectedEventId === location.event.id 
+                  ? 1 // BOUNCE animation
                   : undefined
               }
             />
