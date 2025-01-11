@@ -1,64 +1,17 @@
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { useState } from "react";
 import { ImagePreviewDialog } from "./gallery/ImagePreviewDialog";
 import { FullGalleryDialog } from "./gallery/FullGalleryDialog";
 import { GalleryGrid } from "./gallery/GalleryGrid";
 import { Button } from "@/components/ui/button";
 import { Camera } from "lucide-react";
-import { useState } from "react";
-import { toast } from "sonner";
+import { useGalleryPreview } from "@/hooks/gallery/useGalleryPreview";
+import { GalleryPreviewModal } from "./gallery/GalleryPreviewModal";
 
 export function GalleryPreview() {
   const [showFullGallery, setShowFullGallery] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
-  const { data: images = [], isError } = useQuery({
-    queryKey: ['gallery-preview'],
-    queryFn: async () => {
-      try {
-        const { data, error } = await supabase
-          .from('gallery_images')
-          .select('*')
-          .not('file_name', 'like', 'event-pics/%')
-          .order('created_at', { ascending: false })
-          .limit(4);
-
-        if (error) {
-          console.error('Error fetching gallery images:', error);
-          toast.error('Failed to load gallery images');
-          throw error;
-        }
-
-        if (!data) return [];
-
-        // Transform the data to return the full public URLs without Lovable metadata
-        return data.map(image => {
-          const { data: urlData } = supabase.storage
-            .from('gallery')
-            .getPublicUrl(image.file_name, {
-              transform: {
-                quality: 80,
-                width: 800
-              }
-            });
-
-          if (!urlData.publicUrl) {
-            console.error('Failed to generate public URL for:', image.file_name);
-            return null;
-          }
-
-          // Return the clean URL without any Lovable metadata
-          return urlData.publicUrl;
-        }).filter(Boolean);
-      } catch (error) {
-        console.error('Gallery fetch error:', error);
-        toast.error('Failed to load gallery images');
-        throw error;
-      }
-    },
-    retry: 1,
-    refetchOnWindowFocus: false
-  });
+  const { data: images = [], isError } = useGalleryPreview(6);
 
   const handleImageSelect = (imageUrl: string) => {
     setSelectedImage(imageUrl);
@@ -80,47 +33,50 @@ export function GalleryPreview() {
 
   if (isError) {
     return (
-      <div className="container mx-auto px-4">
-        <div className="text-center text-red-500">
-          Failed to load gallery images. Please try again later.
+      <div className="py-12 bg-white">
+        <div className="container mx-auto px-4">
+          <div className="text-center text-red-500">
+            Failed to load gallery images. Please try again later.
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto px-4">
-      <div className="flex justify-between items-center mb-8">
-        <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-          <Camera className="h-6 w-6" />
-          Photo Gallery
-        </h2>
-        <Button 
-          onClick={() => setShowFullGallery(true)}
-          variant="outline"
-        >
-          View All
-        </Button>
+    <div className="py-12 bg-white">
+      <div className="container mx-auto px-4">
+        <div className="flex justify-between items-center mb-8">
+          <h2 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
+            <Camera className="h-6 w-6" />
+            Photo Gallery
+          </h2>
+          <Button 
+            onClick={() => setShowFullGallery(true)}
+            className="bg-[#0d97d1] hover:bg-[#0d97d1]/90 text-white"
+          >
+            View All
+          </Button>
+        </div>
+
+        <GalleryGrid 
+          images={images} 
+          onImageSelect={handleImageSelect}
+        />
+
+        <FullGalleryDialog
+          open={showFullGallery}
+          onOpenChange={setShowFullGallery}
+        />
+
+        <GalleryPreviewModal
+          selectedImage={selectedImage}
+          onClose={() => setSelectedImage(null)}
+          onNavigate={handleNavigate}
+          isFirstImage={isFirstImage}
+          isLastImage={isLastImage}
+        />
       </div>
-
-      <GalleryGrid 
-        images={images} 
-        onImageSelect={handleImageSelect}
-        isPreview={true}
-      />
-
-      <FullGalleryDialog
-        open={showFullGallery}
-        onOpenChange={setShowFullGallery}
-      />
-
-      <ImagePreviewDialog
-        selectedImage={selectedImage}
-        onClose={() => setSelectedImage(null)}
-        onNavigate={handleNavigate}
-        isFirstImage={isFirstImage}
-        isLastImage={isLastImage}
-      />
     </div>
   );
 }
