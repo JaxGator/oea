@@ -21,20 +21,22 @@ export function LeaderboardTable({
   category,
   timeFilter,
 }: LeaderboardTableProps) {
+  console.log("LeaderboardTable render:", { data, category, timeFilter });
+
   const getMetricValue = (item: any) => {
     if (timeFilter === "weekly") {
-      return item.weekly_points;
+      return item.weekly_points || 0;
     }
     if (timeFilter === "monthly") {
-      return item.monthly_points;
+      return item.monthly_points || 0;
     }
     switch (category) {
       case "attendance":
-        return item.events_attended;
+        return item.events_attended || 0;
       case "hosting":
-        return item.events_hosted;
+        return item.events_hosted || 0;
       case "contributions":
-        return item.total_contributions;
+        return item.total_contributions || 0;
       default:
         return 0;
     }
@@ -52,6 +54,14 @@ export function LeaderboardTable({
         return "Score";
     }
   };
+
+  if (!data.length) {
+    return (
+      <div className="text-center py-8 text-gray-500">
+        No leaderboard data available
+      </div>
+    );
+  }
 
   return (
     <Table>
@@ -93,9 +103,9 @@ export function LeaderboardTable({
                   </AvatarFallback>
                 </Avatar>
                 <div>
-                  <div className="font-medium">{item.profiles?.username}</div>
+                  <div className="font-medium">{item.profiles?.username || 'Unknown User'}</div>
                   <div className="text-sm text-gray-500">
-                    {item.profiles?.full_name}
+                    {item.profiles?.full_name || ''}
                   </div>
                 </div>
               </div>

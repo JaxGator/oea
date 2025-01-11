@@ -6,6 +6,7 @@ import { LeaderboardFilters } from "./LeaderboardFilters";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Loader2 } from "lucide-react";
+import { toast } from "@/hooks/use-toast";
 
 type TimeFilter = "all" | "monthly" | "weekly";
 type CategoryFilter = "attendance" | "hosting" | "contributions";
@@ -14,9 +15,11 @@ export function LeaderboardPage() {
   const [timeFilter, setTimeFilter] = useState<TimeFilter>("all");
   const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>("attendance");
 
-  const { data: leaderboardData, isLoading } = useQuery({
+  const { data: leaderboardData, isLoading, error } = useQuery({
     queryKey: ["leaderboard", timeFilter, categoryFilter],
     queryFn: async () => {
+      console.log("Fetching leaderboard data with filters:", { timeFilter, categoryFilter });
+      
       const { data, error } = await supabase
         .from("leaderboard_metrics")
         .select(`
@@ -36,10 +39,29 @@ export function LeaderboardPage() {
           { ascending: false }
         );
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching leaderboard data:", error);
+        toast({
+          title: "Error",
+          description: "Failed to load leaderboard data",
+          variant: "destructive",
+        });
+        throw error;
+      }
+
+      console.log("Leaderboard data received:", data);
       return data;
     },
   });
+
+  if (error) {
+    console.error("Leaderboard error:", error);
+    return (
+      <div className="p-4 text-red-500">
+        Error loading leaderboard data. Please try again.
+      </div>
+    );
+  }
 
   if (isLoading) {
     return (
@@ -55,7 +77,7 @@ export function LeaderboardPage() {
         <CardTitle>Member Leaderboard</CardTitle>
       </CardHeader>
       <CardContent>
-        <Tabs defaultValue="attendance" className="w-full">
+        <Tabs defaultValue="attendance" className="w-full" onValueChange={(value) => setCategoryFilter(value as CategoryFilter)}>
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="attendance">Attendance</TabsTrigger>
             <TabsTrigger value="hosting">Hosting</TabsTrigger>
