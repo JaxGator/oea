@@ -7,17 +7,30 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { HelpCircle } from "lucide-react";
 import { useGalleryImages } from "@/hooks/gallery/useGalleryImages";
 import { useCarouselConfig } from "@/hooks/gallery/useCarouselConfig";
+import { useSession } from "@/hooks/auth/useSession";
 
 export default function GalleryManager() {
   const { images, isLoading, fetchImages } = useGalleryImages();
   const { carouselEnabled, updateCarouselConfig } = useCarouselConfig();
+  const { user } = useSession();
 
   console.log('GalleryManager rendering with:', {
-    imageCount: images.length,
+    imageCount: images?.length || 0,
     isLoading,
     carouselEnabled,
-    images
+    images,
+    userId: user?.id
   });
+
+  if (!user) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <div className="text-center space-y-4">
+          <p className="text-muted-foreground">Please sign in to manage the gallery.</p>
+        </div>
+      </div>
+    );
+  }
 
   if (isLoading) {
     return (
@@ -32,12 +45,6 @@ export default function GalleryManager() {
 
   const handleImageDelete = async (imageUrl: string) => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (!user) {
-        throw new Error('User not authenticated');
-      }
-
       // Extract the filename from the URL - handle both URL formats
       const fileName = imageUrl.includes('?') 
         ? imageUrl.split('/').pop()?.split('?')[0]
@@ -49,7 +56,8 @@ export default function GalleryManager() {
 
       console.log('Attempting to delete image:', {
         fileName,
-        fullUrl: imageUrl
+        fullUrl: imageUrl,
+        userId: user.id
       });
 
       // First try to delete from storage
@@ -119,7 +127,7 @@ export default function GalleryManager() {
       <ImageUploadForm onUploadComplete={fetchImages} />
       
       <ImageGrid 
-        images={images} 
+        images={images || []} 
         onImageDelete={handleImageDelete}
       />
     </div>
