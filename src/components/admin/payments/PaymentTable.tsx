@@ -9,6 +9,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
+import { useToast } from "@/hooks/use-toast";
 
 interface Payment {
   id: string;
@@ -27,6 +28,8 @@ interface PaymentTableProps {
 }
 
 export function PaymentTable({ payments, isProcessing, onRefund }: PaymentTableProps) {
+  const { toast } = useToast();
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'completed':
@@ -41,6 +44,28 @@ export function PaymentTable({ payments, isProcessing, onRefund }: PaymentTableP
         return 'bg-gray-500';
     }
   };
+
+  const handleRefund = async (paymentId: string) => {
+    try {
+      await onRefund(paymentId);
+    } catch (error) {
+      console.error('Error processing refund:', error);
+      toast({
+        title: "Error",
+        description: "Failed to process refund. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  if (!Array.isArray(payments)) {
+    console.error('Invalid payments data:', payments);
+    return (
+      <div className="p-4 text-red-500">
+        Error loading payment data. Please try refreshing the page.
+      </div>
+    );
+  }
 
   return (
     <div className="rounded-md border">
@@ -62,8 +87,8 @@ export function PaymentTable({ payments, isProcessing, onRefund }: PaymentTableP
               <TableCell>
                 {format(new Date(payment.created_at), 'MMM d, yyyy')}
               </TableCell>
-              <TableCell>{payment.events.title}</TableCell>
-              <TableCell>{payment.profiles.username}</TableCell>
+              <TableCell>{payment.events?.title || 'N/A'}</TableCell>
+              <TableCell>{payment.profiles?.username || 'N/A'}</TableCell>
               <TableCell>${(payment.amount / 100).toFixed(2)}</TableCell>
               <TableCell>
                 <Badge className={getStatusColor(payment.status)}>
@@ -71,22 +96,29 @@ export function PaymentTable({ payments, isProcessing, onRefund }: PaymentTableP
                 </Badge>
               </TableCell>
               <TableCell className="font-mono text-sm">
-                {payment.transaction_id}
+                {payment.transaction_id || 'N/A'}
               </TableCell>
               <TableCell>
                 {payment.status === 'completed' && (
                   <Button
                     variant="destructive"
                     size="sm"
-                    onClick={() => onRefund(payment.id)}
+                    onClick={() => handleRefund(payment.id)}
                     disabled={isProcessing}
                   >
-                    Refund
+                    {isProcessing ? 'Processing...' : 'Refund'}
                   </Button>
                 )}
               </TableCell>
             </TableRow>
           ))}
+          {payments.length === 0 && (
+            <TableRow>
+              <TableCell colSpan={7} className="text-center py-4">
+                No payments found
+              </TableCell>
+            </TableRow>
+          )}
         </TableBody>
       </Table>
     </div>
