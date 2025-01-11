@@ -2,14 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Check, X, AlertTriangle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-
-interface TestResult {
-  name: string;
-  status: 'passed' | 'failed';
-  category: string;
-  error?: string;
-  duration?: number;
-}
+import { TestResult } from "../types";
 
 interface TestResultsProps {
   results: TestResult[];

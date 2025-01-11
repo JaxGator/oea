@@ -1,7 +1,7 @@
 export interface TestResult {
   name: string;
   category: string;
-  status: 'passed' | 'failed' | 'pending';
+  status: 'passed' | 'failed';
   error?: string;
   duration?: number;
 }
