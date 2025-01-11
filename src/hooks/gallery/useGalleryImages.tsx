@@ -11,7 +11,6 @@ export function useGalleryImages() {
     try {
       setIsLoading(true);
       
-      // Fetch images from the database
       const { data: galleryData, error: dbError } = await supabase
         .from('gallery_images')
         .select('*')
@@ -21,24 +20,19 @@ export function useGalleryImages() {
         throw dbError;
       }
 
-      // Process and validate each image
-      const validImages = await Promise.all(
+      const processedImages = await Promise.all(
         galleryData.map(async (image) => {
           try {
             const { data: { publicUrl } } = supabase.storage
               .from('gallery')
               .getPublicUrl(image.file_name);
 
-            // Return the image data only if we can generate a public URL
-            if (publicUrl) {
-              return {
-                id: image.id,
-                url: publicUrl,
-                fileName: image.file_name,
-                displayOrder: image.display_order
-              };
-            }
-            return null;
+            return {
+              id: image.id,
+              url: publicUrl,
+              fileName: image.file_name,
+              displayOrder: image.display_order
+            };
           } catch (error) {
             console.error('Error processing image:', image.file_name, error);
             return null;
@@ -46,16 +40,15 @@ export function useGalleryImages() {
         })
       );
 
-      // Filter out any null values (invalid images)
-      const filteredImages = validImages.filter((img): img is ImageType => img !== null);
+      const validImages = processedImages.filter((img): img is ImageType => img !== null);
       
       console.log('Processed gallery images:', {
         total: galleryData.length,
-        valid: filteredImages.length,
-        images: filteredImages
+        valid: validImages.length,
+        images: validImages
       });
 
-      setImages(filteredImages);
+      setImages(validImages);
     } catch (error) {
       console.error('Error fetching gallery images:', error);
       toast({

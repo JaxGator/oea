@@ -6,7 +6,7 @@ import { useSession } from "@/hooks/auth/useSession";
 
 interface GalleryGridContainerProps {
   images: Array<{ url: string; id: string }>;
-  onImageDelete: (imageUrl: string) => void;
+  onImageDelete: () => void;
 }
 
 export function GalleryGridContainer({ images, onImageDelete }: GalleryGridContainerProps) {
@@ -17,7 +17,6 @@ export function GalleryGridContainer({ images, onImageDelete }: GalleryGridConta
   useEffect(() => {
     const validateAndGetPublicUrls = async () => {
       if (!user) {
-        console.error('No authenticated user found');
         setIsLoading(false);
         return;
       }
@@ -28,16 +27,12 @@ export function GalleryGridContainer({ images, onImageDelete }: GalleryGridConta
       
       for (const image of images) {
         try {
-          // Extract filename from URL or path, handling multiple formats
           let fileName = image.url;
           
-          // Handle full URLs
           if (image.url.includes('supabase.co')) {
             const urlParts = image.url.split('/');
             fileName = urlParts[urlParts.length - 1].split('?')[0];
-          }
-          // Handle relative paths
-          else if (image.url.includes('/')) {
+          } else if (image.url.includes('/')) {
             fileName = image.url.split('/').pop() || '';
           }
 
@@ -47,13 +42,6 @@ export function GalleryGridContainer({ images, onImageDelete }: GalleryGridConta
             continue;
           }
 
-          console.log('Processing image:', {
-            originalUrl: image.url,
-            extractedFileName: fileName,
-            imageId: image.id
-          });
-
-          // Get the public URL
           const { data } = supabase.storage
             .from('gallery')
             .getPublicUrl(fileName);
@@ -64,13 +52,7 @@ export function GalleryGridContainer({ images, onImageDelete }: GalleryGridConta
             continue;
           }
 
-          // Add to valid images without HEAD request
           urlMap[image.id] = data.publicUrl;
-          console.log('Successfully processed image:', {
-            fileName,
-            publicUrl: data.publicUrl,
-            imageId: image.id
-          });
 
         } catch (error) {
           console.error('Error processing image:', {
@@ -82,12 +64,9 @@ export function GalleryGridContainer({ images, onImageDelete }: GalleryGridConta
         }
       }
       
-      // Clean up invalid images
       if (invalidImages.length > 0) {
-        console.log('Cleaning up invalid images:', invalidImages);
-        invalidImages.forEach(url => {
-          onImageDelete(url);
-        });
+        console.log('Invalid images found:', invalidImages);
+        await Promise.all(invalidImages.map(url => handleImageDelete(url)));
         
         if (invalidImages.length === images.length) {
           toast({
@@ -112,7 +91,39 @@ export function GalleryGridContainer({ images, onImageDelete }: GalleryGridConta
     } else {
       setIsLoading(false);
     }
-  }, [images, onImageDelete, user]);
+  }, [images, user]);
+
+  const handleImageDelete = async (url: string) => {
+    try {
+      if (!user) return;
+
+      const fileName = url.includes('/') ? url.split('/').pop()?.split('?')[0] : url;
+      if (!fileName) return;
+
+      const { error: dbError } = await supabase
+        .from('gallery_images')
+        .delete()
+        .eq('file_name', fileName)
+        .eq('user_id', user.id);
+
+      if (dbError) throw dbError;
+
+      const { error: storageError } = await supabase.storage
+        .from('gallery')
+        .remove([fileName]);
+
+      if (storageError) throw storageError;
+
+      onImageDelete();
+    } catch (error) {
+      console.error('Error deleting image:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete image. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
 
   if (isLoading) {
     return (
@@ -133,7 +144,7 @@ export function GalleryGridContainer({ images, onImageDelete }: GalleryGridConta
   if (Object.keys(validImages).length === 0) {
     return (
       <div className="text-center py-8 text-muted-foreground border-2 border-dashed rounded-lg">
-        <p>No valid images available in the gallery.</p>
+        <p>No images available in the gallery.</p>
         <p className="text-sm mt-2">Upload some images to get started.</p>
       </div>
     );
@@ -147,7 +158,7 @@ export function GalleryGridContainer({ images, onImageDelete }: GalleryGridConta
             key={image.id}
             imageUrl={validImages[image.id]}
             imageId={image.id}
-            onDelete={() => onImageDelete(image.url)}
+            onDelete={() => handleImageDelete(image.url)}
           />
         ) : null
       ))}

@@ -16,7 +16,7 @@ export function GalleryItem({ imageUrl, imageId, onDelete }: GalleryItemProps) {
     console.error('Failed to load image:', imageUrl);
     setHasError(true);
     setIsLoaded(false);
-    onDelete(); // Automatically remove invalid images
+    onDelete();
   };
 
   const handleImageLoad = () => {
@@ -25,19 +25,17 @@ export function GalleryItem({ imageUrl, imageId, onDelete }: GalleryItemProps) {
   };
 
   if (hasError) {
-    return null; // Don't render anything if the image failed to load
+    return null;
   }
 
   return (
     <div className="relative group aspect-square">
-      {/* Loading state */}
       {!isLoaded && (
         <div className="w-full h-full bg-muted rounded-lg flex items-center justify-center">
           <span className="text-muted-foreground">Loading...</span>
         </div>
       )}
       
-      {/* Image */}
       <img
         src={imageUrl}
         alt={`Gallery image ${imageId}`}
@@ -48,7 +46,6 @@ export function GalleryItem({ imageUrl, imageId, onDelete }: GalleryItemProps) {
         onError={handleImageError}
       />
       
-      {/* Delete button */}
       {isLoaded && (
         <Button
           variant="destructive"

@@ -21,7 +21,7 @@ export function ImageUploadForm({ onUploadComplete }: ImageUploadFormProps) {
 
     setIsUploading(true);
     try {
-      // Generate a unique filename with timestamp and random string
+      // Generate a unique filename
       const timestamp = Date.now();
       const randomString = Math.random().toString(36).substring(2, 8);
       const fileExt = file.name.split('.').pop();
@@ -59,17 +59,17 @@ export function ImageUploadForm({ onUploadComplete }: ImageUploadFormProps) {
         userId: user.id
       });
 
-      // Create database record with user_id
+      // Create database record
       const { error: dbError } = await supabase
         .from('gallery_images')
         .insert([{
           file_name: fileName,
           display_order: 0,
-          user_id: user.id // Explicitly set the user_id
+          user_id: user.id
         }]);
 
       if (dbError) {
-        // If database insert fails, clean up the uploaded file
+        // Clean up the uploaded file if database insert fails
         await supabase.storage.from('gallery').remove([fileName]);
         console.error('Database insert error:', dbError);
         throw dbError;
@@ -89,7 +89,7 @@ export function ImageUploadForm({ onUploadComplete }: ImageUploadFormProps) {
         variant: "destructive",
       });
     } finally {
-      setIsLoading(false);
+      setIsUploading(false);
       event.target.value = '';
     }
   };
