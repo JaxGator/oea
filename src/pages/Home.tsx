@@ -1,12 +1,5 @@
-import React from 'react';
-import { Hero } from '@/components/home/Hero';
-import { FeaturedEvents } from '@/components/home/FeaturedEvents';
+import { Navigate } from 'react-router-dom';
 
 export default function Home() {
-  return (
-    <div>
-      <Hero />
-      <FeaturedEvents />
-    </div>
-  );
+  return <Navigate to="/" replace />;
 }
