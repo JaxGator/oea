@@ -33,7 +33,7 @@ export function GalleryPreview() {
 
   if (isError) {
     return (
-      <div className="py-12 bg-white">
+      <div className="py-8 bg-white">
         <div className="container mx-auto px-4">
           <div className="text-center text-red-500">
             Failed to load gallery images. Please try again later.
@@ -44,7 +44,7 @@ export function GalleryPreview() {
   }
 
   return (
-    <div className="py-12 bg-white">
+    <div className="py-8 bg-white">
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-center mb-8">
           <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
