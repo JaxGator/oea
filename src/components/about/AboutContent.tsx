@@ -24,8 +24,9 @@ export function AboutContent({ content }: AboutContentProps) {
       <div className="prose max-w-none bg-white p-8 rounded-lg shadow-sm animate-fade-in [animation-delay:200ms]">
         <div 
           className="text-2xl font-semibold mb-6 tracking-tight"
-          dangerouslySetInnerHTML={{ __html: content.guidelinesTitle }}
-        />
+        >
+          Group Guidelines
+        </div>
         <div 
           className="text-lg leading-relaxed"
           dangerouslySetInnerHTML={{ __html: content.guidelines }}
