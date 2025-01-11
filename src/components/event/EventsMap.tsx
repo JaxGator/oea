@@ -61,7 +61,11 @@ export function EventsMap({ events, selectedEventId }: EventsMapProps) {
               key={location.event.id}
               position={location}
               onClick={() => setSelectedEvent(location.event)}
-              animation={location.event.id === selectedEventId ? window.google?.maps.Animation.BOUNCE : undefined}
+              animation={
+                mapLoaded && location.event.id === selectedEventId 
+                  ? 1 // Using the numeric value for BOUNCE animation
+                  : undefined
+              }
             />
           ))}
 
