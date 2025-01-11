@@ -1,4 +1,7 @@
-import { Bike, Mountain, Ship, ShipWheel, Footprints, Users, Fish, CircleDot, Waves, Trophy, Flag, TentTree } from "lucide-react";
+import { 
+  Bike, Mountain, Ship, ShipWheel, Footprints, 
+  Users, Fish, CircleDot, Waves, Trophy, Flag, TentTree 
+} from "lucide-react";
 
 interface ActivityType {
   name: string;
@@ -22,17 +25,17 @@ const activities: ActivityType[] = [
 
 export function ActivityTypes() {
   return (
-    <div className="bg-white p-8 rounded-lg shadow-sm">
-      <div className="text-2xl font-semibold mb-8">
+    <div className="bg-white p-8 rounded-lg shadow-sm animate-fade-in [animation-delay:400ms]">
+      <h2 className="text-2xl font-semibold mb-8">
         Our Activities
-      </div>
+      </h2>
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
         {activities.map((activity) => (
           <div
             key={activity.name}
-            className="flex flex-col items-center text-center p-6 rounded-lg hover:bg-gray-50 transition-colors"
+            className="flex flex-col items-center text-center p-6 rounded-lg hover:bg-gray-50 transition-colors hover:scale-105 duration-200"
           >
-            <div className="mb-3 text-primary-500">{activity.icon}</div>
+            <div className="mb-3 text-primary">{activity.icon}</div>
             <span className="text-base font-medium text-gray-700">{activity.name}</span>
           </div>
         ))}
