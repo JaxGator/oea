@@ -10,7 +10,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   return (
     <div className="min-h-screen bg-gray-100">
       <AdminHeader />
-      <main className="container mx-auto py-6 px-4">
+      <main className="container mx-auto py-6 px-4 max-w-[100vw] overflow-x-hidden">
         <div className="flex flex-col items-center gap-2 mb-6">
           <div className="flex items-center gap-2">
             <Shield className="h-6 w-6 text-gray-900" aria-hidden="true" />

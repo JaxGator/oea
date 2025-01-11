@@ -7,8 +7,7 @@ export default function Admin() {
   return (
     <RequireAdmin>
       <AdminLayout>
-        <AdminHeader />
-        <div className="container mx-auto py-6">
+        <div className="w-full overflow-hidden">
           <AdminTabs />
         </div>
       </AdminLayout>
