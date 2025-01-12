@@ -17,14 +17,10 @@ const DEFAULT_MEMBER: Member = {
 
 export function useMemberForm(member: Member | null, onUpdate: () => void, onClose: () => void) {
   const { toast } = useToast();
-
-  // Validate member object and provide defaults
   const safeMember = member ? { ...DEFAULT_MEMBER, ...member } : DEFAULT_MEMBER;
 
   const [username, setUsername] = useState(safeMember.username);
   const [fullName, setFullName] = useState(safeMember.full_name || '');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const [isAdmin, setIsAdmin] = useState(safeMember.is_admin || false);
   const [isApproved, setIsApproved] = useState(safeMember.is_approved || false);
   const [isMember, setIsMember] = useState(safeMember.is_member || false);
@@ -48,18 +44,16 @@ export function useMemberForm(member: Member | null, onUpdate: () => void, onClo
         }
       });
 
-      const { data, error } = await supabase
-        .from('profiles')
-        .update({
-          username: username,
-          full_name: fullName,
-          is_admin: isAdmin,
-          is_approved: isApproved,
-          is_member: isMember,
-          avatar_url: avatarUrl
-        })
-        .eq('id', member.id)
-        .select();
+      const { data, error } = await supabase.rpc('admin_update_user', {
+        admin_id: (await supabase.auth.getUser()).data.user?.id,
+        target_user_id: member.id,
+        new_username: username,
+        new_full_name: fullName,
+        new_avatar_url: avatarUrl,
+        new_is_admin: isAdmin,
+        new_is_approved: isApproved,
+        new_is_member: isMember
+      });
 
       if (error) {
         console.error('Error updating member:', error);
@@ -91,10 +85,6 @@ export function useMemberForm(member: Member | null, onUpdate: () => void, onClo
     setUsername,
     fullName,
     setFullName,
-    email,
-    setEmail,
-    password,
-    setPassword,
     isAdmin,
     setIsAdmin,
     isApproved,
