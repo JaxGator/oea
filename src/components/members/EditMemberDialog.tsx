@@ -67,7 +67,7 @@ export function EditMemberDialog({
       is_member: isMember,
     };
     onUpdate(updatedMember);
-  });
+  }, onOpenChange);
 
   const handleFormSubmit = async () => {
     try {
