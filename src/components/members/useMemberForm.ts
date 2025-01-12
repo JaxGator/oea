@@ -73,7 +73,9 @@ export function useMemberForm(member: Member | null, onUpdate: () => void, onClo
       });
       
       // Call onUpdate before closing to ensure data is refreshed
+      console.log('useMemberForm: Calling onUpdate');
       await onUpdate();
+      console.log('useMemberForm: Update complete, closing dialog');
       onClose();
     } catch (error) {
       console.error('Error updating member:', error);
