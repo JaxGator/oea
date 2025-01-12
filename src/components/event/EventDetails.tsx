@@ -3,7 +3,6 @@ import { format, parseISO } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { useAuthState } from "@/hooks/useAuthState";
 import { useGoogleMapsToken } from "@/hooks/useGoogleMapsToken";
-import { useState, useEffect } from "react";
 import { LocationDisplay } from "./details/LocationDisplay";
 import { AttendeeList } from "./details/AttendeeList";
 import { EventMap } from "./details/EventMap";

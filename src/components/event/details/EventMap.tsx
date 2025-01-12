@@ -11,10 +11,21 @@ interface EventMapProps {
 
 const libraries: ("places" | "geometry" | "drawing" | "visualization")[] = ["places"];
 
+const mapContainerStyle = {
+  width: '100%',
+  height: '100%'
+};
+
+const defaultCenter = {
+  lat: 37.7749,
+  lng: -122.4194
+};
+
 export function EventMap({ mapKey, location }: EventMapProps) {
   const [coordinates, setCoordinates] = useState<{ lat: number; lng: number } | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [mapLoaded, setMapLoaded] = useState(false);
 
   useEffect(() => {
     const geocodeAddress = async () => {
@@ -75,21 +86,26 @@ export function EventMap({ mapKey, location }: EventMapProps) {
 
   return (
     <div className="h-[300px] rounded-lg overflow-hidden shadow-lg relative">
-      <LoadScript googleMapsApiKey={mapKey} libraries={libraries}>
-        <GoogleMap
-          mapContainerStyle={{ width: '100%', height: '100%' }}
-          zoom={14}
-          center={coordinates}
-          options={{
-            zoomControl: true,
-            mapTypeControl: false,
-            streetViewControl: false,
-            fullscreenControl: true,
-            styles: [{ featureType: 'all', elementType: 'geometry', stylers: [{ lightness: 20 }] }],
-          }}
-        >
-          <Marker position={coordinates} />
-        </GoogleMap>
+      <LoadScript 
+        googleMapsApiKey={mapKey} 
+        libraries={libraries}
+        onLoad={() => setMapLoaded(true)}
+      >
+        {mapLoaded && (
+          <GoogleMap
+            mapContainerStyle={mapContainerStyle}
+            zoom={14}
+            center={coordinates}
+            options={{
+              zoomControl: true,
+              mapTypeControl: false,
+              streetViewControl: false,
+              fullscreenControl: true,
+            }}
+          >
+            <Marker position={coordinates} />
+          </GoogleMap>
+        )}
       </LoadScript>
       <div className="absolute bottom-4 right-4 z-10">
         <Button variant="secondary" size="sm" onClick={handleGetDirections}>
