@@ -21,11 +21,19 @@ export const tests: TestDefinition[] = [
     category: "auth",
     run: async () => {
       const publicRoutes = ['/', '/about', '/events', '/resources'];
+      // Check if routes are accessible in navigation
+      const nav = document.querySelector('nav');
+      if (!nav) {
+        throw new Error("Navigation not found");
+      }
+      
+      const links = Array.from(nav.querySelectorAll('a'));
       const routeCheck = publicRoutes.every(route => 
-        document.querySelector(`a[href="${route}"]`)
+        links.some(link => link.getAttribute('href') === route)
       );
+      
       if (!routeCheck) {
-        throw new Error("Some public routes are not accessible");
+        throw new Error("Some public routes are not accessible in navigation");
       }
     }
   },
@@ -157,9 +165,15 @@ export const tests: TestDefinition[] = [
     name: "Navigation menu structure",
     category: "navigation",
     run: async () => {
-      const navElement = document.querySelector('nav[role="navigation"]');
+      const navElement = document.querySelector('nav');
       if (!navElement) {
         throw new Error("Navigation structure not found");
+      }
+      
+      // Check for basic navigation elements
+      const hasLinks = navElement.querySelectorAll('a').length > 0;
+      if (!hasLinks) {
+        throw new Error("Navigation menu is empty");
       }
     }
   },
@@ -214,12 +228,16 @@ export const tests: TestDefinition[] = [
     name: "Database connection",
     category: "admin",
     run: async () => {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('count')
-        .limit(1);
-        
-      validateResponse({ data, error }, "Database connection test failed");
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('id')
+          .limit(1);
+          
+        validateResponse({ data, error }, "Database connection test failed");
+      } catch (error) {
+        throw new Error(`Database connection failed: ${error.message}`);
+      }
     }
   },
   
@@ -228,14 +246,18 @@ export const tests: TestDefinition[] = [
     name: "Storage bucket accessibility",
     category: "admin",
     run: async () => {
-      const { data, error } = await supabase
-        .storage
-        .listBuckets();
+      try {
+        const { data, error } = await supabase
+          .storage
+          .listBuckets();
+          
+        validateResponse({ data, error }, "Storage bucket test failed");
         
-      validateResponse({ data, error }, "Storage bucket test failed");
-      
-      if (!data.some(bucket => bucket.name === 'media')) {
-        throw new Error("Required storage bucket 'media' not found");
+        if (!data.some(bucket => bucket.name === 'media')) {
+          throw new Error("Required storage bucket 'media' not found");
+        }
+      } catch (error) {
+        throw new Error(`Storage bucket test failed: ${error.message}`);
       }
     }
   }
