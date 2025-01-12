@@ -1,14 +1,13 @@
 import { useState, useCallback } from "react";
 import { Member } from "./types";
 import { MemberList } from "./MemberList";
-import { EditMemberDialog } from "./EditMemberDialog";
-import { ViewMemberDialog } from "./ViewMemberDialog";
 import { LeaderboardPage } from "./leaderboard/LeaderboardPage";
 import { ErrorBoundary } from "@/components/error/ErrorBoundary";
 import { MemberPageError } from "./MemberPageError";
 import { useToast } from "@/hooks/use-toast";
 import { MemberFilters } from "./filters/MemberFilters";
 import { MemberHeader } from "./header/MemberHeader";
+import { MemberDialogManager } from "./dialogs/MemberDialogManager";
 
 interface MemberPageContentProps {
   members: Member[];
@@ -22,7 +21,11 @@ interface Filters {
   isMember: boolean;
 }
 
-export function MemberPageContent({ members, currentUserIsAdmin, isMobile }: MemberPageContentProps) {
+export function MemberPageContent({ 
+  members, 
+  currentUserIsAdmin, 
+  isMobile 
+}: MemberPageContentProps) {
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
@@ -77,14 +80,6 @@ export function MemberPageContent({ members, currentUserIsAdmin, isMobile }: Mem
     setIsEditDialogOpen(true);
   }, [toast]);
 
-  const handleMemberUpdate = useCallback(() => {
-    console.log('Member updated, refreshing data...');
-    toast({
-      title: "Success",
-      description: "Member details updated successfully.",
-    });
-  }, [toast]);
-
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 space-y-8">
       <MemberHeader totalMembers={filteredMembers.length} />
@@ -116,24 +111,14 @@ export function MemberPageContent({ members, currentUserIsAdmin, isMobile }: Mem
           </div>
         </div>
 
-        {selectedMember && (
-          <>
-            <ViewMemberDialog
-              member={selectedMember}
-              open={isViewDialogOpen}
-              onOpenChange={setIsViewDialogOpen}
-            />
-            
-            {currentUserIsAdmin && (
-              <EditMemberDialog
-                member={selectedMember}
-                open={isEditDialogOpen}
-                onOpenChange={setIsEditDialogOpen}
-                onUpdate={handleMemberUpdate}
-              />
-            )}
-          </>
-        )}
+        <MemberDialogManager
+          selectedMember={selectedMember}
+          isEditDialogOpen={isEditDialogOpen}
+          isViewDialogOpen={isViewDialogOpen}
+          currentUserIsAdmin={currentUserIsAdmin}
+          onEditDialogChange={setIsEditDialogOpen}
+          onViewDialogChange={setIsViewDialogOpen}
+        />
       </ErrorBoundary>
     </div>
   );
