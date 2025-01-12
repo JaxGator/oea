@@ -24,6 +24,20 @@ interface EventData {
   created_at: string;
 }
 
+interface EventParticipationReportProps {
+  data: EventData[];
+  isLoading: boolean;
+  dateRange: DateRange | undefined;
+}
+
+interface SystemUsageReportProps {
+  dateRange: DateRange | undefined;
+}
+
+interface UserActivityReportProps {
+  dateRange: DateRange | undefined;
+}
+
 export function ReportsLayout() {
   const [date, setDate] = useState<DateRange | undefined>({
     from: new Date(),
