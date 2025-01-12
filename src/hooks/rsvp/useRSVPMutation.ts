@@ -75,9 +75,23 @@ export const useRSVPMutation = () => {
         if (guestError) throw guestError;
       }
 
+      // Send confirmation email
+      const { error: emailError } = await supabase.functions.invoke('send-rsvp-email', {
+        body: {
+          eventId,
+          userId: user.id,
+          type: 'confirmation'
+        }
+      });
+
+      if (emailError) {
+        console.error('Error sending confirmation email:', emailError);
+        // Don't throw here - we still want to show success even if email fails
+      }
+
       toast({
         title: "Success",
-        description: "Your RSVP has been recorded",
+        description: "Your RSVP has been recorded and a confirmation email has been sent",
       });
       
       queryClient.invalidateQueries({ queryKey: ['events'] });

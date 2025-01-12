@@ -189,6 +189,7 @@ export type Database = {
           event_id: string
           id: string
           response: Database["public"]["Enums"]["rsvp_response"]
+          send_confirmation_email: boolean | null
           status: string | null
           user_id: string
         }
@@ -197,6 +198,7 @@ export type Database = {
           event_id: string
           id?: string
           response: Database["public"]["Enums"]["rsvp_response"]
+          send_confirmation_email?: boolean | null
           status?: string | null
           user_id: string
         }
@@ -205,6 +207,7 @@ export type Database = {
           event_id?: string
           id?: string
           response?: Database["public"]["Enums"]["rsvp_response"]
+          send_confirmation_email?: boolean | null
           status?: string | null
           user_id?: string
         }

@@ -11,44 +11,42 @@ export const useRSVPCancellation = () => {
     if (!user) return;
 
     try {
-      // First get the RSVP to get its ID
-      const { data: rsvp } = await supabase
+      const { error } = await supabase
         .from('event_rsvps')
-        .select('id')
+        .delete()
         .eq('event_id', eventId)
-        .eq('user_id', user.id)
-        .single();
+        .eq('user_id', user.id);
 
-      if (rsvp) {
-        // Delete associated guests first
-        await supabase
-          .from('event_guests')
-          .delete()
-          .eq('rsvp_id', rsvp.id);
+      if (error) throw error;
 
-        // Then delete the RSVP
-        const { error } = await supabase
-          .from('event_rsvps')
-          .delete()
-          .eq('id', rsvp.id);
+      // Send cancellation email
+      const { error: emailError } = await supabase.functions.invoke('send-rsvp-email', {
+        body: {
+          eventId,
+          userId: user.id,
+          type: 'cancellation'
+        }
+      });
 
-        if (error) throw error;
+      if (emailError) {
+        console.error('Error sending cancellation email:', emailError);
+        // Don't throw here - we still want to show success even if email fails
       }
 
       toast({
         title: "Success",
-        description: "Your RSVP has been cancelled",
+        description: "Your RSVP has been cancelled and a confirmation email has been sent",
       });
 
       queryClient.invalidateQueries({ queryKey: ['events'] });
-      queryClient.invalidateQueries({ queryKey: ['event-rsvps', eventId] });
+      queryClient.invalidateQueries({ queryKey: ['event-rsvps'] });
     } catch (error: any) {
       toast({
         title: "Error",
         description: "Failed to cancel RSVP",
         variant: "destructive",
       });
-      console.error('Cancel RSVP error:', error);
+      console.error('RSVP cancellation error:', error);
     }
   };
 
