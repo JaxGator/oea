@@ -1,12 +1,10 @@
 import { useState } from "react";
-import { CreateEventDialog } from "@/components/CreateEventDialog";
 import { useEvents } from "@/hooks/useEvents";
 import { useRSVP } from "@/hooks/useRSVP";
 import { useAuthState } from "@/hooks/useAuthState";
 import { EventsHeader } from "@/components/event/sections/EventsHeader";
 import { EventsContent } from "@/components/event/sections/EventsContent";
 import { filterEventsByDate } from "@/utils/dateUtils";
-import { Event } from "@/types/event";
 
 export default function Events() {
   const { isAuthenticated } = useAuthState();
@@ -67,11 +65,6 @@ export default function Events() {
           pastEvents={pastEvents}
           onRSVP={handleRSVP}
           onCancelRSVP={cancelRSVP}
-        />
-
-        <CreateEventDialog
-          open={isCreateEventOpen}
-          onOpenChange={setIsCreateEventOpen}
         />
       </div>
     </div>
