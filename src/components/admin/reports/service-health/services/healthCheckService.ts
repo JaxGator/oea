@@ -9,24 +9,29 @@ export async function checkServiceHealth(url: string): Promise<HealthCheckRespon
     const timeoutId = setTimeout(() => controller.abort(), 5000);
 
     const response = await fetch(url, {
-      method: 'HEAD', // Use HEAD request instead of GET to minimize data transfer
+      method: 'HEAD',
       mode: 'no-cors', // This allows the request to succeed even with CORS restrictions
-      signal: controller.signal
+      signal: controller.signal,
+      cache: 'no-cache'
     });
 
     clearTimeout(timeoutId);
     const endTime = performance.now();
 
+    // With no-cors mode, we won't get a proper status code
+    // but if we get here without throwing, the service is reachable
     return {
       ok: true,
       latency: endTime - startTime
     };
   } catch (error) {
-    console.error(`Health check error for ${url}:`, error);
+    // If we get here, the service is either down or unreachable
     return {
       ok: false,
       latency: 0,
-      error: error instanceof Error ? error.message : 'Connection failed'
+      error: error instanceof Error 
+        ? `Service unreachable: ${error.message}`
+        : 'Service unreachable'
     };
   }
 }

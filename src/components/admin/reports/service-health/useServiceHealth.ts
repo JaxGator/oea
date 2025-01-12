@@ -7,7 +7,7 @@ import { SERVICE_ENDPOINTS } from "./config/serviceEndpoints";
 
 async function fetchServiceHealth(): Promise<ServiceHealthStatus> {
   try {
-    // Check Supabase health
+    // Check Supabase health first
     const supabaseHealth = await checkSupabaseHealth();
 
     // Check other services in parallel
