@@ -10,7 +10,7 @@ async function fetchServiceHealth(): Promise<ServiceHealthStatus> {
     // Check Supabase health
     const supabaseHealth = await checkSupabaseHealth();
 
-    // Check other services
+    // Check other services in parallel
     const [netlifyResponse, lovableResponse, githubResponse] = await Promise.all([
       checkServiceHealth(SERVICE_ENDPOINTS.netlify),
       checkServiceHealth(SERVICE_ENDPOINTS.lovable),
@@ -72,7 +72,7 @@ export function useServiceHealth() {
   return useQuery({
     queryKey: ['service-health'],
     queryFn: fetchServiceHealth,
-    refetchInterval: 30000,
+    refetchInterval: 30000, // Refetch every 30 seconds
     retry: 2,
     retryDelay: (attemptIndex) => Math.min(1000 * Math.pow(2, attemptIndex), 10000),
   });
