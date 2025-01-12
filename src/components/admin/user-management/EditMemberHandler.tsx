@@ -77,11 +77,12 @@ export const EditMemberHandler = memo(function EditMemberHandler({
     }
   }, [member?.id, fetchMemberData]);
 
-  const handleUpdateComplete = useCallback(() => {
+  const handleUpdateComplete = useCallback(async () => {
     console.log('EditMemberHandler: Update completed, refreshing data');
-    onUpdate();
-    onClose();
-  }, [onUpdate, onClose]);
+    await fetchMemberData(); // Refresh the data
+    onUpdate(); // Notify parent to refresh list
+    onClose(); // Close the dialog
+  }, [fetchMemberData, onUpdate, onClose]);
 
   if (isLoading) {
     return (

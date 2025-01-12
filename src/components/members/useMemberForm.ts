@@ -44,8 +44,13 @@ export function useMemberForm(member: Member | null, onUpdate: () => void, onClo
         }
       });
 
-      const { data, error } = await supabase.rpc('admin_update_user', {
-        admin_id: (await supabase.auth.getUser()).data.user?.id,
+      const { data: currentUser } = await supabase.auth.getUser();
+      if (!currentUser?.user?.id) {
+        throw new Error('No authenticated user found');
+      }
+
+      const { error } = await supabase.rpc('admin_update_user', {
+        admin_id: currentUser.user.id,
         target_user_id: member.id,
         new_username: username,
         new_full_name: fullName,
@@ -60,14 +65,15 @@ export function useMemberForm(member: Member | null, onUpdate: () => void, onClo
         throw error;
       }
 
-      console.log('useMemberForm: Update successful:', data);
+      console.log('useMemberForm: Update successful');
 
       toast({
         title: "Success",
         description: "Member updated successfully",
       });
       
-      onUpdate();
+      // Call onUpdate before closing to ensure data is refreshed
+      await onUpdate();
       onClose();
     } catch (error) {
       console.error('Error updating member:', error);
