@@ -1,15 +1,8 @@
 import { Event } from "@/types/event";
-import { EventCardWrapper } from "./EventCardWrapper";
-import { EventCardHeader } from "./EventCardHeader";
-import { EventCardContent } from "./card/EventCardContent";
 import { EventDialogs } from "./dialogs/EventDialogs";
-import { useEventCard } from "@/hooks/useEventCard";
-import { useEventDialogs } from "@/hooks/useEventDialogs";
-import { useEventInteraction } from "@/hooks/events/useEventInteraction";
 import { EventRSVPHandler } from "./rsvp/EventRSVPHandler";
-import { useEventWaitlist } from "@/hooks/events/useEventWaitlist";
-import { useEventRSVPData } from "@/hooks/events/useEventRSVPData";
-import { useEventGuestData } from "@/hooks/events/useEventGuestData";
+import { EventCardState } from "./card/EventCardState";
+import { EventCardInteractions } from "./card/EventCardInteractions";
 
 interface EventCardContainerProps {
   event: Event;
@@ -30,88 +23,74 @@ export function EventCardContainer({
   onSelect,
   isSelected = false
 }: EventCardContainerProps) {
-  const { 
-    isAdmin,
-    rsvpCount,
-    attendees,
-    handleEditSuccess,
-    handleDelete,
-  } = useEventCard(event.id, onUpdate);
-
-  const { showEditDialog, setShowEditDialog } = useEventDialogs();
-  const { showDetailsDialog, setShowDetailsDialog, handleInteraction } = useEventInteraction();
-  const { waitlistCount } = useEventWaitlist(event.id, event.waitlist_enabled);
-  const { data: rsvpData = { confirmedCount: 0, waitlistCount: 0 } } = useEventRSVPData(event.id);
-  const { data: guests = [] } = useEventGuestData(event.id, userRSVPStatus);
-
-  const isPastEvent = new Date(event.date) < new Date(new Date().setHours(0, 0, 0, 0));
-  const isWixEvent = event.description === 'Imported from Wix';
-  const canAddGuests = isAdmin || userRSVPStatus === 'attending';
-
-  const attendeeNames = attendees.map(attendee => {
-    const fullName = attendee.profile.full_name;
-    const firstName = fullName ? fullName.split(' ')[0] : attendee.profile.username;
-    return firstName;
-  });
-
-  const handleCardClick = (e: React.MouseEvent | React.KeyboardEvent) => {
-    if (onSelect) {
-      onSelect();
-    }
-    handleInteraction(e);
-  };
-
   return (
     <EventRSVPHandler eventId={event.id} onRSVP={onRSVP}>
       {(handleRSVP) => (
-        <>
-          <EventCardWrapper
-            title={event.title}
-            onInteraction={handleCardClick}
-            onKeyDown={handleCardClick}
-            isFeatured={event.is_featured}
-            isSelected={isSelected}
-          >
-            <EventCardHeader imageUrl={event.image_url} title={event.title} />
-            <EventCardContent
-              event={event}
-              rsvpCount={rsvpData.confirmedCount}
-              isAdmin={isAdmin}
-              userRSVPStatus={userRSVPStatus || null}
-              isPastEvent={isPastEvent}
-              canAddGuests={canAddGuests}
-              waitlistEnabled={event.waitlist_enabled}
-              waitlistCount={rsvpData.waitlistCount}
-              waitlistCapacity={event.waitlist_capacity}
-              currentGuests={guests}
-              onRSVP={handleRSVP}
-              onCancelRSVP={() => onCancelRSVP(event.id)}
-              onEdit={() => setShowEditDialog(true)}
-              onDelete={handleDelete}
-              onViewDetails={() => setShowDetailsDialog(true)}
-            />
-          </EventCardWrapper>
+        <EventCardState
+          event={event}
+          userRSVPStatus={userRSVPStatus}
+          onUpdate={onUpdate}
+        >
+          {({
+            isAdmin,
+            rsvpData,
+            attendees,
+            guests,
+            isPastEvent,
+            isWixEvent,
+            canAddGuests,
+            showEditDialog,
+            showDetailsDialog,
+            handleEditSuccess,
+            handleDelete,
+            setShowEditDialog,
+            setShowDetailsDialog,
+            handleInteraction,
+          }) => (
+            <>
+              <EventCardInteractions
+                event={event}
+                isAdmin={isAdmin}
+                rsvpData={rsvpData}
+                userRSVPStatus={userRSVPStatus || null}
+                isPastEvent={isPastEvent}
+                canAddGuests={canAddGuests}
+                guests={guests}
+                isSelected={isSelected}
+                onSelect={onSelect}
+                onRSVP={handleRSVP}
+                onCancelRSVP={() => onCancelRSVP(event.id)}
+                handleInteraction={handleInteraction}
+                setShowEditDialog={setShowEditDialog}
+                handleDelete={handleDelete}
+              />
 
-          <EventDialogs
-            event={event}
-            showDetailsDialog={showDetailsDialog}
-            setShowDetailsDialog={setShowDetailsDialog}
-            showEditDialog={showEditDialog}
-            setShowEditDialog={setShowEditDialog}
-            rsvpCount={rsvpData.confirmedCount}
-            attendeeNames={attendeeNames}
-            userRSVPStatus={userRSVPStatus || null}
-            isAdmin={isAdmin}
-            isPastEvent={isPastEvent}
-            isWixEvent={isWixEvent}
-            canAddGuests={canAddGuests}
-            currentGuests={guests}
-            onRSVP={handleRSVP}
-            onCancelRSVP={() => onCancelRSVP(event.id)}
-            onDelete={handleDelete}
-            handleEditSuccess={handleEditSuccess}
-          />
-        </>
+              <EventDialogs
+                event={event}
+                showDetailsDialog={showDetailsDialog}
+                setShowDetailsDialog={setShowDetailsDialog}
+                showEditDialog={showEditDialog}
+                setShowEditDialog={setShowEditDialog}
+                rsvpCount={rsvpData.confirmedCount}
+                attendeeNames={attendees.map(attendee => {
+                  const fullName = attendee.profile.full_name;
+                  const firstName = fullName ? fullName.split(' ')[0] : attendee.profile.username;
+                  return firstName;
+                })}
+                userRSVPStatus={userRSVPStatus || null}
+                isAdmin={isAdmin}
+                isPastEvent={isPastEvent}
+                isWixEvent={isWixEvent}
+                canAddGuests={canAddGuests}
+                currentGuests={guests}
+                onRSVP={handleRSVP}
+                onCancelRSVP={() => onCancelRSVP(event.id)}
+                onDelete={handleDelete}
+                handleEditSuccess={handleEditSuccess}
+              />
+            </>
+          )}
+        </EventCardState>
       )}
     </EventRSVPHandler>
   );

@@ -1,0 +1,74 @@
+import { Event } from "@/types/event";
+import { EventCardWrapper } from "../EventCardWrapper";
+import { EventCardHeader } from "../EventCardHeader";
+import { EventCardContent } from "./EventCardContent";
+
+interface EventCardInteractionsProps {
+  event: Event;
+  isAdmin: boolean;
+  rsvpData: { confirmedCount: number; waitlistCount: number };
+  userRSVPStatus: string | null;
+  isPastEvent: boolean;
+  canAddGuests: boolean;
+  guests: { firstName: string }[];
+  isSelected?: boolean;
+  onSelect?: () => void;
+  onRSVP: (guests?: { firstName: string }[]) => void;
+  onCancelRSVP: () => void;
+  handleInteraction: (e: React.MouseEvent | React.KeyboardEvent) => void;
+  setShowEditDialog: (show: boolean) => void;
+  handleDelete: () => void;
+}
+
+export function EventCardInteractions({
+  event,
+  isAdmin,
+  rsvpData,
+  userRSVPStatus,
+  isPastEvent,
+  canAddGuests,
+  guests,
+  isSelected = false,
+  onSelect,
+  onRSVP,
+  onCancelRSVP,
+  handleInteraction,
+  setShowEditDialog,
+  handleDelete,
+}: EventCardInteractionsProps) {
+  const handleCardClick = (e: React.MouseEvent | React.KeyboardEvent) => {
+    if (onSelect) {
+      onSelect();
+    }
+    handleInteraction(e);
+  };
+
+  return (
+    <EventCardWrapper
+      title={event.title}
+      onInteraction={handleCardClick}
+      onKeyDown={handleCardClick}
+      isFeatured={event.is_featured}
+      isSelected={isSelected}
+    >
+      <EventCardHeader imageUrl={event.image_url} title={event.title} />
+      <EventCardContent
+        event={event}
+        rsvpCount={rsvpData.confirmedCount}
+        isAdmin={isAdmin}
+        userRSVPStatus={userRSVPStatus}
+        isPastEvent={isPastEvent}
+        canAddGuests={canAddGuests}
+        waitlistEnabled={event.waitlist_enabled}
+        waitlistCount={rsvpData.waitlistCount}
+        waitlistCapacity={event.waitlist_capacity}
+        currentGuests={guests}
+        onRSVP={onRSVP}
+        onCancelRSVP={onCancelRSVP}
+        onEdit={() => setShowEditDialog(true)}
+        onDelete={handleDelete}
+        onViewDetails={() => {}}
+      />
+    </EventCardWrapper>
+  );
+}
