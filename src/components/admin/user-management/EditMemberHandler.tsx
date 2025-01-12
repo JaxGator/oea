@@ -86,6 +86,12 @@ export const EditMemberHandler = memo(function EditMemberHandler({
     }
   }, [onClose]);
 
+  const handleUpdateComplete = useCallback(() => {
+    console.log('EditMemberHandler: Update completed, refreshing data');
+    onUpdate();
+    onClose();
+  }, [onUpdate, onClose]);
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center p-4">
@@ -104,7 +110,7 @@ export const EditMemberHandler = memo(function EditMemberHandler({
       member={memberData}
       open={true}
       onOpenChange={handleDialogChange}
-      onUpdate={onUpdate}
+      onUpdate={handleUpdateComplete}
     />
   );
 });
