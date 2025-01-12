@@ -1,17 +1,14 @@
-import { useState, useCallback } from "react";
-import { Input } from "@/components/ui/input";
+import { UserSearch } from "./UserSearch";
+import { UserFilters } from "./UserFilters";
 import { CreateUserDialog } from "./CreateUserDialog";
 import { BulkUserCreation } from "./BulkUserCreation";
-import { Search } from "lucide-react";
-import { Checkbox } from "@/components/ui/checkbox";
-import type { UserFilters } from "../AdminUserList";
-import { Label } from "@/components/ui/label";
+import type { UserFilters as UserFiltersType } from "../AdminUserList";
 
 interface UserListHeaderProps {
   onUserCreated: () => void;
   onSearch: (term: string) => void;
-  onFilterChange: (filters: UserFilters) => void;
-  filters: UserFilters;
+  onFilterChange: (filters: UserFiltersType) => void;
+  filters: UserFiltersType;
 }
 
 export function UserListHeader({ 
@@ -20,21 +17,6 @@ export function UserListHeader({
   onFilterChange,
   filters
 }: UserListHeaderProps) {
-  const [searchTerm, setSearchTerm] = useState("");
-
-  const handleSearch = useCallback((value: string) => {
-    setSearchTerm(value);
-    onSearch(value);
-  }, [onSearch]);
-
-  const handleFilterChange = useCallback((key: keyof UserFilters) => {
-    const newFilters = {
-      ...filters,
-      [key]: !filters[key]
-    };
-    onFilterChange(newFilters);
-  }, [filters, onFilterChange]);
-
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
@@ -46,44 +28,14 @@ export function UserListHeader({
       </div>
       
       <div className="grid gap-4 md:grid-cols-2">
-        <div className="relative">
-          <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search users by username or email..."
-            value={searchTerm}
-            onChange={(e) => handleSearch(e.target.value)}
-            className="pl-8"
-          />
-        </div>
-        
-        <div className="flex items-center gap-4">
-          <div className="flex items-center space-x-2">
-            <Checkbox 
-              id="admin-filter"
-              checked={filters.isAdmin}
-              onCheckedChange={() => handleFilterChange('isAdmin')}
-            />
-            <Label htmlFor="admin-filter">Admins</Label>
-          </div>
-          
-          <div className="flex items-center space-x-2">
-            <Checkbox 
-              id="approved-filter"
-              checked={filters.isApproved}
-              onCheckedChange={() => handleFilterChange('isApproved')}
-            />
-            <Label htmlFor="approved-filter">Approved</Label>
-          </div>
-          
-          <div className="flex items-center space-x-2">
-            <Checkbox 
-              id="member-filter"
-              checked={filters.isMember}
-              onCheckedChange={() => handleFilterChange('isMember')}
-            />
-            <Label htmlFor="member-filter">Members</Label>
-          </div>
-        </div>
+        <UserSearch 
+          onSearch={onSearch}
+          placeholder="Search users by username or email..."
+        />
+        <UserFilters 
+          filters={filters}
+          onFilterChange={onFilterChange}
+        />
       </div>
     </div>
   );
