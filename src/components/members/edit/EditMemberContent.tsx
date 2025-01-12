@@ -2,6 +2,7 @@ import { Member } from "../types";
 import { MemberAvatarUpload } from "../MemberAvatarUpload";
 import { EditMemberForm } from "./EditMemberForm";
 import { useMemberForm } from "../useMemberForm";
+import { useEditMember } from "./EditMemberProvider";
 
 interface EditMemberContentProps {
   member: Member;
@@ -14,6 +15,7 @@ export function EditMemberContent({
   onUpdate, 
   onClose 
 }: EditMemberContentProps) {
+  const { isSubmitting } = useEditMember();
   const {
     avatarUrl,
     setAvatarUrl,
@@ -54,6 +56,7 @@ export function EditMemberContent({
         member={member}
         onSubmit={handleSubmit}
         onCancel={onClose}
+        isSubmitting={isSubmitting}
         username={username}
         setUsername={setUsername}
         fullName={fullName}
