@@ -3,11 +3,12 @@ import { Member } from "./types";
 import { MemberList } from "./MemberList";
 import { EditMemberDialog } from "./EditMemberDialog";
 import { ViewMemberDialog } from "./ViewMemberDialog";
-import { Users } from "lucide-react";
 import { LeaderboardPage } from "./leaderboard/LeaderboardPage";
 import { ErrorBoundary } from "@/components/error/ErrorBoundary";
 import { MemberPageError } from "./MemberPageError";
 import { useToast } from "@/hooks/use-toast";
+import { MemberFilters } from "./filters/MemberFilters";
+import { MemberHeader } from "./header/MemberHeader";
 
 interface MemberPageContentProps {
   members: Member[];
@@ -37,7 +38,6 @@ export function MemberPageContent({ members, currentUserIsAdmin, isMobile }: Mem
   };
 
   const filteredMembers = members.filter(member => {
-    // If no filters are active, show all members
     if (!filters.isAdmin && !filters.isApproved && !filters.isMember) {
       return true;
     }
@@ -87,47 +87,12 @@ export function MemberPageContent({ members, currentUserIsAdmin, isMobile }: Mem
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 space-y-8">
-      <div className="flex items-center justify-between mb-8">
-        <div className="flex items-center gap-2">
-          <Users className="h-6 w-6" />
-          <h2 className="text-2xl font-semibold">Members Directory</h2>
-        </div>
-        <div className="text-sm text-muted-foreground">
-          Total Members: <span className="font-medium">{filteredMembers.length}</span>
-        </div>
-      </div>
-
-      <div className="mb-4">
-        <div className="flex items-center space-x-4">
-          <label className="flex items-center space-x-2">
-            <input
-              type="checkbox"
-              checked={filters.isAdmin}
-              onChange={() => handleFilterChange({ ...filters, isAdmin: !filters.isAdmin })}
-              className="form-checkbox"
-            />
-            <span>Admins</span>
-          </label>
-          <label className="flex items-center space-x-2">
-            <input
-              type="checkbox"
-              checked={filters.isApproved}
-              onChange={() => handleFilterChange({ ...filters, isApproved: !filters.isApproved })}
-              className="form-checkbox"
-            />
-            <span>Approved</span>
-          </label>
-          <label className="flex items-center space-x-2">
-            <input
-              type="checkbox"
-              checked={filters.isMember}
-              onChange={() => handleFilterChange({ ...filters, isMember: !filters.isMember })}
-              className="form-checkbox"
-            />
-            <span>Members</span>
-          </label>
-        </div>
-      </div>
+      <MemberHeader totalMembers={filteredMembers.length} />
+      
+      <MemberFilters 
+        filters={filters}
+        onFilterChange={handleFilterChange}
+      />
 
       <ErrorBoundary
         fallback={MemberPageError}
