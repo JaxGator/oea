@@ -2,7 +2,8 @@ import { InfoWindow } from '@react-google-maps/api';
 import { Event } from '@/types/event';
 import { Location } from '@/hooks/useEventLocations';
 import { Button } from '@/components/ui/button';
-import { MapPin } from 'lucide-react';
+import { MapPin, Calendar, Clock } from 'lucide-react';
+import { format, parseISO } from 'date-fns';
 
 interface EventInfoWindowProps {
   event: Event;
@@ -20,12 +21,22 @@ export function EventInfoWindow({ event, locations, onClose }: EventInfoWindowPr
 
   return (
     <InfoWindow position={position} onCloseClick={onClose}>
-      <div className="p-2 min-w-[200px]">
+      <div className="p-4 min-w-[250px]">
         <h3 className="font-semibold mb-2">{event.title}</h3>
-        <p className="text-sm mb-3">
-          {event.date} at {event.time}<br />
-          {event.location}
-        </p>
+        <div className="space-y-2 mb-4">
+          <div className="flex items-center text-sm text-muted-foreground">
+            <Calendar className="mr-2 h-4 w-4" />
+            <span>{event.date}</span>
+          </div>
+          <div className="flex items-center text-sm text-muted-foreground">
+            <Clock className="mr-2 h-4 w-4" />
+            <span>{event.time}</span>
+          </div>
+          <div className="flex items-center text-sm text-muted-foreground">
+            <MapPin className="mr-2 h-4 w-4" />
+            <span>{event.location}</span>
+          </div>
+        </div>
         <Button 
           variant="outline" 
           size="sm" 
