@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { DateRange } from "react-day-picker";
-import { DateRangePicker } from "@/components/ui/date-range-picker";
+import { DatePickerWithRange } from "@/components/ui/date-range-picker";
 import { Download } from "lucide-react";
 import { addDays } from "date-fns";
 import { useQuery } from "@tanstack/react-query";
@@ -117,7 +117,10 @@ export default function ReportsLayout() {
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between gap-4 items-start sm:items-center">
-        <DateRangePicker date={date} onDateChange={setDate} />
+        <DatePickerWithRange
+          value={date}
+          onChange={setDate}
+        />
         <Button 
           variant="outline" 
           onClick={handleExport}
