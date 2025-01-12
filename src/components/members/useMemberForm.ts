@@ -66,7 +66,9 @@ export function useMemberForm(member: Member | null, onUpdate: () => void, onClo
         throw error;
       }
 
-      console.log('useMemberForm: Update successful, calling onUpdate');
+      console.log('useMemberForm: Update successful');
+      
+      // Call onUpdate and wait for it to complete
       await onUpdate();
       
       toast({
@@ -74,7 +76,6 @@ export function useMemberForm(member: Member | null, onUpdate: () => void, onClo
         description: "Member updated successfully",
       });
 
-      console.log('useMemberForm: Update complete, closing dialog');
       onClose();
     } catch (error) {
       console.error('useMemberForm: Error updating member:', error);

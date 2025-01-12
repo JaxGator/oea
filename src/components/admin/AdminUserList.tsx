@@ -57,6 +57,8 @@ export function AdminUserList() {
 
       return data || [];
     },
+    staleTime: 0, // Always fetch fresh data
+    cacheTime: 0, // Don't cache the data
   });
 
   const handleSearch = useCallback((term: string) => {
@@ -70,6 +72,7 @@ export function AdminUserList() {
   }, []);
 
   const handleEditMember = useCallback((member: Member) => {
+    console.log('AdminUserList: Setting selected member for edit:', member);
     setSelectedMember(member);
   }, []);
 
@@ -104,6 +107,12 @@ export function AdminUserList() {
     // Status update logic will be implemented later
   }, []);
 
+  const handleUpdateComplete = useCallback(async () => {
+    console.log('AdminUserList: Update completed, refreshing data');
+    await refetch();
+    setSelectedMember(null);
+  }, [refetch]);
+
   const totalPages = Math.ceil((members?.length || 0) / 10);
 
   return (
@@ -131,7 +140,7 @@ export function AdminUserList() {
         <EditMemberHandler
           member={selectedMember}
           onClose={() => setSelectedMember(null)}
-          onUpdate={refetch}
+          onUpdate={handleUpdateComplete}
         />
       )}
 
