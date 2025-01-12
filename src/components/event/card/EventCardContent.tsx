@@ -7,7 +7,6 @@ import { toast } from "@/hooks/use-toast";
 import { Event } from "@/types/event";
 import { EventCardBasicInfo } from "./EventCardBasicInfo";
 import { EventCardActions } from "./EventCardActions";
-import { EventMetadata } from "./EventMetadata";
 import { EventAdminEdit } from "./EventAdminEdit";
 
 interface EventCardContentProps {
@@ -51,7 +50,6 @@ export function EventCardContent({
   const isFullyBooked = rsvpCount >= event.max_guests;
   const canJoinWaitlist = waitlistEnabled && isFullyBooked && 
     (!waitlistCapacity || waitlistCount < waitlistCapacity);
-  const canAddToCalendar = userRSVPStatus === 'attending' || isAdmin;
 
   const handleRSVPEdit = async () => {
     const newCount = parseInt(editedRSVPCount);

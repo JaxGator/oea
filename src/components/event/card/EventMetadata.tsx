@@ -11,21 +11,34 @@ interface EventMetadataProps {
     date: string;
     time: string;
     location: string;
+    image_url?: string;
   };
   canAddToCalendar: boolean;
   isPastEvent: boolean;
+  rsvpCount: number;
+  maxGuests: number;
+  attendeeNames: string[];
 }
 
-export function EventMetadata({ event, canAddToCalendar, isPastEvent }: EventMetadataProps) {
+export function EventMetadata({ 
+  event,
+  canAddToCalendar,
+  isPastEvent,
+  rsvpCount,
+  maxGuests,
+  attendeeNames
+}: EventMetadataProps) {
   return (
     <div className="flex-1 space-y-6">
-      <div className="relative w-full aspect-video">
-        <img
-          src={event.image_url}
-          alt={event.title}
-          className="absolute inset-0 w-full h-full object-cover rounded-lg"
-        />
-      </div>
+      {event.image_url && (
+        <div className="relative w-full aspect-video">
+          <img
+            src={event.image_url}
+            alt={event.title}
+            className="absolute inset-0 w-full h-full object-cover rounded-lg"
+          />
+        </div>
+      )}
       
       <h2 className="text-2xl font-bold">{event.title}</h2>
       
@@ -33,8 +46,11 @@ export function EventMetadata({ event, canAddToCalendar, isPastEvent }: EventMet
         date={event.date}
         time={event.time}
         location={event.location}
-        description={event.description || ""}
-        showFullDescription
+        description={event.description}
+        rsvpCount={rsvpCount}
+        maxGuests={maxGuests}
+        attendeeNames={attendeeNames}
+        showFullDescription={true}
       />
       
       {canAddToCalendar && !isPastEvent && (
