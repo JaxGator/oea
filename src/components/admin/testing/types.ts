@@ -11,3 +11,9 @@ export interface Test {
   category: string;
   run: () => Promise<boolean>;
 }
+
+export type TestDefinition = {
+  name: string;
+  category: string;
+  run: () => Promise<void>;
+}
