@@ -66,9 +66,14 @@ export function MemberPageContent({ members, currentUserIsAdmin, isMobile }: Mem
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 space-y-8">
-      <div className="flex items-center gap-2 mb-8">
-        <Users className="h-6 w-6" />
-        <h2 className="text-2xl font-semibold">Members Directory</h2>
+      <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center gap-2">
+          <Users className="h-6 w-6" />
+          <h2 className="text-2xl font-semibold">Members Directory</h2>
+        </div>
+        <div className="text-sm text-muted-foreground">
+          Total Members: <span className="font-medium">{members.length}</span>
+        </div>
       </div>
 
       <ErrorBoundary
