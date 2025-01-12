@@ -24,20 +24,6 @@ interface EventData {
   created_at: string;
 }
 
-interface EventParticipationReportProps {
-  data: EventData[];
-  isLoading: boolean;
-  dateRange: DateRange | undefined;
-}
-
-interface SystemUsageReportProps {
-  dateRange: DateRange | undefined;
-}
-
-interface UserActivityReportProps {
-  dateRange: DateRange | undefined;
-}
-
 export function ReportsLayout() {
   const [date, setDate] = useState<DateRange | undefined>({
     from: new Date(),
@@ -121,23 +107,15 @@ export function ReportsLayout() {
         </TabsList>
 
         <TabsContent value="participation" className="space-y-4">
-          <EventParticipationReport 
-            data={reportData || []} 
-            isLoading={isLoading}
-            dateRange={date}
-          />
+          <EventParticipationReport />
         </TabsContent>
 
         <TabsContent value="system" className="space-y-4">
-          <SystemUsageReport 
-            dateRange={date}
-          />
+          <SystemUsageReport />
         </TabsContent>
 
         <TabsContent value="user" className="space-y-4">
-          <UserActivityReport 
-            dateRange={date}
-          />
+          <UserActivityReport />
         </TabsContent>
       </Tabs>
     </div>
