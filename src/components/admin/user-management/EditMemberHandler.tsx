@@ -79,17 +79,28 @@ export const EditMemberHandler = memo(function EditMemberHandler({
 
   const handleUpdateComplete = useCallback(async () => {
     try {
-      console.log('EditMemberHandler: Update completed, refreshing data');
+      console.log('EditMemberHandler: Starting update completion process');
       await fetchMemberData(); // Refresh the data
-      console.log('EditMemberHandler: Data refreshed, calling onUpdate');
-      await onUpdate(); // Notify parent to refresh list
-      console.log('EditMemberHandler: Update complete, closing dialog');
-      onClose(); // Close the dialog
+      console.log('EditMemberHandler: Local data refreshed');
+      
+      // Call onUpdate and wait for it to complete
+      console.log('EditMemberHandler: Calling parent onUpdate');
+      await onUpdate();
+      console.log('EditMemberHandler: Parent onUpdate completed');
+      
+      toast({
+        title: "Success",
+        description: "Member updated successfully",
+      });
+      
+      // Close the dialog after everything is done
+      console.log('EditMemberHandler: Closing dialog');
+      onClose();
     } catch (error) {
       console.error('EditMemberHandler: Error in handleUpdateComplete:', error);
       toast({
         title: "Error",
-        description: "Failed to refresh member data. Please try again.",
+        description: "Failed to complete update. Please try again.",
         variant: "destructive",
       });
     }

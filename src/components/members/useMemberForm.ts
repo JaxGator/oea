@@ -32,7 +32,7 @@ export function useMemberForm(member: Member | null, onUpdate: () => void, onClo
         throw new Error('Member ID is required for updates');
       }
 
-      console.log('useMemberForm: Submitting update for member:', {
+      console.log('useMemberForm: Starting member update:', {
         memberId: member.id,
         updates: {
           username,
@@ -49,6 +49,7 @@ export function useMemberForm(member: Member | null, onUpdate: () => void, onClo
         throw new Error('No authenticated user found');
       }
 
+      console.log('useMemberForm: Calling admin_update_user function');
       const { error } = await supabase.rpc('admin_update_user', {
         admin_id: currentUser.user.id,
         target_user_id: member.id,
@@ -61,24 +62,22 @@ export function useMemberForm(member: Member | null, onUpdate: () => void, onClo
       });
 
       if (error) {
-        console.error('Error updating member:', error);
+        console.error('useMemberForm: Error from admin_update_user:', error);
         throw error;
       }
 
-      console.log('useMemberForm: Update successful');
-
+      console.log('useMemberForm: Update successful, calling onUpdate');
+      await onUpdate();
+      
       toast({
         title: "Success",
         description: "Member updated successfully",
       });
-      
-      // Call onUpdate before closing to ensure data is refreshed
-      console.log('useMemberForm: Calling onUpdate');
-      await onUpdate();
+
       console.log('useMemberForm: Update complete, closing dialog');
       onClose();
     } catch (error) {
-      console.error('Error updating member:', error);
+      console.error('useMemberForm: Error updating member:', error);
       toast({
         title: "Error",
         description: "Failed to update member",
