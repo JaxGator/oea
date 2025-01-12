@@ -74,7 +74,7 @@ export function EventMap({ mapKey, location }: EventMapProps) {
   }
 
   return (
-    <div className="h-[300px] rounded-lg overflow-hidden shadow-lg">
+    <div className="h-[300px] rounded-lg overflow-hidden shadow-lg relative">
       <LoadScript googleMapsApiKey={mapKey} libraries={libraries}>
         <GoogleMap
           mapContainerStyle={{ width: '100%', height: '100%' }}

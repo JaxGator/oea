@@ -37,31 +37,8 @@ export function EventDetails({
   const showLocation = user && profile?.is_approved;
   const isWixEvent = description === 'Imported from Wix';
   const { mapKey } = useGoogleMapsToken();
-  const [coordinates, setCoordinates] = useState<{ lat: number; lng: number } | null>(null);
 
   const eventDate = parseISO(date);
-
-  useEffect(() => {
-    const geocodeLocation = async () => {
-      if (!showLocation || !location || !mapKey) return;
-      
-      try {
-        const response = await fetch(
-          `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(location)}&key=${mapKey}`
-        );
-        const data = await response.json();
-
-        if (data.results && data.results.length > 0) {
-          const { lat, lng } = data.results[0].geometry.location;
-          setCoordinates({ lat, lng });
-        }
-      } catch (error) {
-        console.error('Error geocoding location:', error);
-      }
-    };
-
-    geocodeLocation();
-  }, [location, mapKey, showLocation]);
 
   const formatTime = (timeStr: string) => {
     const [hours, minutes] = timeStr.split(':');
@@ -104,8 +81,8 @@ export function EventDetails({
           <AttendeeList attendeeNames={attendeeNames} waitlistNames={waitlistNames} />
         </div>
 
-        {showLocation && coordinates && mapKey && (
-          <EventMap mapKey={mapKey} coordinates={coordinates} />
+        {showLocation && mapKey && (
+          <EventMap mapKey={mapKey} location={location} />
         )}
 
         {description && (
