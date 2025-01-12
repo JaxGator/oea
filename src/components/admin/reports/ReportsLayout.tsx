@@ -1,8 +1,6 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
 import { DateRange } from "react-day-picker";
 import { DatePickerWithRange } from "@/components/ui/date-range-picker";
-import { Download } from "lucide-react";
 import { addDays } from "date-fns";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
@@ -57,31 +55,6 @@ export function ReportsLayout() {
     },
   });
 
-  const handleExport = async () => {
-    if (!reportData) return;
-
-    const csvContent = [
-      ["Event ID", "Title", "Date", "RSVPs", "Created At"],
-      ...reportData.map(event => [
-        event.id,
-        event.title,
-        event.date,
-        event.event_rsvps?.length || 0,
-        event.created_at
-      ])
-    ].map(row => row.join(",")).join("\n");
-
-    const blob = new Blob([csvContent], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.setAttribute('hidden', '');
-    a.setAttribute('href', url);
-    a.setAttribute('download', 'report.csv');
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-  };
-
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between gap-4 items-start sm:items-center">
@@ -89,14 +62,6 @@ export function ReportsLayout() {
           value={date}
           onChange={setDate}
         />
-        <Button 
-          variant="outline" 
-          onClick={handleExport}
-          className="w-full sm:w-auto"
-        >
-          <Download className="mr-2 h-4 w-4" />
-          Export Data
-        </Button>
       </div>
 
       <Tabs defaultValue="participation" className="space-y-4">
