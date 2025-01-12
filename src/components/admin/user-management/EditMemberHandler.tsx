@@ -55,7 +55,8 @@ export const EditMemberHandler = memo(function EditMemberHandler({
         avatar_url: data.avatar_url || '',
         is_admin: data.is_admin || false,
         is_approved: data.is_approved || false,
-        is_member: data.is_member || false
+        is_member: data.is_member || false,
+        event_reminders_enabled: data.event_reminders_enabled || false
       };
 
       console.log('EditMemberHandler: Member data fetched:', enrichedData);

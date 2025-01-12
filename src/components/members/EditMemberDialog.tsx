@@ -56,14 +56,8 @@ export function EditMemberDialog({
     try {
       setIsSubmitting(true);
       await handleSubmit();
-      onUpdate(); // Ensure parent components are notified of the update
     } catch (error) {
       console.error('Error submitting form:', error);
-      toast({
-        title: "Error",
-        description: "Failed to update member. Please try again.",
-        variant: "destructive",
-      });
       setIsSubmitting(false);
     }
   };

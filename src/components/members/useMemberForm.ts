@@ -36,23 +36,37 @@ export function useMemberForm(member: Member | null, onUpdate: () => void, onClo
         throw new Error('Member ID is required for updates');
       }
 
-      console.log('useMemberForm: Submitting update for member:', member.id);
-
-      const { error } = await supabase.functions.invoke('admin-user-management', {
-        body: {
-          userId: member.id,
+      console.log('useMemberForm: Submitting update for member:', {
+        memberId: member.id,
+        updates: {
           username,
           fullName,
-          email,
-          password,
           isAdmin,
           isApproved,
           isMember,
-          avatarUrl,
-        },
+          avatarUrl
+        }
       });
 
-      if (error) throw error;
+      const { data, error } = await supabase
+        .from('profiles')
+        .update({
+          username: username,
+          full_name: fullName,
+          is_admin: isAdmin,
+          is_approved: isApproved,
+          is_member: isMember,
+          avatar_url: avatarUrl
+        })
+        .eq('id', member.id)
+        .select();
+
+      if (error) {
+        console.error('Error updating member:', error);
+        throw error;
+      }
+
+      console.log('useMemberForm: Update successful:', data);
 
       toast({
         title: "Success",
@@ -68,6 +82,7 @@ export function useMemberForm(member: Member | null, onUpdate: () => void, onClo
         description: "Failed to update member",
         variant: "destructive",
       });
+      throw error;
     }
   };
 
