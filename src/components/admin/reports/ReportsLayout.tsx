@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { DateRange } from "react-day-picker";
@@ -6,112 +5,67 @@ import { DatePickerWithRange } from "@/components/ui/date-range-picker";
 import { Download } from "lucide-react";
 import { addDays } from "date-fns";
 import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
+import { EventParticipationReport } from "./EventParticipationReport";
+import { SystemUsageReport } from "./SystemUsageReport";
+import { UserActivityReport } from "./UserActivityReport";
 import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { 
-  LineChart, 
-  Line, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
-  ResponsiveContainer 
-} from "recharts";
 
-export default function ReportsLayout() {
+export function ReportsLayout() {
   const [date, setDate] = useState<DateRange | undefined>({
-    from: addDays(new Date(), -30),
-    to: new Date(),
+    from: new Date(),
+    to: addDays(new Date(), 7),
   });
 
-  // Fetch event participation data
-  const { data: eventData, isLoading: isLoadingEvents } = useQuery({
-    queryKey: ['event-participation', date],
+  const { data: reportData, isLoading } = useQuery({
+    queryKey: ['reports', date],
     queryFn: async () => {
+      if (!date?.from || !date?.to) return null;
+
       const { data, error } = await supabase
-        .from('event_rsvps')
+        .from('events')
         .select(`
-          created_at,
-          events (
-            title,
-            date
+          id,
+          title,
+          date,
+          event_rsvps (
+            id,
+            response,
+            user_id,
+            created_at
           )
         `)
-        .gte('created_at', date?.from?.toISOString() || '')
-        .lte('created_at', date?.to?.toISOString() || '');
+        .gte('date', date.from.toISOString())
+        .lte('date', date.to.toISOString());
 
       if (error) throw error;
-      
-      // Process data for chart
-      const processedData = data.reduce((acc: any[], rsvp: any) => {
-        const date = new Date(rsvp.created_at).toLocaleDateString();
-        const existingDate = acc.find(item => item.date === date);
-        
-        if (existingDate) {
-          existingDate.rsvps += 1;
-        } else {
-          acc.push({ date, rsvps: 1 });
-        }
-        
-        return acc;
-      }, []);
-
-      return processedData;
+      return data;
     },
-    enabled: !!date?.from && !!date?.to,
-  });
-
-  // Fetch user activity data
-  const { data: userData, isLoading: isLoadingUsers } = useQuery({
-    queryKey: ['user-activity', date],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('created_at')
-        .gte('created_at', date?.from?.toISOString() || '')
-        .lte('created_at', date?.to?.toISOString() || '');
-
-      if (error) throw error;
-
-      // Process data for chart
-      const processedData = data.reduce((acc: any[], user: any) => {
-        const date = new Date(user.created_at).toLocaleDateString();
-        const existingDate = acc.find(item => item.date === date);
-        
-        if (existingDate) {
-          existingDate.signups += 1;
-        } else {
-          acc.push({ date, signups: 1 });
-        }
-        
-        return acc;
-      }, []);
-
-      return processedData;
-    },
-    enabled: !!date?.from && !!date?.to,
   });
 
   const handleExport = async () => {
-    const csvData = eventData?.map(item => ({
-      Date: item.date,
-      RSVPs: item.rsvps,
-    }));
+    if (!reportData) return;
 
-    const csvString = [
-      ['Date', 'RSVPs'],
-      ...csvData.map(item => [item.Date, item.RSVPs])
-    ].map(row => row.join(',')).join('\n');
+    const csvContent = [
+      ["Event ID", "Title", "Date", "RSVPs", "Created At"],
+      ...reportData.map(event => [
+        event.id,
+        event.title,
+        event.date,
+        event.event_rsvps?.length || 0,
+        event.created_at
+      ])
+    ].map(row => row.join(",")).join("\n");
 
-    const blob = new Blob([csvString], { type: 'text/csv' });
+    const blob = new Blob([csvContent], { type: 'text/csv' });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.href = url;
-    a.download = `event-participation-${new Date().toISOString()}.csv`;
+    a.setAttribute('hidden', '');
+    a.setAttribute('href', url);
+    a.setAttribute('download', 'report.csv');
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
-    window.URL.revokeObjectURL(url);
   };
 
   return (
@@ -124,69 +78,38 @@ export default function ReportsLayout() {
         <Button 
           variant="outline" 
           onClick={handleExport}
-          disabled={!eventData?.length}
+          className="w-full sm:w-auto"
         >
           <Download className="mr-2 h-4 w-4" />
           Export Data
         </Button>
       </div>
 
-      <Tabs defaultValue="events" className="w-full">
+      <Tabs defaultValue="participation" className="space-y-4">
         <TabsList>
-          <TabsTrigger value="events">Event Participation</TabsTrigger>
-          <TabsTrigger value="users">User Activity</TabsTrigger>
+          <TabsTrigger value="participation">Event Participation</TabsTrigger>
+          <TabsTrigger value="system">System Usage</TabsTrigger>
+          <TabsTrigger value="user">User Activity</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="events">
-          <Card>
-            <CardHeader>
-              <CardTitle>Event Participation Over Time</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="h-[400px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={eventData || []}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="date" />
-                    <YAxis />
-                    <Tooltip />
-                    <Line 
-                      type="monotone" 
-                      dataKey="rsvps" 
-                      stroke="#8884d8" 
-                      name="RSVPs"
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
-            </CardContent>
-          </Card>
+        <TabsContent value="participation" className="space-y-4">
+          <EventParticipationReport 
+            data={reportData} 
+            isLoading={isLoading}
+            dateRange={date}
+          />
         </TabsContent>
 
-        <TabsContent value="users">
-          <Card>
-            <CardHeader>
-              <CardTitle>User Signups Over Time</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="h-[400px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={userData || []}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="date" />
-                    <YAxis />
-                    <Tooltip />
-                    <Line 
-                      type="monotone" 
-                      dataKey="signups" 
-                      stroke="#82ca9d" 
-                      name="Signups"
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
-            </CardContent>
-          </Card>
+        <TabsContent value="system" className="space-y-4">
+          <SystemUsageReport 
+            dateRange={date}
+          />
+        </TabsContent>
+
+        <TabsContent value="user" className="space-y-4">
+          <UserActivityReport 
+            dateRange={date}
+          />
         </TabsContent>
       </Tabs>
     </div>

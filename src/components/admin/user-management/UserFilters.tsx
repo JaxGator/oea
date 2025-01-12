@@ -1,7 +1,7 @@
-import type { UserFilters as UserFiltersType } from "../AdminUserList";
-import { Switch } from "@/components/ui/switch";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
+import type { UserFilters as UserFiltersType } from "../AdminUserList";
 
 interface UserFiltersProps {
   filters: UserFiltersType;
@@ -21,30 +21,36 @@ export function UserFilters({ filters, onFilterChange }: UserFiltersProps) {
       <h3 className="font-medium mb-4">Filter Members</h3>
       <div className="flex flex-wrap gap-4">
         <div className="flex items-center space-x-2">
-          <Switch
+          <Checkbox
             id="admin-filter"
             checked={filters.isAdmin}
             onCheckedChange={() => handleFilterChange('isAdmin')}
           />
-          <Label htmlFor="admin-filter">Admins</Label>
+          <Label htmlFor="admin-filter" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+            Admins
+          </Label>
         </div>
         
         <div className="flex items-center space-x-2">
-          <Switch
+          <Checkbox
             id="approved-filter"
             checked={filters.isApproved}
             onCheckedChange={() => handleFilterChange('isApproved')}
           />
-          <Label htmlFor="approved-filter">Approved</Label>
+          <Label htmlFor="approved-filter" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+            Approved
+          </Label>
         </div>
         
         <div className="flex items-center space-x-2">
-          <Switch
+          <Checkbox
             id="member-filter"
             checked={filters.isMember}
             onCheckedChange={() => handleFilterChange('isMember')}
           />
-          <Label htmlFor="member-filter">Members</Label>
+          <Label htmlFor="member-filter" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+            Members
+          </Label>
         </div>
       </div>
     </Card>
