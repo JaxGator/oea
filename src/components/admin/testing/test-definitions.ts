@@ -21,7 +21,6 @@ export const tests: TestDefinition[] = [
     category: "auth",
     run: async () => {
       const publicRoutes = ['/', '/about', '/events', '/resources'];
-      // Verify routes exist in App.tsx
       const routeCheck = publicRoutes.every(route => 
         document.querySelector(`a[href="${route}"]`)
       );
@@ -184,6 +183,59 @@ export const tests: TestDefinition[] = [
       
       if (!hasBreakpoints) {
         throw new Error("Responsive design breakpoints not implemented");
+      }
+    }
+  },
+  
+  // Additional UI Tests
+  {
+    name: "Form validation presence",
+    category: "ui",
+    run: async () => {
+      const forms = document.querySelectorAll('form');
+      if (forms.length === 0) {
+        throw new Error("No forms found in the application");
+      }
+      
+      let hasValidation = false;
+      forms.forEach(form => {
+        const inputs = form.querySelectorAll('input[required], [aria-required="true"]');
+        if (inputs.length > 0) hasValidation = true;
+      });
+      
+      if (!hasValidation) {
+        throw new Error("Form validation attributes not found");
+      }
+    }
+  },
+  
+  // Database Tests
+  {
+    name: "Database connection",
+    category: "admin",
+    run: async () => {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('count')
+        .limit(1);
+        
+      validateResponse({ data, error }, "Database connection test failed");
+    }
+  },
+  
+  // Storage Tests
+  {
+    name: "Storage bucket accessibility",
+    category: "admin",
+    run: async () => {
+      const { data, error } = await supabase
+        .storage
+        .listBuckets();
+        
+      validateResponse({ data, error }, "Storage bucket test failed");
+      
+      if (!data.some(bucket => bucket.name === 'media')) {
+        throw new Error("Required storage bucket 'media' not found");
       }
     }
   }
