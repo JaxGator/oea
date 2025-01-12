@@ -1,23 +1,69 @@
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { ServiceHealthStatus, HealthCheckResponse } from "./types";
+import { ServiceHealthStatus } from "./types";
 import { toast } from "@/hooks/use-toast";
+import { checkServiceHealth } from "./services/healthCheckService";
+import { checkSupabaseHealth } from "./services/supabaseHealthCheck";
+import { SERVICE_ENDPOINTS } from "./config/serviceEndpoints";
 
-async function checkServiceHealth(url: string): Promise<HealthCheckResponse> {
-  const startTime = performance.now();
+async function fetchServiceHealth(): Promise<ServiceHealthStatus> {
   try {
-    const response = await fetch(url);
-    const endTime = performance.now();
+    // Check Supabase health
+    const supabaseHealth = await checkSupabaseHealth();
+
+    // Check other services
+    const [netlifyResponse, lovableResponse, githubResponse] = await Promise.all([
+      checkServiceHealth(SERVICE_ENDPOINTS.netlify),
+      checkServiceHealth(SERVICE_ENDPOINTS.lovable),
+      checkServiceHealth(SERVICE_ENDPOINTS.github)
+    ]);
+
     return {
-      ok: response.ok,
-      latency: endTime - startTime
+      supabase: supabaseHealth,
+      netlify: {
+        status: netlifyResponse.ok ? 'healthy' : 'error',
+        latency: netlifyResponse.latency,
+        error: netlifyResponse.error
+      },
+      lovable: {
+        status: lovableResponse.ok ? 'healthy' : 'error',
+        latency: lovableResponse.latency,
+        error: lovableResponse.error
+      },
+      github: {
+        status: githubResponse.ok ? 'healthy' : 'error',
+        latency: githubResponse.latency,
+        error: githubResponse.error
+      }
     };
   } catch (error) {
-    console.error(`Health check error for ${url}:`, error);
+    console.error('Service health check error:', error);
+    toast({
+      title: "Service Health Check Error",
+      description: "Unable to check service health status",
+      variant: "destructive",
+    });
+    
     return {
-      ok: false,
-      latency: 0,
-      error: error instanceof Error ? error.message : 'Connection failed'
+      supabase: {
+        status: 'error',
+        latency: 0,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      },
+      netlify: {
+        status: 'error',
+        latency: 0,
+        error: 'Connection failed'
+      },
+      lovable: {
+        status: 'error',
+        latency: 0,
+        error: 'Connection failed'
+      },
+      github: {
+        status: 'error',
+        latency: 0,
+        error: 'Connection failed'
+      }
     };
   }
 }
@@ -25,81 +71,7 @@ async function checkServiceHealth(url: string): Promise<HealthCheckResponse> {
 export function useServiceHealth() {
   return useQuery({
     queryKey: ['service-health'],
-    queryFn: async (): Promise<ServiceHealthStatus> => {
-      try {
-        // Check Supabase connection
-        const startTime = performance.now();
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('count')
-          .single();
-        const endTime = performance.now();
-        const supabaseLatency = endTime - startTime;
-
-        if (error) {
-          throw error;
-        }
-
-        // Check other services with properly formatted URLs
-        const [netlifyResponse, lovableResponse, githubResponse] = await Promise.all([
-          checkServiceHealth('https://www.netlifystatus.com/api/v2/status.json'),
-          checkServiceHealth('https://api.lovable.dev/health'),
-          checkServiceHealth('https://www.githubstatus.com/api/v2/status.json')
-        ]);
-
-        return {
-          supabase: {
-            status: 'healthy',
-            latency: supabaseLatency
-          },
-          netlify: {
-            status: netlifyResponse.ok ? 'healthy' : 'error',
-            latency: netlifyResponse.latency,
-            error: netlifyResponse.error
-          },
-          lovable: {
-            status: lovableResponse.ok ? 'healthy' : 'error',
-            latency: lovableResponse.latency,
-            error: lovableResponse.error
-          },
-          github: {
-            status: githubResponse.ok ? 'healthy' : 'error',
-            latency: githubResponse.latency,
-            error: githubResponse.error
-          }
-        };
-      } catch (error) {
-        console.error('Service health check error:', error);
-        toast({
-          title: "Service Health Check Error",
-          description: "Unable to check service health status",
-          variant: "destructive",
-        });
-        
-        return {
-          supabase: {
-            status: 'error',
-            latency: 0,
-            error: error instanceof Error ? error.message : 'Unknown error'
-          },
-          netlify: {
-            status: 'error',
-            latency: 0,
-            error: 'Connection failed'
-          },
-          lovable: {
-            status: 'error',
-            latency: 0,
-            error: 'Connection failed'
-          },
-          github: {
-            status: 'error',
-            latency: 0,
-            error: 'Connection failed'
-          }
-        };
-      }
-    },
+    queryFn: fetchServiceHealth,
     refetchInterval: 30000,
     retry: 2,
     retryDelay: (attemptIndex) => Math.min(1000 * Math.pow(2, attemptIndex), 10000),
