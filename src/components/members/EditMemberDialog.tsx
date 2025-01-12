@@ -14,7 +14,7 @@ interface EditMemberDialogProps {
   member: Member;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onUpdate: () => void;
+  onUpdate: (updatedMember: Member) => void;
 }
 
 export function EditMemberDialog({ 
@@ -45,11 +45,28 @@ export function EditMemberDialog({
   const {
     avatarUrl,
     setAvatarUrl,
+    username,
+    setUsername,
+    fullName,
+    setFullName,
+    isAdmin,
+    setIsAdmin,
+    isApproved,
+    setIsApproved,
+    isMember,
+    setIsMember,
     handleSubmit,
-  } = useMemberForm(member, onUpdate, () => {
-    console.log('Form submission completed, closing dialog');
-    setIsSubmitting(false);
-    onOpenChange(false);
+  } = useMemberForm(member, () => {
+    const updatedMember: Member = {
+      ...member,
+      username,
+      full_name: fullName,
+      avatar_url: avatarUrl,
+      is_admin: isAdmin,
+      is_approved: isApproved,
+      is_member: isMember,
+    };
+    onUpdate(updatedMember);
   });
 
   const handleFormSubmit = async () => {
@@ -84,6 +101,16 @@ export function EditMemberDialog({
             onSubmit={handleFormSubmit}
             isSubmitting={isSubmitting}
             onCancel={() => onOpenChange(false)}
+            username={username}
+            setUsername={setUsername}
+            fullName={fullName}
+            setFullName={setFullName}
+            isAdmin={isAdmin}
+            setIsAdmin={setIsAdmin}
+            isApproved={isApproved}
+            setIsApproved={setIsApproved}
+            isMember={isMember}
+            setIsMember={setIsMember}
           />
         </div>
       </DialogContent>

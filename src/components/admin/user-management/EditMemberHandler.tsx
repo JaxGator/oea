@@ -77,34 +77,44 @@ export const EditMemberHandler = memo(function EditMemberHandler({
     }
   }, [member?.id, fetchMemberData]);
 
-  const handleUpdateComplete = useCallback(async () => {
+  const handleUpdateComplete = useCallback(async (updatedData: Member) => {
     try {
-      console.log('EditMemberHandler: Starting update completion process');
-      await fetchMemberData(); // Refresh the data
-      console.log('EditMemberHandler: Local data refreshed');
-      
-      // Call onUpdate and wait for it to complete
-      console.log('EditMemberHandler: Calling parent onUpdate');
+      console.log('EditMemberHandler: Starting update with data:', updatedData);
+      setIsLoading(true);
+
+      const { error } = await supabase.rpc('admin_update_user', {
+        admin_id: (await supabase.auth.getUser()).data.user?.id,
+        target_user_id: updatedData.id,
+        new_username: updatedData.username,
+        new_full_name: updatedData.full_name,
+        new_avatar_url: updatedData.avatar_url,
+        new_is_admin: updatedData.is_admin,
+        new_is_approved: updatedData.is_approved,
+        new_is_member: updatedData.is_member
+      });
+
+      if (error) throw error;
+
+      console.log('EditMemberHandler: Update successful');
       await onUpdate();
-      console.log('EditMemberHandler: Parent onUpdate completed');
       
       toast({
         title: "Success",
         description: "Member updated successfully",
       });
       
-      // Close the dialog after everything is done
-      console.log('EditMemberHandler: Closing dialog');
       onClose();
     } catch (error) {
       console.error('EditMemberHandler: Error in handleUpdateComplete:', error);
       toast({
         title: "Error",
-        description: "Failed to complete update. Please try again.",
+        description: "Failed to update member. Please try again.",
         variant: "destructive",
       });
+    } finally {
+      setIsLoading(false);
     }
-  }, [fetchMemberData, onUpdate, onClose, toast]);
+  }, [onUpdate, onClose, toast]);
 
   if (isLoading) {
     return (

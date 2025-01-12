@@ -1,54 +1,93 @@
-import { useState } from "react";
 import { Member } from "../types";
-import { MemberFormFields } from "../MemberFormFields";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface EditMemberFormProps {
   member: Member;
   onSubmit: () => Promise<void>;
   isSubmitting: boolean;
   onCancel: () => void;
+  username: string;
+  setUsername: (value: string) => void;
+  fullName: string;
+  setFullName: (value: string) => void;
+  isAdmin: boolean;
+  setIsAdmin: (value: boolean) => void;
+  isApproved: boolean;
+  setIsApproved: (value: boolean) => void;
+  isMember: boolean;
+  setIsMember: (value: boolean) => void;
 }
 
-export function EditMemberForm({ 
+export function EditMemberForm({
   member,
   onSubmit,
   isSubmitting,
-  onCancel
+  onCancel,
+  username,
+  setUsername,
+  fullName,
+  setFullName,
+  isAdmin,
+  setIsAdmin,
+  isApproved,
+  setIsApproved,
+  isMember,
+  setIsMember
 }: EditMemberFormProps) {
-  const [username, setUsername] = useState(member.username);
-  const [fullName, setFullName] = useState(member.full_name || "");
-  const [email, setEmail] = useState(""); // Email is read-only in edit mode
-  const [password, setPassword] = useState("");
-  const [isAdmin, setIsAdmin] = useState(member.is_admin || false);
-  const [isApproved, setIsApproved] = useState(member.is_approved || false);
-  const [isMember, setIsMember] = useState(member.is_member || false);
-
-  const handleSubmit = async () => {
-    await onSubmit();
-  };
-
   return (
     <div className="space-y-6">
-      <MemberFormFields
-        username={username}
-        setUsername={setUsername}
-        fullName={fullName}
-        setFullName={setFullName}
-        email={email}
-        setEmail={setEmail}
-        password={password}
-        setPassword={setPassword}
-        isAdmin={isAdmin}
-        setIsAdmin={setIsAdmin}
-        isApproved={isApproved}
-        setIsApproved={setIsApproved}
-        isMember={isMember}
-        setIsMember={setIsMember}
-        avatarUrl={member.avatar_url || undefined}
-        onSubmit={handleSubmit}
-      />
+      <div className="space-y-4">
+        <div className="space-y-2">
+          <Label htmlFor="username">Username</Label>
+          <Input
+            id="username"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+          />
+        </div>
+        
+        <div className="space-y-2">
+          <Label htmlFor="fullName">Full Name</Label>
+          <Input
+            id="fullName"
+            value={fullName}
+            onChange={(e) => setFullName(e.target.value)}
+          />
+        </div>
+
+        <div className="space-y-2">
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="isAdmin"
+              checked={isAdmin}
+              onCheckedChange={(checked) => setIsAdmin(checked as boolean)}
+            />
+            <Label htmlFor="isAdmin">Admin</Label>
+          </div>
+          
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="isApproved"
+              checked={isApproved}
+              onCheckedChange={(checked) => setIsApproved(checked as boolean)}
+            />
+            <Label htmlFor="isApproved">Approved</Label>
+          </div>
+          
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="isMember"
+              checked={isMember}
+              onCheckedChange={(checked) => setIsMember(checked as boolean)}
+            />
+            <Label htmlFor="isMember">Member</Label>
+          </div>
+        </div>
+      </div>
 
       <div className="flex justify-end space-x-2">
         <Button
@@ -59,7 +98,7 @@ export function EditMemberForm({
           Cancel
         </Button>
         <Button 
-          onClick={handleSubmit}
+          onClick={onSubmit}
           disabled={isSubmitting}
         >
           {isSubmitting ? (
