@@ -40,7 +40,7 @@ export function useServiceHealth() {
           throw error;
         }
 
-        // Check other services - removed trailing colons and fixed URL formats
+        // Check other services with properly formatted URLs
         const [netlifyResponse, lovableResponse, githubResponse] = await Promise.all([
           checkServiceHealth('https://www.netlifystatus.com/api/v2/status.json'),
           checkServiceHealth('https://api.lovable.dev/health'),
