@@ -75,11 +75,7 @@ export function EventCardContainer({
             <EventCardHeader imageUrl={event.image_url} title={event.title} />
             <EventCardContent
               event={event}
-              date={event.date}
-              location={event.location}
               rsvpCount={rsvpData.confirmedCount}
-              maxGuests={event.max_guests}
-              isWixEvent={isWixEvent}
               isAdmin={isAdmin}
               userRSVPStatus={userRSVPStatus || null}
               isPastEvent={isPastEvent}
@@ -87,9 +83,7 @@ export function EventCardContainer({
               waitlistEnabled={event.waitlist_enabled}
               waitlistCount={rsvpData.waitlistCount}
               waitlistCapacity={event.waitlist_capacity}
-              isFeatured={event.is_featured}
               currentGuests={guests}
-              importedRsvpCount={event.imported_rsvp_count}
               onRSVP={handleRSVP}
               onCancelRSVP={() => onCancelRSVP(event.id)}
               onEdit={() => setShowEditDialog(true)}
