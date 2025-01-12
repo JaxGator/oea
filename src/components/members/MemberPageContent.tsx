@@ -15,17 +15,38 @@ interface MemberPageContentProps {
   isMobile: boolean;
 }
 
+interface Filters {
+  isAdmin: boolean;
+  isApproved: boolean;
+  isMember: boolean;
+}
+
 export function MemberPageContent({ members, currentUserIsAdmin, isMobile }: MemberPageContentProps) {
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
+  const [filters, setFilters] = useState<Filters>({
+    isAdmin: false,
+    isApproved: false,
+    isMember: false
+  });
   const { toast } = useToast();
 
-  console.log('MemberPageContent - Render:', {
-    memberCount: members.length,
-    currentUserIsAdmin,
-    isMobile,
-    selectedMember
+  const handleFilterChange = (newFilters: Filters) => {
+    setFilters(newFilters);
+  };
+
+  const filteredMembers = members.filter(member => {
+    // If no filters are active, show all members
+    if (!filters.isAdmin && !filters.isApproved && !filters.isMember) {
+      return true;
+    }
+
+    return (
+      (filters.isAdmin && member.is_admin) ||
+      (filters.isApproved && member.is_approved) ||
+      (filters.isMember && member.is_member)
+    );
   });
 
   const handleViewMember = useCallback((member: Member) => {
@@ -72,7 +93,39 @@ export function MemberPageContent({ members, currentUserIsAdmin, isMobile }: Mem
           <h2 className="text-2xl font-semibold">Members Directory</h2>
         </div>
         <div className="text-sm text-muted-foreground">
-          Total Members: <span className="font-medium">{members.length}</span>
+          Total Members: <span className="font-medium">{filteredMembers.length}</span>
+        </div>
+      </div>
+
+      <div className="mb-4">
+        <div className="flex items-center space-x-4">
+          <label className="flex items-center space-x-2">
+            <input
+              type="checkbox"
+              checked={filters.isAdmin}
+              onChange={() => handleFilterChange({ ...filters, isAdmin: !filters.isAdmin })}
+              className="form-checkbox"
+            />
+            <span>Admins</span>
+          </label>
+          <label className="flex items-center space-x-2">
+            <input
+              type="checkbox"
+              checked={filters.isApproved}
+              onChange={() => handleFilterChange({ ...filters, isApproved: !filters.isApproved })}
+              className="form-checkbox"
+            />
+            <span>Approved</span>
+          </label>
+          <label className="flex items-center space-x-2">
+            <input
+              type="checkbox"
+              checked={filters.isMember}
+              onChange={() => handleFilterChange({ ...filters, isMember: !filters.isMember })}
+              className="form-checkbox"
+            />
+            <span>Members</span>
+          </label>
         </div>
       </div>
 
@@ -85,7 +138,7 @@ export function MemberPageContent({ members, currentUserIsAdmin, isMobile }: Mem
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <div>
             <MemberList
-              members={members}
+              members={filteredMembers}
               currentUserIsAdmin={currentUserIsAdmin}
               onViewMember={handleViewMember}
               onEditMember={handleEditMember}
