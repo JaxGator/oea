@@ -4,7 +4,7 @@ import PaymentManager from "@/components/admin/payments/PaymentManager";
 import GalleryManager from "@/components/admin/GalleryManager";
 import SiteConfigManager from "@/components/admin/SiteConfigManager";
 import { AdminNotifications } from "@/components/admin/notifications/AdminNotifications";
-import ReportsLayout from "@/components/admin/reports/ReportsLayout";
+import { ReportsLayout } from "@/components/admin/reports/ReportsLayout";
 import AdminTestRunner from "@/components/admin/testing/AdminTestRunner";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";

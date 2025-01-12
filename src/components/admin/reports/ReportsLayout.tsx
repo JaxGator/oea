@@ -11,6 +11,19 @@ import { SystemUsageReport } from "./SystemUsageReport";
 import { UserActivityReport } from "./UserActivityReport";
 import { supabase } from "@/integrations/supabase/client";
 
+interface EventData {
+  id: string;
+  title: string;
+  date: string;
+  event_rsvps: {
+    id: string;
+    response: string;
+    user_id: string;
+    created_at: string;
+  }[];
+  created_at: string;
+}
+
 export function ReportsLayout() {
   const [date, setDate] = useState<DateRange | undefined>({
     from: new Date(),
@@ -28,6 +41,7 @@ export function ReportsLayout() {
           id,
           title,
           date,
+          created_at,
           event_rsvps (
             id,
             response,
@@ -39,7 +53,7 @@ export function ReportsLayout() {
         .lte('date', date.to.toISOString());
 
       if (error) throw error;
-      return data;
+      return data as EventData[];
     },
   });
 
@@ -94,7 +108,7 @@ export function ReportsLayout() {
 
         <TabsContent value="participation" className="space-y-4">
           <EventParticipationReport 
-            data={reportData} 
+            data={reportData || []} 
             isLoading={isLoading}
             dateRange={date}
           />
