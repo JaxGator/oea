@@ -1121,6 +1121,14 @@ export type Database = {
           created_at: string
         }[]
       }
+      test_email_template: {
+        Args: {
+          template_name: string
+          test_email: string
+          test_data?: Json
+        }
+        Returns: string
+      }
       update_leaderboard_metrics: {
         Args: Record<PropertyKey, never>
         Returns: undefined
