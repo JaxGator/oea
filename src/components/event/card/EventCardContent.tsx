@@ -1,22 +1,18 @@
-import { CardContent, CardFooter } from "@/components/ui/card";
-import { EventCardBasicInfo } from "./EventCardBasicInfo";
-import { FeaturedEventBadge } from "./FeaturedEventBadge";
-import { EventCardActions } from "./EventCardActions";
-import { Button } from "@/components/ui/button";
-import { Eye, Edit } from "lucide-react";
-import { Input } from "@/components/ui/input";
 import { useState } from "react";
+import { CardContent, CardFooter } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Eye } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { Event } from "@/types/event";
+import { EventCardBasicInfo } from "./EventCardBasicInfo";
+import { EventCardActions } from "./EventCardActions";
+import { EventMetadata } from "./EventMetadata";
+import { EventAdminEdit } from "./EventAdminEdit";
 
 interface EventCardContentProps {
   event: Event;
-  date: string;
-  location: string;
   rsvpCount: number;
-  maxGuests: number;
-  isWixEvent: boolean;
   isAdmin: boolean;
   userRSVPStatus: string | null;
   isPastEvent: boolean;
@@ -24,9 +20,7 @@ interface EventCardContentProps {
   waitlistEnabled?: boolean;
   waitlistCount?: number;
   waitlistCapacity?: number | null;
-  isFeatured?: boolean;
   currentGuests?: { firstName: string }[];
-  importedRsvpCount?: number | null;
   onRSVP: (guests?: { firstName: string }[]) => void;
   onCancelRSVP: () => void;
   onEdit: () => void;
@@ -36,11 +30,7 @@ interface EventCardContentProps {
 
 export function EventCardContent({
   event,
-  date,
-  location,
   rsvpCount,
-  maxGuests,
-  isWixEvent,
   isAdmin,
   userRSVPStatus,
   isPastEvent,
@@ -48,21 +38,20 @@ export function EventCardContent({
   waitlistEnabled,
   waitlistCount = 0,
   waitlistCapacity,
-  isFeatured = false,
   currentGuests = [],
-  importedRsvpCount,
   onRSVP,
   onCancelRSVP,
   onEdit,
   onDelete,
   onViewDetails,
 }: EventCardContentProps) {
-  const [isEditingRSVP, setIsEditingRSVP] = useState(false);
   const [editedRSVPCount, setEditedRSVPCount] = useState(rsvpCount.toString());
+  const [isEditingRSVP, setIsEditingRSVP] = useState(false);
 
-  const isFullyBooked = rsvpCount >= maxGuests;
+  const isFullyBooked = rsvpCount >= event.max_guests;
   const canJoinWaitlist = waitlistEnabled && isFullyBooked && 
     (!waitlistCapacity || waitlistCount < waitlistCapacity);
+  const canAddToCalendar = userRSVPStatus === 'attending' || isAdmin;
 
   const handleRSVPEdit = async () => {
     const newCount = parseInt(editedRSVPCount);
@@ -103,58 +92,28 @@ export function EventCardContent({
       <CardContent className="p-4">
         <div className="flex justify-between items-start mb-4">
           <EventCardBasicInfo
-            date={date}
-            location={location}
+            date={event.date}
+            location={event.location}
             rsvpCount={rsvpCount}
-            maxGuests={maxGuests}
-            isWixEvent={isWixEvent}
+            maxGuests={event.max_guests}
+            isWixEvent={event.description === 'Imported from Wix'}
             waitlistEnabled={waitlistEnabled}
             waitlistCount={waitlistCount}
             waitlistCapacity={waitlistCapacity}
-            importedRsvpCount={importedRsvpCount}
+            importedRsvpCount={event.imported_rsvp_count}
             isPastEvent={isPastEvent}
           />
-          {isFeatured && <FeaturedEventBadge />}
         </div>
 
-        {isAdmin && isPastEvent && (
-          <div className="mt-2 mb-4">
-            {isEditingRSVP ? (
-              <div className="flex gap-2">
-                <Input
-                  type="number"
-                  value={editedRSVPCount}
-                  onChange={(e) => setEditedRSVPCount(e.target.value)}
-                  className="w-24"
-                  min="0"
-                />
-                <Button 
-                  size="sm" 
-                  onClick={handleRSVPEdit}
-                >
-                  Save
-                </Button>
-                <Button 
-                  size="sm" 
-                  variant="outline" 
-                  onClick={() => setIsEditingRSVP(false)}
-                >
-                  Cancel
-                </Button>
-              </div>
-            ) : (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setIsEditingRSVP(true)}
-                className="flex items-center gap-2"
-              >
-                <Edit className="h-4 w-4" />
-                Edit RSVP Count
-              </Button>
-            )}
-          </div>
-        )}
+        <EventAdminEdit
+          isAdmin={isAdmin}
+          isPastEvent={isPastEvent}
+          editedRSVPCount={editedRSVPCount}
+          onEditRSVP={() => setIsEditingRSVP(true)}
+          onSaveRSVP={handleRSVPEdit}
+          onCancelEdit={() => setIsEditingRSVP(false)}
+          onRSVPCountChange={setEditedRSVPCount}
+        />
 
         <Button 
           variant="outline" 
@@ -178,7 +137,7 @@ export function EventCardContent({
           onEdit={onEdit}
           onDelete={onDelete}
           isPastEvent={isPastEvent}
-          isWixEvent={isWixEvent}
+          isWixEvent={event.description === 'Imported from Wix'}
           canAddGuests={canAddGuests}
           currentGuests={currentGuests}
         />
