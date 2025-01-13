@@ -1,13 +1,10 @@
-import { useEventCard } from "@/hooks/useEventCard";
-import { useEventDialogs } from "@/hooks/useEventDialogs";
-import { useEventInteraction } from "@/hooks/events/useEventInteraction";
-import { useEventWaitlist } from "@/hooks/events/useEventWaitlist";
+import { Event } from "@/types/event";
+import { useAdminStatus } from "@/hooks/events/useAdminStatus";
 import { useEventRSVPData } from "@/hooks/events/useEventRSVPData";
 import { useEventGuestData } from "@/hooks/events/useEventGuestData";
-import { Event } from "@/types/event";
+import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "@/hooks/use-toast";
-import { useAdminStatus } from "@/hooks/events/useAdminStatus";
+import { toast } from "sonner";
 
 interface EventCardStateProps {
   event: Event;
@@ -19,7 +16,6 @@ interface EventCardStateProps {
     rsvpData: { confirmedCount: number; waitlistCount: number };
     attendees: any[];
     guests: { firstName: string }[];
-    waitlistCount: number;
     isPastEvent: boolean;
     isWixEvent: boolean;
     canAddGuests: boolean;
@@ -34,24 +30,67 @@ interface EventCardStateProps {
   }) => React.ReactNode;
 }
 
-export function EventCardState({ event, userRSVPStatus, onUpdate, children }: EventCardStateProps) {
+export function EventCardState({
+  event,
+  userRSVPStatus,
+  onUpdate,
+  children
+}: EventCardStateProps) {
   const { isAdmin, canManageEvents } = useAdminStatus();
-  const { 
-    showEditDialog,
-    setShowEditDialog,
-    handleEditSuccess,
-    handleDelete,
-    handleCardClick
-  } = useEventCard(event.id, onUpdate);
-
-  const { showDetailsDialog, setShowDetailsDialog, handleInteraction } = useEventInteraction();
-  const { waitlistCount } = useEventWaitlist(event.id, event.waitlist_enabled);
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [showDetailsDialog, setShowDetailsDialog] = useState(false);
   const { data: rsvpData = { confirmedCount: 0, waitlistCount: 0 } } = useEventRSVPData(event.id);
   const { data: guests = [] } = useEventGuestData(event.id, userRSVPStatus);
 
   const isPastEvent = new Date(event.date) < new Date(new Date().setHours(0, 0, 0, 0));
-  const isWixEvent = event.description === 'Imported from Wix';
+  const isWixEvent = !!event.imported_rsvp_count;
   const canAddGuests = isAdmin || userRSVPStatus === 'attending';
+
+  const handleEditSuccess = () => {
+    setShowEditDialog(false);
+    if (onUpdate) onUpdate();
+  };
+
+  const handleDelete = async () => {
+    try {
+      const { error } = await supabase
+        .from('events')
+        .delete()
+        .eq('id', event.id);
+
+      if (error) throw error;
+
+      toast.success("Event deleted successfully");
+      if (onUpdate) onUpdate();
+    } catch (error: any) {
+      console.error('Error deleting event:', error);
+      toast.error(error.message || "Failed to delete event");
+    }
+  };
+
+  const handleTogglePublish = async () => {
+    try {
+      const { error } = await supabase
+        .from('events')
+        .update({ is_published: !event.is_published })
+        .eq('id', event.id);
+
+      if (error) throw error;
+
+      toast.success(`Event ${event.is_published ? 'unpublished' : 'published'} successfully`);
+      if (onUpdate) onUpdate();
+    } catch (error: any) {
+      console.error('Error toggling event publish status:', error);
+      toast.error(error.message || "Failed to update event status");
+    }
+  };
+
+  const handleInteraction = (e: React.MouseEvent | React.KeyboardEvent) => {
+    const target = e.target as HTMLElement;
+    if (!target.closest('button') && !target.closest('a')) {
+      setShowDetailsDialog(true);
+    }
+  };
 
   return children({
     isAdmin,
@@ -59,7 +98,6 @@ export function EventCardState({ event, userRSVPStatus, onUpdate, children }: Ev
     rsvpData,
     attendees: [],
     guests,
-    waitlistCount,
     isPastEvent,
     isWixEvent,
     canAddGuests,
@@ -67,7 +105,7 @@ export function EventCardState({ event, userRSVPStatus, onUpdate, children }: Ev
     showDetailsDialog,
     handleEditSuccess,
     handleDelete,
-    handleTogglePublish: () => {},
+    handleTogglePublish,
     setShowEditDialog,
     setShowDetailsDialog,
     handleInteraction,

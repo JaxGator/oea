@@ -37,7 +37,7 @@ export function AdminActions({
             Edit
           </Button>
 
-          {showPublishToggle && (
+          {showPublishToggle && onTogglePublish && (
             <Button
               variant="outline"
               onClick={onTogglePublish}

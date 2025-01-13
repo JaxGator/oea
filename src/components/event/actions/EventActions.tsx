@@ -83,6 +83,15 @@ export function EventActions({
           canManageEvents={canManageEvents}
         />
       )}
+
+      {(isAdmin || canManageEvents) && isPastEvent && (
+        <Button
+          variant="outline"
+          onClick={onEdit}
+        >
+          Edit RSVPs
+        </Button>
+      )}
     </div>
   );
 }
