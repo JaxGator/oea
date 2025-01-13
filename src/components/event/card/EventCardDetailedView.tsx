@@ -1,24 +1,17 @@
-import { format, parseISO } from "date-fns";
-import { EventDetails } from "../EventDetails";
-import { EventActions } from "../EventActions";
-import { AddToCalendar } from "../AddToCalendar";
-import { EventShareMenu } from "../share/EventShareMenu";
-import { useGoogleMapsToken } from "@/hooks/useGoogleMapsToken";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Event } from "@/types/event";
+import { EventCardBasicInfo } from "./EventCardBasicInfo";
+import { EventMetadata } from "./EventMetadata";
+import { EventActions } from "../actions/EventActions";
+import { EventMap } from "../details/EventMap";
+import { AttendeeList } from "../details/AttendeeList";
+import { LocationDisplay } from "../details/LocationDisplay";
+import { WaitlistInfo } from "./WaitlistInfo";
+import { cn } from "@/lib/utils";
 
 interface EventCardDetailedViewProps {
-  event: {
-    id: string;
-    title: string;
-    description: string;
-    date: string;
-    time: string;
-    location: string;
-    max_guests: number;
-    image_url: string;
-  };
-  rsvpCount: number;
-  attendeeNames: string[];
+  event: Event;
+  rsvpCount?: number;
+  attendeeNames?: string[];
   userRSVPStatus: string | null;
   isAdmin: boolean;
   isPastEvent: boolean;
@@ -27,14 +20,14 @@ interface EventCardDetailedViewProps {
   currentGuests?: { firstName: string }[];
   onRSVP: (guests?: { firstName: string }[]) => void;
   onCancelRSVP: () => void;
-  onEdit: () => void;
-  onDelete: () => void;
+  onEdit?: () => void;
+  onDelete?: () => void;
 }
 
 export function EventCardDetailedView({
   event,
-  rsvpCount,
-  attendeeNames,
+  rsvpCount = 0,
+  attendeeNames = [],
   userRSVPStatus,
   isAdmin,
   isPastEvent,
@@ -44,68 +37,73 @@ export function EventCardDetailedView({
   onRSVP,
   onCancelRSVP,
   onEdit,
-  onDelete
+  onDelete,
 }: EventCardDetailedViewProps) {
-  const disableRSVP = isPastEvent || (isPastEvent && isWixEvent);
   const isFullyBooked = rsvpCount >= event.max_guests;
-  const canAddToCalendar = userRSVPStatus === 'attending' || isAdmin;
+  const canJoinWaitlist = event.waitlist_enabled && isFullyBooked;
 
   return (
-    <div className="flex flex-col min-h-full">
-      <div className="flex-1 space-y-6">
-        <div className="relative w-full aspect-video">
-          <img
-            src={event.image_url}
-            alt={event.title}
-            className="absolute inset-0 w-full h-full object-cover rounded-lg"
-          />
-        </div>
-        
-        <h2 className="text-2xl font-bold">{event.title}</h2>
-        
-        <EventDetails
-          date={event.date}
-          time={event.time}
-          location={event.location}
-          rsvpCount={rsvpCount}
-          maxGuests={event.max_guests}
-          description={event.description || ""}
-          attendeeNames={attendeeNames}
-          userRSVPStatus={userRSVPStatus}
-          showFullDescription
+    <div className="flex flex-col gap-6 animate-fade-in">
+      <div className="aspect-video relative rounded-t-lg overflow-hidden">
+        <img
+          src={event.image_url}
+          alt={event.title}
+          className="w-full h-full object-cover"
         />
-        
-        {canAddToCalendar && !disableRSVP && (
-          <AddToCalendar
-            event={{
-              title: event.title,
-              description: event.description,
-              date: event.date,
-              time: event.time,
-              location: event.location,
-            }}
-          />
-        )}
       </div>
 
-      <div className="sticky bottom-0 bg-white py-4 border-t mt-6">
-        <div className="flex flex-wrap items-center gap-2">
+      <div className="px-6 space-y-6">
+        <EventCardBasicInfo event={event} />
+        
+        <div className="space-y-4">
+          <LocationDisplay location={event.location} />
+          <EventMetadata
+            maxGuests={event.max_guests}
+            rsvpCount={rsvpCount}
+            date={event.date}
+            time={event.time}
+          />
+        </div>
+
+        {event.description && (
+          <div className="prose max-w-none">
+            <div dangerouslySetInnerHTML={{ __html: event.description }} />
+          </div>
+        )}
+
+        <div className={cn(
+          "flex flex-wrap items-center gap-4",
+          "shadow-sm rounded-lg bg-white p-4"
+        )}>
           <EventActions
             isAdmin={isAdmin}
             userRSVPStatus={userRSVPStatus}
             isFullyBooked={isFullyBooked}
+            canJoinWaitlist={canJoinWaitlist}
             onRSVP={onRSVP}
             onCancelRSVP={onCancelRSVP}
             onEdit={onEdit}
             onDelete={onDelete}
             isPastEvent={isPastEvent}
             isWixEvent={isWixEvent}
-            showDelete={isAdmin && (isPastEvent || isWixEvent)}
+            isPublished={event.is_published}
             canAddGuests={canAddGuests}
             currentGuests={currentGuests}
           />
-          <EventShareMenu eventId={event.id} title={event.title} />
         </div>
+
+        {event.waitlist_enabled && (
+          <WaitlistInfo
+            isFullyBooked={isFullyBooked}
+            waitlistCapacity={event.waitlist_capacity}
+          />
+        )}
+
+        <AttendeeList
+          attendeeCount={rsvpCount}
+          attendeeNames={attendeeNames}
+          maxGuests={event.max_guests}
+        />
       </div>
     </div>
   );
