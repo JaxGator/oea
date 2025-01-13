@@ -81,13 +81,24 @@ export function EventActions({
       {(isAdmin || canManageEvents) && (
         <div className="flex gap-2 items-center ml-auto">
           {isPastEvent ? (
-            <Button
-              variant="outline"
-              onClick={onEdit}
-              className="whitespace-nowrap"
-            >
-              Edit RSVPs
-            </Button>
+            <>
+              <Button
+                variant="outline"
+                onClick={onEdit}
+                className="whitespace-nowrap"
+              >
+                Edit RSVPs
+              </Button>
+              {!isWixEvent && (
+                <Button
+                  variant="destructive"
+                  onClick={onDelete}
+                  className="whitespace-nowrap"
+                >
+                  Delete
+                </Button>
+              )}
+            </>
           ) : (
             <AdminActions
               onEdit={onEdit}
