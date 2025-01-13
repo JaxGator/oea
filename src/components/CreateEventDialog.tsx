@@ -24,9 +24,7 @@ export function CreateEventDialog({ open, onOpenChange, onSuccess }: CreateEvent
   const { toast } = useToast();
 
   useEffect(() => {
-    if (typeof open !== 'undefined') {
-      setDialogOpen(open);
-    }
+    setDialogOpen(open ?? false);
   }, [open]);
 
   const handleOpenChange = (newOpen: boolean) => {
