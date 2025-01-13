@@ -21,6 +21,7 @@ interface EventCardInteractionsProps {
   setShowDetailsDialog: (show: boolean) => void;
   handleDelete: () => void;
   isPublished: boolean;
+  onTogglePublish?: () => void;
 }
 
 export function EventCardInteractions({
@@ -40,6 +41,7 @@ export function EventCardInteractions({
   setShowDetailsDialog,
   handleDelete,
   isPublished,
+  onTogglePublish,
 }: EventCardInteractionsProps) {
   const navigate = useNavigate();
 
@@ -105,6 +107,7 @@ export function EventCardInteractions({
         showPublishToggle={!isPastEvent}
         isPublished={isPublished}
         onViewDetails={() => setShowDetailsDialog(true)}
+        onTogglePublish={onTogglePublish}
       />
     </EventCardWrapper>
   );
