@@ -46,57 +46,61 @@ export function EventActions({
 }: EventActionsProps) {
   return (
     <div className="flex flex-wrap items-center gap-3 justify-start">
-      <div className="flex gap-2 items-center">
-        {!userRSVPStatus && !isPastEvent && isPublished && (
-          <RSVPButton 
-            isFullyBooked={isFullyBooked} 
-            onRSVP={onRSVP} 
-            canJoinWaitlist={canJoinWaitlist}
-          />
-        )}
+      {/* RSVP Actions */}
+      {!isPastEvent && (
+        <div className="flex gap-2 items-center">
+          {!userRSVPStatus && isPublished && (
+            <RSVPButton 
+              isFullyBooked={isFullyBooked} 
+              onRSVP={onRSVP} 
+              canJoinWaitlist={canJoinWaitlist}
+            />
+          )}
 
-        {userRSVPStatus === "attending" && !isPastEvent && (
-          <>
-            <Button
-              variant="destructive"
-              onClick={onCancelRSVP}
-              className="whitespace-nowrap"
-            >
-              Cancel RSVP
-            </Button>
-            {canAddGuests && (
-              <AddGuestsButton 
-                onAddGuests={(newGuests) => onRSVP(newGuests)}
-                currentGuests={currentGuests}
-              />
-            )}
-          </>
-        )}
-      </div>
-
-      {(isAdmin || canManageEvents) && (
-        <div className="flex gap-2 items-center ml-auto">
-          <AdminActions
-            onEdit={onEdit}
-            onDelete={onDelete}
-            onTogglePublish={onTogglePublish}
-            showDelete={true}
-            isWixEvent={isWixEvent}
-            isPublished={isPublished}
-            showPublishToggle={showPublishToggle}
-            canManageEvents={canManageEvents}
-          />
+          {userRSVPStatus === "attending" && (
+            <>
+              <Button
+                variant="destructive"
+                onClick={onCancelRSVP}
+                className="whitespace-nowrap"
+              >
+                Cancel RSVP
+              </Button>
+              {canAddGuests && (
+                <AddGuestsButton 
+                  onAddGuests={(newGuests) => onRSVP(newGuests)}
+                  currentGuests={currentGuests}
+                />
+              )}
+            </>
+          )}
         </div>
       )}
 
-      {(isAdmin || canManageEvents) && isPastEvent && (
-        <Button
-          variant="outline"
-          onClick={onEdit}
-          className="whitespace-nowrap"
-        >
-          Edit RSVPs
-        </Button>
+      {/* Admin Actions */}
+      {(isAdmin || canManageEvents) && (
+        <div className="flex gap-2 items-center ml-auto">
+          {isPastEvent ? (
+            <Button
+              variant="outline"
+              onClick={onEdit}
+              className="whitespace-nowrap"
+            >
+              Edit RSVPs
+            </Button>
+          ) : (
+            <AdminActions
+              onEdit={onEdit}
+              onDelete={onDelete}
+              onTogglePublish={onTogglePublish}
+              showDelete={true}
+              isWixEvent={isWixEvent}
+              isPublished={isPublished}
+              showPublishToggle={showPublishToggle}
+              canManageEvents={canManageEvents}
+            />
+          )}
+        </div>
       )}
     </div>
   );
