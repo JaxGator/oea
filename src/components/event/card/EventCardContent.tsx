@@ -72,6 +72,7 @@ export function EventCardContent({
         maxGuests={event.max_guests}
         rsvpCount={rsvpCount}
         isPublished={isPublished}
+        isPastEvent={isPastEvent}
       />
 
       {waitlistEnabled && (
