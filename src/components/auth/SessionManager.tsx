@@ -39,26 +39,26 @@ export function SessionManager({ children, queryClient }: SessionManagerProps) {
           return;
         }
 
-        // If session exists but is about to expire, refresh it
-        const expiresAt = session.expires_at ? new Date(session.expires_at * 1000) : null;
-        if (expiresAt && (expiresAt.getTime() - Date.now() < 60000)) { // Less than 1 minute
-          console.log('Session about to expire, refreshing...');
-          const { data: { session: newSession }, error: refreshError } = await supabase.auth.refreshSession();
-          
-          if (refreshError) {
-            console.error('Session refresh failed:', refreshError);
-            await handleSessionError(refreshError);
-            return;
-          }
+        // Attempt to refresh session if it exists
+        const { data: { session: refreshedSession }, error: refreshError } = 
+          await supabase.auth.refreshSession();
 
-          if (!newSession) {
-            console.log('Session refresh returned no session');
-            if (isProtectedRoute(location.pathname)) {
-              await clearSessionData();
-              navigate('/auth');
-            }
-          }
+        if (refreshError) {
+          console.error('Session refresh failed:', refreshError);
+          await handleSessionError(refreshError);
+          return;
         }
+
+        if (!refreshedSession) {
+          console.log('Session refresh returned no session');
+          if (isProtectedRoute(location.pathname)) {
+            await clearSessionData();
+            navigate('/auth');
+          }
+          return;
+        }
+
+        console.log('Session refreshed successfully');
       } catch (err) {
         console.error('Session check failed:', err);
         await handleSessionError(err as AuthError);
@@ -71,7 +71,7 @@ export function SessionManager({ children, queryClient }: SessionManagerProps) {
       
       toast({
         title: "Session Error",
-        description: "Your session has expired. Please sign in again.",
+        description: "Please sign in again to continue.",
         variant: "destructive",
       });
       
@@ -120,11 +120,11 @@ export function SessionManager({ children, queryClient }: SessionManagerProps) {
       }
     });
 
-    // Initial session check
+    // Initial session check and refresh
     checkSession();
 
     // Set up periodic session checks
-    const intervalId = setInterval(checkSession, 30000); // Check every 30 seconds
+    const intervalId = setInterval(checkSession, 15000); // Check every 15 seconds
 
     return () => {
       mounted = false;
