@@ -65,6 +65,10 @@ export function EventCardDetailedView({
           isPastEvent={isPastEvent}
         />
 
+        <AttendeeList
+          attendeeNames={attendeeNames}
+        />
+
         {event.description && (
           <div className="prose max-w-none">
             <div dangerouslySetInnerHTML={{ __html: event.description }} />
@@ -95,10 +99,6 @@ export function EventCardDetailedView({
             waitlistCapacity={event.waitlist_capacity}
           />
         )}
-
-        <AttendeeList
-          attendeeNames={attendeeNames}
-        />
       </div>
     </div>
   );
