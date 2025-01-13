@@ -65,7 +65,10 @@ export default function EventDetails() {
 
       if (rsvpError) throw rsvpError;
 
-      const rsvpsWithProfiles = (rsvpData as RSVPWithProfile[])?.map((rsvp): EventRSVP => ({
+      // Type assertion to help TypeScript understand the structure
+      const typedRsvpData = rsvpData as unknown as RSVPWithProfile[];
+      
+      const rsvpsWithProfiles = typedRsvpData?.map((rsvp): EventRSVP => ({
         id: rsvp.id,
         event_id: rsvp.event_id,
         user_id: rsvp.user_id,
@@ -74,7 +77,7 @@ export default function EventDetails() {
         profiles: {
           id: rsvp.profiles.id,
           full_name: rsvp.profiles.full_name,
-          username: rsvp.profiles.username || 'Unknown User'
+          username: rsvp.profiles.username
         }
       }));
 
