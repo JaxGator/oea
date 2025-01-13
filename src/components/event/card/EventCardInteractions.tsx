@@ -56,6 +56,7 @@ export function EventCardInteractions({
       onKeyDown={handleCardClick}
       isFeatured={event.is_featured}
       isSelected={isSelected}
+      isPublished={isPublished}
     >
       <EventCardHeader imageUrl={event.image_url} title={event.title} />
       <EventCardContent

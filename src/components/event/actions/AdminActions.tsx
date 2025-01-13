@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Edit2Icon, Trash2Icon, EyeOffIcon } from "lucide-react";
+import { Edit2Icon, Trash2Icon, Eye, EyeOff } from "lucide-react";
 
 interface AdminActionsProps {
   onEdit?: () => void;
@@ -36,7 +36,11 @@ export function AdminActions({
             onClick={onTogglePublish}
             className="ml-2"
           >
-            <EyeOffIcon className="w-4 h-4 mr-2" />
+            {isPublished ? (
+              <EyeOff className="w-4 h-4 mr-2" />
+            ) : (
+              <Eye className="w-4 h-4 mr-2" />
+            )}
             {isPublished ? 'Unpublish' : 'Publish'}
           </Button>
         </>

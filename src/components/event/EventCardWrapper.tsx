@@ -1,36 +1,51 @@
+import { ReactNode } from "react";
 import { Card } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
+import { FeaturedEventBadge } from "./card/FeaturedEventBadge";
+import { EyeOff } from "lucide-react";
 
 interface EventCardWrapperProps {
-  children: React.ReactNode;
   title: string;
   onInteraction?: (e: React.MouseEvent | React.KeyboardEvent) => void;
   onKeyDown?: (e: React.KeyboardEvent) => void;
+  children: ReactNode;
   isFeatured?: boolean;
   isSelected?: boolean;
+  isPublished?: boolean;
 }
 
 export function EventCardWrapper({
-  children,
   title,
   onInteraction,
   onKeyDown,
+  children,
   isFeatured = false,
-  isSelected = false
+  isSelected = false,
+  isPublished = true
 }: EventCardWrapperProps) {
   return (
     <Card
+      className={`relative overflow-hidden transition-all duration-200 ${
+        isSelected ? 'ring-2 ring-primary' : ''
+      } ${!isPublished ? 'opacity-75' : ''}`}
       onClick={onInteraction}
       onKeyDown={onKeyDown}
-      tabIndex={0}
       role="button"
-      aria-label={`View details for ${title}`}
-      className={cn(
-        "relative overflow-hidden transition-shadow hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 cursor-pointer",
-        isFeatured && "border-2 border-yellow-500",
-        isSelected && "ring-2 ring-primary ring-offset-2"
-      )}
+      tabIndex={0}
+      aria-label={title}
     >
+      {isFeatured && (
+        <div className="absolute top-2 right-2 z-10">
+          <FeaturedEventBadge />
+        </div>
+      )}
+      
+      {!isPublished && (
+        <div className="absolute top-2 left-2 z-10 bg-yellow-100 text-yellow-800 px-2 py-1 rounded-md flex items-center gap-2">
+          <EyeOff className="h-4 w-4" />
+          <span className="text-sm font-medium">Unpublished</span>
+        </div>
+      )}
+      
       {children}
     </Card>
   );
