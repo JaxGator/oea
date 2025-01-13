@@ -58,21 +58,18 @@ export default function EventDetails() {
 
       if (rsvpError) throw rsvpError;
 
-      const rsvpsWithProfiles = rsvpData?.map((rsvp): EventRSVP => {
-        const profile = rsvp.profiles as Profile;
-        return {
-          id: rsvp.id,
-          event_id: rsvp.event_id,
-          user_id: rsvp.user_id,
-          response: rsvp.response,
-          created_at: rsvp.created_at,
-          profiles: {
-            id: profile?.id,
-            full_name: profile?.full_name,
-            username: profile?.username || 'Unknown User'
-          }
-        };
-      });
+      const rsvpsWithProfiles = rsvpData?.map((rsvp): EventRSVP => ({
+        id: rsvp.id,
+        event_id: rsvp.event_id,
+        user_id: rsvp.user_id,
+        response: rsvp.response,
+        created_at: rsvp.created_at,
+        profiles: {
+          id: rsvp.profiles?.id,
+          full_name: rsvp.profiles?.full_name,
+          username: rsvp.profiles?.username || 'Unknown User'
+        }
+      }));
 
       return {
         ...eventData,

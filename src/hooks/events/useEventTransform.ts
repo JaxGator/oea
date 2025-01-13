@@ -23,10 +23,10 @@ type EventWithRsvps = {
     user_id: string;
     response: 'attending' | 'not_attending' | 'maybe';
     created_at: string;
-    profiles?: {
+    profiles: {
       full_name: string | null;
       username: string;
-    } | null;
+    };
   }>;
 };
 
@@ -55,8 +55,8 @@ export const transformEventData = (data: EventWithRsvps[]): Event[] => {
       response: rsvp.response,
       created_at: rsvp.created_at,
       profiles: {
-        full_name: rsvp.profiles?.full_name || null,
-        username: rsvp.profiles?.username || ''
+        full_name: rsvp.profiles.full_name,
+        username: rsvp.profiles.username
       }
     })) || []
   }));
