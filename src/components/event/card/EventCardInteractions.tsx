@@ -6,6 +6,7 @@ import { EventCardContent } from "./EventCardContent";
 interface EventCardInteractionsProps {
   event: Event;
   isAdmin: boolean;
+  canManageEvents: boolean;
   rsvpData: { confirmedCount: number; waitlistCount: number };
   userRSVPStatus: string | null;
   isPastEvent: boolean;
@@ -26,6 +27,7 @@ interface EventCardInteractionsProps {
 export function EventCardInteractions({
   event,
   isAdmin,
+  canManageEvents,
   rsvpData,
   userRSVPStatus,
   isPastEvent,
@@ -63,6 +65,7 @@ export function EventCardInteractions({
         event={event}
         rsvpCount={rsvpData.confirmedCount}
         isAdmin={isAdmin}
+        canManageEvents={canManageEvents}
         userRSVPStatus={userRSVPStatus}
         isPastEvent={isPastEvent}
         canAddGuests={canAddGuests}

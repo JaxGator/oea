@@ -14,6 +14,7 @@ interface EventCardStateProps {
   onUpdate?: () => void;
   children: (props: {
     isAdmin: boolean;
+    canManageEvents: boolean;
     rsvpData: { confirmedCount: number; waitlistCount: number };
     attendees: any[];
     guests: { firstName: string }[];
@@ -35,6 +36,7 @@ interface EventCardStateProps {
 export function EventCardState({ event, userRSVPStatus, onUpdate, children }: EventCardStateProps) {
   const { 
     isAdmin,
+    canManageEvents,
     rsvpCount,
     attendees,
     handleEditSuccess,
@@ -78,6 +80,7 @@ export function EventCardState({ event, userRSVPStatus, onUpdate, children }: Ev
 
   return children({
     isAdmin,
+    canManageEvents,
     rsvpData,
     attendees,
     guests,

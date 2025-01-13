@@ -13,6 +13,7 @@ interface EventDialogsProps {
   attendeeNames: string[];
   userRSVPStatus: string | null;
   isAdmin: boolean;
+  canManageEvents: boolean;
   isPastEvent: boolean;
   isWixEvent: boolean;
   canAddGuests: boolean;
@@ -33,6 +34,7 @@ export function EventDialogs({
   attendeeNames,
   userRSVPStatus,
   isAdmin,
+  canManageEvents,
   isPastEvent,
   isWixEvent,
   canAddGuests,
@@ -54,6 +56,7 @@ export function EventDialogs({
                 attendeeNames={attendeeNames}
                 userRSVPStatus={userRSVPStatus}
                 isAdmin={isAdmin}
+                canManageEvents={canManageEvents}
                 isPastEvent={isPastEvent}
                 isWixEvent={isWixEvent}
                 canAddGuests={canAddGuests}
