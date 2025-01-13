@@ -43,7 +43,43 @@ export function EventParticipationReport() {
   });
 
   const handleExport = () => {
-    console.log("Exporting event data...");
+    if (!eventStats?.events) return;
+    
+    // Convert data to CSV format
+    const headers = ['Event Name', 'Date', 'Attendees'];
+    const csvData = eventStats.events.map(event => [
+      event.name,
+      event.date,
+      event.attending
+    ]);
+    
+    // Add headers to beginning of data
+    csvData.unshift(headers);
+    
+    // Convert to CSV string
+    const csvString = csvData
+      .map(row => row
+        .map(cell => {
+          // Handle cells that contain commas by wrapping in quotes
+          if (cell && cell.toString().includes(',')) {
+            return `"${cell}"`;
+          }
+          return cell;
+        })
+        .join(',')
+      )
+      .join('\n');
+    
+    // Create blob and download
+    const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `event-participation-${format(new Date(), 'yyyy-MM-dd')}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   };
 
   if (isLoading) {
