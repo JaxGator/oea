@@ -66,6 +66,7 @@ export function EventCardContainer({
                 setShowDetailsDialog={setShowDetailsDialog}
                 handleDelete={handleDelete}
                 isPublished={event.is_published ?? true}
+                onTogglePublish={handleTogglePublish}
               />
 
               <EventDialogs
@@ -76,9 +77,9 @@ export function EventCardContainer({
                 setShowEditDialog={setShowEditDialog}
                 rsvpCount={rsvpData.confirmedCount}
                 attendeeNames={attendees.map(attendee => {
+                  if (!attendee.profile) return 'Unknown';
                   const fullName = attendee.profile.full_name;
-                  const firstName = fullName ? fullName.split(' ')[0] : attendee.profile.username;
-                  return firstName;
+                  return fullName ? fullName.split(' ')[0] : attendee.profile.username || 'Unknown';
                 })}
                 userRSVPStatus={userRSVPStatus || null}
                 isAdmin={isAdmin}
