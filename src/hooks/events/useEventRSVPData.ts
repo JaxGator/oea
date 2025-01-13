@@ -8,42 +8,41 @@ export function useEventRSVPData(eventId: string) {
       // First get the event details
       const { data: eventData } = await supabase
         .from('events')
-        .select('max_guests')
+        .select('max_guests, waitlist_enabled, waitlist_capacity')
         .eq('id', eventId)
         .single();
 
       if (!eventData) {
-        throw new Error('Event not found');
+        console.error('Event not found');
+        return { confirmedCount: 0, waitlistCount: 0 };
       }
 
-      // Get all attending RSVPs
-      const { data: rsvps } = await supabase
+      // Get confirmed RSVPs count
+      const { count: confirmedCount } = await supabase
         .from('event_rsvps')
-        .select(`
-          id,
-          status
-        `)
-        .eq('event_id', eventId)
-        .eq('response', 'attending');
-
-      if (!rsvps?.length) return { confirmedCount: 0, waitlistCount: 0 };
-
-      const rsvpIds = rsvps.map(rsvp => rsvp.id);
-      
-      // Get guest count for these RSVPs
-      const { count: guestCount } = await supabase
-        .from('event_guests')
         .select('*', { count: 'exact', head: true })
-        .in('rsvp_id', rsvpIds);
+        .eq('event_id', eventId)
+        .eq('response', 'attending')
+        .eq('status', 'confirmed');
 
-      // Count confirmed and waitlisted RSVPs
-      const confirmedRsvps = rsvps.filter(rsvp => rsvp.status === 'confirmed').length;
-      const waitlistedRsvps = rsvps.filter(rsvp => rsvp.status === 'waitlisted').length;
+      // Get waitlist count if waitlist is enabled
+      let waitlistCount = 0;
+      if (eventData.waitlist_enabled) {
+        const { count: waitlistedCount } = await supabase
+          .from('event_rsvps')
+          .select('*', { count: 'exact', head: true })
+          .eq('event_id', eventId)
+          .eq('response', 'attending')
+          .eq('status', 'waitlisted');
+          
+        waitlistCount = waitlistedCount || 0;
+      }
 
       return {
-        confirmedCount: Math.min(confirmedRsvps + (guestCount || 0), eventData.max_guests),
-        waitlistCount: Math.max(0, (confirmedRsvps + (guestCount || 0)) - eventData.max_guests) + waitlistedRsvps
+        confirmedCount: confirmedCount || 0,
+        waitlistCount
       };
-    }
+    },
+    staleTime: 1000 * 60 * 5 // Cache for 5 minutes
   });
 }

@@ -56,11 +56,16 @@ export function EventCardState({
           )
         `)
         .eq('event_id', event.id)
-        .eq('response', 'attending');
+        .eq('response', 'attending')
+        .eq('status', 'confirmed');
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching attendees:', error);
+        return [];
+      }
       return rsvps || [];
-    }
+    },
+    staleTime: 1000 * 60 * 5 // Cache for 5 minutes
   });
 
   const { data: guests = [] } = useEventGuestData(event.id, userRSVPStatus);
