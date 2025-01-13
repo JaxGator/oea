@@ -12,6 +12,7 @@ interface EventCardDetailedViewProps {
   attendeeNames: string[];
   userRSVPStatus: string | null;
   isAdmin: boolean;
+  canManageEvents: boolean;
   isPastEvent: boolean;
   isWixEvent: boolean;
   canAddGuests: boolean;

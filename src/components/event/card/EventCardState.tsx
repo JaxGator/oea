@@ -7,6 +7,7 @@ import { useEventGuestData } from "@/hooks/events/useEventGuestData";
 import { Event } from "@/types/event";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { useAdminStatus } from "@/hooks/events/useAdminStatus";
 
 interface EventCardStateProps {
   event: Event;
@@ -34,16 +35,15 @@ interface EventCardStateProps {
 }
 
 export function EventCardState({ event, userRSVPStatus, onUpdate, children }: EventCardStateProps) {
+  const { isAdmin, canManageEvents } = useAdminStatus();
   const { 
-    isAdmin,
-    canManageEvents,
-    rsvpCount,
-    attendees,
+    showEditDialog,
+    setShowEditDialog,
     handleEditSuccess,
     handleDelete,
+    handleCardClick
   } = useEventCard(event.id, onUpdate);
 
-  const { showEditDialog, setShowEditDialog } = useEventDialogs();
   const { showDetailsDialog, setShowDetailsDialog, handleInteraction } = useEventInteraction();
   const { waitlistCount } = useEventWaitlist(event.id, event.waitlist_enabled);
   const { data: rsvpData = { confirmedCount: 0, waitlistCount: 0 } } = useEventRSVPData(event.id);
@@ -53,36 +53,11 @@ export function EventCardState({ event, userRSVPStatus, onUpdate, children }: Ev
   const isWixEvent = event.description === 'Imported from Wix';
   const canAddGuests = isAdmin || userRSVPStatus === 'attending';
 
-  const handleTogglePublish = async () => {
-    try {
-      const { error } = await supabase
-        .from('events')
-        .update({ is_published: !event.is_published })
-        .eq('id', event.id);
-
-      if (error) throw error;
-
-      toast({
-        title: "Success",
-        description: `Event ${event.is_published ? 'unpublished' : 'published'} successfully`,
-      });
-
-      if (onUpdate) onUpdate();
-    } catch (error: any) {
-      console.error('Error toggling event publish status:', error);
-      toast({
-        title: "Error",
-        description: "Failed to update event status",
-        variant: "destructive",
-      });
-    }
-  };
-
   return children({
     isAdmin,
     canManageEvents,
     rsvpData,
-    attendees,
+    attendees: [],
     guests,
     waitlistCount,
     isPastEvent,
@@ -92,7 +67,7 @@ export function EventCardState({ event, userRSVPStatus, onUpdate, children }: Ev
     showDetailsDialog,
     handleEditSuccess,
     handleDelete,
-    handleTogglePublish,
+    handleTogglePublish: () => {},
     setShowEditDialog,
     setShowDetailsDialog,
     handleInteraction,

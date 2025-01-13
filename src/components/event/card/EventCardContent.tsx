@@ -11,6 +11,7 @@ interface EventCardContentProps {
   event: Event;
   rsvpCount: number;
   isAdmin: boolean;
+  canManageEvents: boolean;
   userRSVPStatus: string | null;
   isPastEvent: boolean;
   canAddGuests: boolean;
