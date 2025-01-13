@@ -1065,7 +1065,7 @@ export type Database = {
           image_url?: string | null
           imported_rsvp_count?: number | null
           is_featured?: boolean | null
-          location?: never
+          location?: string | null
           max_guests?: number | null
           time?: string | null
           title?: string | null
@@ -1082,7 +1082,7 @@ export type Database = {
           image_url?: string | null
           imported_rsvp_count?: number | null
           is_featured?: boolean | null
-          location?: never
+          location?: string | null
           max_guests?: number | null
           time?: string | null
           title?: string | null
