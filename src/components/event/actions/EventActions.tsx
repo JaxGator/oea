@@ -45,49 +45,55 @@ export function EventActions({
   showPublishToggle = true,
 }: EventActionsProps) {
   return (
-    <div className="flex flex-wrap gap-2">
-      {!userRSVPStatus && !isPastEvent && isPublished && (
-        <RSVPButton 
-          isFullyBooked={isFullyBooked} 
-          onRSVP={onRSVP} 
-          canJoinWaitlist={canJoinWaitlist}
-        />
-      )}
+    <div className="flex flex-wrap items-center gap-3 justify-start">
+      <div className="flex gap-2 items-center">
+        {!userRSVPStatus && !isPastEvent && isPublished && (
+          <RSVPButton 
+            isFullyBooked={isFullyBooked} 
+            onRSVP={onRSVP} 
+            canJoinWaitlist={canJoinWaitlist}
+          />
+        )}
 
-      {userRSVPStatus === "attending" && !isPastEvent && (
-        <>
-          <Button
-            variant="destructive"
-            onClick={onCancelRSVP}
-          >
-            Cancel RSVP
-          </Button>
-          {canAddGuests && (
-            <AddGuestsButton 
-              onAddGuests={(newGuests) => onRSVP(newGuests)}
-              currentGuests={currentGuests}
-            />
-          )}
-        </>
-      )}
+        {userRSVPStatus === "attending" && !isPastEvent && (
+          <>
+            <Button
+              variant="destructive"
+              onClick={onCancelRSVP}
+              className="whitespace-nowrap"
+            >
+              Cancel RSVP
+            </Button>
+            {canAddGuests && (
+              <AddGuestsButton 
+                onAddGuests={(newGuests) => onRSVP(newGuests)}
+                currentGuests={currentGuests}
+              />
+            )}
+          </>
+        )}
+      </div>
 
       {(isAdmin || canManageEvents) && (
-        <AdminActions
-          onEdit={onEdit}
-          onDelete={onDelete}
-          onTogglePublish={onTogglePublish}
-          showDelete={true}
-          isWixEvent={isWixEvent}
-          isPublished={isPublished}
-          showPublishToggle={showPublishToggle}
-          canManageEvents={canManageEvents}
-        />
+        <div className="flex gap-2 items-center ml-auto">
+          <AdminActions
+            onEdit={onEdit}
+            onDelete={onDelete}
+            onTogglePublish={onTogglePublish}
+            showDelete={true}
+            isWixEvent={isWixEvent}
+            isPublished={isPublished}
+            showPublishToggle={showPublishToggle}
+            canManageEvents={canManageEvents}
+          />
+        </div>
       )}
 
       {(isAdmin || canManageEvents) && isPastEvent && (
         <Button
           variant="outline"
           onClick={onEdit}
+          className="whitespace-nowrap"
         >
           Edit RSVPs
         </Button>
