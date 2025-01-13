@@ -17,6 +17,7 @@ export function SessionManager({ children, queryClient }: SessionManagerProps) {
 
   useEffect(() => {
     let mounted = true;
+    let refreshTimer: NodeJS.Timeout;
 
     const checkSession = async () => {
       try {
@@ -39,26 +40,32 @@ export function SessionManager({ children, queryClient }: SessionManagerProps) {
           return;
         }
 
-        // Always try to refresh the session to ensure it's valid
-        const { data: { session: refreshedSession }, error: refreshError } = 
-          await supabase.auth.refreshSession(session);
+        // Check if token is about to expire (within 5 minutes)
+        const expiresAt = session?.expires_at || 0;
+        const isExpiringSoon = (expiresAt * 1000) - Date.now() < 5 * 60 * 1000;
 
-        if (refreshError) {
-          console.error('Session refresh failed:', refreshError);
-          await handleSessionError(refreshError);
-          return;
-        }
+        if (isExpiringSoon) {
+          console.log('Token expiring soon, refreshing...');
+          const { data: { session: refreshedSession }, error: refreshError } = 
+            await supabase.auth.refreshSession();
 
-        if (!refreshedSession) {
-          console.log('Session refresh returned no session');
-          if (isProtectedRoute(location.pathname)) {
-            await clearSessionData();
-            navigate('/auth');
+          if (refreshError) {
+            console.error('Session refresh failed:', refreshError);
+            await handleSessionError(refreshError);
+            return;
           }
-          return;
-        }
 
-        console.log('Session refreshed successfully');
+          if (!refreshedSession) {
+            console.log('Session refresh returned no session');
+            if (isProtectedRoute(location.pathname)) {
+              await clearSessionData();
+              navigate('/auth');
+            }
+            return;
+          }
+
+          console.log('Session refreshed successfully');
+        }
       } catch (err) {
         console.error('Session check failed:', err);
         await handleSessionError(err as AuthError);
@@ -117,18 +124,24 @@ export function SessionManager({ children, queryClient }: SessionManagerProps) {
         case 'TOKEN_REFRESHED':
           console.log('Token refreshed successfully');
           break;
+
+        case 'USER_DELETED':
+        case 'USER_UPDATED':
+          // Refresh the session to ensure we have the latest data
+          await checkSession();
+          break;
       }
     });
 
-    // Initial session check and refresh
+    // Initial session check
     checkSession();
 
-    // Set up periodic session checks (every 10 seconds)
-    const intervalId = setInterval(checkSession, 10000);
+    // Set up periodic session checks (every 4 minutes)
+    refreshTimer = setInterval(checkSession, 4 * 60 * 1000);
 
     return () => {
       mounted = false;
-      clearInterval(intervalId);
+      clearInterval(refreshTimer);
       subscription.unsubscribe();
     };
   }, [navigate, location, queryClient]);
