@@ -3,7 +3,6 @@ import { EventDetails } from "../EventDetails";
 import { EventActions } from "../EventActions";
 import { AddToCalendar } from "../AddToCalendar";
 import { EventShareMenu } from "../share/EventShareMenu";
-import { EventMap } from "../details/EventMap";
 import { useGoogleMapsToken } from "@/hooks/useGoogleMapsToken";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -47,7 +46,6 @@ export function EventCardDetailedView({
   onEdit,
   onDelete
 }: EventCardDetailedViewProps) {
-  const { mapKey, isLoading: isMapKeyLoading } = useGoogleMapsToken();
   const disableRSVP = isPastEvent || (isPastEvent && isWixEvent);
   const isFullyBooked = rsvpCount >= event.max_guests;
   const canAddToCalendar = userRSVPStatus === 'attending' || isAdmin;
@@ -76,14 +74,6 @@ export function EventCardDetailedView({
           userRSVPStatus={userRSVPStatus}
           showFullDescription
         />
-
-        {isMapKeyLoading ? (
-          <div className="w-full h-[300px] rounded-lg overflow-hidden">
-            <Skeleton className="w-full h-full animate-pulse" />
-          </div>
-        ) : mapKey ? (
-          <EventMap mapKey={mapKey} location={event.location} />
-        ) : null}
         
         {canAddToCalendar && !disableRSVP && (
           <AddToCalendar
