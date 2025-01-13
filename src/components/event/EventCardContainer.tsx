@@ -47,7 +47,6 @@ export function EventCardContainer({
             handleTogglePublish,
             setShowEditDialog,
             setShowDetailsDialog,
-            handleInteraction,
           }) => (
             <>
               <EventCardInteractions
@@ -63,11 +62,9 @@ export function EventCardContainer({
                 onSelect={onSelect}
                 onRSVP={handleRSVP}
                 onCancelRSVP={() => onCancelRSVP(event.id)}
-                handleInteraction={handleInteraction}
                 setShowEditDialog={setShowEditDialog}
                 setShowDetailsDialog={setShowDetailsDialog}
                 handleDelete={handleDelete}
-                handleTogglePublish={handleTogglePublish}
                 isPublished={event.is_published ?? true}
               />
 
