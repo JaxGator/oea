@@ -1,17 +1,15 @@
 import { Event } from "@/types/event";
 import { EventCardBasicInfo } from "./EventCardBasicInfo";
-import { EventMetadata } from "./EventMetadata";
-import { EventActions } from "../actions/EventActions";
-import { EventMap } from "../details/EventMap";
-import { AttendeeList } from "../details/AttendeeList";
-import { LocationDisplay } from "../details/LocationDisplay";
 import { WaitlistInfo } from "./WaitlistInfo";
-import { cn } from "@/lib/utils";
+import { AttendeeList } from "../details/AttendeeList";
+import { EventImageSection } from "./sections/EventImageSection";
+import { EventDetailsSection } from "./sections/EventDetailsSection";
+import { EventActionsSection } from "./sections/EventActionsSection";
 
 interface EventCardDetailedViewProps {
   event: Event;
-  rsvpCount?: number;
-  attendeeNames?: string[];
+  rsvpCount: number;
+  attendeeNames: string[];
   userRSVPStatus: string | null;
   isAdmin: boolean;
   isPastEvent: boolean;
@@ -26,8 +24,8 @@ interface EventCardDetailedViewProps {
 
 export function EventCardDetailedView({
   event,
-  rsvpCount = 0,
-  attendeeNames = [],
+  rsvpCount,
+  attendeeNames,
   userRSVPStatus,
   isAdmin,
   isPastEvent,
@@ -44,13 +42,7 @@ export function EventCardDetailedView({
 
   return (
     <div className="flex flex-col gap-6 animate-fade-in">
-      <div className="aspect-video relative rounded-t-lg overflow-hidden">
-        <img
-          src={event.image_url}
-          alt={event.title}
-          className="w-full h-full object-cover"
-        />
-      </div>
+      <EventImageSection imageUrl={event.image_url} title={event.title} />
 
       <div className="px-6 space-y-6">
         <EventCardBasicInfo
@@ -65,17 +57,13 @@ export function EventCardDetailedView({
           isPastEvent={isPastEvent}
         />
         
-        <div className="space-y-4">
-          <LocationDisplay location={event.location} showLocation={true} />
-          <EventMetadata
-            event={event}
-            canAddToCalendar={!isPastEvent}
-            isPastEvent={isPastEvent}
-            rsvpCount={rsvpCount}
-            maxGuests={event.max_guests}
-            attendeeNames={attendeeNames}
-          />
-        </div>
+        <EventDetailsSection
+          event={event}
+          rsvpCount={rsvpCount}
+          maxGuests={event.max_guests}
+          attendeeNames={attendeeNames}
+          isPastEvent={isPastEvent}
+        />
 
         {event.description && (
           <div className="prose max-w-none">
@@ -83,26 +71,22 @@ export function EventCardDetailedView({
           </div>
         )}
 
-        <div className={cn(
-          "flex flex-wrap items-center gap-4",
-          "shadow-sm rounded-lg bg-white p-4"
-        )}>
-          <EventActions
-            isAdmin={isAdmin}
-            userRSVPStatus={userRSVPStatus}
-            isFullyBooked={isFullyBooked}
-            canJoinWaitlist={canJoinWaitlist}
-            onRSVP={onRSVP}
-            onCancelRSVP={onCancelRSVP}
-            onEdit={onEdit}
-            onDelete={onDelete}
-            isPastEvent={isPastEvent}
-            isWixEvent={isWixEvent}
-            isPublished={event.is_published}
-            canAddGuests={canAddGuests}
-            currentGuests={currentGuests}
-          />
-        </div>
+        <EventActionsSection
+          isAdmin={isAdmin}
+          userRSVPStatus={userRSVPStatus}
+          isFullyBooked={isFullyBooked}
+          canJoinWaitlist={canJoinWaitlist}
+          onRSVP={onRSVP}
+          onCancelRSVP={onCancelRSVP}
+          onEdit={onEdit}
+          onDelete={onDelete}
+          onTogglePublish={() => {}}
+          isPastEvent={isPastEvent}
+          isWixEvent={isWixEvent}
+          isPublished={event.is_published ?? true}
+          canAddGuests={canAddGuests}
+          currentGuests={currentGuests}
+        />
 
         {event.waitlist_enabled && (
           <WaitlistInfo
