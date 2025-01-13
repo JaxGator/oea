@@ -2,8 +2,7 @@ import { Event } from "@/types/event";
 import { EventCardWrapper } from "../EventCardWrapper";
 import { EventCardHeader } from "../EventCardHeader";
 import { EventCardContent } from "./EventCardContent";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 
 interface EventCardInteractionsProps {
   event: Event;
@@ -42,10 +41,10 @@ export function EventCardInteractions({
   handleDelete,
   isPublished,
 }: EventCardInteractionsProps) {
-  const handleCardClick = (e: React.MouseEvent | React.KeyboardEvent) => {
-    if (onSelect) {
-      onSelect();
-    }
+  const navigate = useNavigate();
+
+  const handleCardClick = (e: React.MouseEvent | React.KeyboardEvent | undefined) => {
+    if (!e) return;
     
     // Check if the event is coming from an interactive element
     const target = e.target as HTMLElement;
@@ -74,23 +73,7 @@ export function EventCardInteractions({
       }
     }
 
-    setShowDetailsDialog(true);
-  };
-
-  const handleTogglePublish = async () => {
-    try {
-      const { error } = await supabase
-        .from('events')
-        .update({ is_published: !isPublished })
-        .eq('id', event.id);
-
-      if (error) throw error;
-
-      toast.success(`Event ${isPublished ? 'unpublished' : 'published'} successfully`);
-    } catch (error) {
-      console.error('Error toggling publish status:', error);
-      toast.error("Failed to update event publish status");
-    }
+    navigate(`/events/${event.id}`);
   };
 
   return (
@@ -119,7 +102,7 @@ export function EventCardInteractions({
         onCancelRSVP={onCancelRSVP}
         onEdit={() => setShowEditDialog(true)}
         onDelete={handleDelete}
-        onTogglePublish={!isPastEvent ? handleTogglePublish : undefined}
+        showPublishToggle={!isPastEvent}
         isPublished={isPublished}
         onViewDetails={() => setShowDetailsDialog(true)}
       />
