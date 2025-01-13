@@ -51,7 +51,6 @@ export function EventCardContent({
   onViewDetails,
 }: EventCardContentProps) {
   const [editedRSVPCount, setEditedRSVPCount] = useState(rsvpCount.toString());
-  const [isEditingRSVP, setIsEditingRSVP] = useState(false);
 
   const handleSaveRSVP = async () => {
     try {
@@ -69,7 +68,6 @@ export function EventCardContent({
       if (error) throw error;
 
       toast.success("RSVP count updated successfully");
-      setIsEditingRSVP(false);
     } catch (error) {
       console.error('Error updating RSVP count:', error);
       toast.error("Failed to update RSVP count");
@@ -100,10 +98,9 @@ export function EventCardContent({
           isAdmin={isAdmin}
           isPastEvent={isPastEvent}
           editedRSVPCount={editedRSVPCount}
-          isEditingRSVP={isEditingRSVP}
-          onEditRSVP={() => setIsEditingRSVP(true)}
+          onEditRSVP={() => {}}
           onSaveRSVP={handleSaveRSVP}
-          onCancelEdit={() => setIsEditingRSVP(false)}
+          onCancelEdit={() => {}}
           onRSVPCountChange={setEditedRSVPCount}
         />
 

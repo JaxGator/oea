@@ -2,6 +2,7 @@ import { EventActions } from "../../actions/EventActions";
 
 interface EventActionsSectionProps {
   isAdmin: boolean;
+  canManageEvents: boolean;
   userRSVPStatus: string | null;
   isFullyBooked: boolean;
   canJoinWaitlist: boolean;
@@ -19,6 +20,7 @@ interface EventActionsSectionProps {
 
 export function EventActionsSection({
   isAdmin,
+  canManageEvents,
   userRSVPStatus,
   isFullyBooked,
   canJoinWaitlist,
@@ -37,6 +39,7 @@ export function EventActionsSection({
     <div className="shadow-sm rounded-lg bg-white p-4">
       <EventActions
         isAdmin={isAdmin}
+        canManageEvents={canManageEvents}
         userRSVPStatus={userRSVPStatus}
         isFullyBooked={isFullyBooked}
         canJoinWaitlist={canJoinWaitlist}
