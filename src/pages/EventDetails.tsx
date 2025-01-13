@@ -59,7 +59,7 @@ export default function EventDetails() {
       if (rsvpError) throw rsvpError;
 
       const rsvpsWithProfiles = rsvpData?.map((rsvp): EventRSVP => {
-        const profile = rsvp.profiles?.[0] as Profile; // Access first profile from the array
+        const profile = rsvp.profiles as Profile;
         return {
           id: rsvp.id,
           event_id: rsvp.event_id,

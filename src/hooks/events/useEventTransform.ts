@@ -16,6 +16,7 @@ type EventWithRsvps = {
   waitlist_enabled?: boolean;
   waitlist_capacity?: number | null;
   display_order?: number | null;
+  is_published?: boolean;
   event_rsvps?: Array<{
     id: string;
     event_id: string;
@@ -46,6 +47,7 @@ export const transformEventData = (data: EventWithRsvps[]): Event[] => {
     waitlist_enabled: event.waitlist_enabled,
     waitlist_capacity: event.waitlist_capacity,
     display_order: event.display_order,
+    is_published: event.is_published,
     rsvps: event.event_rsvps?.map((rsvp): EventRSVP => ({
       id: rsvp.id,
       event_id: rsvp.event_id,
