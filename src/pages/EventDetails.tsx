@@ -8,10 +8,17 @@ import { Event, EventRSVP } from "@/types/event";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useEffect } from "react";
 
-interface Profile {
+interface RSVPWithProfile {
   id: string;
-  full_name: string | null;
-  username: string;
+  event_id: string;
+  user_id: string;
+  response: 'attending' | 'not_attending' | 'maybe';
+  created_at: string;
+  profiles: {
+    id?: string;
+    full_name: string | null;
+    username: string;
+  };
 }
 
 export default function EventDetails() {
@@ -58,16 +65,16 @@ export default function EventDetails() {
 
       if (rsvpError) throw rsvpError;
 
-      const rsvpsWithProfiles = rsvpData?.map((rsvp): EventRSVP => ({
+      const rsvpsWithProfiles = (rsvpData as RSVPWithProfile[])?.map((rsvp): EventRSVP => ({
         id: rsvp.id,
         event_id: rsvp.event_id,
         user_id: rsvp.user_id,
         response: rsvp.response,
         created_at: rsvp.created_at,
         profiles: {
-          id: rsvp.profiles?.id,
-          full_name: rsvp.profiles?.full_name,
-          username: rsvp.profiles?.username || 'Unknown User'
+          id: rsvp.profiles.id,
+          full_name: rsvp.profiles.full_name,
+          username: rsvp.profiles.username || 'Unknown User'
         }
       }));
 
