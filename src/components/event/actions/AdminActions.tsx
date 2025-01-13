@@ -8,6 +8,7 @@ interface AdminActionsProps {
   showDelete?: boolean;
   isWixEvent?: boolean;
   isPublished?: boolean;
+  showPublishToggle?: boolean;
   canManageEvents?: boolean;
 }
 
@@ -18,6 +19,7 @@ export function AdminActions({
   showDelete, 
   isWixEvent,
   isPublished = true,
+  showPublishToggle = true,
   canManageEvents = false
 }: AdminActionsProps) {
   if (!canManageEvents) return null;
@@ -35,18 +37,20 @@ export function AdminActions({
             Edit
           </Button>
 
-          <Button
-            variant="outline"
-            onClick={onTogglePublish}
-            className="ml-2"
-          >
-            {isPublished ? (
-              <EyeOff className="w-4 h-4 mr-2" />
-            ) : (
-              <Eye className="w-4 h-4 mr-2" />
-            )}
-            {isPublished ? 'Unpublish' : 'Publish'}
-          </Button>
+          {showPublishToggle && (
+            <Button
+              variant="outline"
+              onClick={onTogglePublish}
+              className="ml-2"
+            >
+              {isPublished ? (
+                <EyeOff className="w-4 h-4 mr-2" />
+              ) : (
+                <Eye className="w-4 h-4 mr-2" />
+              )}
+              {isPublished ? 'Unpublish' : 'Publish'}
+            </Button>
+          )}
         </>
       )}
 
