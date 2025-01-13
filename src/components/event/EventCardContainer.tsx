@@ -33,6 +33,7 @@ export function EventCardContainer({
         >
           {({
             isAdmin,
+            canManageEvents,
             rsvpData,
             attendees,
             guests,
@@ -52,6 +53,7 @@ export function EventCardContainer({
               <EventCardInteractions
                 event={event}
                 isAdmin={isAdmin}
+                canManageEvents={canManageEvents}
                 rsvpData={rsvpData}
                 userRSVPStatus={userRSVPStatus || null}
                 isPastEvent={isPastEvent}
@@ -83,6 +85,7 @@ export function EventCardContainer({
                 })}
                 userRSVPStatus={userRSVPStatus || null}
                 isAdmin={isAdmin}
+                canManageEvents={canManageEvents}
                 isPastEvent={isPastEvent}
                 isWixEvent={isWixEvent}
                 canAddGuests={canAddGuests}

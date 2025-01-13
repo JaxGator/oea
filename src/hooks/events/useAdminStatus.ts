@@ -7,6 +7,7 @@ export function useAdminStatus() {
 
   return {
     isAdmin: !!profile?.is_admin,
+    canManageEvents: !!profile?.is_admin || (!!profile?.is_approved && !!profile?.is_member),
     isLoading,
   };
 }

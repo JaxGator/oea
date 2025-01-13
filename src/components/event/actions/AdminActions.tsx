@@ -8,6 +8,7 @@ interface AdminActionsProps {
   showDelete?: boolean;
   isWixEvent?: boolean;
   isPublished?: boolean;
+  canManageEvents?: boolean;
 }
 
 export function AdminActions({ 
@@ -16,8 +17,11 @@ export function AdminActions({
   onTogglePublish,
   showDelete, 
   isWixEvent,
-  isPublished = true
+  isPublished = true,
+  canManageEvents = false
 }: AdminActionsProps) {
+  if (!canManageEvents) return null;
+
   return (
     <>
       {!isWixEvent && (
