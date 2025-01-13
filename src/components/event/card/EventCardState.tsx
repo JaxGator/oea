@@ -5,6 +5,8 @@ import { useEventWaitlist } from "@/hooks/events/useEventWaitlist";
 import { useEventRSVPData } from "@/hooks/events/useEventRSVPData";
 import { useEventGuestData } from "@/hooks/events/useEventGuestData";
 import { Event } from "@/types/event";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
 
 interface EventCardStateProps {
   event: Event;
@@ -23,6 +25,7 @@ interface EventCardStateProps {
     showDetailsDialog: boolean;
     handleEditSuccess: () => void;
     handleDelete: () => void;
+    handleTogglePublish: () => void;
     setShowEditDialog: (show: boolean) => void;
     setShowDetailsDialog: (show: boolean) => void;
     handleInteraction: (e: React.MouseEvent | React.KeyboardEvent) => void;
@@ -48,6 +51,31 @@ export function EventCardState({ event, userRSVPStatus, onUpdate, children }: Ev
   const isWixEvent = event.description === 'Imported from Wix';
   const canAddGuests = isAdmin || userRSVPStatus === 'attending';
 
+  const handleTogglePublish = async () => {
+    try {
+      const { error } = await supabase
+        .from('events')
+        .update({ is_published: !event.is_published })
+        .eq('id', event.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: `Event ${event.is_published ? 'unpublished' : 'published'} successfully`,
+      });
+
+      if (onUpdate) onUpdate();
+    } catch (error: any) {
+      console.error('Error toggling event publish status:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update event status",
+        variant: "destructive",
+      });
+    }
+  };
+
   return children({
     isAdmin,
     rsvpData,
@@ -61,6 +89,7 @@ export function EventCardState({ event, userRSVPStatus, onUpdate, children }: Ev
     showDetailsDialog,
     handleEditSuccess,
     handleDelete,
+    handleTogglePublish,
     setShowEditDialog,
     setShowDetailsDialog,
     handleInteraction,

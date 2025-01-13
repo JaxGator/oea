@@ -9,8 +9,10 @@ interface EventCardActionsProps {
   onCancelRSVP: () => void;
   onEdit: () => void;
   onDelete: () => void;
+  onTogglePublish: () => void;
   isPastEvent: boolean;
   isWixEvent: boolean;
+  isPublished: boolean;
   canAddGuests: boolean;
   currentGuests?: { firstName: string }[];
 }
@@ -24,8 +26,10 @@ export function EventCardActions({
   onCancelRSVP,
   onEdit,
   onDelete,
+  onTogglePublish,
   isPastEvent,
   isWixEvent,
+  isPublished,
   canAddGuests,
   currentGuests = [],
 }: EventCardActionsProps) {
@@ -39,8 +43,10 @@ export function EventCardActions({
       onCancelRSVP={onCancelRSVP}
       onEdit={onEdit}
       onDelete={onDelete}
+      onTogglePublish={onTogglePublish}
       isPastEvent={isPastEvent}
       isWixEvent={isWixEvent}
+      isPublished={isPublished}
       showDelete={isAdmin && (isPastEvent || isWixEvent)}
       canAddGuests={canAddGuests}
       currentGuests={currentGuests}

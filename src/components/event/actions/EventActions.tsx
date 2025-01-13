@@ -15,8 +15,10 @@ interface EventActionsProps {
   onCancelRSVP: () => void;
   onEdit?: () => void;
   onDelete?: () => void;
+  onTogglePublish?: () => void;
   isPastEvent?: boolean;
   isWixEvent?: boolean;
+  isPublished?: boolean;
   showDelete?: boolean;
   canAddGuests?: boolean;
   currentGuests?: Guest[];
@@ -31,8 +33,10 @@ export function EventActions({
   onCancelRSVP,
   onEdit,
   onDelete,
+  onTogglePublish,
   isPastEvent,
   isWixEvent,
+  isPublished = true,
   showDelete,
   canAddGuests,
   currentGuests = [],
@@ -40,7 +44,7 @@ export function EventActions({
 }: EventActionsProps) {
   return (
     <div className="flex flex-wrap gap-2">
-      {!userRSVPStatus && !isPastEvent && (
+      {!userRSVPStatus && !isPastEvent && isPublished && (
         <RSVPButton 
           isFullyBooked={isFullyBooked} 
           onRSVP={onRSVP} 
@@ -69,8 +73,10 @@ export function EventActions({
         <AdminActions
           onEdit={onEdit}
           onDelete={onDelete}
+          onTogglePublish={onTogglePublish}
           showDelete={showDelete}
           isWixEvent={isWixEvent}
+          isPublished={isPublished}
         />
       )}
     </div>

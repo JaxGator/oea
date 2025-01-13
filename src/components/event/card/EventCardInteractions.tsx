@@ -19,6 +19,7 @@ interface EventCardInteractionsProps {
   setShowEditDialog: (show: boolean) => void;
   setShowDetailsDialog: (show: boolean) => void;
   handleDelete: () => void;
+  handleTogglePublish: () => void;
 }
 
 export function EventCardInteractions({
@@ -37,6 +38,7 @@ export function EventCardInteractions({
   setShowEditDialog,
   setShowDetailsDialog,
   handleDelete,
+  handleTogglePublish,
 }: EventCardInteractionsProps) {
   const handleCardClick = (e: React.MouseEvent | React.KeyboardEvent) => {
     if (onSelect) {
@@ -69,6 +71,7 @@ export function EventCardInteractions({
         onCancelRSVP={onCancelRSVP}
         onEdit={() => setShowEditDialog(true)}
         onDelete={handleDelete}
+        onTogglePublish={handleTogglePublish}
         onViewDetails={() => setShowDetailsDialog(true)}
       />
     </EventCardWrapper>

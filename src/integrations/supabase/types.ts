@@ -246,6 +246,7 @@ export type Database = {
           image_url: string
           imported_rsvp_count: number | null
           is_featured: boolean | null
+          is_published: boolean | null
           location: string
           max_guests: number
           reminder_enabled: boolean | null
@@ -267,6 +268,7 @@ export type Database = {
           image_url: string
           imported_rsvp_count?: number | null
           is_featured?: boolean | null
+          is_published?: boolean | null
           location: string
           max_guests: number
           reminder_enabled?: boolean | null
@@ -288,6 +290,7 @@ export type Database = {
           image_url?: string
           imported_rsvp_count?: number | null
           is_featured?: boolean | null
+          is_published?: boolean | null
           location?: string
           max_guests?: number
           reminder_enabled?: boolean | null
