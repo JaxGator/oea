@@ -27,7 +27,7 @@ export function EventCardWrapper({
       className={`relative overflow-hidden transition-all duration-200 ${
         isSelected ? 'ring-2 ring-primary' : ''
       } ${!isPublished ? 'opacity-75' : ''} ${
-        isFeatured ? 'ring-2 ring-[#F97316]' : ''
+        isFeatured ? 'ring-2 ring-[#f9c800]' : ''
       }`}
       onClick={onInteraction}
       onKeyDown={onKeyDown}
