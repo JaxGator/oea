@@ -39,9 +39,9 @@ export function SessionManager({ children, queryClient }: SessionManagerProps) {
           return;
         }
 
-        // Attempt to refresh session if it exists
+        // Always try to refresh the session to ensure it's valid
         const { data: { session: refreshedSession }, error: refreshError } = 
-          await supabase.auth.refreshSession();
+          await supabase.auth.refreshSession(session);
 
         if (refreshError) {
           console.error('Session refresh failed:', refreshError);
@@ -123,8 +123,8 @@ export function SessionManager({ children, queryClient }: SessionManagerProps) {
     // Initial session check and refresh
     checkSession();
 
-    // Set up periodic session checks
-    const intervalId = setInterval(checkSession, 15000); // Check every 15 seconds
+    // Set up periodic session checks (every 10 seconds)
+    const intervalId = setInterval(checkSession, 10000);
 
     return () => {
       mounted = false;
