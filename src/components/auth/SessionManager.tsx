@@ -125,7 +125,6 @@ export function SessionManager({ children, queryClient }: SessionManagerProps) {
           console.log('Token refreshed successfully');
           break;
 
-        case 'USER_DELETED':
         case 'USER_UPDATED':
           // Refresh the session to ensure we have the latest data
           await checkSession();
