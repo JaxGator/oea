@@ -29,6 +29,7 @@ export function EventCardDetailedView({
   attendeeNames,
   userRSVPStatus,
   isAdmin,
+  canManageEvents,
   isPastEvent,
   isWixEvent,
   canAddGuests,
@@ -78,6 +79,7 @@ export function EventCardDetailedView({
 
         <EventActionsSection
           isAdmin={isAdmin}
+          canManageEvents={canManageEvents}
           userRSVPStatus={userRSVPStatus}
           isFullyBooked={isFullyBooked}
           canJoinWaitlist={canJoinWaitlist}
