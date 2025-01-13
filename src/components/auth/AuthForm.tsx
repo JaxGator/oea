@@ -11,7 +11,7 @@ export function AuthForm() {
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log('Auth event:', event, 'Session:', session);
+      console.log('Auth state change:', event, 'Session:', session);
       
       if (event === 'SIGNED_OUT') {
         toast({
@@ -27,6 +27,12 @@ export function AuthForm() {
         setAuthError(null);
       } else if (event === 'USER_UPDATED') {
         console.log('User updated:', session?.user);
+      } else if (event === 'PASSWORD_RECOVERY') {
+        setAuthError(null);
+        toast({
+          title: "Password Recovery",
+          description: "Check your email for password reset instructions",
+        });
       }
     });
 
@@ -51,6 +57,12 @@ export function AuthForm() {
   }, [toast]);
 
   const getErrorMessage = (error: AuthError): string => {
+    console.error('Authentication error details:', {
+      code: error instanceof AuthApiError ? error.status : 'unknown',
+      message: error.message,
+      details: error
+    });
+
     if (error instanceof AuthApiError) {
       switch (error.message) {
         case 'Invalid login credentials':
@@ -62,10 +74,10 @@ export function AuthForm() {
         case 'Invalid grant':
           return 'Invalid login credentials. Please check your email and password.';
         default:
-          return error.message;
+          return `Authentication error: ${error.message}`;
       }
     }
-    return error.message;
+    return error.message || 'An unexpected error occurred. Please try again.';
   };
 
   return (
