@@ -24,6 +24,7 @@ interface EventCardContentProps {
   showPublishToggle?: boolean;
   isPublished?: boolean;
   onViewDetails?: () => void;
+  onTogglePublish?: () => void;
 }
 
 export function EventCardContent({
@@ -45,6 +46,7 @@ export function EventCardContent({
   showPublishToggle,
   isPublished = true,
   onViewDetails,
+  onTogglePublish,
 }: EventCardContentProps) {
   const isFullyBooked = rsvpCount >= event.max_guests;
   const canJoinWaitlist = waitlistEnabled && 
@@ -95,6 +97,7 @@ export function EventCardContent({
         currentGuests={currentGuests}
         showPublishToggle={showPublishToggle}
         isPublished={isPublished}
+        onTogglePublish={onTogglePublish}
       />
     </div>
   );
