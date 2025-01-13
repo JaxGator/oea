@@ -49,7 +49,7 @@ export function CreateEventDialog({ open, onOpenChange, onSuccess }: CreateEvent
 
         const { data: profile, error: profileError } = await supabase
           .from('profiles')
-          .select('is_admin')
+          .select('is_admin, is_approved, is_member')
           .eq('id', session.user.id)
           .single();
 
@@ -63,7 +63,11 @@ export function CreateEventDialog({ open, onOpenChange, onSuccess }: CreateEvent
           return;
         }
 
-        setCanCreateEvents(profile?.is_admin || false);
+        // Allow both admins and approved members to create events
+        setCanCreateEvents(
+          (profile?.is_admin || false) || 
+          (profile?.is_approved && profile?.is_member) || false
+        );
       } catch (error) {
         console.error('Permission check error:', error);
         setCanCreateEvents(false);
