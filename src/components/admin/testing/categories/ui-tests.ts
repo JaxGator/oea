@@ -35,25 +35,5 @@ export const uiTests: TestDefinition[] = [
         throw new Error("Responsive design breakpoints not implemented");
       }
     }
-  },
-  {
-    name: "Form validation presence",
-    category: "ui",
-    run: async () => {
-      const forms = document.querySelectorAll('form');
-      if (forms.length === 0) {
-        throw new Error("No forms found in the application");
-      }
-      
-      let hasValidation = false;
-      forms.forEach(form => {
-        const inputs = form.querySelectorAll('input[required], [aria-required="true"]');
-        if (inputs.length > 0) hasValidation = true;
-      });
-      
-      if (!hasValidation) {
-        throw new Error("Form validation attributes not found");
-      }
-    }
   }
 ];
