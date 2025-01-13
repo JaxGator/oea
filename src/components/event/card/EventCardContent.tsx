@@ -59,12 +59,7 @@ export function EventCardContent({
     <>
       <CardContent className="p-4">
         <div className="flex justify-between items-start mb-4">
-          <div className="space-y-4 w-full">
-            {event.is_featured && (
-              <div className="mb-2">
-                <FeaturedEventBadge />
-              </div>
-            )}
+          <div className="space-y-4 flex-1">
             <EventCardBasicInfo
               date={event.date}
               location={event.location}
@@ -78,6 +73,11 @@ export function EventCardContent({
               isPastEvent={isPastEvent}
             />
           </div>
+          {event.is_featured && (
+            <div className="ml-4">
+              <FeaturedEventBadge />
+            </div>
+          )}
         </div>
 
         <EventAdminEdit
