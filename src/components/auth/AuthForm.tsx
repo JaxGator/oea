@@ -3,7 +3,7 @@ import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useEffect, useState } from "react";
-import { AuthError } from "@supabase/supabase-js";
+import { AuthError, AuthApiError } from "@supabase/supabase-js";
 
 export function AuthForm() {
   const { toast } = useToast();
@@ -51,16 +51,21 @@ export function AuthForm() {
   }, [toast]);
 
   const getErrorMessage = (error: AuthError): string => {
-    switch (error.message) {
-      case 'Invalid login credentials':
-        return 'Invalid email or password. Please check your credentials and try again.';
-      case 'Email not confirmed':
-        return 'Please verify your email address before signing in.';
-      case 'User not found':
-        return 'No account found with these credentials.';
-      default:
-        return error.message;
+    if (error instanceof AuthApiError) {
+      switch (error.message) {
+        case 'Invalid login credentials':
+          return 'Invalid email or password. Please check your credentials and try again.';
+        case 'Email not confirmed':
+          return 'Please verify your email address before signing in.';
+        case 'User not found':
+          return 'No account found with these credentials.';
+        case 'Invalid grant':
+          return 'Invalid login credentials. Please check your email and password.';
+        default:
+          return error.message;
+      }
     }
+    return error.message;
   };
 
   return (
