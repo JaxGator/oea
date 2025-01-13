@@ -54,7 +54,17 @@ export function EventCardContent({
     <div className="p-4 space-y-4">
       {event.is_featured && <FeaturedEventBadge />}
       
-      <EventCardBasicInfo event={event} />
+      <EventCardBasicInfo
+        date={event.date}
+        location={event.location}
+        rsvpCount={rsvpCount}
+        maxGuests={event.max_guests}
+        isWixEvent={!!event.imported_rsvp_count}
+        waitlistEnabled={event.waitlist_enabled}
+        waitlistCapacity={event.waitlist_capacity}
+        importedRsvpCount={event.imported_rsvp_count}
+        isPastEvent={isPastEvent}
+      />
       
       <EventMetadata
         maxGuests={event.max_guests}
