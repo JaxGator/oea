@@ -6,7 +6,8 @@ import { Event } from "@/types/event";
 import { EventCardBasicInfo } from "./EventCardBasicInfo";
 import { EventCardActions } from "./EventCardActions";
 import { EventAdminEdit } from "./EventAdminEdit";
-import { FeaturedEventBadge } from "./FeaturedEventBadge";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 interface EventCardContentProps {
   event: Event;
@@ -33,6 +34,7 @@ export function EventCardContent({
   event,
   rsvpCount,
   isAdmin,
+  canManageEvents,
   userRSVPStatus,
   isPastEvent,
   canAddGuests,
@@ -51,9 +53,28 @@ export function EventCardContent({
   const [editedRSVPCount, setEditedRSVPCount] = useState(rsvpCount.toString());
   const [isEditingRSVP, setIsEditingRSVP] = useState(false);
 
-  const isFullyBooked = rsvpCount >= event.max_guests;
-  const canJoinWaitlist = waitlistEnabled && isFullyBooked && 
-    (!waitlistCapacity || waitlistCount < waitlistCapacity);
+  const handleSaveRSVP = async () => {
+    try {
+      const newCount = parseInt(editedRSVPCount);
+      if (isNaN(newCount) || newCount < 0) {
+        toast.error("Please enter a valid number");
+        return;
+      }
+
+      const { error } = await supabase
+        .from('events')
+        .update({ imported_rsvp_count: newCount })
+        .eq('id', event.id);
+
+      if (error) throw error;
+
+      toast.success("RSVP count updated successfully");
+      setIsEditingRSVP(false);
+    } catch (error) {
+      console.error('Error updating RSVP count:', error);
+      toast.error("Failed to update RSVP count");
+    }
+  };
 
   return (
     <>
@@ -73,19 +94,15 @@ export function EventCardContent({
               isPastEvent={isPastEvent}
             />
           </div>
-          {event.is_featured && (
-            <div className="ml-4">
-              <FeaturedEventBadge />
-            </div>
-          )}
         </div>
 
         <EventAdminEdit
           isAdmin={isAdmin}
           isPastEvent={isPastEvent}
           editedRSVPCount={editedRSVPCount}
+          isEditingRSVP={isEditingRSVP}
           onEditRSVP={() => setIsEditingRSVP(true)}
-          onSaveRSVP={() => {}}
+          onSaveRSVP={handleSaveRSVP}
           onCancelEdit={() => setIsEditingRSVP(false)}
           onRSVPCountChange={setEditedRSVPCount}
         />
@@ -104,9 +121,11 @@ export function EventCardContent({
       <CardFooter className="p-4 pt-0">
         <EventCardActions
           isAdmin={isAdmin}
+          canManageEvents={canManageEvents}
           userRSVPStatus={userRSVPStatus}
-          isFullyBooked={isFullyBooked}
-          canJoinWaitlist={canJoinWaitlist}
+          isFullyBooked={rsvpCount >= event.max_guests}
+          canJoinWaitlist={waitlistEnabled && rsvpCount >= event.max_guests && 
+            (!waitlistCapacity || waitlistCount < waitlistCapacity)}
           onRSVP={onRSVP}
           onCancelRSVP={onCancelRSVP}
           onEdit={onEdit}

@@ -2,6 +2,7 @@ import { EventActions } from "../actions/EventActions";
 
 interface EventCardActionsProps {
   isAdmin: boolean;
+  canManageEvents: boolean;
   userRSVPStatus: string | null;
   isFullyBooked: boolean;
   canJoinWaitlist: boolean;
@@ -19,6 +20,7 @@ interface EventCardActionsProps {
 
 export function EventCardActions({
   isAdmin,
+  canManageEvents,
   userRSVPStatus,
   isFullyBooked,
   canJoinWaitlist,
@@ -36,6 +38,7 @@ export function EventCardActions({
   return (
     <EventActions
       isAdmin={isAdmin}
+      canManageEvents={canManageEvents}
       userRSVPStatus={userRSVPStatus}
       isFullyBooked={isFullyBooked}
       canJoinWaitlist={canJoinWaitlist}
@@ -47,7 +50,6 @@ export function EventCardActions({
       isPastEvent={isPastEvent}
       isWixEvent={isWixEvent}
       isPublished={isPublished}
-      showDelete={isAdmin && (isPastEvent || isWixEvent)}
       canAddGuests={canAddGuests}
       currentGuests={currentGuests}
     />

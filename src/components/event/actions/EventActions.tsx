@@ -9,8 +9,10 @@ interface Guest {
 
 interface EventActionsProps {
   isAdmin: boolean;
+  canManageEvents: boolean;
   userRSVPStatus: string | null;
   isFullyBooked: boolean;
+  canJoinWaitlist: boolean;
   onRSVP: (guests?: Guest[]) => void;
   onCancelRSVP: () => void;
   onEdit?: () => void;
@@ -22,13 +24,14 @@ interface EventActionsProps {
   showDelete?: boolean;
   canAddGuests?: boolean;
   currentGuests?: Guest[];
-  canJoinWaitlist?: boolean;
 }
 
 export function EventActions({
   isAdmin,
+  canManageEvents,
   userRSVPStatus,
   isFullyBooked,
+  canJoinWaitlist,
   onRSVP,
   onCancelRSVP,
   onEdit,
@@ -39,8 +42,7 @@ export function EventActions({
   isPublished = true,
   showDelete,
   canAddGuests,
-  currentGuests = [],
-  canJoinWaitlist
+  currentGuests = []
 }: EventActionsProps) {
   return (
     <div className="flex flex-wrap gap-2">
@@ -69,7 +71,7 @@ export function EventActions({
         </>
       )}
 
-      {isAdmin && (
+      {(isAdmin || canManageEvents) && (
         <AdminActions
           onEdit={onEdit}
           onDelete={onDelete}
@@ -77,6 +79,7 @@ export function EventActions({
           showDelete={showDelete}
           isWixEvent={isWixEvent}
           isPublished={isPublished}
+          canManageEvents={canManageEvents}
         />
       )}
     </div>
