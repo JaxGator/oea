@@ -1,5 +1,4 @@
 import { LocationDisplay } from "../../details/LocationDisplay";
-import { EventMetadata } from "../EventMetadata";
 import { Event } from "@/types/event";
 
 interface EventDetailsSectionProps {
@@ -20,14 +19,15 @@ export function EventDetailsSection({
   return (
     <div className="space-y-4">
       <LocationDisplay location={event.location} showLocation={true} />
-      <EventMetadata
-        event={event}
-        canAddToCalendar={!isPastEvent}
-        isPastEvent={isPastEvent}
-        rsvpCount={rsvpCount}
-        maxGuests={maxGuests}
-        attendeeNames={attendeeNames}
-      />
+      <div className="text-sm text-gray-600">
+        <p>{new Date(event.date).toLocaleDateString('en-US', {
+          weekday: 'long',
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric'
+        })}</p>
+        <p>{event.time}</p>
+      </div>
     </div>
   );
 }
