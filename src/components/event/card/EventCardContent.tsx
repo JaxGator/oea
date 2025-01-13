@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { CardContent, CardFooter } from "@/components/ui/card";
+import { Event } from "@/types/event";
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Eye } from "lucide-react";
-import { Event } from "@/types/event";
 import { EventCardBasicInfo } from "./EventCardBasicInfo";
 import { EventCardActions } from "./EventCardActions";
 import { EventAdminEdit } from "./EventAdminEdit";
@@ -25,7 +25,7 @@ interface EventCardContentProps {
   onCancelRSVP: () => void;
   onEdit: () => void;
   onDelete: () => void;
-  onTogglePublish: () => void;
+  onTogglePublish?: () => void;
   isPublished: boolean;
   onViewDetails: () => void;
 }

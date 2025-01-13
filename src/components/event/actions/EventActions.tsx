@@ -18,9 +18,9 @@ interface EventActionsProps {
   onEdit?: () => void;
   onDelete?: () => void;
   onTogglePublish?: () => void;
-  isPastEvent?: boolean;
-  isWixEvent?: boolean;
-  isPublished?: boolean;
+  isPastEvent: boolean;
+  isWixEvent: boolean;
+  isPublished: boolean;
   showDelete?: boolean;
   canAddGuests?: boolean;
   currentGuests?: Guest[];
@@ -39,8 +39,7 @@ export function EventActions({
   onTogglePublish,
   isPastEvent,
   isWixEvent,
-  isPublished = true,
-  showDelete,
+  isPublished,
   canAddGuests,
   currentGuests = []
 }: EventActionsProps) {
@@ -75,8 +74,8 @@ export function EventActions({
         <AdminActions
           onEdit={onEdit}
           onDelete={onDelete}
-          onTogglePublish={onTogglePublish}
-          showDelete={showDelete}
+          onTogglePublish={!isPastEvent ? onTogglePublish : undefined}
+          showDelete={true}
           isWixEvent={isWixEvent}
           isPublished={isPublished}
           canManageEvents={canManageEvents}

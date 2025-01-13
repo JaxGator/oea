@@ -18,7 +18,6 @@ interface EventCardInteractionsProps {
   onSelect?: () => void;
   onRSVP: (guests?: { firstName: string }[]) => void;
   onCancelRSVP: () => void;
-  handleInteraction: (e: React.MouseEvent | React.KeyboardEvent) => void;
   setShowEditDialog: (show: boolean) => void;
   setShowDetailsDialog: (show: boolean) => void;
   handleDelete: () => void;
@@ -38,7 +37,6 @@ export function EventCardInteractions({
   onSelect,
   onRSVP,
   onCancelRSVP,
-  handleInteraction,
   setShowEditDialog,
   setShowDetailsDialog,
   handleDelete,
@@ -93,7 +91,7 @@ export function EventCardInteractions({
         onCancelRSVP={onCancelRSVP}
         onEdit={() => setShowEditDialog(true)}
         onDelete={handleDelete}
-        onTogglePublish={handleTogglePublish}
+        onTogglePublish={!isPastEvent ? handleTogglePublish : undefined}
         isPublished={isPublished}
         onViewDetails={() => setShowDetailsDialog(true)}
       />
