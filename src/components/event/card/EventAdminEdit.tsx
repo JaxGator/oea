@@ -24,6 +24,21 @@ export function EventAdminEdit({
 }: EventAdminEditProps) {
   const [isEditingRSVP, setIsEditingRSVP] = useState(false);
 
+  const handleEditClick = () => {
+    setIsEditingRSVP(true);
+    onEditRSVP();
+  };
+
+  const handleSave = () => {
+    onSaveRSVP();
+    setIsEditingRSVP(false);
+  };
+
+  const handleCancel = () => {
+    onCancelEdit();
+    setIsEditingRSVP(false);
+  };
+
   if (!isAdmin || !isPastEvent) return null;
 
   return (
@@ -37,10 +52,10 @@ export function EventAdminEdit({
             className="w-24"
             min="0"
           />
-          <Button size="sm" onClick={onSaveRSVP}>
+          <Button size="sm" onClick={handleSave}>
             Save
           </Button>
-          <Button size="sm" variant="outline" onClick={onCancelEdit}>
+          <Button size="sm" variant="outline" onClick={handleCancel}>
             Cancel
           </Button>
         </div>
@@ -48,7 +63,7 @@ export function EventAdminEdit({
         <Button
           variant="outline"
           size="sm"
-          onClick={onEditRSVP}
+          onClick={handleEditClick}
           className="flex items-center gap-2"
         >
           <Edit className="h-4 w-4" />

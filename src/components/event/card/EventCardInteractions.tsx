@@ -2,6 +2,8 @@ import { Event } from "@/types/event";
 import { EventCardWrapper } from "../EventCardWrapper";
 import { EventCardHeader } from "../EventCardHeader";
 import { EventCardContent } from "./EventCardContent";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 interface EventCardInteractionsProps {
   event: Event;
@@ -20,7 +22,6 @@ interface EventCardInteractionsProps {
   setShowEditDialog: (show: boolean) => void;
   setShowDetailsDialog: (show: boolean) => void;
   handleDelete: () => void;
-  handleTogglePublish: () => void;
   isPublished: boolean;
 }
 
@@ -41,7 +42,6 @@ export function EventCardInteractions({
   setShowEditDialog,
   setShowDetailsDialog,
   handleDelete,
-  handleTogglePublish,
   isPublished,
 }: EventCardInteractionsProps) {
   const handleCardClick = (e: React.MouseEvent | React.KeyboardEvent) => {
@@ -49,6 +49,22 @@ export function EventCardInteractions({
       onSelect();
     }
     handleInteraction(e);
+  };
+
+  const handleTogglePublish = async () => {
+    try {
+      const { error } = await supabase
+        .from('events')
+        .update({ is_published: !isPublished })
+        .eq('id', event.id);
+
+      if (error) throw error;
+
+      toast.success(`Event ${isPublished ? 'unpublished' : 'published'} successfully`);
+    } catch (error) {
+      console.error('Error toggling publish status:', error);
+      toast.error("Failed to update event publish status");
+    }
   };
 
   return (
