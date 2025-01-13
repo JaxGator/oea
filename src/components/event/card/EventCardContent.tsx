@@ -2,8 +2,6 @@ import { useState } from "react";
 import { CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Eye } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "@/hooks/use-toast";
 import { Event } from "@/types/event";
 import { EventCardBasicInfo } from "./EventCardBasicInfo";
 import { EventCardActions } from "./EventCardActions";
@@ -24,6 +22,8 @@ interface EventCardContentProps {
   onCancelRSVP: () => void;
   onEdit: () => void;
   onDelete: () => void;
+  onTogglePublish: () => void;
+  isPublished: boolean;
   onViewDetails: () => void;
 }
 
@@ -42,6 +42,8 @@ export function EventCardContent({
   onCancelRSVP,
   onEdit,
   onDelete,
+  onTogglePublish,
+  isPublished,
   onViewDetails,
 }: EventCardContentProps) {
   const [editedRSVPCount, setEditedRSVPCount] = useState(rsvpCount.toString());
@@ -50,40 +52,6 @@ export function EventCardContent({
   const isFullyBooked = rsvpCount >= event.max_guests;
   const canJoinWaitlist = waitlistEnabled && isFullyBooked && 
     (!waitlistCapacity || waitlistCount < waitlistCapacity);
-
-  const handleRSVPEdit = async () => {
-    const newCount = parseInt(editedRSVPCount);
-    if (isNaN(newCount) || newCount < 0) {
-      toast({
-        title: "Invalid count",
-        description: "Please enter a valid number",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    try {
-      const { error } = await supabase
-        .from('events')
-        .update({ imported_rsvp_count: newCount })
-        .eq('id', event.id);
-
-      if (error) throw error;
-
-      toast({
-        title: "Success",
-        description: "RSVP count updated successfully",
-      });
-      setIsEditingRSVP(false);
-    } catch (error) {
-      console.error('Error updating RSVP count:', error);
-      toast({
-        title: "Error",
-        description: "Failed to update RSVP count",
-        variant: "destructive",
-      });
-    }
-  };
 
   return (
     <>
@@ -108,7 +76,7 @@ export function EventCardContent({
           isPastEvent={isPastEvent}
           editedRSVPCount={editedRSVPCount}
           onEditRSVP={() => setIsEditingRSVP(true)}
-          onSaveRSVP={handleRSVPEdit}
+          onSaveRSVP={() => {}}
           onCancelEdit={() => setIsEditingRSVP(false)}
           onRSVPCountChange={setEditedRSVPCount}
         />
@@ -134,8 +102,10 @@ export function EventCardContent({
           onCancelRSVP={onCancelRSVP}
           onEdit={onEdit}
           onDelete={onDelete}
+          onTogglePublish={onTogglePublish}
           isPastEvent={isPastEvent}
           isWixEvent={event.description === 'Imported from Wix'}
+          isPublished={isPublished}
           canAddGuests={canAddGuests}
           currentGuests={currentGuests}
         />

@@ -15,6 +15,7 @@ export interface Event {
   waitlist_enabled?: boolean;
   waitlist_capacity?: number | null;
   display_order?: number | null;
+  is_published?: boolean;
 }
 
 export interface EventRSVP {

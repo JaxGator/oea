@@ -43,6 +43,7 @@ export function EventCardContainer({
             showDetailsDialog,
             handleEditSuccess,
             handleDelete,
+            handleTogglePublish,
             setShowEditDialog,
             setShowDetailsDialog,
             handleInteraction,
@@ -64,6 +65,8 @@ export function EventCardContainer({
                 setShowEditDialog={setShowEditDialog}
                 setShowDetailsDialog={setShowDetailsDialog}
                 handleDelete={handleDelete}
+                handleTogglePublish={handleTogglePublish}
+                isPublished={event.is_published ?? true}
               />
 
               <EventDialogs
