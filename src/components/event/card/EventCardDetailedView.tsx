@@ -53,7 +53,17 @@ export function EventCardDetailedView({
       </div>
 
       <div className="px-6 space-y-6">
-        <EventCardBasicInfo event={event} />
+        <EventCardBasicInfo
+          date={event.date}
+          location={event.location}
+          rsvpCount={rsvpCount}
+          maxGuests={event.max_guests}
+          isWixEvent={isWixEvent}
+          waitlistEnabled={event.waitlist_enabled}
+          waitlistCapacity={event.waitlist_capacity}
+          importedRsvpCount={event.imported_rsvp_count}
+          isPastEvent={isPastEvent}
+        />
         
         <div className="space-y-4">
           <LocationDisplay location={event.location} showLocation={true} />
@@ -96,16 +106,14 @@ export function EventCardDetailedView({
 
         {event.waitlist_enabled && (
           <WaitlistInfo
-            isEnabled={event.waitlist_enabled}
-            capacity={event.waitlist_capacity || 0}
-            currentCount={0}
+            waitlistEnabled={event.waitlist_enabled}
+            waitlistCount={0}
+            waitlistCapacity={event.waitlist_capacity}
           />
         )}
 
         <AttendeeList
-          count={rsvpCount}
-          names={attendeeNames}
-          maxCount={event.max_guests}
+          attendeeNames={attendeeNames}
         />
       </div>
     </div>

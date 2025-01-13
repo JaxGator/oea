@@ -1,4 +1,5 @@
 import { useAuthState } from "@/hooks/useAuthState";
+import { Event } from "@/types/event";
 import { EventStatusDisplay } from "./EventStatusDisplay";
 import { WaitlistInfo } from "./WaitlistInfo";
 
