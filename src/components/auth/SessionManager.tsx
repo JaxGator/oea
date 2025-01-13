@@ -17,7 +17,6 @@ export function SessionManager({ children, queryClient }: SessionManagerProps) {
 
   useEffect(() => {
     let mounted = true;
-    let refreshTimeout: NodeJS.Timeout;
 
     const checkSession = async () => {
       try {
@@ -40,45 +39,26 @@ export function SessionManager({ children, queryClient }: SessionManagerProps) {
           return;
         }
 
-        // Calculate time until token expires
-        const expiresAt = new Date(session.expires_at! * 1000);
-        const now = new Date();
-        const timeUntilExpiry = expiresAt.getTime() - now.getTime();
-        
-        // If token expires in less than 5 minutes, refresh it
-        if (timeUntilExpiry < 5 * 60 * 1000) {
-          try {
-            console.log('Token expiring soon, refreshing...');
-            const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession();
-            
-            if (refreshError) {
-              if (refreshError.message.includes('refresh_token_not_found')) {
-                console.log('No refresh token found - clearing session');
-                await clearSessionData();
-                if (isProtectedRoute(location.pathname)) {
-                  navigate('/auth');
-                }
-                return;
-              }
-              throw refreshError;
-            }
+        // If session exists but is about to expire, refresh it
+        const expiresAt = session.expires_at ? new Date(session.expires_at * 1000) : null;
+        if (expiresAt && (expiresAt.getTime() - Date.now() < 60000)) { // Less than 1 minute
+          console.log('Session about to expire, refreshing...');
+          const { data: { session: newSession }, error: refreshError } = await supabase.auth.refreshSession();
+          
+          if (refreshError) {
+            console.error('Session refresh failed:', refreshError);
+            await handleSessionError(refreshError);
+            return;
+          }
 
-            if (!refreshData.session) {
-              console.log('Session refresh failed - no new session');
+          if (!newSession) {
+            console.log('Session refresh returned no session');
+            if (isProtectedRoute(location.pathname)) {
               await clearSessionData();
-              if (isProtectedRoute(location.pathname)) {
-                navigate('/auth');
-              }
-              return;
+              navigate('/auth');
             }
-            
-            console.log('Session refreshed successfully');
-          } catch (refreshErr) {
-            console.error('Session refresh failed:', refreshErr);
-            await handleSessionError(refreshErr as AuthError);
           }
         }
-
       } catch (err) {
         console.error('Session check failed:', err);
         await handleSessionError(err as AuthError);
@@ -89,13 +69,9 @@ export function SessionManager({ children, queryClient }: SessionManagerProps) {
       console.error('Session error:', error);
       await clearSessionData();
       
-      const errorMessage = error.message.includes('refresh_token_not_found') 
-        ? "Your session has expired. Please sign in again."
-        : "Authentication error. Please sign in again.";
-      
       toast({
         title: "Session Error",
-        description: errorMessage,
+        description: "Your session has expired. Please sign in again.",
         variant: "destructive",
       });
       
@@ -106,14 +82,10 @@ export function SessionManager({ children, queryClient }: SessionManagerProps) {
 
     const clearSessionData = async () => {
       try {
-        // First clear the session from Supabase
         await supabase.auth.signOut();
-        
-        // Then clear all local data
         queryClient.clear();
         localStorage.clear();
         sessionStorage.clear();
-        
         console.log('Session data cleared');
       } catch (error) {
         console.error('Error clearing session data:', error);
@@ -145,23 +117,18 @@ export function SessionManager({ children, queryClient }: SessionManagerProps) {
         case 'TOKEN_REFRESHED':
           console.log('Token refreshed successfully');
           break;
-          
-        case 'USER_UPDATED':
-          console.log('User data updated');
-          break;
       }
     });
 
     // Initial session check
     checkSession();
 
-    // Set up periodic session checks every minute
-    const intervalId = setInterval(checkSession, 60 * 1000);
+    // Set up periodic session checks
+    const intervalId = setInterval(checkSession, 30000); // Check every 30 seconds
 
     return () => {
       mounted = false;
       clearInterval(intervalId);
-      if (refreshTimeout) clearTimeout(refreshTimeout);
       subscription.unsubscribe();
     };
   }, [navigate, location, queryClient]);
