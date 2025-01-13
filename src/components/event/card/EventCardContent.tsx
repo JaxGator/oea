@@ -6,6 +6,7 @@ import { Event } from "@/types/event";
 import { EventCardBasicInfo } from "./EventCardBasicInfo";
 import { EventCardActions } from "./EventCardActions";
 import { EventAdminEdit } from "./EventAdminEdit";
+import { FeaturedEventBadge } from "./FeaturedEventBadge";
 
 interface EventCardContentProps {
   event: Event;
@@ -58,18 +59,25 @@ export function EventCardContent({
     <>
       <CardContent className="p-4">
         <div className="flex justify-between items-start mb-4">
-          <EventCardBasicInfo
-            date={event.date}
-            location={event.location}
-            rsvpCount={rsvpCount}
-            maxGuests={event.max_guests}
-            isWixEvent={event.description === 'Imported from Wix'}
-            waitlistEnabled={waitlistEnabled}
-            waitlistCount={waitlistCount}
-            waitlistCapacity={waitlistCapacity}
-            importedRsvpCount={event.imported_rsvp_count}
-            isPastEvent={isPastEvent}
-          />
+          <div className="space-y-4 w-full">
+            {event.is_featured && (
+              <div className="mb-2">
+                <FeaturedEventBadge />
+              </div>
+            )}
+            <EventCardBasicInfo
+              date={event.date}
+              location={event.location}
+              rsvpCount={rsvpCount}
+              maxGuests={event.max_guests}
+              isWixEvent={event.description === 'Imported from Wix'}
+              waitlistEnabled={waitlistEnabled}
+              waitlistCount={waitlistCount}
+              waitlistCapacity={waitlistCapacity}
+              importedRsvpCount={event.imported_rsvp_count}
+              isPastEvent={isPastEvent}
+            />
+          </div>
         </div>
 
         <EventAdminEdit

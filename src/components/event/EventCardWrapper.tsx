@@ -26,19 +26,15 @@ export function EventCardWrapper({
     <Card
       className={`relative overflow-hidden transition-all duration-200 ${
         isSelected ? 'ring-2 ring-primary' : ''
-      } ${!isPublished ? 'opacity-75' : ''}`}
+      } ${!isPublished ? 'opacity-75' : ''} ${
+        isFeatured ? 'ring-2 ring-[#F97316]' : ''
+      }`}
       onClick={onInteraction}
       onKeyDown={onKeyDown}
       role="button"
       tabIndex={0}
       aria-label={title}
     >
-      {isFeatured && (
-        <div className="absolute top-2 right-2 z-10">
-          <FeaturedEventBadge />
-        </div>
-      )}
-      
       {!isPublished && (
         <div className="absolute top-2 left-2 z-10 bg-yellow-100 text-yellow-800 px-2 py-1 rounded-md flex items-center gap-2">
           <EyeOff className="h-4 w-4" />
