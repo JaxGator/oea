@@ -242,6 +242,7 @@ export type Database = {
           date: string
           description: string | null
           display_order: number | null
+          end_time: string | null
           id: string
           image_url: string
           imported_rsvp_count: number | null
@@ -264,6 +265,7 @@ export type Database = {
           date: string
           description?: string | null
           display_order?: number | null
+          end_time?: string | null
           id?: string
           image_url: string
           imported_rsvp_count?: number | null
@@ -286,6 +288,7 @@ export type Database = {
           date?: string
           description?: string | null
           display_order?: number | null
+          end_time?: string | null
           id?: string
           image_url?: string
           imported_rsvp_count?: number | null
@@ -1044,6 +1047,7 @@ export type Database = {
           date: string | null
           description: string | null
           display_order: number | null
+          end_time: string | null
           id: string | null
           image_url: string | null
           imported_rsvp_count: number | null
@@ -1061,11 +1065,12 @@ export type Database = {
           date?: string | null
           description?: string | null
           display_order?: number | null
+          end_time?: string | null
           id?: string | null
           image_url?: string | null
           imported_rsvp_count?: number | null
           is_featured?: boolean | null
-          location?: never
+          location?: string | null
           max_guests?: number | null
           time?: string | null
           title?: string | null
@@ -1078,11 +1083,12 @@ export type Database = {
           date?: string | null
           description?: string | null
           display_order?: number | null
+          end_time?: string | null
           id?: string | null
           image_url?: string | null
           imported_rsvp_count?: number | null
           is_featured?: boolean | null
-          location?: never
+          location?: string | null
           max_guests?: number | null
           time?: string | null
           title?: string | null

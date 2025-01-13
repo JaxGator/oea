@@ -23,6 +23,7 @@ export function EventForm({ onSuccess, initialData, isPastEvent, isWixEvent }: E
       description: initialData?.description || "",
       date: initialData?.date || "",
       time: initialData?.time || "",
+      end_time: initialData?.end_time || "",
       location: initialData?.location || "",
       max_guests: initialData?.max_guests || 50,
       image_url: initialData?.image_url || "/lovable-uploads/609edf01-3169-439a-80f5-f6f15de7a5a6.png",
@@ -38,7 +39,7 @@ export function EventForm({ onSuccess, initialData, isPastEvent, isWixEvent }: E
 
   const onSubmit = async (data: EventFormValues) => {
     await handleFormSubmit(data, initialData);
-    onSuccess(); // Call onSuccess to close the modal after successful submission
+    onSuccess();
   };
 
   return (

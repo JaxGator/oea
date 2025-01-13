@@ -10,6 +10,7 @@ import { EventMap } from "./details/EventMap";
 interface EventDetailsProps {
   date: string;
   time: string;
+  end_time?: string;
   location: string;
   rsvpCount: number;
   maxGuests: number;
@@ -23,6 +24,7 @@ interface EventDetailsProps {
 export function EventDetails({
   date,
   time,
+  end_time,
   location,
   rsvpCount,
   maxGuests,
@@ -53,6 +55,7 @@ export function EventDetails({
         <CalendarIcon className="w-4 h-4" />
         <span className="text-sm">
           {format(eventDate, "EEEE, MMMM do, yyyy")} at {formatTime(time)}
+          {end_time && ` - ${formatTime(end_time)}`}
         </span>
       </div>
       

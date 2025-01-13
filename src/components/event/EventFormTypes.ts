@@ -5,6 +5,7 @@ export const eventSchema = z.object({
   description: z.string().optional(),
   date: z.string().min(1, "Date is required"),
   time: z.string().min(1, "Time is required"),
+  end_time: z.string().optional(),
   location: z.string().min(1, "Location is required"),
   max_guests: z.number().min(1, "At least one guest is required"),
   image_url: z.string().url("Please enter a valid image URL"),
@@ -23,6 +24,7 @@ export interface EventFormData {
   description: string;
   date: string;
   time: string;
+  end_time?: string;
   location: string;
   max_guests: number;
   image_url: string;

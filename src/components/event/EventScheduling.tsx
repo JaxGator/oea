@@ -29,7 +29,20 @@ export function EventScheduling({ form, disabled }: EventSchedulingProps) {
         name="time"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Time</FormLabel>
+            <FormLabel>Start Time</FormLabel>
+            <FormControl>
+              <Input type="time" {...field} disabled={disabled} />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+      <FormField
+        control={form.control}
+        name="end_time"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>End Time (Optional)</FormLabel>
             <FormControl>
               <Input type="time" {...field} disabled={disabled} />
             </FormControl>
