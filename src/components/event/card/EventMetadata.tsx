@@ -28,6 +28,10 @@ export function EventMetadata({
   maxGuests,
   attendeeNames
 }: EventMetadataProps) {
+  if (!event) {
+    return null;
+  }
+
   return (
     <div className="flex-1 space-y-6">
       {event.image_url && (

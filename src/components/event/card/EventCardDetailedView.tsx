@@ -56,12 +56,14 @@ export function EventCardDetailedView({
         <EventCardBasicInfo event={event} />
         
         <div className="space-y-4">
-          <LocationDisplay location={event.location} />
+          <LocationDisplay location={event.location} showLocation={true} />
           <EventMetadata
-            maxGuests={event.max_guests}
+            event={event}
+            canAddToCalendar={!isPastEvent}
+            isPastEvent={isPastEvent}
             rsvpCount={rsvpCount}
-            date={event.date}
-            time={event.time}
+            maxGuests={event.max_guests}
+            attendeeNames={attendeeNames}
           />
         </div>
 
@@ -94,15 +96,16 @@ export function EventCardDetailedView({
 
         {event.waitlist_enabled && (
           <WaitlistInfo
-            isFullyBooked={isFullyBooked}
-            waitlistCapacity={event.waitlist_capacity}
+            isEnabled={event.waitlist_enabled}
+            capacity={event.waitlist_capacity || 0}
+            currentCount={0}
           />
         )}
 
         <AttendeeList
-          attendeeCount={rsvpCount}
-          attendeeNames={attendeeNames}
-          maxGuests={event.max_guests}
+          count={rsvpCount}
+          names={attendeeNames}
+          maxCount={event.max_guests}
         />
       </div>
     </div>
