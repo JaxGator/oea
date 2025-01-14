@@ -8,7 +8,7 @@ export const SERVICE_ENDPOINTS = {
 export const getServiceUrl = (url: string): string => {
   try {
     const parsedUrl = new URL(url);
-    return parsedUrl.toString().replace(/:+(\/)/, '$1');
+    return parsedUrl.toString();
   } catch (e) {
     console.error('Invalid URL:', url);
     return url;

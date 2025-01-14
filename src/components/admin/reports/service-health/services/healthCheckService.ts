@@ -10,6 +10,12 @@ export async function checkServiceHealth(url: string): Promise<HealthCheckRespon
     const timeoutId = setTimeout(() => controller.abort(), 5000);
 
     const formattedUrl = getServiceUrl(url);
+    
+    // Validate URL before making request
+    if (!formattedUrl || !formattedUrl.startsWith('http')) {
+      throw new Error('Invalid URL format');
+    }
+
     const response = await fetch(formattedUrl, {
       method: 'HEAD',
       mode: 'no-cors', // This allows the request to succeed even with CORS restrictions
@@ -27,6 +33,7 @@ export async function checkServiceHealth(url: string): Promise<HealthCheckRespon
       latency: endTime - startTime
     };
   } catch (error) {
+    console.error('Health check error:', error);
     // If we get here, the service is either down or unreachable
     return {
       ok: false,
