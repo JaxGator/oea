@@ -8,7 +8,8 @@ export const SERVICE_ENDPOINTS = {
 export const getServiceUrl = (url: string): string => {
   try {
     const parsedUrl = new URL(url);
-    return parsedUrl.toString();
+    // Remove any duplicate colons in the URL
+    return parsedUrl.toString().replace(/([^:])(:+)\//, '$1/');
   } catch (e) {
     console.error('Invalid URL:', url);
     return url;
