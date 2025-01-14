@@ -1,4 +1,5 @@
 import { HealthCheckResponse } from "../types";
+import { getServiceUrl } from "../config/serviceEndpoints";
 
 export async function checkServiceHealth(url: string): Promise<HealthCheckResponse> {
   const startTime = performance.now();
@@ -8,7 +9,8 @@ export async function checkServiceHealth(url: string): Promise<HealthCheckRespon
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 5000);
 
-    const response = await fetch(url, {
+    const formattedUrl = getServiceUrl(url);
+    const response = await fetch(formattedUrl, {
       method: 'HEAD',
       mode: 'no-cors', // This allows the request to succeed even with CORS restrictions
       signal: controller.signal,
