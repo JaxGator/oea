@@ -53,29 +53,31 @@ export function EventCardContent({
         rsvpCount={rsvpCount}
         maxGuests={event.max_guests}
         isPastEvent={isPastEvent}
-        canViewDetails={isAdmin || canManageEvents || isPublished}
+        canViewDetails={isAdmin || canManageEvents || (isPublished && userRSVPStatus === "attending")}
         waitlistEnabled={waitlistEnabled}
         waitlistCapacity={waitlistCapacity}
         isWixEvent={!!event.imported_rsvp_count}
         importedRsvpCount={event.imported_rsvp_count}
       />
 
-      <EventCardActions
-        isAdmin={isAdmin}
-        canManageEvents={canManageEvents}
-        userRSVPStatus={userRSVPStatus}
-        isPastEvent={isPastEvent}
-        canAddGuests={canAddGuests}
-        currentGuests={currentGuests}
-        onRSVP={onRSVP}
-        onCancelRSVP={onCancelRSVP}
-        onEdit={onEdit}
-        onDelete={onDelete}
-        showPublishToggle={showPublishToggle}
-        isPublished={isPublished}
-        onViewDetails={onViewDetails}
-        onTogglePublish={onTogglePublish}
-      />
+      <div className="mt-4">
+        <EventCardActions
+          isAdmin={isAdmin}
+          canManageEvents={canManageEvents}
+          userRSVPStatus={userRSVPStatus}
+          isPastEvent={isPastEvent}
+          canAddGuests={canAddGuests}
+          currentGuests={currentGuests}
+          onRSVP={onRSVP}
+          onCancelRSVP={onCancelRSVP}
+          onEdit={onEdit}
+          onDelete={onDelete}
+          showPublishToggle={showPublishToggle}
+          isPublished={isPublished}
+          onViewDetails={onViewDetails}
+          onTogglePublish={onTogglePublish}
+        />
+      </div>
     </div>
   );
 }

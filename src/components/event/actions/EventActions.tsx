@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { RSVPButton } from "./RSVPButton";
 import { AddGuestsButton } from "./AddGuestsButton";
 import { AdminActions } from "./AdminActions";
+import { Eye } from "lucide-react";
 
 interface Guest {
   firstName: string;
@@ -24,6 +25,7 @@ interface EventActionsProps {
   canAddGuests: boolean;
   currentGuests?: Guest[];
   showPublishToggle?: boolean;
+  onViewDetails?: () => void;
 }
 
 export function EventActions({
@@ -43,12 +45,13 @@ export function EventActions({
   canAddGuests,
   currentGuests = [],
   showPublishToggle = true,
+  onViewDetails,
 }: EventActionsProps) {
   return (
     <div className="flex flex-wrap items-center gap-3 justify-start">
       {/* RSVP Actions */}
       {!isPastEvent && (
-        <div className="flex gap-2 items-center">
+        <div className="flex gap-3 items-center">
           {!userRSVPStatus && isPublished && (
             <RSVPButton 
               isFullyBooked={isFullyBooked} 
@@ -77,9 +80,21 @@ export function EventActions({
         </div>
       )}
 
+      {/* View Details Button */}
+      {onViewDetails && (
+        <Button
+          variant="outline"
+          onClick={onViewDetails}
+          className="gap-2"
+        >
+          <Eye className="h-4 w-4" />
+          View Details
+        </Button>
+      )}
+
       {/* Admin Actions */}
       {(isAdmin || canManageEvents) && (
-        <div className="flex gap-2 items-center ml-auto">
+        <div className="flex gap-3 items-center ml-auto">
           {isPastEvent ? (
             <>
               <Button
