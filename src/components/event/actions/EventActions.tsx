@@ -10,77 +10,58 @@ interface Guest {
 
 interface EventActionsProps {
   isAdmin: boolean;
-  canManageEvents: boolean;
   userRSVPStatus: string | null;
   isFullyBooked: boolean;
-  canJoinWaitlist: boolean;
   onRSVP: (guests?: Guest[]) => void;
   onCancelRSVP: () => void;
   onEdit?: () => void;
   onDelete?: () => void;
-  onTogglePublish?: () => void;
-  isPastEvent: boolean;
-  isWixEvent: boolean;
-  isPublished: boolean;
-  canAddGuests: boolean;
+  isPastEvent?: boolean;
+  isWixEvent?: boolean;
+  showDelete?: boolean;
+  canAddGuests?: boolean;
   currentGuests?: Guest[];
-  showPublishToggle?: boolean;
   onViewDetails?: () => void;
 }
 
 export function EventActions({
   isAdmin,
-  canManageEvents,
   userRSVPStatus,
   isFullyBooked,
-  canJoinWaitlist,
   onRSVP,
   onCancelRSVP,
   onEdit,
   onDelete,
-  onTogglePublish,
   isPastEvent,
   isWixEvent,
-  isPublished,
+  showDelete,
   canAddGuests,
   currentGuests = [],
-  showPublishToggle = true,
-  onViewDetails,
+  onViewDetails
 }: EventActionsProps) {
   return (
-    <div className="flex flex-wrap items-center gap-3 justify-start">
-      {/* RSVP Actions */}
-      {!isPastEvent && (
-        <div className="flex gap-3 items-center">
-          {!userRSVPStatus && isPublished && (
-            <RSVPButton 
-              isFullyBooked={isFullyBooked} 
-              onRSVP={onRSVP} 
-              canJoinWaitlist={canJoinWaitlist}
-            />
-          )}
-
-          {userRSVPStatus === "attending" && (
-            <>
-              <Button
-                variant="destructive"
-                onClick={onCancelRSVP}
-                className="whitespace-nowrap"
-              >
-                Cancel RSVP
-              </Button>
-              {canAddGuests && (
-                <AddGuestsButton 
-                  onAddGuests={(newGuests) => onRSVP(newGuests)}
-                  currentGuests={currentGuests}
-                />
-              )}
-            </>
-          )}
-        </div>
+    <div className="flex flex-wrap gap-2">
+      {!userRSVPStatus && !isPastEvent && (
+        <RSVPButton isFullyBooked={isFullyBooked} onRSVP={onRSVP} />
       )}
 
-      {/* View Details Button */}
+      {userRSVPStatus === "attending" && !isPastEvent && (
+        <>
+          <Button
+            variant="destructive"
+            onClick={onCancelRSVP}
+          >
+            Cancel RSVP
+          </Button>
+          {canAddGuests && (
+            <AddGuestsButton 
+              onAddGuests={(newGuests) => onRSVP(newGuests)}
+              currentGuests={currentGuests}
+            />
+          )}
+        </>
+      )}
+
       {onViewDetails && (
         <Button
           variant="outline"
@@ -92,41 +73,13 @@ export function EventActions({
         </Button>
       )}
 
-      {/* Admin Actions */}
-      {(isAdmin || canManageEvents) && (
-        <div className="flex gap-3 items-center ml-auto">
-          {isPastEvent ? (
-            <>
-              <Button
-                variant="outline"
-                onClick={onEdit}
-                className="whitespace-nowrap"
-              >
-                Edit RSVPs
-              </Button>
-              {!isWixEvent && (
-                <Button
-                  variant="destructive"
-                  onClick={onDelete}
-                  className="whitespace-nowrap"
-                >
-                  Delete
-                </Button>
-              )}
-            </>
-          ) : (
-            <AdminActions
-              onEdit={onEdit}
-              onDelete={onDelete}
-              onTogglePublish={onTogglePublish}
-              showDelete={true}
-              isWixEvent={isWixEvent}
-              isPublished={isPublished}
-              showPublishToggle={showPublishToggle}
-              canManageEvents={canManageEvents}
-            />
-          )}
-        </div>
+      {isAdmin && (
+        <AdminActions
+          onEdit={onEdit}
+          onDelete={onDelete}
+          showDelete={showDelete}
+          isWixEvent={isWixEvent}
+        />
       )}
     </div>
   );

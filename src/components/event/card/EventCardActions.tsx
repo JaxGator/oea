@@ -40,21 +40,17 @@ export function EventCardActions({
   return (
     <EventActions
       isAdmin={isAdmin}
-      canManageEvents={canManageEvents}
       userRSVPStatus={userRSVPStatus}
       isFullyBooked={isFullyBooked}
-      canJoinWaitlist={canJoinWaitlist}
       onRSVP={onRSVP}
       onCancelRSVP={onCancelRSVP}
       onEdit={onEdit}
       onDelete={onDelete}
-      onTogglePublish={onTogglePublish}
       isPastEvent={isPastEvent}
       isWixEvent={isWixEvent}
-      isPublished={isPublished}
       canAddGuests={canAddGuests}
       currentGuests={currentGuests}
-      showPublishToggle={showPublishToggle}
+      onViewDetails={onViewDetails}
     />
   );
 }
