@@ -10,6 +10,7 @@ interface Guest {
 
 interface EventActionsProps {
   isAdmin: boolean;
+  canManageEvents?: boolean; // Added this prop
   userRSVPStatus: string | null;
   isFullyBooked: boolean;
   onRSVP: (guests?: Guest[]) => void;
@@ -26,6 +27,7 @@ interface EventActionsProps {
 
 export function EventActions({
   isAdmin,
+  canManageEvents,
   userRSVPStatus,
   isFullyBooked,
   onRSVP,
@@ -39,6 +41,8 @@ export function EventActions({
   currentGuests = [],
   onViewDetails
 }: EventActionsProps) {
+  const showViewDetails = isAdmin || canManageEvents || userRSVPStatus === "attending";
+
   return (
     <div className="flex flex-wrap gap-2">
       {!userRSVPStatus && !isPastEvent && (
@@ -62,7 +66,7 @@ export function EventActions({
         </>
       )}
 
-      {onViewDetails && (
+      {showViewDetails && onViewDetails && (
         <Button
           variant="outline"
           onClick={onViewDetails}

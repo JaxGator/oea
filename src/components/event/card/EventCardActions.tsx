@@ -34,12 +34,12 @@ export function EventCardActions({
   onTogglePublish,
 }: EventCardActionsProps) {
   const isFullyBooked = false; // This should be calculated based on event data
-  const canJoinWaitlist = false; // This should be calculated based on event data
   const isWixEvent = false; // This should be passed as a prop if needed
 
   return (
     <EventActions
       isAdmin={isAdmin}
+      canManageEvents={canManageEvents}
       userRSVPStatus={userRSVPStatus}
       isFullyBooked={isFullyBooked}
       onRSVP={onRSVP}
