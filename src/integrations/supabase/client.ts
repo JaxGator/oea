@@ -12,7 +12,26 @@ if (!SUPABASE_ANON_KEY) throw new Error('Missing SUPABASE_ANON_KEY');
 export const supabase = createClient<Database>(
   SUPABASE_URL, 
   SUPABASE_ANON_KEY, 
-  supabaseConfig
+  {
+    auth: {
+      persistSession: true,
+      autoRefreshToken: true,
+      detectSessionInUrl: true
+    },
+    global: {
+      headers: {
+        'x-my-custom-header': 'my-app-name',
+      },
+    },
+    db: {
+      schema: 'public'
+    },
+    realtime: {
+      params: {
+        eventsPerSecond: 10
+      }
+    }
+  }
 );
 
 // Add error handling and logging for auth state changes

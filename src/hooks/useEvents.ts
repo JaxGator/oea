@@ -13,49 +13,28 @@ export function useEvents(selectedDate?: Date) {
     queryKey: ['events', selectedDate?.toISOString(), isApproved],
     queryFn: async () => {
       try {
-        let query;
-        if (isApproved) {
-          query = supabase
-            .from('events')
-            .select(`
-              *,
-              event_rsvps (
-                id,
-                event_id,
-                user_id,
-                response,
-                created_at,
-                profiles (
-                  full_name,
-                  username
-                )
+        let query = supabase
+          .from('events')
+          .select(`
+            *,
+            event_rsvps (
+              id,
+              event_id,
+              user_id,
+              response,
+              created_at,
+              profiles (
+                full_name,
+                username
               )
-            `)
-            .order('date');
-        } else {
-          query = supabase
-            .from('event_public_view')
-            .select(`
-              *,
-              event_rsvps (
-                id,
-                event_id,
-                user_id,
-                response,
-                created_at,
-                profiles (
-                  full_name,
-                  username
-                )
-              )
-            `)
-            .order('date');
-        }
+            )
+          `)
+          .order('date');
 
         // Only filter by date if a date is selected
         if (selectedDate) {
           const dateStr = selectedDate.toISOString().split('T')[0];
-          query = query.eq('date', dateStr);
+          query = query.gte('date', dateStr);
         }
 
         const { data, error } = await query;
@@ -71,15 +50,15 @@ export function useEvents(selectedDate?: Date) {
           return [];
         }
 
-        console.log('Fetched events:', data);
         return transformEventData(data);
       } catch (error) {
-        console.error('Error fetching events:', error);
+        console.error('Error in useEvents:', error);
         toast.error('Failed to load events. Please try again.');
         throw error;
       }
     },
     retry: 1,
     refetchOnWindowFocus: false,
+    staleTime: 1000 * 60 * 5, // Cache for 5 minutes
   });
 }
