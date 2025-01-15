@@ -50,7 +50,7 @@ export function EventActions({
   const showViewDetails = isAdmin || canManageEvents || userRSVPStatus === "attending";
 
   return (
-    <div className="flex flex-wrap gap-2">
+    <div className="flex flex-wrap gap-1">
       {!userRSVPStatus && !isPastEvent && (
         <RSVPButton 
           isFullyBooked={isFullyBooked} 
