@@ -16,8 +16,6 @@ interface EmailRequest {
   type: 'confirmation' | 'cancellation';
 }
 
-const supabase = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
-
 const handler = async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -30,6 +28,7 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error('Email service is not configured');
     }
 
+    const supabase = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
     const { eventId, userId, type } = await req.json() as EmailRequest;
     console.log(`Processing ${type} email for event ${eventId} and user ${userId}`);
 
@@ -68,16 +67,21 @@ const handler = async (req: Request): Promise<Response> => {
     const eventTime = event.time.slice(0, 5); // Format HH:mm
 
     // Get email template
+    const templateName = type === 'confirmation' ? 'rsvp_confirmation' : 'rsvp_cancellation';
+    console.log('Fetching template:', templateName);
+    
     const { data: template, error: templateError } = await supabase
       .from('message_templates')
       .select('*')
-      .eq('name', type === 'confirmation' ? 'rsvp_confirmation' : 'rsvp_cancellation')
+      .eq('name', templateName)
       .single();
 
     if (templateError || !template) {
       console.error('Error fetching template:', templateError);
       throw new Error('Email template not found');
     }
+
+    console.log('Template found:', template.name);
 
     // Replace template variables
     let emailContent = template.content
@@ -86,6 +90,8 @@ const handler = async (req: Request): Promise<Response> => {
       .replace('{event_date}', eventDate)
       .replace('{event_time}', eventTime)
       .replace('{event_location}', event.location);
+
+    let emailSubject = template.subject.replace('{event_title}', event.title);
 
     console.log('Sending email with Resend API...');
     
@@ -99,7 +105,7 @@ const handler = async (req: Request): Promise<Response> => {
       body: JSON.stringify({
         from: "OEA Events <events@resend.dev>",
         to: [profile.email],
-        subject: template.subject.replace('{event_title}', event.title),
+        subject: emailSubject,
         html: emailContent,
       }),
     });
