@@ -42,29 +42,25 @@ export function EventsMap({ events, selectedEventId }: EventsMapProps) {
 
   // Find the selected location based on selectedEventId
   const selectedLocation = useMemo(() => {
-    if (!selectedEventId) return locations[0];
+    if (!selectedEventId || !locations.length) return locations[0];
     return locations.find(loc => loc.event.id === selectedEventId) || locations[0];
   }, [selectedEventId, locations]);
 
   // Update map center and zoom when selectedLocation changes
-  const center = useMemo(() => ({
-    lat: selectedLocation?.lat || (locations[0]?.lat || 0),
-    lng: selectedLocation?.lng || (locations[0]?.lng || 0),
-  }), [selectedLocation, locations]);
-
-  // Handle map load
-  const onLoad = useCallback((map: google.maps.Map) => {
-    setMap(map);
-  }, []);
-
-  // Update map when selected event changes
   useEffect(() => {
     if (map && selectedLocation) {
+      console.log('Updating map center to:', selectedLocation);
       const newCenter = { lat: selectedLocation.lat, lng: selectedLocation.lng };
       map.panTo(newCenter);
       map.setZoom(selectedEventId ? 14 : 12);
     }
   }, [map, selectedLocation, selectedEventId]);
+
+  // Handle map load
+  const onLoad = useCallback((map: google.maps.Map) => {
+    console.log('Map loaded');
+    setMap(map);
+  }, []);
 
   const handleMarkerClick = useCallback((event: Event) => {
     setSelectedEvent(event);
@@ -90,6 +86,9 @@ export function EventsMap({ events, selectedEventId }: EventsMapProps) {
     return <MapLoadingState />;
   }
 
+  console.log('Rendering map with selectedEventId:', selectedEventId);
+  console.log('Selected location:', selectedLocation);
+
   return (
     <div className="w-full rounded-lg overflow-hidden shadow-lg mb-8">
       <GoogleMap
@@ -98,7 +97,10 @@ export function EventsMap({ events, selectedEventId }: EventsMapProps) {
           height: '400px',
         }}
         zoom={selectedEventId ? 14 : 12}
-        center={center}
+        center={{
+          lat: selectedLocation?.lat || (locations[0]?.lat || 0),
+          lng: selectedLocation?.lng || (locations[0]?.lng || 0),
+        }}
         options={mapOptions}
         onLoad={onLoad}
       >
