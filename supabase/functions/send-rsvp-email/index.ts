@@ -17,6 +17,7 @@ interface EmailRequest {
 }
 
 const handler = async (req: Request): Promise<Response> => {
+  // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -28,31 +29,46 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error('Email service is not configured');
     }
 
-    const supabase = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
+    if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
+      console.error('Supabase credentials missing');
+      throw new Error('Database configuration missing');
+    }
+
+    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
     const { eventId, userId, type } = await req.json() as EmailRequest;
     console.log(`Processing ${type} email for event ${eventId} and user ${userId}`);
 
-    // Fetch event details
+    // Fetch event details with detailed error logging
     const { data: event, error: eventError } = await supabase
       .from('events')
       .select('*')
       .eq('id', eventId)
       .single();
 
-    if (eventError || !event) {
+    if (eventError) {
       console.error('Error fetching event:', eventError);
+      throw new Error(`Event not found: ${eventError.message}`);
+    }
+
+    if (!event) {
+      console.error('Event not found for ID:', eventId);
       throw new Error('Event not found');
     }
 
-    // Fetch user details
+    // Fetch user profile with detailed error logging
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('*')
       .eq('id', userId)
       .single();
 
-    if (profileError || !profile) {
+    if (profileError) {
       console.error('Error fetching profile:', profileError);
+      throw new Error(`User profile not found: ${profileError.message}`);
+    }
+
+    if (!profile) {
+      console.error('Profile not found for ID:', userId);
       throw new Error('User profile not found');
     }
 
@@ -66,22 +82,27 @@ const handler = async (req: Request): Promise<Response> => {
     
     const eventTime = event.time.slice(0, 5); // Format HH:mm
 
-    // Get email template
+    // Get email template with detailed logging
     const templateName = type === 'confirmation' ? 'rsvp_confirmation' : 'rsvp_cancellation';
-    console.log('Fetching template:', templateName);
+    console.log('Attempting to fetch template:', templateName);
     
     const { data: template, error: templateError } = await supabase
       .from('message_templates')
       .select('*')
       .eq('name', templateName)
-      .single();
+      .maybeSingle();
 
-    if (templateError || !template) {
+    if (templateError) {
       console.error('Error fetching template:', templateError);
-      throw new Error('Email template not found');
+      throw new Error(`Template fetch error: ${templateError.message}`);
     }
 
-    console.log('Template found:', template.name);
+    if (!template) {
+      console.error('Template not found:', templateName);
+      throw new Error(`Email template '${templateName}' not found`);
+    }
+
+    console.log('Successfully found template:', template.name);
 
     // Replace template variables
     let emailContent = template.content
