@@ -1,9 +1,6 @@
 [build]
-  publish = "dist"
   command = "npm run build"
-
-[build.environment]
-  NODE_VERSION = "18"
+  publish = "dist"
 
 [[redirects]]
   from = "/*"
@@ -11,22 +8,7 @@
   status = 200
 
 [[redirects]]
-  from = "/sitemap.xml"
-  to = "https://qegpuqitjfocyyrivlhv.supabase.co/functions/v1/sitemap"
+  from = "/ads.txt"
+  to = "https://qegpuqitjfocyyrivlhv.supabase.co/functions/v1/ads-txt"
   status = 200
   force = true
-
-[[headers]]
-  for = "/sitemap.xml"
-  [headers.values]
-    Content-Type = "application/xml"
-    Access-Control-Allow-Origin = "*"
-
-[[headers]]
-  for = "/*"
-  [headers.values]
-    X-Frame-Options = "DENY"
-    X-XSS-Protection = "1; mode=block"
-    X-Content-Type-Options = "nosniff"
-    Referrer-Policy = "strict-origin-when-cross-origin"
-    Content-Security-Policy = "default-src * 'unsafe-inline' 'unsafe-eval'; script-src * 'unsafe-inline' 'unsafe-eval'; connect-src * 'unsafe-inline'; img-src * data: blob: 'unsafe-inline'; frame-src *; style-src * 'unsafe-inline';"
