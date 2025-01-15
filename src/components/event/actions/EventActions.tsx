@@ -10,7 +10,7 @@ interface Guest {
 
 interface EventActionsProps {
   isAdmin: boolean;
-  canManageEvents?: boolean;
+  canManageEvents: boolean;
   userRSVPStatus: string | null;
   isFullyBooked: boolean;
   canJoinWaitlist?: boolean;
@@ -25,6 +25,7 @@ interface EventActionsProps {
   canAddGuests?: boolean;
   currentGuests?: Guest[];
   onViewDetails?: () => void;
+  isPublished?: boolean;
 }
 
 export function EventActions({
@@ -43,7 +44,8 @@ export function EventActions({
   showDelete,
   canAddGuests,
   currentGuests = [],
-  onViewDetails
+  onViewDetails,
+  isPublished
 }: EventActionsProps) {
   const showViewDetails = isAdmin || canManageEvents || userRSVPStatus === "attending";
 
@@ -93,6 +95,7 @@ export function EventActions({
           showDelete={showDelete}
           isWixEvent={isWixEvent}
           canManageEvents={canManageEvents}
+          isPublished={isPublished}
         />
       )}
     </div>
