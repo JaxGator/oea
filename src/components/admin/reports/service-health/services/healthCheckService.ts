@@ -12,7 +12,7 @@ export async function checkServiceHealth(url: string): Promise<HealthCheckRespon
     const formattedUrl = getServiceUrl(url);
     
     // Validate URL before making request
-    if (!formattedUrl || !formattedUrl.match(/^https?:\/\//)) {
+    if (!formattedUrl || !formattedUrl.match(/^https?:\/\/[^/:]+(?::\d+)?(?:\/.*)?$/)) {
       throw new Error('Invalid URL format');
     }
 
