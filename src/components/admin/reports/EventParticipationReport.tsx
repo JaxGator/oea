@@ -7,6 +7,7 @@ import { EventParticipationFilters } from "./participation/EventParticipationFil
 import { EventParticipationChart } from "./participation/EventParticipationChart";
 import { EventParticipationTable } from "./participation/EventParticipationTable";
 import type { EventStats } from "./participation/types";
+import { toast } from "sonner";
 
 export function EventParticipationReport() {
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
@@ -15,30 +16,57 @@ export function EventParticipationReport() {
   const { data: eventStats, isLoading } = useQuery({
     queryKey: ['event-stats', dateRange, eventType],
     queryFn: async () => {
-      const { data: events, error } = await supabase
-        .from('events')
-        .select(`
-          *,
-          event_rsvps (
-            response
-          )
-        `)
-        .order('date', { ascending: false });
+      try {
+        let query = supabase
+          .from('events')
+          .select(`
+            *,
+            event_rsvps (
+              response
+            )
+          `)
+          .order('date', { ascending: false });
 
-      if (error) throw error;
+        // Add date range filter if provided
+        if (dateRange?.from) {
+          query = query.gte('date', format(dateRange.from, 'yyyy-MM-dd'));
+        }
+        if (dateRange?.to) {
+          query = query.lte('date', format(dateRange.to, 'yyyy-MM-dd'));
+        }
 
-      const processedEvents = events.map((event: any) => ({
-        name: event.title,
-        attending: event.event_rsvps.filter((rsvp: any) => rsvp.response === 'attending').length,
-        date: format(new Date(event.date), 'MMM dd, yyyy')
-      }));
+        const { data: events, error } = await query;
 
-      return {
-        events: processedEvents,
-        topEvents: processedEvents
-          .sort((a: EventStats, b: EventStats) => b.attending - a.attending)
-          .slice(0, 5)
-      };
+        if (error) {
+          console.error('Error fetching events:', error);
+          toast.error("Failed to fetch event data");
+          throw error;
+        }
+
+        if (!events) {
+          return {
+            events: [],
+            topEvents: []
+          };
+        }
+
+        const processedEvents = events.map((event: any) => ({
+          name: event.title,
+          attending: event.event_rsvps?.filter((rsvp: any) => rsvp.response === 'attending').length || 0,
+          date: format(new Date(event.date), 'MMM dd, yyyy')
+        }));
+
+        return {
+          events: processedEvents,
+          topEvents: processedEvents
+            .sort((a: EventStats, b: EventStats) => b.attending - a.attending)
+            .slice(0, 5)
+        };
+      } catch (error) {
+        console.error('Error in event stats query:', error);
+        toast.error("Failed to load event statistics");
+        throw error;
+      }
     }
   });
 
