@@ -35,13 +35,15 @@ export function EventCardWrapper({
       tabIndex={0}
       aria-label={title}
     >
-      {!isPublished && (
-        <div className="absolute top-2 left-2 z-10 bg-yellow-100 text-yellow-800 px-2 py-1 rounded-md flex items-center gap-2">
-          <EyeOff className="h-4 w-4" />
-          <span className="text-sm font-medium">Unpublished</span>
-        </div>
-      )}
-      
+      <div className="absolute top-2 left-2 z-10 flex items-center gap-2">
+        {!isPublished && (
+          <div className="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-md flex items-center gap-2">
+            <EyeOff className="h-4 w-4" />
+            <span className="text-sm font-medium">Unpublished</span>
+          </div>
+        )}
+        {isFeatured && <FeaturedEventBadge />}
+      </div>
       {children}
     </Card>
   );

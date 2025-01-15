@@ -35,12 +35,17 @@ export function EventsMap({ events, selectedEventId }: EventsMapProps) {
     ],
   }), []);
 
-  const center = useMemo(() => {
-    const selectedLocation = selectedEventId 
-      ? locations.find(loc => loc.event.id === selectedEventId)
-      : null;
-    return selectedLocation || locations[0];
+  // Find the selected location based on selectedEventId
+  const selectedLocation = useMemo(() => {
+    if (!selectedEventId) return locations[0];
+    return locations.find(loc => loc.event.id === selectedEventId) || locations[0];
   }, [selectedEventId, locations]);
+
+  // Update map center when selectedLocation changes
+  const center = useMemo(() => ({
+    lat: selectedLocation?.lat || (locations[0]?.lat || 0),
+    lng: selectedLocation?.lng || (locations[0]?.lng || 0),
+  }), [selectedLocation, locations]);
 
   const handleMarkerClick = useCallback((event: Event) => {
     setSelectedEvent(event);
