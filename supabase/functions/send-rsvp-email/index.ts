@@ -24,28 +24,37 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
+    // Validate RESEND_API_KEY
+    if (!RESEND_API_KEY) {
+      console.error('RESEND_API_KEY is not configured');
+      throw new Error('Email service is not configured');
+    }
+
     const { eventId, userId, type } = await req.json() as EmailRequest;
+    console.log(`Processing ${type} email for event ${eventId} and user ${userId}`);
 
     // Fetch event details
-    const { data: event } = await supabase
+    const { data: event, error: eventError } = await supabase
       .from('events')
       .select('*')
       .eq('id', eventId)
       .single();
 
-    if (!event) {
+    if (eventError || !event) {
+      console.error('Error fetching event:', eventError);
       throw new Error('Event not found');
     }
 
     // Fetch user details
-    const { data: profile } = await supabase
+    const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('*')
       .eq('id', userId)
       .single();
 
-    if (!profile) {
-      throw new Error('User not found');
+    if (profileError || !profile) {
+      console.error('Error fetching profile:', profileError);
+      throw new Error('User profile not found');
     }
 
     // Format date and time
@@ -59,13 +68,14 @@ const handler = async (req: Request): Promise<Response> => {
     const eventTime = event.time.slice(0, 5); // Format HH:mm
 
     // Get email template
-    const { data: template } = await supabase
+    const { data: template, error: templateError } = await supabase
       .from('message_templates')
       .select('*')
       .eq('name', type === 'confirmation' ? 'rsvp_confirmation' : 'rsvp_cancellation')
       .single();
 
-    if (!template) {
+    if (templateError || !template) {
+      console.error('Error fetching template:', templateError);
       throw new Error('Email template not found');
     }
 
@@ -77,6 +87,8 @@ const handler = async (req: Request): Promise<Response> => {
       .replace('{event_time}', eventTime)
       .replace('{event_location}', event.location);
 
+    console.log('Sending email with Resend API...');
+    
     // Send email using Resend
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
@@ -92,14 +104,13 @@ const handler = async (req: Request): Promise<Response> => {
       }),
     });
 
-    if (!res.ok) {
-      const error = await res.text();
-      console.error('Resend API error:', error);
-      throw new Error('Failed to send email');
-    }
+    const resendResponse = await res.json();
+    console.log('Resend API response:', resendResponse);
 
-    const data = await res.json();
-    console.log('Email sent successfully:', data);
+    if (!res.ok) {
+      console.error('Resend API error:', resendResponse);
+      throw new Error(`Failed to send email: ${resendResponse.message || 'Unknown error'}`);
+    }
 
     return new Response(JSON.stringify({ success: true }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
