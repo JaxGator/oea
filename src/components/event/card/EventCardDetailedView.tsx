@@ -5,6 +5,7 @@ import { AttendeeList } from "../details/AttendeeList";
 import { EventImageSection } from "./sections/EventImageSection";
 import { EventDetailsSection } from "./sections/EventDetailsSection";
 import { EventActionsSection } from "./sections/EventActionsSection";
+import { EventDetails } from "../EventDetails";
 
 interface EventCardDetailedViewProps {
   event: Event;
@@ -66,6 +67,8 @@ export function EventCardDetailedView({
           attendeeNames={attendeeNames}
           isPastEvent={isPastEvent}
         />
+
+        <EventDetails event={event} />
 
         <AttendeeList
           attendeeNames={attendeeNames}
