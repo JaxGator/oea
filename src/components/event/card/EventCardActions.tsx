@@ -4,37 +4,39 @@ interface EventCardActionsProps {
   isAdmin: boolean;
   canManageEvents: boolean;
   userRSVPStatus: string | null;
-  isFullyBooked: boolean;
-  canJoinWaitlist: boolean;
+  isPastEvent: boolean;
+  canAddGuests: boolean;
+  currentGuests?: { firstName: string }[];
   onRSVP: (guests?: { firstName: string }[]) => void;
   onCancelRSVP: () => void;
   onEdit: () => void;
   onDelete: () => void;
-  onTogglePublish: () => void;
-  isPastEvent: boolean;
-  isWixEvent: boolean;
-  isPublished: boolean;
-  canAddGuests: boolean;
-  currentGuests?: { firstName: string }[];
+  showPublishToggle?: boolean;
+  isPublished?: boolean;
+  onViewDetails: () => void;
+  onTogglePublish?: () => void;
 }
 
 export function EventCardActions({
   isAdmin,
   canManageEvents,
   userRSVPStatus,
-  isFullyBooked,
-  canJoinWaitlist,
+  isPastEvent,
+  canAddGuests,
+  currentGuests = [],
   onRSVP,
   onCancelRSVP,
   onEdit,
   onDelete,
+  showPublishToggle = false,
+  isPublished = true,
+  onViewDetails,
   onTogglePublish,
-  isPastEvent,
-  isWixEvent,
-  isPublished,
-  canAddGuests,
-  currentGuests = [],
 }: EventCardActionsProps) {
+  const isFullyBooked = false; // This should be calculated based on event data
+  const canJoinWaitlist = false; // This should be calculated based on event data
+  const isWixEvent = false; // This should be passed as a prop if needed
+
   return (
     <EventActions
       isAdmin={isAdmin}
@@ -52,6 +54,7 @@ export function EventCardActions({
       isPublished={isPublished}
       canAddGuests={canAddGuests}
       currentGuests={currentGuests}
+      showPublishToggle={showPublishToggle}
     />
   );
 }

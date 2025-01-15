@@ -1,4 +1,3 @@
-import { Event } from "@/types/event";
 import { useAuthState } from "@/hooks/useAuthState";
 
 interface EventCardBasicInfoProps {
@@ -11,6 +10,7 @@ interface EventCardBasicInfoProps {
   waitlistCapacity?: number | null;
   importedRsvpCount?: number | null;
   isPastEvent: boolean;
+  canViewDetails?: boolean;
 }
 
 export function EventCardBasicInfo({ 
@@ -22,10 +22,11 @@ export function EventCardBasicInfo({
   waitlistEnabled,
   waitlistCapacity,
   importedRsvpCount,
-  isPastEvent
+  isPastEvent,
+  canViewDetails = false
 }: EventCardBasicInfoProps) {
   const { profile, isAuthenticated } = useAuthState();
-  const canViewDetails = isAuthenticated && profile?.is_approved;
+  const showDetails = canViewDetails || (isAuthenticated && profile?.is_approved);
 
   return (
     <div className="space-y-2">
@@ -36,13 +37,13 @@ export function EventCardBasicInfo({
           </p>
         </div>
         <p className="text-sm text-muted-foreground">
-          {canViewDetails ? (
+          {showDetails ? (
             location
           ) : (
             "Location visible after approval"
           )}
         </p>
-        {canViewDetails && (
+        {showDetails && (
           <p className="text-sm text-muted-foreground">
             {isWixEvent ? (
               `${importedRsvpCount || 0} attendees`
