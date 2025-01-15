@@ -83,7 +83,7 @@ export function EventActions({
           className="gap-2"
         >
           <Eye className="h-4 w-4" />
-          View Details
+          Details
         </Button>
       )}
 
