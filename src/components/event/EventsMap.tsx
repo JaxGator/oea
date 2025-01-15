@@ -33,6 +33,10 @@ export function EventsMap({ events, selectedEventId }: EventsMapProps) {
         stylers: [{ lightness: 20 }],
       },
     ],
+    zoomControl: true,
+    mapTypeControl: false,
+    streetViewControl: false,
+    fullscreenControl: true,
   }), []);
 
   // Find the selected location based on selectedEventId
@@ -41,7 +45,7 @@ export function EventsMap({ events, selectedEventId }: EventsMapProps) {
     return locations.find(loc => loc.event.id === selectedEventId) || locations[0];
   }, [selectedEventId, locations]);
 
-  // Update map center when selectedLocation changes
+  // Update map center and zoom when selectedLocation changes
   const center = useMemo(() => ({
     lat: selectedLocation?.lat || (locations[0]?.lat || 0),
     lng: selectedLocation?.lng || (locations[0]?.lng || 0),
