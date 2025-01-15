@@ -36,29 +36,29 @@ export function EventLocationMap({ location, lat, lng }: EventLocationMapProps) 
   }
 
   if (!lat || !lng) {
-    return <div className="h-[200px] bg-gray-100 rounded-lg flex items-center justify-center">
-      <p className="text-gray-500">Location not found on map</p>
-    </div>;
+    return (
+      <div className="h-full w-full bg-gray-100 rounded-lg flex items-center justify-center">
+        <p className="text-gray-500">Location not found on map</p>
+      </div>
+    );
   }
 
   return (
-    <div className="w-full h-[200px] rounded-lg overflow-hidden">
-      <GoogleMap
-        mapContainerStyle={{
-          width: '100%',
-          height: '100%',
-        }}
-        zoom={15}
-        center={{ lat, lng }}
-        options={{
-          zoomControl: true,
-          mapTypeControl: false,
-          streetViewControl: false,
-          fullscreenControl: false,
-        }}
-      >
-        <Marker position={{ lat, lng }} />
-      </GoogleMap>
-    </div>
+    <GoogleMap
+      mapContainerStyle={{
+        width: '100%',
+        height: '100%',
+      }}
+      zoom={15}
+      center={{ lat, lng }}
+      options={{
+        zoomControl: true,
+        mapTypeControl: false,
+        streetViewControl: false,
+        fullscreenControl: false,
+      }}
+    >
+      <Marker position={{ lat, lng }} />
+    </GoogleMap>
   );
 }
