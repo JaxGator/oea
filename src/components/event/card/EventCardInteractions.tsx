@@ -75,7 +75,7 @@ export function EventCardInteractions({
       }
     }
 
-    navigate(`/events/${event.id}`);
+    setShowDetailsDialog(true);
   };
 
   return (
