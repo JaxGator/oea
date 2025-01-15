@@ -84,7 +84,7 @@ export function EventCardContent({
         )}
       </div>
 
-      <div className="p-4 mt-auto border-t">
+      <div className="p-4 mt-auto border-t bg-white">
         <EventActions
           isAdmin={isAdmin}
           canManageEvents={canManageEvents}
@@ -95,13 +95,13 @@ export function EventCardContent({
           onCancelRSVP={onCancelRSVP}
           onEdit={onEdit}
           onDelete={onDelete}
+          onTogglePublish={onTogglePublish}
           isPastEvent={isPastEvent}
           isWixEvent={!!event.imported_rsvp_count}
+          isPublished={isPublished}
           canAddGuests={canAddGuests}
           currentGuests={currentGuests}
           showPublishToggle={showPublishToggle}
-          isPublished={isPublished}
-          onTogglePublish={onTogglePublish}
         />
       </div>
     </div>
