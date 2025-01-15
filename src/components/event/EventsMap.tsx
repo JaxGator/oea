@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import { useLoadScript, GoogleMap } from '@react-google-maps/api';
 import { Event } from '@/types/event';
 import { useGoogleMapsToken } from '@/hooks/useGoogleMapsToken';
@@ -17,6 +17,7 @@ const libraries: ("places" | "geometry" | "drawing" | "visualization")[] = ["pla
 
 export function EventsMap({ events, selectedEventId }: EventsMapProps) {
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+  const [map, setMap] = useState<google.maps.Map | null>(null);
   const { mapKey, isLoading: isKeyLoading, error: keyError } = useGoogleMapsToken();
   const locations = useEventLocations(events, mapKey);
 
@@ -50,6 +51,20 @@ export function EventsMap({ events, selectedEventId }: EventsMapProps) {
     lat: selectedLocation?.lat || (locations[0]?.lat || 0),
     lng: selectedLocation?.lng || (locations[0]?.lng || 0),
   }), [selectedLocation, locations]);
+
+  // Handle map load
+  const onLoad = useCallback((map: google.maps.Map) => {
+    setMap(map);
+  }, []);
+
+  // Update map when selected event changes
+  useEffect(() => {
+    if (map && selectedLocation) {
+      const newCenter = { lat: selectedLocation.lat, lng: selectedLocation.lng };
+      map.panTo(newCenter);
+      map.setZoom(selectedEventId ? 14 : 12);
+    }
+  }, [map, selectedLocation, selectedEventId]);
 
   const handleMarkerClick = useCallback((event: Event) => {
     setSelectedEvent(event);
@@ -85,6 +100,7 @@ export function EventsMap({ events, selectedEventId }: EventsMapProps) {
         zoom={selectedEventId ? 14 : 12}
         center={center}
         options={mapOptions}
+        onLoad={onLoad}
       >
         <MapMarkers 
           locations={locations}
