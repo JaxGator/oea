@@ -1,4 +1,4 @@
-import { Button } from "@/components/ui/button";
+import { AdminDropdownMenu } from "@/components/admin/user-management/shared/AdminDropdownMenu";
 import { Edit2Icon, Trash2Icon, Eye, EyeOff } from "lucide-react";
 
 interface AdminActionsProps {
@@ -24,46 +24,26 @@ export function AdminActions({
 }: AdminActionsProps) {
   if (!canManageEvents) return null;
 
-  return (
-    <>
-      {!isWixEvent && (
-        <>
-          <Button
-            variant="outline"
-            onClick={onEdit}
-            className="ml-auto"
-          >
-            <Edit2Icon className="w-4 h-4 mr-2" />
-            Edit
-          </Button>
+  const actions = [
+    ...((!isWixEvent && onEdit) ? [{
+      label: "Edit",
+      icon: <Edit2Icon className="h-4 w-4 mr-2" />,
+      onClick: onEdit
+    }] : []),
+    ...((showPublishToggle && onTogglePublish) ? [{
+      label: isPublished ? "Unpublish" : "Publish",
+      icon: isPublished ? <EyeOff className="h-4 w-4 mr-2" /> : <Eye className="h-4 w-4 mr-2" />,
+      onClick: onTogglePublish
+    }] : []),
+    ...(showDelete ? [{
+      label: "Delete",
+      icon: <Trash2Icon className="h-4 w-4 mr-2" />,
+      onClick: onDelete,
+      className: "text-destructive"
+    }] : [])
+  ];
 
-          {showPublishToggle && onTogglePublish && (
-            <Button
-              variant="outline"
-              onClick={onTogglePublish}
-              className="ml-2"
-            >
-              {isPublished ? (
-                <EyeOff className="w-4 h-4 mr-2" />
-              ) : (
-                <Eye className="w-4 h-4 mr-2" />
-              )}
-              {isPublished ? 'Unpublish' : 'Publish'}
-            </Button>
-          )}
-        </>
-      )}
+  if (actions.length === 0) return null;
 
-      {showDelete && (
-        <Button
-          variant="destructive"
-          onClick={onDelete}
-          className="ml-2"
-        >
-          <Trash2Icon className="w-4 h-4 mr-2" />
-          Delete
-        </Button>
-      )}
-    </>
-  );
+  return <AdminDropdownMenu actions={actions} />;
 }
