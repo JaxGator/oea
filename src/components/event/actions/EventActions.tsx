@@ -18,6 +18,7 @@ interface EventActionsProps {
   onCancelRSVP: () => void;
   onEdit?: () => void;
   onDelete?: () => void;
+  onTogglePublish?: () => void;
   isPastEvent?: boolean;
   isWixEvent?: boolean;
   showDelete?: boolean;
@@ -36,6 +37,7 @@ export function EventActions({
   onCancelRSVP,
   onEdit,
   onDelete,
+  onTogglePublish,
   isPastEvent,
   isWixEvent,
   showDelete,
@@ -87,8 +89,10 @@ export function EventActions({
         <AdminActions
           onEdit={onEdit}
           onDelete={onDelete}
+          onTogglePublish={onTogglePublish}
           showDelete={showDelete}
           isWixEvent={isWixEvent}
+          canManageEvents={canManageEvents}
         />
       )}
     </div>
