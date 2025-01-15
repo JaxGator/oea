@@ -14,5 +14,5 @@ port = 54323
 api_url = "http://localhost"
 
 [[functions]]
-name = "ads-txt"
+[functions.ads-txt]
 verify_jwt = false
