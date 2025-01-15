@@ -58,7 +58,7 @@ const handler = async (req: Request): Promise<Response> => {
     // Fetch user profile with detailed error logging
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
-      .select('*')
+      .select('email')
       .eq('id', userId)
       .single();
 
@@ -67,9 +67,9 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error(`User profile not found: ${profileError.message}`);
     }
 
-    if (!profile) {
-      console.error('Profile not found for ID:', userId);
-      throw new Error('User profile not found');
+    if (!profile || !profile.email) {
+      console.error('Profile or email not found for ID:', userId);
+      throw new Error('User email not found');
     }
 
     // Format date and time
@@ -116,7 +116,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log('Sending email with Resend API...');
     
-    // Send email using Resend
+    // Send email using Resend - note the to field is now a string, not an array
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
@@ -125,7 +125,7 @@ const handler = async (req: Request): Promise<Response> => {
       },
       body: JSON.stringify({
         from: "OEA Events <events@resend.dev>",
-        to: [profile.email],
+        to: profile.email, // Single email address as string
         subject: emailSubject,
         html: emailContent,
       }),
