@@ -26,6 +26,7 @@ interface EventActionsProps {
   currentGuests?: Guest[];
   onViewDetails?: () => void;
   isPublished?: boolean;
+  showPublishToggle?: boolean;
 }
 
 export function EventActions({
@@ -45,7 +46,8 @@ export function EventActions({
   canAddGuests,
   currentGuests = [],
   onViewDetails,
-  isPublished
+  isPublished,
+  showPublishToggle = false
 }: EventActionsProps) {
   const showViewDetails = isAdmin || canManageEvents || userRSVPStatus === "attending";
 
@@ -96,6 +98,7 @@ export function EventActions({
           isWixEvent={isWixEvent}
           canManageEvents={canManageEvents}
           isPublished={isPublished}
+          showPublishToggle={showPublishToggle}
         />
       )}
     </div>
