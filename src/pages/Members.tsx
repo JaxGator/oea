@@ -1,5 +1,6 @@
 import { Star } from "lucide-react";
 import { FeaturedMerch } from "@/components/home/FeaturedMerch";
+import { EventParticipationReport } from "@/components/admin/reports/EventParticipationReport";
 import {
   Accordion,
   AccordionContent,
@@ -14,6 +15,14 @@ const Members = () => {
       <div className="flex items-center gap-3 border-b pb-4">
         <Star className="h-8 w-8 text-[#1EAEDB] fill-[#1EAEDB]" />
         <h1 className="text-3xl font-bold">Member Area</h1>
+      </div>
+
+      {/* Event Participation Report Section */}
+      <div className="space-y-4">
+        <h2 className="text-2xl font-semibold">Event Participation</h2>
+        <div className="bg-white rounded-lg shadow-sm border p-6">
+          <EventParticipationReport />
+        </div>
       </div>
 
       {/* Documentation Section */}
