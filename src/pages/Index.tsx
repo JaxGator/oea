@@ -3,7 +3,6 @@ import { Hero } from '@/components/home/Hero';
 import { FeaturedEvents } from "@/components/home/FeaturedEvents";
 import { GalleryPreview } from "@/components/home/GalleryPreview";
 import { SocialFeed } from "@/components/home/SocialFeed";
-import { FeaturedMerch } from "@/components/home/FeaturedMerch";
 import { HomeLayout, HomeSection } from '@/components/home/HomeLayout';
 import { LeaderboardSection } from '@/components/home/LeaderboardSection';
 
@@ -24,10 +23,6 @@ export default function Index() {
 
       <HomeSection title="Social Feed">
         <SocialFeed />
-      </HomeSection>
-
-      <HomeSection title="Merchandise">
-        <FeaturedMerch />
       </HomeSection>
     </HomeLayout>
   );
