@@ -47,7 +47,23 @@ export function PollSection() {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return data;
+      
+      // Transform the data to match the expected types
+      return data.map(poll => ({
+        id: poll.id,
+        title: poll.title,
+        description: poll.description,
+        poll_options: poll.poll_options.map(option => ({
+          id: option.id,
+          option_text: option.option_text
+        })),
+        poll_votes: poll.poll_votes.map(vote => ({
+          id: vote.id,
+          option_id: vote.option_id,
+          user_id: vote.user_id,
+          profiles: vote.profiles || null
+        }))
+      }));
     }
   });
 
