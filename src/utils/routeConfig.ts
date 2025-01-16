@@ -1,5 +1,5 @@
 export const publicRoutes = ['/', '/about', '/privacy', '/terms', '/resources'];
-export const protectedRoutes = ['/events', '/profile', '/admin', '/members', '/store'];
+export const protectedRoutes = ['/events', '/profile', '/admin', '/users', '/store'];
 
 export const isProtectedRoute = (pathname: string): boolean => {
   // Check if the path starts with any protected route

@@ -33,7 +33,7 @@ export const createNavigationItems = (
   { 
     icon: Users, 
     label: "Users", 
-    path: "/members",
+    path: "/users",
     show: (user) => !!user 
   },
   { 
