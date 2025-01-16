@@ -36,7 +36,11 @@ export function PollSection() {
           poll_votes (
             id,
             user_id,
-            option_id
+            option_id,
+            profiles:user_id (
+              username,
+              avatar_url
+            )
           )
         `)
         .eq('status', 'active')
@@ -55,11 +59,17 @@ export function PollSection() {
         .eq('id', pollId);
 
       if (error) throw error;
-      toast.success("Poll deleted successfully");
+      toast({
+        title: "Poll deleted successfully",
+        variant: "default"
+      });
       refetch();
     } catch (error) {
       console.error('Error deleting poll:', error);
-      toast.error("Failed to delete poll");
+      toast({
+        title: "Failed to delete poll",
+        variant: "destructive"
+      });
     }
   };
 
