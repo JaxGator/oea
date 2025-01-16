@@ -1,4 +1,4 @@
-import { LucideIcon, Home, Calendar, BookOpen, Info, Users, ShoppingBag, LayoutDashboard, LogIn, LogOut, UserCircle } from "lucide-react";
+import { LucideIcon, Home, Calendar, BookOpen, Info, Users, LayoutDashboard, LogIn, LogOut, UserCircle } from "lucide-react";
 import { Profile } from "@/types/auth";
 
 export interface NavigationItem {
@@ -26,17 +26,6 @@ export const createNavigationItems = (
     path: "/events" 
   },
   { 
-    icon: BookOpen, 
-    label: "Resources", 
-    path: "/resources" 
-  },
-  {
-    icon: UserCircle,
-    label: "Members",
-    path: "/members",
-    show: (user, profile) => !!user && (profile?.is_member || profile?.is_admin)
-  },
-  { 
     icon: Users, 
     label: "Users", 
     path: "/users",
@@ -47,12 +36,16 @@ export const createNavigationItems = (
     label: "About", 
     path: "/about" 
   },
+  { 
+    icon: BookOpen, 
+    label: "Resources", 
+    path: "/resources" 
+  },
   {
-    icon: ShoppingBag,
-    label: "Store",
-    path: "https://outdoorenergyadventures.printful.me/",
-    external: true,
-    show: (user, profile) => !!user && !!profile?.is_member
+    icon: UserCircle,
+    label: "Members",
+    path: "/members",
+    show: (user, profile) => !!user && (profile?.is_member || profile?.is_admin)
   },
   {
     icon: LayoutDashboard,
