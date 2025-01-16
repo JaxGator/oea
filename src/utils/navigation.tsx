@@ -32,7 +32,7 @@ export const createNavigationItems = (
   },
   { 
     icon: Users, 
-    label: "Members", 
+    label: "Users", 
     path: "/members",
     show: (user) => !!user 
   },

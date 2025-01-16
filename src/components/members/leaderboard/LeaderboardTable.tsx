@@ -45,7 +45,7 @@ export function LeaderboardTable({
       <TableHeader>
         <TableRow>
           <TableHead className="w-12">Rank</TableHead>
-          <TableHead>Member</TableHead>
+          <TableHead>User</TableHead>
           <TableHead className="text-right">Events Attended</TableHead>
           <TableHead className="text-right">Current Streak</TableHead>
         </TableRow>
