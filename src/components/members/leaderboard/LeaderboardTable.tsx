@@ -14,11 +14,13 @@ interface LeaderboardTableProps {
   data: any[];
   category: "attendance";
   timeFilter: "all" | "monthly" | "weekly";
+  limit?: number;
 }
 
 export function LeaderboardTable({
   data,
   timeFilter,
+  limit
 }: LeaderboardTableProps) {
   console.log("LeaderboardTable render:", { data, timeFilter });
 
@@ -40,6 +42,8 @@ export function LeaderboardTable({
     );
   }
 
+  const displayData = limit ? data.slice(0, limit) : data;
+
   return (
     <Table>
       <TableHeader>
@@ -51,7 +55,7 @@ export function LeaderboardTable({
         </TableRow>
       </TableHeader>
       <TableBody>
-        {data.map((item, index) => (
+        {displayData.map((item, index) => (
           <TableRow key={item.id}>
             <TableCell>
               <LeaderboardRank rank={index} />

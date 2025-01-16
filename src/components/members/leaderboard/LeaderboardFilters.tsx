@@ -1,4 +1,5 @@
 import { Checkbox } from "@/components/ui/checkbox";
+import { Dispatch, SetStateAction } from "react";
 
 interface Filters {
   isAdmin: boolean;
@@ -9,9 +10,16 @@ interface Filters {
 interface LeaderboardFiltersProps {
   filters: Filters;
   onFilterChange: (newFilters: Filters) => void;
+  timeFilter: "all" | "monthly" | "weekly";
+  onTimeFilterChange: Dispatch<SetStateAction<"all" | "monthly" | "weekly">>;
 }
 
-export function LeaderboardFilters({ filters, onFilterChange }: LeaderboardFiltersProps) {
+export function LeaderboardFilters({ 
+  filters, 
+  onFilterChange,
+  timeFilter,
+  onTimeFilterChange 
+}: LeaderboardFiltersProps) {
   return (
     <div className="mb-4">
       <div className="flex items-center space-x-4">
