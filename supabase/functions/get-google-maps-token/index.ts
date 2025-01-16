@@ -17,7 +17,10 @@ serve(async (req) => {
     if (!token) {
       console.error('Google Maps API key not found in environment variables')
       return new Response(
-        JSON.stringify({ error: 'Google Maps API key not configured' }),
+        JSON.stringify({ 
+          error: 'Google Maps API key not configured',
+          details: 'Missing environment variable GOOGLE_MAPS_API_KEY'
+        }),
         { 
           status: 500,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -37,7 +40,10 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error in get-google-maps-token function:', error.message)
     return new Response(
-      JSON.stringify({ error: 'Internal server error' }),
+      JSON.stringify({ 
+        error: 'Internal server error',
+        details: error.message 
+      }),
       { 
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
