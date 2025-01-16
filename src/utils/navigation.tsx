@@ -47,7 +47,7 @@ export const createNavigationItems = (
     label: "Members",
     path: "/members",
     show: (user, profile) => !!user && (profile?.is_member || profile?.is_admin),
-    className: "text-[#f9c800] font-semibold"
+    className: "text-[#FFD700] font-semibold"
   },
   {
     icon: LayoutDashboard,
