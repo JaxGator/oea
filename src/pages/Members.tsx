@@ -12,7 +12,7 @@ const Members = () => {
     <div className="container mx-auto px-4 py-8 space-y-12 animate-fade-in">
       {/* Title Section */}
       <div className="flex items-center gap-3 border-b pb-4">
-        <Star className="h-8 w-8 text-primary fill-primary" />
+        <Star className="h-8 w-8 text-[#1EAEDB] fill-[#1EAEDB]" />
         <h1 className="text-3xl font-bold">Member Area</h1>
       </div>
 
