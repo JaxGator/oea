@@ -62,8 +62,8 @@ export function PollSection() {
           option_id: vote.option_id as string,
           user_id: vote.user_id as string,
           profiles: {
-            username: vote.profiles?.username as string,
-            avatar_url: vote.profiles?.avatar_url as string
+            username: vote.profiles?.[0]?.username as string,
+            avatar_url: vote.profiles?.[0]?.avatar_url as string
           }
         }))
       }));
