@@ -1,14 +1,15 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, Edit, Trash, Users, PieChart, BarChart } from "lucide-react";
-import { CreatePollDialog } from "./CreatePollDialog";
 import { PollCard } from "./PollCard";
+import { CreatePollDialog } from "./CreatePollDialog";
 import { useAuthState } from "@/hooks/useAuthState";
-import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 export function PollSection() {
+  const { toast } = useToast();
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const { profile } = useAuthState();
 
@@ -18,7 +19,15 @@ export function PollSection() {
       const { data, error } = await supabase
         .from('polls')
         .select(`
-          *,
+          id,
+          title,
+          description,
+          created_by,
+          status,
+          start_date,
+          end_date,
+          allow_multiple_choices,
+          created_at,
           poll_options (
             id,
             option_text,
@@ -26,23 +35,15 @@ export function PollSection() {
           ),
           poll_votes (
             id,
-            option_id,
             user_id,
-            profiles (
-              username,
-              avatar_url
-            )
-          ),
-          profiles (
-            username,
-            avatar_url
+            option_id
           )
         `)
         .eq('status', 'active')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return data || [];
+      return data;
     }
   });
 
@@ -50,7 +51,7 @@ export function PollSection() {
     try {
       const { error } = await supabase
         .from('polls')
-        .update({ status: 'deleted' })
+        .delete()
         .eq('id', pollId);
 
       if (error) throw error;
@@ -68,13 +69,13 @@ export function PollSection() {
   return (
     <div className="space-y-6 mb-8">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-semibold">Member Polls</h2>
+        <h2 className="text-2xl font-semibold text-[#FFD700]">Member Polls</h2>
         {canManagePolls && (
           <Button
             onClick={() => setShowCreateDialog(true)}
-            className="gap-2"
+            className="gap-2 bg-[#FFD700] hover:bg-[#FFD700]/90 text-black"
           >
-            <PlusCircle className="h-4 w-4" />
+            <Plus className="h-4 w-4" />
             Create Poll
           </Button>
         )}
@@ -83,9 +84,7 @@ export function PollSection() {
       {isLoading ? (
         <div className="text-center py-4">Loading polls...</div>
       ) : polls.length === 0 ? (
-        <div className="text-center py-4 text-muted-foreground">
-          No active polls at the moment.
-        </div>
+        <div className="text-center py-4 text-gray-500">No active polls</div>
       ) : (
         <div className="grid gap-4">
           {polls.map((poll) => (
