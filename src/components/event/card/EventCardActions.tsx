@@ -14,7 +14,8 @@ interface EventCardActionsProps {
   showPublishToggle?: boolean;
   isPublished?: boolean;
   onViewDetails: () => void;
-  onTogglePublish?: () => void;
+  onTogglePublish: () => void;
+  isFullyBooked?: boolean;
 }
 
 export function EventCardActions({
@@ -28,12 +29,12 @@ export function EventCardActions({
   onCancelRSVP,
   onEdit,
   onDelete,
-  showPublishToggle = false,
+  showPublishToggle = true,
   isPublished = true,
   onViewDetails,
   onTogglePublish,
+  isFullyBooked = false,
 }: EventCardActionsProps) {
-  const isFullyBooked = false; // This should be calculated based on event data
   const isWixEvent = false; // This should be passed as a prop if needed
 
   return (
@@ -51,6 +52,9 @@ export function EventCardActions({
       canAddGuests={canAddGuests}
       currentGuests={currentGuests}
       onViewDetails={onViewDetails}
+      onTogglePublish={onTogglePublish}
+      showPublishToggle={showPublishToggle}
+      isPublished={isPublished}
     />
   );
 }

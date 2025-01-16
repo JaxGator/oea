@@ -44,50 +44,132 @@ const Members = () => {
 
       {/* Documentation Section */}
       <div className="prose max-w-none">
-        <h2 className="text-2xl font-semibold mb-6">Member Features & Documentation</h2>
+        <h2 className="text-2xl font-semibold mb-6">Event Management Guide</h2>
         
         <Accordion type="single" collapsible className="space-y-4">
-          <AccordionItem value="events" className="border rounded-lg px-4">
+          <AccordionItem value="creating" className="border rounded-lg px-4">
             <AccordionTrigger className="text-lg font-medium">
-              Creating and Managing Events
+              Creating and Publishing Events
             </AccordionTrigger>
             <AccordionContent className="pt-4 pb-2">
-              <p className="mb-4">As a member, you have the ability to create and manage events for the community:</p>
-              <ul className="list-disc pl-6 space-y-2">
+              <h4 className="font-semibold mb-2">Creating a New Event</h4>
+              <ol className="list-decimal pl-6 space-y-2 mb-4">
                 <li>Click the "Create Event" button in the Events page</li>
-                <li>Fill in event details including title, description, date, time, and location</li>
-                <li>Upload an event image to make your event stand out</li>
-                <li>Set capacity limits and enable waitlist if desired</li>
-                <li>Manage RSVPs and communicate with attendees</li>
+                <li>Fill in required event details:
+                  <ul className="list-disc pl-6 mt-1">
+                    <li>Title</li>
+                    <li>Description (supports rich text formatting)</li>
+                    <li>Date and time</li>
+                    <li>Location</li>
+                    <li>Maximum number of guests</li>
+                    <li>Upload an event image</li>
+                  </ul>
+                </li>
+                <li>Configure optional settings:
+                  <ul className="list-disc pl-6 mt-1">
+                    <li>Enable waitlist</li>
+                    <li>Set waitlist capacity</li>
+                    <li>Enable reminders</li>
+                    <li>Set reminder intervals</li>
+                  </ul>
+                </li>
+                <li>Click "Create Event" to save</li>
+              </ol>
+
+              <h4 className="font-semibold mb-2">Publishing Status</h4>
+              <ul className="list-disc pl-6 space-y-2">
+                <li>New events are published by default</li>
+                <li>To unpublish: Click the event menu (three dots) and select "Unpublish"</li>
+                <li>Unpublished events are only visible to admins and the creator</li>
+                <li>To republish: Click "Publish" in the event menu</li>
               </ul>
             </AccordionContent>
           </AccordionItem>
 
-          <AccordionItem value="sharing" className="border rounded-lg px-4">
+          <AccordionItem value="updating" className="border rounded-lg px-4">
             <AccordionTrigger className="text-lg font-medium">
-              Sharing Events
+              Updating Events
             </AccordionTrigger>
             <AccordionContent className="pt-4 pb-2">
-              <p className="mb-4">Make your events more visible to the community:</p>
+              <ol className="list-decimal pl-6 space-y-2">
+                <li>Open the event you want to edit</li>
+                <li>Click the edit icon (pencil) or select "Edit" from the menu</li>
+                <li>Update any event details</li>
+                <li>Save changes</li>
+              </ol>
+              <p className="mt-2 text-sm text-gray-600">Note: All attendees will see the updated information</p>
+            </AccordionContent>
+          </AccordionItem>
+
+          <AccordionItem value="guests" className="border rounded-lg px-4">
+            <AccordionTrigger className="text-lg font-medium">
+              Managing Guests
+            </AccordionTrigger>
+            <AccordionContent className="pt-4 pb-2">
+              <h4 className="font-semibold mb-2">Adding Guests</h4>
+              <ol className="list-decimal pl-6 space-y-2">
+                <li>View guest list in event details</li>
+                <li>Click "Add Guests" button</li>
+                <li>Enter guest names</li>
+                <li>Confirm additions</li>
+              </ol>
+              
+              <h4 className="font-semibold mt-4 mb-2">Guest Limits</h4>
               <ul className="list-disc pl-6 space-y-2">
-                <li>Use the share button on any event to get a direct link</li>
-                <li>Share events directly to social media platforms</li>
-                <li>Invite specific members through the event page</li>
-                <li>Track RSVPs and waitlist status in real-time</li>
+                <li>System enforces maximum guest limit</li>
+                <li>Additional guests go to waitlist if enabled</li>
+                <li>Guests can be removed if needed</li>
               </ul>
             </AccordionContent>
           </AccordionItem>
 
-          <AccordionItem value="benefits" className="border rounded-lg px-4">
+          <AccordionItem value="waitlist" className="border rounded-lg px-4">
             <AccordionTrigger className="text-lg font-medium">
-              Additional Member Benefits
+              Waitlist Management
             </AccordionTrigger>
             <AccordionContent className="pt-4 pb-2">
+              <h4 className="font-semibold mb-2">Setting Up Waitlist</h4>
+              <ol className="list-decimal pl-6 space-y-2 mb-4">
+                <li>Enable waitlist when creating/editing event</li>
+                <li>Set waitlist capacity (optional)</li>
+              </ol>
+
+              <h4 className="font-semibold mb-2">How It Works</h4>
               <ul className="list-disc pl-6 space-y-2">
-                <li>Access to member-only merchandise</li>
-                <li>Priority registration for popular events</li>
-                <li>Ability to create and host your own events</li>
-                <li>Access to detailed event analytics and attendance tracking</li>
+                <li>When event reaches capacity, new RSVPs go to waitlist</li>
+                <li>Waitlist operates on first-come, first-served basis</li>
+                <li>When spots open up, first person on waitlist is automatically promoted</li>
+                <li>Promoted attendees receive notification</li>
+              </ul>
+
+              <h4 className="font-semibold mt-4 mb-2">Managing the Waitlist</h4>
+              <ul className="list-disc pl-6 space-y-2">
+                <li>View current waitlist in event details</li>
+                <li>Monitor waitlist size</li>
+                <li>Manually promote people if needed</li>
+              </ul>
+            </AccordionContent>
+          </AccordionItem>
+
+          <AccordionItem value="deleting" className="border rounded-lg px-4">
+            <AccordionTrigger className="text-lg font-medium">
+              Deleting Events
+            </AccordionTrigger>
+            <AccordionContent className="pt-4 pb-2">
+              <h4 className="font-semibold mb-2">Steps to Delete</h4>
+              <ol className="list-decimal pl-6 space-y-2">
+                <li>Open the event you want to delete</li>
+                <li>Click the menu (three dots)</li>
+                <li>Select "Delete Event"</li>
+                <li>Confirm deletion</li>
+              </ol>
+
+              <h4 className="font-semibold mt-4 mb-2">Important Notes</h4>
+              <ul className="list-disc pl-6 space-y-2">
+                <li>Deletion is permanent</li>
+                <li>All RSVPs and waitlist entries are removed</li>
+                <li>Attendees receive cancellation notification</li>
+                <li>Only event creators and admins can delete events</li>
               </ul>
             </AccordionContent>
           </AccordionItem>
