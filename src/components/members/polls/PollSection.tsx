@@ -61,7 +61,7 @@ export function PollSection() {
           id: vote.id,
           option_id: vote.option_id,
           user_id: vote.user_id,
-          profiles: vote.profiles || null
+          profiles: vote.profiles
         }))
       }));
     }
@@ -95,11 +95,11 @@ export function PollSection() {
   return (
     <div className="space-y-6 mb-8">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-semibold text-[#FFD700]">Member Polls</h2>
+        <h2 className="text-2xl font-semibold">Member Polls</h2>
         {canManagePolls && (
           <Button
             onClick={() => setShowCreateDialog(true)}
-            className="gap-2 bg-[#FFD700] hover:bg-[#FFD700]/90 text-black"
+            className="gap-2"
           >
             <Plus className="h-4 w-4" />
             Create Poll
