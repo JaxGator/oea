@@ -43,11 +43,11 @@ export const createNavigationItems = (
     path: "/resources" 
   },
   {
-    icon: UserCircle,
+    icon: Users,
     label: "Members",
     path: "/members",
     show: (user, profile) => !!user && (profile?.is_member || profile?.is_admin),
-    className: "text-[#FFD700] font-semibold"
+    className: "text-[#FFD700] font-semibold [&>svg]:text-[#FFD700]"
   },
   {
     icon: LayoutDashboard,
