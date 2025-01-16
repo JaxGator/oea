@@ -12,9 +12,9 @@ interface EventCardActionsProps {
   onEdit: () => void;
   onDelete: () => void;
   isPublished?: boolean;
+  showPublishToggle?: boolean;
   onViewDetails: () => void;
   onTogglePublish: () => void;
-  isFullyBooked?: boolean;
 }
 
 export function EventCardActions({
@@ -29,9 +29,9 @@ export function EventCardActions({
   onEdit,
   onDelete,
   isPublished = true,
+  showPublishToggle = false,
   onViewDetails,
   onTogglePublish,
-  isFullyBooked = false,
 }: EventCardActionsProps) {
   const isWixEvent = false; // This should be passed as a prop if needed
 
@@ -40,7 +40,7 @@ export function EventCardActions({
       isAdmin={isAdmin}
       canManageEvents={canManageEvents}
       userRSVPStatus={userRSVPStatus}
-      isFullyBooked={isFullyBooked}
+      isFullyBooked={false}
       onRSVP={onRSVP}
       onCancelRSVP={onCancelRSVP}
       onEdit={onEdit}
@@ -52,6 +52,7 @@ export function EventCardActions({
       onViewDetails={onViewDetails}
       onTogglePublish={onTogglePublish}
       isPublished={isPublished}
+      showPublishToggle={showPublishToggle}
     />
   );
 }
