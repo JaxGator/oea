@@ -31,7 +31,7 @@ interface PollCardProps {
       profiles: {
         username: string;
         avatar_url: string | null;
-      };
+      } | null;
     }>;
   };
   canEdit: boolean;
@@ -92,6 +92,10 @@ export function PollCard({ poll, canEdit, onDelete }: PollCardProps) {
     value: getVotersForOption(option.id).length
   }));
 
+  const getInitials = (username: string) => {
+    return username.charAt(0).toUpperCase();
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -136,12 +140,12 @@ export function PollCard({ poll, canEdit, onDelete }: PollCardProps) {
                       {getVotersForOption(option.id).map((vote) => (
                         <div key={vote.id} className="flex items-center gap-2">
                           <Avatar className="h-6 w-6">
-                            <AvatarImage src={vote.profiles.avatar_url || undefined} />
+                            <AvatarImage src={vote.profiles?.avatar_url || undefined} />
                             <AvatarFallback>
-                              {vote.profiles.username.charAt(0).toUpperCase()}
+                              {vote.profiles ? getInitials(vote.profiles.username) : '?'}
                             </AvatarFallback>
                           </Avatar>
-                          <span className="text-sm">{vote.profiles.username}</span>
+                          <span className="text-sm">{vote.profiles?.username || 'Unknown User'}</span>
                         </div>
                       ))}
                     </div>
