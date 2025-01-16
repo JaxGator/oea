@@ -12,6 +12,7 @@ serve(async (req) => {
   }
 
   try {
+    console.log('Fetching Google Maps API key...')
     const token = Deno.env.get('GOOGLE_MAPS_API_KEY')
     
     if (!token) {
