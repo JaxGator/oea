@@ -13,7 +13,10 @@ interface PollVoterListProps {
 }
 
 export function PollVoterList({ voters }: PollVoterListProps) {
-  const getInitials = (username: string) => username.charAt(0).toUpperCase();
+  const getInitials = (username: string | undefined) => {
+    if (!username) return '?';
+    return username.charAt(0).toUpperCase();
+  };
 
   return (
     <div className="space-y-2">
@@ -22,7 +25,7 @@ export function PollVoterList({ voters }: PollVoterListProps) {
           <Avatar className="h-6 w-6">
             <AvatarImage src={vote.profiles?.avatar_url || undefined} />
             <AvatarFallback>
-              {vote.profiles ? getInitials(vote.profiles.username) : '?'}
+              {getInitials(vote.profiles?.username)}
             </AvatarFallback>
           </Avatar>
           <span className="text-sm">{vote.profiles?.username || 'Unknown User'}</span>
