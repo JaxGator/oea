@@ -12,8 +12,14 @@ serve(async (req) => {
   }
 
   try {
-    console.log('Fetching Google Maps API key...')
+    console.log('Starting Google Maps token fetch...')
+    
+    // List all environment variables (without values) to debug
+    const envKeys = Object.keys(Deno.env.toObject())
+    console.log('Available environment variables:', envKeys)
+    
     const token = Deno.env.get('GOOGLE_MAPS_API_KEY')
+    console.log('Token retrieved:', token ? 'Found' : 'Not found')
     
     if (!token) {
       console.error('Google Maps API key not found in environment variables')
