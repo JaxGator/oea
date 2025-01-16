@@ -66,6 +66,8 @@ export function LeaderboardTable({
                   is_admin: item.profiles?.is_admin || false,
                   is_approved: item.profiles?.is_approved || false,
                   is_member: item.profiles?.is_member || false,
+                  created_at: item.profiles?.created_at || new Date().toISOString(),
+                  event_reminders_enabled: item.profiles?.event_reminders_enabled || false
                 }}
               />
             </TableCell>
