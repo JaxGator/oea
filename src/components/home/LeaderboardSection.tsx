@@ -1,21 +1,18 @@
 import { useAuthState } from "@/hooks/useAuthState";
 import { LeaderboardTable } from "@/components/members/leaderboard/LeaderboardTable";
-import { LeaderboardFilters } from "@/components/members/leaderboard/LeaderboardFilters";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Trophy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { useState } from "react";
 import { Loader2 } from "lucide-react";
 
 export function LeaderboardSection() {
   const { profile, isAuthenticated } = useAuthState();
-  const [timeFilter, setTimeFilter] = useState<"all" | "monthly" | "weekly">("all");
 
   const { data: leaderboardData, isLoading } = useQuery({
-    queryKey: ["leaderboard", timeFilter],
+    queryKey: ["leaderboard"],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("leaderboard_metrics")
@@ -47,20 +44,14 @@ export function LeaderboardSection() {
           <Trophy className="h-6 w-6 text-yellow-500" />
           Leaderboard
         </h2>
-        <Link to="/members">
-          <Button variant="outline">View All Members</Button>
+        <Link to="/users">
+          <Button variant="outline">View All Users</Button>
         </Link>
       </div>
 
       <Card>
         <CardHeader>
-          <div className="flex justify-between items-center">
-            <CardTitle>Top Contributors</CardTitle>
-            <LeaderboardFilters
-              timeFilter={timeFilter}
-              onTimeFilterChange={setTimeFilter}
-            />
-          </div>
+          <CardTitle>Top Contributors</CardTitle>
         </CardHeader>
         <CardContent>
           {isLoading ? (
@@ -71,7 +62,7 @@ export function LeaderboardSection() {
             <LeaderboardTable
               data={leaderboardData || []}
               category="attendance"
-              timeFilter={timeFilter}
+              timeFilter="all"
             />
           )}
         </CardContent>

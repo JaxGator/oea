@@ -8,6 +8,7 @@ export interface NavigationItem {
   external?: boolean;
   onClick?: () => void | Promise<void>;
   show?: (user: any, profile: Profile | null) => boolean;
+  className?: string;
 }
 
 export const createNavigationItems = (
@@ -45,7 +46,8 @@ export const createNavigationItems = (
     icon: UserCircle,
     label: "Members",
     path: "/members",
-    show: (user, profile) => !!user && (profile?.is_member || profile?.is_admin)
+    show: (user, profile) => !!user && (profile?.is_member || profile?.is_admin),
+    className: "text-[#f9c800] font-semibold"
   },
   {
     icon: LayoutDashboard,

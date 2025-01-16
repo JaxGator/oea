@@ -1,7 +1,6 @@
 import { useState, useCallback } from "react";
 import { Member } from "./types";
 import { MemberList } from "./MemberList";
-import { LeaderboardPage } from "./leaderboard/LeaderboardPage";
 import { ErrorBoundary } from "@/components/error/ErrorBoundary";
 import { MemberPageError } from "./MemberPageError";
 import { useToast } from "@/hooks/use-toast";
@@ -82,12 +81,13 @@ export function MemberPageContent({
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 space-y-8">
-      <MemberHeader totalMembers={filteredMembers.length} />
-      
-      <MemberFilters 
-        filters={filters}
-        onFilterChange={handleFilterChange}
-      />
+      <div className="flex flex-col space-y-4">
+        <MemberHeader totalMembers={filteredMembers.length} />
+        <MemberFilters 
+          filters={filters}
+          onFilterChange={handleFilterChange}
+        />
+      </div>
 
       <ErrorBoundary
         fallback={MemberPageError}
@@ -95,21 +95,13 @@ export function MemberPageContent({
           console.error('Members page error:', error);
         }}
       >
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <div>
-            <MemberList
-              members={filteredMembers}
-              currentUserIsAdmin={currentUserIsAdmin}
-              onViewMember={handleViewMember}
-              onEditMember={handleEditMember}
-              isMobile={isMobile}
-            />
-          </div>
-          
-          <div>
-            <LeaderboardPage />
-          </div>
-        </div>
+        <MemberList
+          members={filteredMembers}
+          currentUserIsAdmin={currentUserIsAdmin}
+          onViewMember={handleViewMember}
+          onEditMember={handleEditMember}
+          isMobile={isMobile}
+        />
 
         <MemberDialogManager
           selectedMember={selectedMember}
