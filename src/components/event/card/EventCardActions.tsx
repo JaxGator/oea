@@ -11,7 +11,6 @@ interface EventCardActionsProps {
   onCancelRSVP: () => void;
   onEdit: () => void;
   onDelete: () => void;
-  showPublishToggle?: boolean;
   isPublished?: boolean;
   onViewDetails: () => void;
   onTogglePublish: () => void;
@@ -29,7 +28,6 @@ export function EventCardActions({
   onCancelRSVP,
   onEdit,
   onDelete,
-  showPublishToggle = true,
   isPublished = true,
   onViewDetails,
   onTogglePublish,
@@ -53,7 +51,6 @@ export function EventCardActions({
       currentGuests={currentGuests}
       onViewDetails={onViewDetails}
       onTogglePublish={onTogglePublish}
-      showPublishToggle={showPublishToggle}
       isPublished={isPublished}
     />
   );
