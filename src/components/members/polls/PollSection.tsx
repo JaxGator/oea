@@ -50,18 +50,21 @@ export function PollSection() {
       
       // Transform the data to match the expected types
       return data.map(poll => ({
-        id: poll.id,
-        title: poll.title,
-        description: poll.description,
+        id: poll.id as string,
+        title: poll.title as string,
+        description: poll.description as string,
         poll_options: poll.poll_options.map(option => ({
-          id: option.id,
-          option_text: option.option_text
+          id: option.id as string,
+          option_text: option.option_text as string
         })),
         poll_votes: poll.poll_votes.map(vote => ({
-          id: vote.id,
-          option_id: vote.option_id,
-          user_id: vote.user_id,
-          profiles: vote.profiles
+          id: vote.id as string,
+          option_id: vote.option_id as string,
+          user_id: vote.user_id as string,
+          profiles: {
+            username: vote.profiles?.username as string,
+            avatar_url: vote.profiles?.avatar_url as string
+          }
         }))
       }));
     }
