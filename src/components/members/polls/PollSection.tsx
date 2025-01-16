@@ -2,10 +2,11 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, ChartBar, Check, X } from "lucide-react";
+import { PlusCircle, Edit, Trash, Users, PieChart, BarChart } from "lucide-react";
 import { CreatePollDialog } from "./CreatePollDialog";
 import { PollCard } from "./PollCard";
 import { useAuthState } from "@/hooks/useAuthState";
+import { toast } from "sonner";
 
 export function PollSection() {
   const [showCreateDialog, setShowCreateDialog] = useState(false);
@@ -26,7 +27,11 @@ export function PollSection() {
           poll_votes (
             id,
             option_id,
-            user_id
+            user_id,
+            profiles (
+              username,
+              avatar_url
+            )
           ),
           profiles (
             username,
@@ -41,12 +46,27 @@ export function PollSection() {
     }
   });
 
+  const handleDeletePoll = async (pollId: string) => {
+    try {
+      const { error } = await supabase
+        .from('polls')
+        .update({ status: 'deleted' })
+        .eq('id', pollId);
+
+      if (error) throw error;
+      toast.success("Poll deleted successfully");
+    } catch (error) {
+      console.error('Error deleting poll:', error);
+      toast.error("Failed to delete poll");
+    }
+  };
+
   const canCreatePolls = profile?.is_member || profile?.is_admin;
 
   return (
     <div className="space-y-6 mb-8">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-semibold">Community Polls</h2>
+        <h2 className="text-2xl font-semibold">Member Polls</h2>
         {canCreatePolls && (
           <Button
             onClick={() => setShowCreateDialog(true)}
@@ -67,7 +87,12 @@ export function PollSection() {
       ) : (
         <div className="grid gap-4">
           {polls.map((poll) => (
-            <PollCard key={poll.id} poll={poll} />
+            <PollCard 
+              key={poll.id} 
+              poll={poll}
+              canEdit={profile?.is_admin || poll.created_by === profile?.id}
+              onDelete={() => handleDeletePoll(poll.id)}
+            />
           ))}
         </div>
       )}
