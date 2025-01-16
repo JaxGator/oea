@@ -37,6 +37,11 @@ const Members = () => {
         </div>
       </div>
 
+      {/* Member Merch Section */}
+      <div>
+        <FeaturedMerch />
+      </div>
+
       {/* Documentation Section */}
       <div className="prose max-w-none">
         <h2 className="text-2xl font-semibold mb-6">Member Features & Documentation</h2>
@@ -87,11 +92,6 @@ const Members = () => {
             </AccordionContent>
           </AccordionItem>
         </Accordion>
-      </div>
-
-      {/* Member Merch Section */}
-      <div className="pt-8">
-        <FeaturedMerch />
       </div>
     </div>
   );
