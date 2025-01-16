@@ -11,8 +11,7 @@ port = 54322
 [studio]
 enabled = true
 port = 54323
-api_url = "http://localhost"
 
-[[functions]]
-[functions.ads-txt]
-verify_jwt = false
+[[fetch.services]]
+name = "get-google-maps-token"
+routes = ["/get-google-maps-token"]
