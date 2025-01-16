@@ -82,11 +82,13 @@ export function MemberPageContent({
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 space-y-8">
       <div className="flex flex-col space-y-4">
-        <MemberHeader totalMembers={filteredMembers.length} />
-        <MemberFilters 
-          filters={filters}
-          onFilterChange={handleFilterChange}
-        />
+        <div className="flex justify-between items-center">
+          <MemberHeader totalMembers={filteredMembers.length} />
+          <MemberFilters 
+            filters={filters}
+            onFilterChange={handleFilterChange}
+          />
+        </div>
       </div>
 
       <ErrorBoundary

@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Edit, Trash, BarChart, PieChart, Users } from "lucide-react";
+import { Edit, Trash, BarChart, PieChart } from "lucide-react";
 
 interface PollHeaderProps {
   title: string;
@@ -45,10 +45,6 @@ export function PollHeader({
           onClick={onToggleChart}
         >
           {showPieChart ? <BarChart className="h-4 w-4" /> : <PieChart className="h-4 w-4" />}
-        </Button>
-        <Button variant="ghost" size="icon">
-          <Users className="h-4 w-4" />
-          <span className="ml-1">{totalVotes}</span>
         </Button>
       </div>
     </div>

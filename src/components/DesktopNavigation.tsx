@@ -36,7 +36,7 @@ export function DesktopNavigation() {
                   href={path}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="hover:text-primary-100 transition-colors"
+                  className={`hover:text-primary-100 transition-colors ${path === '/members' ? 'text-[#FFD700]' : ''}`}
                   role="menuitem"
                   tabIndex={0}
                 >
@@ -46,7 +46,7 @@ export function DesktopNavigation() {
                 <Link
                   key={path}
                   to={path}
-                  className="hover:text-primary-100 transition-colors"
+                  className={`hover:text-primary-100 transition-colors ${path === '/members' ? 'text-[#FFD700]' : ''}`}
                   role="menuitem"
                   tabIndex={0}
                 >
