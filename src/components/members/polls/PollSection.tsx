@@ -12,7 +12,7 @@ export function PollSection() {
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const { profile } = useAuthState();
 
-  const { data: polls = [], isLoading } = useQuery({
+  const { data: polls = [], isLoading, refetch } = useQuery({
     queryKey: ['active-polls'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -55,19 +55,21 @@ export function PollSection() {
 
       if (error) throw error;
       toast.success("Poll deleted successfully");
+      refetch();
     } catch (error) {
       console.error('Error deleting poll:', error);
       toast.error("Failed to delete poll");
     }
   };
 
-  const canCreatePolls = profile?.is_member || profile?.is_admin;
+  // Now both members and admins can create polls
+  const canManagePolls = profile?.is_member || profile?.is_admin;
 
   return (
     <div className="space-y-6 mb-8">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-semibold">Member Polls</h2>
-        {canCreatePolls && (
+        {canManagePolls && (
           <Button
             onClick={() => setShowCreateDialog(true)}
             className="gap-2"
@@ -90,7 +92,7 @@ export function PollSection() {
             <PollCard 
               key={poll.id} 
               poll={poll}
-              canEdit={profile?.is_admin || poll.created_by === profile?.id}
+              canEdit={canManagePolls}
               onDelete={() => handleDeletePoll(poll.id)}
             />
           ))}
