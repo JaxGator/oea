@@ -6,33 +6,51 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders })
+    return new Response(null, { headers: corsHeaders })
   }
 
   try {
-    // Return the public Mapbox token
+    console.log('Starting Mapbox token fetch...')
+    
+    const token = Deno.env.get('MAPBOX_PUBLIC_TOKEN')
+    console.log('Token retrieved:', token ? 'Found' : 'Not found')
+    
+    if (!token) {
+      console.error('Mapbox token not found in environment variables')
+      return new Response(
+        JSON.stringify({ 
+          error: 'Mapbox token not configured',
+          details: 'Missing environment variable MAPBOX_PUBLIC_TOKEN'
+        }),
+        { 
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      )
+    }
+
+    console.log('Successfully retrieved Mapbox token')
+    
     return new Response(
-      JSON.stringify({
-        token: Deno.env.get('MAPBOX_PUBLIC_TOKEN'),
-      }),
-      {
-        headers: {
-          ...corsHeaders,
-          'Content-Type': 'application/json',
-        },
-      },
+      JSON.stringify({ token }),
+      { 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200 
+      }
     )
   } catch (error) {
+    console.error('Error in get-mapbox-token function:', error.message)
     return new Response(
-      JSON.stringify({ error: error.message }),
-      {
-        status: 400,
-        headers: {
-          ...corsHeaders,
-          'Content-Type': 'application/json',
-        },
-      },
+      JSON.stringify({ 
+        error: 'Internal server error',
+        details: error.message 
+      }),
+      { 
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      }
     )
   }
 })

@@ -1,5 +1,7 @@
-import { useLoadScript, GoogleMap, Marker } from '@react-google-maps/api';
-import { useGoogleMapsToken } from '@/hooks/useGoogleMapsToken';
+import { useEffect, useRef } from 'react';
+import mapboxgl from 'mapbox-gl';
+import 'mapbox-gl/dist/mapbox-gl.css';
+import { useMapboxToken } from '@/hooks/useMapboxToken';
 import { MapLoadingState } from '../map/MapLoadingState';
 import { MapErrorState } from '../map/MapErrorState';
 
@@ -9,30 +11,44 @@ interface EventLocationMapProps {
   lng?: number;
 }
 
-const libraries: ("places" | "geometry" | "drawing" | "visualization")[] = ["places"];
-
 export function EventLocationMap({ location, lat, lng }: EventLocationMapProps) {
-  const { mapKey, isLoading: isKeyLoading, error: keyError } = useGoogleMapsToken();
+  const mapContainer = useRef<HTMLDivElement>(null);
+  const map = useRef<mapboxgl.Map | null>(null);
+  const marker = useRef<mapboxgl.Marker | null>(null);
+  const { mapToken, isLoading: isKeyLoading, error: keyError } = useMapboxToken();
 
-  const { isLoaded, loadError } = useLoadScript({
-    googleMapsApiKey: mapKey || '',
-    libraries,
-  });
+  useEffect(() => {
+    if (!mapContainer.current || !lat || !lng || !mapToken) return;
+
+    mapboxgl.accessToken = mapToken;
+    
+    map.current = new mapboxgl.Map({
+      container: mapContainer.current,
+      style: 'mapbox://styles/mapbox/light-v11',
+      center: [lng, lat],
+      zoom: 14,
+      scrollZoom: false
+    });
+
+    marker.current = new mapboxgl.Marker()
+      .setLngLat([lng, lat])
+      .addTo(map.current);
+
+    map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
+
+    return () => {
+      if (map.current) {
+        map.current.remove();
+      }
+    };
+  }, [lat, lng, mapToken]);
 
   if (isKeyLoading) {
     return <MapLoadingState />;
   }
 
-  if (keyError || !mapKey) {
+  if (keyError || !mapToken) {
     return <MapErrorState message="Failed to load map configuration" />;
-  }
-
-  if (loadError) {
-    return <MapErrorState message="Error loading map" />;
-  }
-
-  if (!isLoaded) {
-    return <MapLoadingState />;
   }
 
   if (!lat || !lng) {
@@ -44,21 +60,6 @@ export function EventLocationMap({ location, lat, lng }: EventLocationMapProps) 
   }
 
   return (
-    <GoogleMap
-      mapContainerStyle={{
-        width: '100%',
-        height: '100%',
-      }}
-      zoom={15}
-      center={{ lat, lng }}
-      options={{
-        zoomControl: true,
-        mapTypeControl: false,
-        streetViewControl: false,
-        fullscreenControl: false,
-      }}
-    >
-      <Marker position={{ lat, lng }} />
-    </GoogleMap>
+    <div ref={mapContainer} className="h-full w-full rounded-lg" />
   );
 }

@@ -11,7 +11,7 @@ export interface Location {
 // Cache for geocoded locations
 const geocodeCache: Record<string, { lat: number; lng: number }> = {};
 
-export const useEventLocations = (events: Event[], mapKey: string) => {
+export const useEventLocations = (events: Event[], mapToken: string) => {
   const [locations, setLocations] = useState<Location[]>([]);
 
   useEffect(() => {
@@ -30,13 +30,14 @@ export const useEventLocations = (events: Event[], mapKey: string) => {
                 return { lat, lng, event };
               }
 
+              const query = encodeURIComponent(event.location);
               const response = await fetch(
-                `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(event.location)}&key=${mapKey}`
+                `https://api.mapbox.com/geocoding/v5/mapbox.places/${query}.json?access_token=${mapToken}`
               );
               const data = await response.json();
 
-              if (data.results && data.results.length > 0) {
-                const { lat, lng } = data.results[0].geometry.location;
+              if (data.features && data.features.length > 0) {
+                const [lng, lat] = data.features[0].center;
                 // Cache the result
                 geocodeCache[event.location] = { lat, lng };
                 return { lat, lng, event };
@@ -57,10 +58,10 @@ export const useEventLocations = (events: Event[], mapKey: string) => {
       }
     };
 
-    if (mapKey && events.length > 0) {
+    if (mapToken && events.length > 0) {
       geocodeLocations();
     }
-  }, [events, mapKey]);
+  }, [events, mapToken]);
 
   return locations;
 };
