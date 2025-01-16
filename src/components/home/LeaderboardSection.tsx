@@ -1,8 +1,31 @@
 import { Link } from "react-router-dom";
 import { LeaderboardTable } from "@/components/members/leaderboard/LeaderboardTable";
 import { Card } from "@/components/ui/card";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 export function LeaderboardSection() {
+  const { data: leaderboardData } = useQuery({
+    queryKey: ["leaderboard-preview"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("leaderboard_metrics")
+        .select(`
+          *,
+          profiles:user_id (
+            username,
+            avatar_url,
+            full_name
+          )
+        `)
+        .gt('events_attended', 0)
+        .order('events_attended', { ascending: false });
+
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
   return (
     <section className="py-12 bg-gray-50">
       <div className="container mx-auto px-4">
@@ -17,7 +40,12 @@ export function LeaderboardSection() {
         </div>
         
         <Card className="p-6">
-          <LeaderboardTable limit={5} />
+          <LeaderboardTable 
+            data={leaderboardData || []}
+            category="attendance"
+            timeFilter="all"
+            limit={5}
+          />
         </Card>
       </div>
     </section>

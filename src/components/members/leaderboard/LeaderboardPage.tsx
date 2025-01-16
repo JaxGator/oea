@@ -11,6 +11,11 @@ type TimeFilter = "all" | "monthly" | "weekly";
 
 export function LeaderboardPage() {
   const [timeFilter, setTimeFilter] = useState<TimeFilter>("all");
+  const [filters, setFilters] = useState({
+    isAdmin: false,
+    isApproved: false,
+    isMember: false
+  });
 
   const { data: leaderboardData, isLoading, error } = useQuery({
     queryKey: ["leaderboard", timeFilter],
@@ -77,6 +82,8 @@ export function LeaderboardPage() {
       <CardContent>
         <div className="mt-4">
           <LeaderboardFilters
+            filters={filters}
+            onFilterChange={setFilters}
             timeFilter={timeFilter}
             onTimeFilterChange={setTimeFilter}
           />
