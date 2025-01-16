@@ -9,6 +9,7 @@ import Auth from "./pages/Auth";
 import Events from "./pages/Events";
 import EventDetails from "./pages/EventDetails";
 import Users from "./pages/Users";
+import Members from "./pages/Members";
 import Profile from "./pages/Profile";
 import Resources from "./pages/Resources";
 import Admin from "./pages/Admin";
@@ -46,6 +47,7 @@ const App = () => {
             {/* Protected Routes */}
             <Route path="events/:id" element={<RequireAuth><EventDetails /></RequireAuth>} />
             <Route path="users" element={<RequireAuth><Users /></RequireAuth>} />
+            <Route path="members" element={<RequireAuth><Members /></RequireAuth>} />
             <Route path="profile" element={<RequireAuth><Profile /></RequireAuth>} />
             <Route path="admin" element={
               <RequireAuth>
