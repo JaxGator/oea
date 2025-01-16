@@ -58,9 +58,15 @@ export function LeaderboardTable({
             </TableCell>
             <TableCell>
               <LeaderboardUserCell
-                avatarUrl={item.profiles?.avatar_url}
-                username={item.profiles?.username || 'Unknown User'}
-                fullName={item.profiles?.full_name}
+                user={{
+                  id: item.id,
+                  username: item.profiles?.username || 'Unknown User',
+                  full_name: item.profiles?.full_name,
+                  avatar_url: item.profiles?.avatar_url,
+                  is_admin: item.profiles?.is_admin || false,
+                  is_approved: item.profiles?.is_approved || false,
+                  is_member: item.profiles?.is_member || false,
+                }}
               />
             </TableCell>
             <LeaderboardMetrics
