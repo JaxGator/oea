@@ -1,70 +1,91 @@
 import { useState, useCallback, useMemo, useEffect } from 'react';
-import { useLoadScript, GoogleMap } from '@react-google-maps/api';
+import mapboxgl from 'mapbox-gl';
+import 'mapbox-gl/dist/mapbox-gl.css';
 import { Event } from '@/types/event';
-import { useGoogleMapsToken } from '@/hooks/useGoogleMapsToken';
+import { useMapboxToken } from '@/hooks/useMapboxToken';
 import { useEventLocations } from '@/hooks/useEventLocations';
 import { EventInfoWindow } from './EventInfoWindow';
 import { MapLoadingState } from './map/MapLoadingState';
 import { MapErrorState } from './map/MapErrorState';
-import { MapMarkers } from './map/MapMarkers';
 
 interface EventsMapProps {
   events: Event[];
   selectedEventId?: string | null;
 }
 
-const libraries: ("places" | "geometry" | "drawing" | "visualization")[] = ["places"];
-
 export function EventsMap({ events, selectedEventId }: EventsMapProps) {
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
-  const [map, setMap] = useState<google.maps.Map | null>(null);
-  const { mapKey, isLoading: isKeyLoading, error: keyError } = useGoogleMapsToken();
-  const locations = useEventLocations(events, mapKey);
+  const [map, setMap] = useState<mapboxgl.Map | null>(null);
+  const { mapToken, isLoading: isKeyLoading, error: keyError } = useMapboxToken();
+  const locations = useEventLocations(events, mapToken);
 
-  const { isLoaded, loadError } = useLoadScript({
-    googleMapsApiKey: mapKey || '',
-    libraries,
-  });
+  const mapContainer = useCallback((node: HTMLDivElement) => {
+    if (node && mapToken && locations.length > 0) {
+      mapboxgl.accessToken = mapToken;
 
-  const mapOptions = useMemo(() => ({
-    styles: [
-      {
-        featureType: 'all',
-        elementType: 'geometry',
-        stylers: [{ lightness: 20 }],
-      },
-    ],
-    zoomControl: true,
-    mapTypeControl: false,
-    streetViewControl: false,
-    fullscreenControl: true,
-  }), []);
+      const newMap = new mapboxgl.Map({
+        container: node,
+        style: 'mapbox://styles/mapbox/light-v11',
+        center: [locations[0].lng, locations[0].lat],
+        zoom: 12
+      });
 
-  // Find the selected location based on selectedEventId
-  const selectedLocation = useMemo(() => {
-    if (!selectedEventId || !locations.length) return locations[0];
-    const found = locations.find(loc => loc.event.id === selectedEventId);
-    console.log('Selected location:', found);
-    return found || locations[0];
-  }, [selectedEventId, locations]);
+      newMap.addControl(new mapboxgl.NavigationControl(), 'top-right');
+      setMap(newMap);
 
-  // Update map center and zoom when selectedLocation changes
-  useEffect(() => {
-    if (map && selectedLocation) {
-      console.log('Updating map center to:', { lat: selectedLocation.lat, lng: selectedLocation.lng });
-      map.panTo({ lat: selectedLocation.lat, lng: selectedLocation.lng });
-      map.setZoom(14);
+      return () => {
+        newMap.remove();
+      };
     }
-  }, [map, selectedLocation, selectedEventId]);
+  }, [mapToken, locations]);
 
-  const onLoad = useCallback((map: google.maps.Map) => {
-    console.log('Map loaded');
-    setMap(map);
-  }, []);
+  // Update markers when locations change
+  useEffect(() => {
+    if (!map) return;
 
-  const handleMarkerClick = useCallback((event: Event) => {
-    setSelectedEvent(event);
-  }, []);
+    // Clear existing markers
+    const markers = document.getElementsByClassName('mapboxgl-marker');
+    while (markers[0]) {
+      markers[0].remove();
+    }
+
+    // Add new markers
+    locations.forEach(location => {
+      const isSelected = location.event.id === selectedEventId;
+      
+      const el = document.createElement('div');
+      el.className = 'marker';
+      el.style.backgroundColor = isSelected ? '#4A90E2' : '#FF5A5F';
+      el.style.width = '24px';
+      el.style.height = '24px';
+      el.style.borderRadius = '50%';
+      el.style.cursor = 'pointer';
+      el.style.border = '2px solid white';
+      el.style.boxShadow = '0 2px 4px rgba(0,0,0,0.2)';
+
+      el.addEventListener('click', () => {
+        setSelectedEvent(location.event);
+      });
+
+      new mapboxgl.Marker(el)
+        .setLngLat([location.lng, location.lat])
+        .addTo(map);
+    });
+  }, [map, locations, selectedEventId]);
+
+  // Update map center when selectedEventId changes
+  useEffect(() => {
+    if (!map || !selectedEventId) return;
+
+    const selectedLocation = locations.find(loc => loc.event.id === selectedEventId);
+    if (selectedLocation) {
+      map.flyTo({
+        center: [selectedLocation.lng, selectedLocation.lat],
+        zoom: 14,
+        duration: 1500
+      });
+    }
+  }, [map, selectedEventId, locations]);
 
   if (events.length === 0 || locations.length === 0) {
     return null;
@@ -74,47 +95,20 @@ export function EventsMap({ events, selectedEventId }: EventsMapProps) {
     return <MapLoadingState />;
   }
 
-  if (keyError || !mapKey) {
+  if (keyError || !mapToken) {
     return <MapErrorState message="Failed to load map configuration" />;
-  }
-
-  if (loadError) {
-    return <MapErrorState message="Error loading map" />;
-  }
-
-  if (!isLoaded) {
-    return <MapLoadingState />;
   }
 
   return (
     <div className="w-full rounded-lg overflow-hidden shadow-lg mb-8">
-      <GoogleMap
-        mapContainerStyle={{
-          width: '100%',
-          height: '400px',
-        }}
-        zoom={selectedEventId ? 14 : 12}
-        center={{
-          lat: selectedLocation?.lat || 0,
-          lng: selectedLocation?.lng || 0,
-        }}
-        options={mapOptions}
-        onLoad={onLoad}
-      >
-        <MapMarkers 
+      <div ref={mapContainer} style={{ width: '100%', height: '400px' }} />
+      {selectedEvent && (
+        <EventInfoWindow
+          event={selectedEvent}
           locations={locations}
-          selectedEventId={selectedEventId}
-          onMarkerClick={handleMarkerClick}
+          onClose={() => setSelectedEvent(null)}
         />
-
-        {selectedEvent && (
-          <EventInfoWindow
-            event={selectedEvent}
-            locations={locations}
-            onClose={() => setSelectedEvent(null)}
-          />
-        )}
-      </GoogleMap>
+      )}
     </div>
   );
 }
