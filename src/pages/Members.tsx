@@ -2,6 +2,7 @@ import { Star } from "lucide-react";
 import { FeaturedMerch } from "@/components/home/FeaturedMerch";
 import { EventParticipationReport } from "@/components/admin/reports/EventParticipationReport";
 import { UserActivityReport } from "@/components/admin/reports/UserActivityReport";
+import { PollSection } from "@/components/members/polls/PollSection";
 import {
   Accordion,
   AccordionContent,
@@ -17,6 +18,9 @@ const Members = () => {
         <Star className="h-8 w-8 text-[#1EAEDB] fill-[#1EAEDB]" />
         <h1 className="text-3xl font-bold">Member Area</h1>
       </div>
+
+      {/* Polls Section */}
+      <PollSection />
 
       {/* Reports Section */}
       <div className="grid md:grid-cols-2 gap-6">
@@ -177,6 +181,6 @@ const Members = () => {
       </div>
     </div>
   );
-};
+}
 
 export default Members;
