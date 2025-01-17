@@ -48,12 +48,7 @@ export function EventDialogs({
     <>
       <Dialog 
         open={showDetailsDialog} 
-        onOpenChange={(open) => {
-          setShowDetailsDialog(open);
-          if (!open) {
-            setShowEditDialog(false);
-          }
-        }}
+        onOpenChange={setShowDetailsDialog}
       >
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-hidden flex flex-col p-0">
           <div className="flex-1 overflow-y-auto">
@@ -87,7 +82,10 @@ export function EventDialogs({
           event={event}
           showDialog={showEditDialog}
           setShowDialog={setShowEditDialog}
-          onSuccess={handleEditSuccess}
+          onSuccess={() => {
+            handleEditSuccess();
+            setShowDetailsDialog(false);
+          }}
         />
       )}
     </>
