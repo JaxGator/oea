@@ -44,9 +44,24 @@ export function EventDialogs({
   onDelete,
   handleEditSuccess,
 }: EventDialogsProps) {
+  // Handle dialog state changes
+  const handleDetailsDialogChange = (open: boolean) => {
+    setShowDetailsDialog(open);
+    if (!open && showEditDialog) {
+      setShowEditDialog(false);
+    }
+  };
+
+  const handleEditDialogChange = (open: boolean) => {
+    setShowEditDialog(open);
+    if (!open && showDetailsDialog) {
+      setShowDetailsDialog(false);
+    }
+  };
+
   return (
     <>
-      <Dialog open={showDetailsDialog} onOpenChange={setShowDetailsDialog}>
+      <Dialog open={showDetailsDialog} onOpenChange={handleDetailsDialogChange}>
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-hidden flex flex-col p-0">
           <div className="flex-1 overflow-y-auto">
             <div className="p-6">
@@ -74,7 +89,7 @@ export function EventDialogs({
       <EventEditDialog
         event={event}
         open={showEditDialog}
-        onOpenChange={setShowEditDialog}
+        onOpenChange={handleEditDialogChange}
         onSuccess={handleEditSuccess}
       />
     </>

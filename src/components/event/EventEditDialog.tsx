@@ -3,6 +3,7 @@ import { EventForm } from "./EventForm";
 import { WaitlistManager } from "../admin/events/WaitlistManager";
 import { Separator } from "@/components/ui/separator";
 import { EventFormData } from "./EventFormTypes";
+import { useEffect } from "react";
 
 interface EventEditDialogProps {
   event: EventFormData;
@@ -12,9 +13,19 @@ interface EventEditDialogProps {
 }
 
 export function EventEditDialog({ event, open, onOpenChange, onSuccess }: EventEditDialogProps) {
+  // Ensure cleanup when dialog closes
+  useEffect(() => {
+    return () => {
+      // Cleanup function
+      if (!open) {
+        onSuccess();
+      }
+    };
+  }, [open, onSuccess]);
+
   const handleSuccess = () => {
     onSuccess();
-    onOpenChange(false); // Close the dialog after successful update
+    onOpenChange(false);
   };
 
   return (
