@@ -5,7 +5,6 @@ import { useEventGuestData } from "@/hooks/events/useEventGuestData";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { useQuery } from "@tanstack/react-query";
 
 interface EventCardStateProps {
   event: Event;
@@ -41,43 +40,14 @@ export function EventCardState({
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showDetailsDialog, setShowDetailsDialog] = useState(false);
   
-  // Fetch RSVPs and attendees
-  const { data: rsvpData = { confirmedCount: 0, waitlistCount: 0 } } = useEventRSVPData(event.id);
-  const { data: attendees = [] } = useQuery({
-    queryKey: ['event-attendees', event.id],
-    queryFn: async () => {
-      const { data: rsvps, error } = await supabase
-        .from('event_rsvps')
-        .select(`
-          id,
-          profiles (
-            full_name,
-            username
-          ),
-          event_guests (
-            id,
-            first_name
-          )
-        `)
-        .eq('event_id', event.id)
-        .eq('response', 'attending')
-        .eq('status', 'confirmed');
-
-      if (error) {
-        console.error('Error fetching attendees:', error);
-        return [];
-      }
-
-      // Transform the data to match the expected format
-      return rsvps?.map(rsvp => ({
-        profile: rsvp.profiles,
-        event_guests: rsvp.event_guests
-      })) || [];
-    },
-    staleTime: 1000 * 60 * 5 // Cache for 5 minutes
-  });
-
+  // Fetch RSVPs and attendees using custom hooks
+  const { data: attendees = [] } = useEventRSVPData(event.id);
   const { data: guests = [] } = useEventGuestData(event.id, userRSVPStatus);
+
+  const rsvpData = {
+    confirmedCount: attendees.length,
+    waitlistCount: 0 // You might want to implement this in the future
+  };
 
   const isPastEvent = new Date(event.date) < new Date(new Date().setHours(0, 0, 0, 0));
   const isWixEvent = !!event.imported_rsvp_count;
