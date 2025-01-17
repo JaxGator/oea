@@ -3,6 +3,8 @@ import { LeaderboardTable } from "@/components/members/leaderboard/LeaderboardTa
 import { Card } from "@/components/ui/card";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { Trophy } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export function LeaderboardSection() {
   const { data: leaderboardData } = useQuery({
@@ -30,13 +32,15 @@ export function LeaderboardSection() {
     <section className="py-12 bg-gray-50">
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-center mb-8">
-          <h2 className="text-3xl font-bold">Leaderboard</h2>
-          <Link
-            to="/users"
-            className="text-primary hover:text-primary/90 font-medium"
-          >
-            View All Users
-          </Link>
+          <div className="flex items-center gap-2">
+            <Trophy className="h-8 w-8 text-primary" />
+            <h2 className="text-3xl font-bold">Leaderboard</h2>
+          </div>
+          <Button variant="outline" asChild>
+            <Link to="/users">
+              View All Users
+            </Link>
+          </Button>
         </div>
         
         <Card className="p-6">
