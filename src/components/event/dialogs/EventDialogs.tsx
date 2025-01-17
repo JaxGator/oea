@@ -46,7 +46,10 @@ export function EventDialogs({
 }: EventDialogsProps) {
   const handleDetailsClose = () => {
     setShowDetailsDialog(false);
-    setShowEditDialog(false);
+    // Only close edit dialog if it's open
+    if (showEditDialog) {
+      setShowEditDialog(false);
+    }
   };
 
   return (
