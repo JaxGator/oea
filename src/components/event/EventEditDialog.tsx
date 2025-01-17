@@ -3,17 +3,21 @@ import { EventForm } from "@/components/event/EventForm";
 import type { Event } from "@/types/event";
 
 interface EventEditDialogProps {
-  event: Event;
+  initialData: Event;
   showDialog: boolean;
   setShowDialog: (show: boolean) => void;
   onSuccess?: () => void;
+  isPastEvent?: boolean;
+  isWixEvent?: boolean;
 }
 
 export function EventEditDialog({ 
-  event, 
+  initialData, 
   showDialog, 
   setShowDialog, 
-  onSuccess 
+  onSuccess,
+  isPastEvent = false,
+  isWixEvent = false
 }: EventEditDialogProps) {
   const handleSuccess = () => {
     if (onSuccess) {
@@ -30,9 +34,9 @@ export function EventEditDialog({
       <DialogContent className="max-w-4xl">
         <div className="space-y-6">
           <EventForm 
-            event={event}
-            isPastEvent={new Date(event.date) < new Date()}
-            isWixEvent={!!event.imported_rsvp_count}
+            initialData={initialData}
+            isPastEvent={isPastEvent}
+            isWixEvent={isWixEvent}
             onSuccess={handleSuccess}
           />
         </div>

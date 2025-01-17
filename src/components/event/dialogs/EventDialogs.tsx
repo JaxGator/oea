@@ -11,7 +11,19 @@ interface EventDialogsProps {
   setShowDetailsDialog: (show: boolean) => void;
   showEditDialog: boolean;
   setShowEditDialog: (show: boolean) => void;
-  onEditSuccess?: () => void;
+  rsvpCount: number;
+  attendeeNames: string[];
+  userRSVPStatus: string | null;
+  isAdmin: boolean;
+  canManageEvents: boolean;
+  isPastEvent: boolean;
+  isWixEvent: boolean;
+  canAddGuests: boolean;
+  currentGuests: { firstName: string }[];
+  onRSVP: (guests?: { firstName: string }[]) => void;
+  onCancelRSVP: () => void;
+  onDelete?: () => void;
+  handleEditSuccess: () => void;
 }
 
 export function EventDialogs({
@@ -20,15 +32,20 @@ export function EventDialogs({
   setShowDetailsDialog,
   showEditDialog,
   setShowEditDialog,
-  onEditSuccess
+  rsvpCount,
+  attendeeNames,
+  userRSVPStatus,
+  isAdmin,
+  canManageEvents,
+  isPastEvent,
+  isWixEvent,
+  canAddGuests,
+  currentGuests,
+  onRSVP,
+  onCancelRSVP,
+  onDelete,
+  handleEditSuccess,
 }: EventDialogsProps) {
-  const handleEditSuccess = () => {
-    setShowEditDialog(false);
-    if (onEditSuccess) {
-      onEditSuccess();
-    }
-  };
-
   const handleDetailsClose = () => {
     setShowDetailsDialog(false);
     setShowEditDialog(false);
@@ -55,8 +72,19 @@ export function EventDialogs({
           <div className="flex-1 overflow-y-auto">
             <EventCardDetailedView 
               event={event}
-              showEditDialog={showEditDialog}
-              setShowEditDialog={setShowEditDialog}
+              rsvpCount={rsvpCount}
+              attendeeNames={attendeeNames}
+              userRSVPStatus={userRSVPStatus}
+              isAdmin={isAdmin}
+              canManageEvents={canManageEvents}
+              isPastEvent={isPastEvent}
+              isWixEvent={isWixEvent}
+              canAddGuests={canAddGuests}
+              currentGuests={currentGuests}
+              onRSVP={onRSVP}
+              onCancelRSVP={onCancelRSVP}
+              onEdit={() => setShowEditDialog(true)}
+              onDelete={onDelete}
             />
           </div>
         </DialogContent>
@@ -64,10 +92,12 @@ export function EventDialogs({
 
       {showEditDialog && (
         <EventEditDialog
-          event={event}
+          initialData={event}
           showDialog={showEditDialog}
           setShowDialog={setShowEditDialog}
           onSuccess={handleEditSuccess}
+          isPastEvent={isPastEvent}
+          isWixEvent={isWixEvent}
         />
       )}
     </>
