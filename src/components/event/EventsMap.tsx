@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { Event } from '@/types/event';
@@ -15,40 +15,48 @@ interface EventsMapProps {
 
 export function EventsMap({ events, selectedEventId }: EventsMapProps) {
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
-  const [map, setMap] = useState<mapboxgl.Map | null>(null);
   const mapContainer = useRef<HTMLDivElement>(null);
+  const mapInstance = useRef<mapboxgl.Map | null>(null);
+  const markersRef = useRef<mapboxgl.Marker[]>([]);
   const { mapToken, isLoading: isKeyLoading, error: keyError } = useMapboxToken();
   const locations = useEventLocations(events, mapToken);
 
   // Initialize map when container and token are ready
   useEffect(() => {
-    if (!mapContainer.current || !mapToken || locations.length === 0 || map) return;
+    if (!mapContainer.current || !mapToken || locations.length === 0) return;
 
     mapboxgl.accessToken = mapToken;
-    const newMap = new mapboxgl.Map({
+    
+    const map = new mapboxgl.Map({
       container: mapContainer.current,
       style: 'mapbox://styles/mapbox/light-v11',
       center: [locations[0].lng, locations[0].lat],
       zoom: 12
     });
 
-    newMap.addControl(new mapboxgl.NavigationControl(), 'top-right');
-    setMap(newMap);
+    map.addControl(new mapboxgl.NavigationControl(), 'top-right');
+    mapInstance.current = map;
 
     return () => {
-      newMap.remove();
+      // Clean up markers
+      markersRef.current.forEach(marker => marker.remove());
+      markersRef.current = [];
+      
+      // Clean up map
+      if (mapInstance.current) {
+        mapInstance.current.remove();
+        mapInstance.current = null;
+      }
     };
-  }, [mapToken, locations, map]);
+  }, [mapToken, locations]);
 
   // Update markers when locations change
   useEffect(() => {
-    if (!map) return;
+    if (!mapInstance.current) return;
 
-    // Clear existing markers
-    const markers = document.getElementsByClassName('mapboxgl-marker');
-    while (markers[0]) {
-      markers[0].remove();
-    }
+    // Clean up existing markers
+    markersRef.current.forEach(marker => marker.remove());
+    markersRef.current = [];
 
     // Add new markers
     locations.forEach(location => {
@@ -68,25 +76,27 @@ export function EventsMap({ events, selectedEventId }: EventsMapProps) {
         setSelectedEvent(location.event);
       });
 
-      new mapboxgl.Marker(el)
+      const marker = new mapboxgl.Marker(el)
         .setLngLat([location.lng, location.lat])
-        .addTo(map);
+        .addTo(mapInstance.current!);
+
+      markersRef.current.push(marker);
     });
-  }, [map, locations, selectedEventId]);
+  }, [locations, selectedEventId, mapInstance.current]);
 
   // Update map center when selectedEventId changes
   useEffect(() => {
-    if (!map || !selectedEventId) return;
+    if (!mapInstance.current || !selectedEventId) return;
 
     const selectedLocation = locations.find(loc => loc.event.id === selectedEventId);
     if (selectedLocation) {
-      map.flyTo({
+      mapInstance.current.flyTo({
         center: [selectedLocation.lng, selectedLocation.lat],
         zoom: 14,
         duration: 1500
       });
     }
-  }, [map, selectedEventId, locations]);
+  }, [selectedEventId, locations]);
 
   if (events.length === 0 || locations.length === 0) {
     return null;
