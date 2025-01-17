@@ -44,16 +44,17 @@ export function EventDialogs({
   onDelete,
   handleEditSuccess,
 }: EventDialogsProps) {
-  const handleDetailsDialogChange = (open: boolean) => {
-    setShowDetailsDialog(open);
-    if (!open && showEditDialog) {
-      setShowEditDialog(false);
-    }
-  };
-
   return (
     <>
-      <Dialog open={showDetailsDialog} onOpenChange={handleDetailsDialogChange}>
+      <Dialog 
+        open={showDetailsDialog} 
+        onOpenChange={(open) => {
+          setShowDetailsDialog(open);
+          if (!open) {
+            setShowEditDialog(false);
+          }
+        }}
+      >
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-hidden flex flex-col p-0">
           <div className="flex-1 overflow-y-auto">
             <div className="p-6">
@@ -86,10 +87,7 @@ export function EventDialogs({
           event={event}
           showDialog={showEditDialog}
           setShowDialog={setShowEditDialog}
-          onSuccess={() => {
-            handleEditSuccess();
-            setShowEditDialog(false);
-          }}
+          onSuccess={handleEditSuccess}
         />
       )}
     </>

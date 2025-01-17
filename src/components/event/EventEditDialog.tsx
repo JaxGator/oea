@@ -15,12 +15,13 @@ export function EventEditDialog({
   setShowDialog,
   onSuccess
 }: EventEditDialogProps) {
-  const handleOpenChange = (open: boolean) => {
-    setShowDialog(open);
-  };
-
   return (
-    <Dialog open={showDialog} onOpenChange={handleOpenChange}>
+    <Dialog 
+      open={showDialog} 
+      onOpenChange={(open) => {
+        setShowDialog(open);
+      }}
+    >
       <DialogContent className="max-w-4xl">
         <div className="space-y-6">
           <EventForm 
@@ -28,8 +29,8 @@ export function EventEditDialog({
             isPastEvent={new Date(event.date) < new Date()}
             isWixEvent={!!event.imported_rsvp_count}
             onSuccess={() => {
-              setShowDialog(false);
               if (onSuccess) onSuccess();
+              setShowDialog(false);
             }}
           />
         </div>
