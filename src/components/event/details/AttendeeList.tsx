@@ -4,8 +4,14 @@ interface AttendeeListProps {
 }
 
 export function AttendeeList({ attendeeNames, waitlistNames = [] }: AttendeeListProps) {
+  // Skip rendering if no attendees and no waitlist
+  if (attendeeNames.length === 0 && waitlistNames.length === 0) return null;
+
+  // Filter out any "Unknown" entries and group attendees
+  const validAttendees = attendeeNames.filter(name => name !== 'Unknown');
+  
   // Group attendees by primary RSVP holder and preserve order
-  const groupedAttendees = attendeeNames.reduce((acc: Record<string, { guests: string[], order: number }>, name: string, index: number) => {
+  const groupedAttendees = validAttendees.reduce((acc: Record<string, { guests: string[], order: number }>, name: string, index: number) => {
     if (name.includes(" (Guest of ")) {
       const [guestName, hostInfo] = name.split(" (Guest of ");
       const hostName = hostInfo.replace(")", "");
@@ -30,10 +36,10 @@ export function AttendeeList({ attendeeNames, waitlistNames = [] }: AttendeeList
   if (sortedHosts.length === 0 && waitlistNames.length === 0) return null;
 
   return (
-    <div className="text-sm text-gray-600 space-y-4">
+    <div className="text-sm text-gray-600 space-y-4" role="region" aria-label="Event attendees">
       {sortedHosts.length > 0 && (
         <div>
-          <p className="font-medium mb-2">Attendees:</p>
+          <h3 className="font-medium mb-2">Attendees:</h3>
           <ul className="list-disc pl-5 space-y-2">
             {sortedHosts.map(({ host, guests }, index) => (
               <li key={index} className="space-y-1">
@@ -60,7 +66,7 @@ export function AttendeeList({ attendeeNames, waitlistNames = [] }: AttendeeList
 
       {waitlistNames.length > 0 && (
         <div>
-          <p className="font-medium mb-2">Waitlist:</p>
+          <h3 className="font-medium mb-2">Waitlist:</h3>
           <ul className="list-disc pl-5 space-y-1">
             {waitlistNames.map((name, index) => (
               <li key={index}>{name}</li>
