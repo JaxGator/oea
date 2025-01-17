@@ -44,19 +44,11 @@ export function EventDialogs({
   onDelete,
   handleEditSuccess,
 }: EventDialogsProps) {
-  const handleDetailsClose = () => {
-    setShowDetailsDialog(false);
-    // Only close edit dialog if it's open
-    if (showEditDialog) {
-      setShowEditDialog(false);
-    }
-  };
-
   return (
     <>
       <Dialog 
         open={showDetailsDialog} 
-        onOpenChange={handleDetailsClose}
+        onOpenChange={setShowDetailsDialog}
       >
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-hidden flex flex-col p-0">
           <DialogHeader className="px-6 pt-6 flex flex-row items-center justify-between">
