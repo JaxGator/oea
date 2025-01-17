@@ -19,9 +19,7 @@ export const supabase = createClient<Database>(
       detectSessionInUrl: true
     },
     global: {
-      headers: {
-        'x-my-custom-header': 'my-app-name',
-      },
+      headers: {} // Removed the custom header
     },
     db: {
       schema: 'public'
