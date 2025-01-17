@@ -1,48 +1,27 @@
-import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { corsHeaders } from '../_shared/cors.ts'
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
-  'Access-Control-Max-Age': '86400',
-}
-
-serve(async (req) => {
+Deno.serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    console.log('Handling CORS preflight request')
-    return new Response(null, { 
-      headers: corsHeaders,
-      status: 204
-    })
+    return new Response(null, { headers: corsHeaders })
   }
 
   try {
-    console.log('Attempting to retrieve MAPBOX_PUBLIC_TOKEN')
+    console.log('Retrieving Mapbox token...')
     const token = Deno.env.get('MAPBOX_PUBLIC_TOKEN')
     
     if (!token) {
-      console.error('MAPBOX_PUBLIC_TOKEN not found in environment')
-      return new Response(
-        JSON.stringify({ 
-          error: 'Mapbox token not configured',
-          details: 'MAPBOX_PUBLIC_TOKEN environment variable is not set'
-        }),
-        { 
-          status: 500,
-          headers: { 
-            ...corsHeaders,
-            'Content-Type': 'application/json'
-          }
-        }
-      )
+      console.error('No Mapbox token found in environment variables')
+      throw new Error('Mapbox token not configured')
     }
 
     console.log('Successfully retrieved Mapbox token')
+    
+    // Return the token with CORS headers
     return new Response(
       JSON.stringify({ token }),
       { 
-        status: 200,
         headers: { 
           ...corsHeaders,
           'Content-Type': 'application/json'
@@ -50,12 +29,9 @@ serve(async (req) => {
       }
     )
   } catch (error) {
-    console.error('Error in get-mapbox-token function:', error)
+    console.error('Error:', error.message)
     return new Response(
-      JSON.stringify({ 
-        error: 'Internal server error',
-        details: error.message 
-      }),
+      JSON.stringify({ error: error.message }), 
       { 
         status: 500,
         headers: { 
