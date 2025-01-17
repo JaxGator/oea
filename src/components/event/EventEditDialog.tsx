@@ -1,6 +1,6 @@
-import { Event } from "@/types/event";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { EventForm } from "./EventForm";
+import { EventForm } from "@/components/event/EventForm";
+import type { Event } from "@/types/event";
 
 interface EventEditDialogProps {
   event: Event;
@@ -9,12 +9,19 @@ interface EventEditDialogProps {
   onSuccess?: () => void;
 }
 
-export function EventEditDialog({
-  event,
-  showDialog,
-  setShowDialog,
-  onSuccess
+export function EventEditDialog({ 
+  event, 
+  showDialog, 
+  setShowDialog, 
+  onSuccess 
 }: EventEditDialogProps) {
+  const handleSuccess = () => {
+    if (onSuccess) {
+      onSuccess();
+    }
+    setShowDialog(false);
+  };
+
   return (
     <Dialog 
       open={showDialog} 
@@ -23,13 +30,10 @@ export function EventEditDialog({
       <DialogContent className="max-w-4xl">
         <div className="space-y-6">
           <EventForm 
-            initialData={event}
+            event={event}
             isPastEvent={new Date(event.date) < new Date()}
             isWixEvent={!!event.imported_rsvp_count}
-            onSuccess={() => {
-              setShowDialog(false);
-              if (onSuccess) onSuccess();
-            }}
+            onSuccess={handleSuccess}
           />
         </div>
       </DialogContent>
