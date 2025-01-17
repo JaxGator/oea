@@ -15,8 +15,12 @@ export function EventEditDialog({
   setShowDialog,
   onSuccess
 }: EventEditDialogProps) {
+  const handleOpenChange = (open: boolean) => {
+    setShowDialog(open);
+  };
+
   return (
-    <Dialog open={showDialog} onOpenChange={setShowDialog}>
+    <Dialog open={showDialog} onOpenChange={handleOpenChange}>
       <DialogContent className="max-w-4xl">
         <div className="space-y-6">
           <EventForm 
