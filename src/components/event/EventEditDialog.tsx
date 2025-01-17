@@ -1,46 +1,53 @@
-import { WaitlistManager } from "../admin/events/WaitlistManager";
-import { Separator } from "@/components/ui/separator";
-import { EventFormData } from "./EventFormTypes";
 import { useEffect } from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { EventForm } from "@/components/event/EventForm";
+import { WaitlistManager } from "@/components/admin/events/WaitlistManager";
+import { Event } from "@/types/event";
 
 interface EventEditDialogProps {
-  event: EventFormData;
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  onSuccess: () => void;
+  event: Event;
+  showDialog: boolean;
+  setShowDialog: (show: boolean) => void;
+  onSuccess?: () => void;
 }
 
-export function EventEditDialog({ event, open, onOpenChange, onSuccess }: EventEditDialogProps) {
-  // Handle dialog cleanup
+export function EventEditDialog({ 
+  event,
+  showDialog,
+  setShowDialog,
+  onSuccess
+}: EventEditDialogProps) {
   useEffect(() => {
-    if (!open) {
-      // Only trigger cleanup when dialog is actually closing
-      onOpenChange(false);
-    }
-  }, [open, onOpenChange]);
-
-  const handleSuccess = () => {
-    onSuccess();
-    onOpenChange(false);
-  };
+    return () => {
+      if (!showDialog && onSuccess) {
+        onSuccess();
+      }
+    };
+  }, [showDialog, onSuccess]);
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl overflow-y-auto max-h-[90vh]">
+    <Dialog open={showDialog} onOpenChange={setShowDialog}>
+      <DialogContent>
         <DialogHeader>
           <DialogTitle>Edit Event</DialogTitle>
         </DialogHeader>
         
         <div className="space-y-6">
           <EventForm 
-            event={event} 
-            onSuccess={handleSuccess}
-            submitLabel="Update Event"
+            event={event}
+            onSuccess={() => {
+              setShowDialog(false);
+              if (onSuccess) onSuccess();
+            }}
           />
           
-          <Separator />
-          
-          <WaitlistManager eventId={event.id} />
+          {event && (
+            <WaitlistManager 
+              eventId={event.id}
+              maxGuests={event.max_guests}
+              waitlistCapacity={event.waitlist_capacity || 0}
+            />
+          )}
         </div>
       </DialogContent>
     </Dialog>
