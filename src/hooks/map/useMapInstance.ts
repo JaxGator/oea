@@ -13,7 +13,7 @@ export const useMapInstance = (containerRef: React.RefObject<HTMLDivElement>) =>
     
     const map = new mapboxgl.Map({
       container: containerRef.current,
-      style: 'mapbox://styles/mapbox/light-v11',
+      style: 'mapbox://styles/mapbox/outdoors-v12',
       zoom: 12
     });
 
