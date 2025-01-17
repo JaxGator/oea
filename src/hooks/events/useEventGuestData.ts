@@ -5,23 +5,39 @@ export function useEventGuestData(eventId: string, userRSVPStatus: string | null
   return useQuery({
     queryKey: ['event-guests', eventId, userRSVPStatus],
     queryFn: async () => {
-      if (!userRSVPStatus) return [];
-      
-      const { data: rsvps } = await supabase
-        .from('event_rsvps')
-        .select('id')
-        .eq('event_id', eventId)
-        .eq('response', 'attending');
+      try {
+        if (!userRSVPStatus) return [];
+        
+        // First get RSVPs
+        const { data: rsvps, error: rsvpError } = await supabase
+          .from('event_rsvps')
+          .select('id')
+          .eq('event_id', eventId)
+          .eq('response', 'attending');
 
-      if (!rsvps?.length) return [];
+        if (rsvpError) {
+          console.error('Error fetching RSVPs:', rsvpError);
+          throw rsvpError;
+        }
 
-      const rsvpIds = rsvps.map(rsvp => rsvp.id);
-      const { data: guestData } = await supabase
-        .from('event_guests')
-        .select('first_name')
-        .in('rsvp_id', rsvpIds);
+        if (!rsvps?.length) return [];
 
-      return guestData?.map(guest => ({ firstName: guest.first_name })) || [];
+        // Then get guests using a simpler query
+        const { data: guestData, error: guestError } = await supabase
+          .from('event_guests')
+          .select('first_name')
+          .in('rsvp_id', rsvps.map(rsvp => rsvp.id));
+
+        if (guestError) {
+          console.error('Error fetching guests:', guestError);
+          throw guestError;
+        }
+
+        return guestData?.map(guest => ({ firstName: guest.first_name })) || [];
+      } catch (error) {
+        console.error('Error in useEventGuestData:', error);
+        throw error;
+      }
     },
     enabled: !!userRSVPStatus
   });
