@@ -1,8 +1,6 @@
-import { useEffect } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { EventForm } from "@/components/event/EventForm";
-import { WaitlistManager } from "@/components/admin/events/WaitlistManager";
 import { Event } from "@/types/event";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { EventForm } from "./EventForm";
 
 interface EventEditDialogProps {
   event: Event;
@@ -11,27 +9,15 @@ interface EventEditDialogProps {
   onSuccess?: () => void;
 }
 
-export function EventEditDialog({ 
+export function EventEditDialog({
   event,
   showDialog,
   setShowDialog,
   onSuccess
 }: EventEditDialogProps) {
-  useEffect(() => {
-    return () => {
-      if (!showDialog && onSuccess) {
-        onSuccess();
-      }
-    };
-  }, [showDialog, onSuccess]);
-
   return (
     <Dialog open={showDialog} onOpenChange={setShowDialog}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Edit Event</DialogTitle>
-        </DialogHeader>
-        
+      <DialogContent className="max-w-4xl">
         <div className="space-y-6">
           <EventForm 
             initialData={event}
@@ -42,14 +28,6 @@ export function EventEditDialog({
               if (onSuccess) onSuccess();
             }}
           />
-          
-          {event && (
-            <WaitlistManager 
-              eventId={event.id}
-              maxGuests={event.max_guests}
-              waitlistCapacity={event.waitlist_capacity || 0}
-            />
-          )}
         </div>
       </DialogContent>
     </Dialog>
