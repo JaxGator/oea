@@ -1,5 +1,3 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { EventForm } from "./EventForm";
 import { WaitlistManager } from "../admin/events/WaitlistManager";
 import { Separator } from "@/components/ui/separator";
 import { EventFormData } from "./EventFormTypes";
@@ -13,15 +11,13 @@ interface EventEditDialogProps {
 }
 
 export function EventEditDialog({ event, open, onOpenChange, onSuccess }: EventEditDialogProps) {
-  // Ensure cleanup when dialog closes
+  // Handle dialog cleanup
   useEffect(() => {
-    return () => {
-      // Cleanup function
-      if (!open) {
-        onSuccess();
-      }
-    };
-  }, [open, onSuccess]);
+    if (!open) {
+      // Only trigger cleanup when dialog is actually closing
+      onOpenChange(false);
+    }
+  }, [open, onOpenChange]);
 
   const handleSuccess = () => {
     onSuccess();
@@ -30,26 +26,21 @@ export function EventEditDialog({ event, open, onOpenChange, onSuccess }: EventE
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
+      <DialogContent className="max-w-4xl overflow-y-auto max-h-[90vh]">
         <DialogHeader>
-          <DialogTitle>Edit Event: {event.title}</DialogTitle>
+          <DialogTitle>Edit Event</DialogTitle>
         </DialogHeader>
-        <div className="flex-1 overflow-y-auto px-6 pb-6">
-          <EventForm
-            initialData={event}
+        
+        <div className="space-y-6">
+          <EventForm 
+            event={event} 
             onSuccess={handleSuccess}
+            submitLabel="Update Event"
           />
           
-          {event.waitlist_enabled && (
-            <>
-              <Separator className="my-6" />
-              <WaitlistManager
-                eventId={event.id}
-                maxGuests={event.max_guests}
-                waitlistCapacity={event.waitlist_capacity}
-              />
-            </>
-          )}
+          <Separator />
+          
+          <WaitlistManager eventId={event.id} />
         </div>
       </DialogContent>
     </Dialog>
