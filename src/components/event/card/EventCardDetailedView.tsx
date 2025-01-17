@@ -42,6 +42,7 @@ export function EventCardDetailedView({
 }: EventCardDetailedViewProps) {
   const isFullyBooked = rsvpCount >= event.max_guests;
   const canJoinWaitlist = event.waitlist_enabled && isFullyBooked;
+  const canViewRSVPs = isAdmin || canManageEvents || userRSVPStatus === "attending";
 
   return (
     <div className="flex flex-col gap-6 animate-fade-in">
@@ -70,9 +71,14 @@ export function EventCardDetailedView({
 
         <EventDetails event={event} />
 
-        <AttendeeList
-          attendeeNames={attendeeNames}
-        />
+        {canViewRSVPs && attendeeNames.length > 0 && (
+          <div className="border rounded-lg p-4 bg-gray-50">
+            <h3 className="text-lg font-semibold mb-4">Event Attendees</h3>
+            <AttendeeList
+              attendeeNames={attendeeNames}
+            />
+          </div>
+        )}
 
         {event.description && (
           <div className="prose max-w-none">
