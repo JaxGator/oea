@@ -36,7 +36,11 @@ export function LeaderboardSection() {
             <Trophy className="h-8 w-8 text-primary" />
             <h2 className="text-3xl font-bold">Leaderboard</h2>
           </div>
-          <Button variant="outline" asChild>
+          <Button 
+            variant="outline"
+            className="bg-[#0d97d1] hover:bg-[#0d97d1]/90 text-white border-[#0d97d1] hover:border-[#0d97d1]/90"
+            asChild
+          >
             <Link to="/users">
               View All Users
             </Link>
