@@ -77,9 +77,9 @@ export function EventCardContainer({
                 setShowEditDialog={setShowEditDialog}
                 rsvpCount={rsvpData.confirmedCount}
                 attendeeNames={attendees.map(attendee => {
-                  const profile = attendee.profile;
-                  if (!profile) return '';
-                  return profile.full_name || profile.username || '';
+                  if (!attendee.profile) return '';
+                  // Handle both full_name and username
+                  return attendee.profile.full_name || attendee.profile.username || '';
                 }).filter(name => name !== '')}
                 userRSVPStatus={userRSVPStatus || null}
                 isAdmin={isAdmin}
