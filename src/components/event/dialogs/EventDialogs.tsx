@@ -100,8 +100,8 @@ export function EventDialogs({
 
       <EventEditDialog
         event={event}
-        open={showEditDialog}
-        onOpenChange={handleEditDialogChange}
+        showDialog={showEditDialog}
+        setShowDialog={setShowEditDialog}
         onSuccess={handleEditSuccess}
       />
     </>

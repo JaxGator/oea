@@ -34,7 +34,7 @@ export function EventEditDialog({
         
         <div className="space-y-6">
           <EventForm 
-            event={event}
+            initialData={event}
             onSuccess={() => {
               setShowDialog(false);
               if (onSuccess) onSuccess();
