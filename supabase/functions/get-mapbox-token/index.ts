@@ -1,10 +1,15 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { corsHeaders } from '../_shared/cors.ts'
 
+console.log('Loading get-mapbox-token function...')
+
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders })
+    return new Response(null, { 
+      headers: corsHeaders,
+      status: 204
+    })
   }
 
   try {
@@ -21,22 +26,26 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ token }),
       { 
-        headers: { 
+        headers: {
           ...corsHeaders,
           'Content-Type': 'application/json'
-        }
+        },
+        status: 200
       }
     )
   } catch (error) {
-    console.error('Error:', error.message)
+    console.error('Error in get-mapbox-token:', error.message)
     return new Response(
-      JSON.stringify({ error: error.message }), 
+      JSON.stringify({ 
+        error: error.message,
+        timestamp: new Date().toISOString()
+      }), 
       { 
-        status: 500,
-        headers: { 
+        headers: {
           ...corsHeaders,
           'Content-Type': 'application/json'
-        }
+        },
+        status: 500
       }
     )
   }
