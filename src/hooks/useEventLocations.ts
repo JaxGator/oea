@@ -21,6 +21,11 @@ export const useEventLocations = (events: Event[], mapToken: string) => {
       );
 
       try {
+        if (!mapToken) {
+          console.error('No Mapbox token available');
+          return;
+        }
+
         const geocodedLocations = await Promise.all(
           validEvents.map(async (event) => {
             try {
@@ -34,6 +39,11 @@ export const useEventLocations = (events: Event[], mapToken: string) => {
               const response = await fetch(
                 `https://api.mapbox.com/geocoding/v5/mapbox.places/${query}.json?access_token=${mapToken}`
               );
+              
+              if (!response.ok) {
+                throw new Error(`Geocoding failed: ${response.statusText}`);
+              }
+
               const data = await response.json();
 
               if (data.features && data.features.length > 0) {
