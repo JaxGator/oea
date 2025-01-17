@@ -22,7 +22,10 @@ serve(async (req) => {
     if (!token) {
       console.error('MAPBOX_PUBLIC_TOKEN not found in environment')
       return new Response(
-        JSON.stringify({ error: 'Map configuration not found' }),
+        JSON.stringify({ 
+          error: 'Map configuration not found',
+          details: 'MAPBOX_PUBLIC_TOKEN environment variable is not set'
+        }),
         { 
           status: 500,
           headers: { 
@@ -47,7 +50,10 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error in get-mapbox-token function:', error)
     return new Response(
-      JSON.stringify({ error: 'Internal server error' }),
+      JSON.stringify({ 
+        error: 'Internal server error',
+        details: error.message 
+      }),
       { 
         status: 500,
         headers: { 
