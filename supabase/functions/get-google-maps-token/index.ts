@@ -1,22 +1,13 @@
-import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { corsHeaders } from '../_shared/cors.ts'
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
 
   try {
     console.log('Starting Google Maps token fetch...')
-    
-    // List all environment variables (without values) to debug
-    const envKeys = Object.keys(Deno.env.toObject())
-    console.log('Available environment variables:', envKeys)
     
     const token = Deno.env.get('GOOGLE_MAPS_API_KEY')
     console.log('Token retrieved:', token ? 'Found' : 'Not found')
