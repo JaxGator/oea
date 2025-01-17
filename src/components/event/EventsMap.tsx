@@ -82,7 +82,7 @@ export function EventsMap({ events, selectedEventId }: EventsMapProps) {
 
       markersRef.current.push(marker);
     });
-  }, [locations, selectedEventId, mapInstance.current]);
+  }, [locations, selectedEventId]);
 
   // Update map center when selectedEventId changes
   useEffect(() => {
@@ -113,11 +113,12 @@ export function EventsMap({ events, selectedEventId }: EventsMapProps) {
   return (
     <div className="w-full rounded-lg overflow-hidden shadow-lg mb-8">
       <div ref={mapContainer} style={{ width: '100%', height: '400px' }} />
-      {selectedEvent && (
+      {selectedEvent && mapInstance.current && (
         <EventInfoWindow
           event={selectedEvent}
           locations={locations}
           onClose={() => setSelectedEvent(null)}
+          map={mapInstance.current}
         />
       )}
     </div>

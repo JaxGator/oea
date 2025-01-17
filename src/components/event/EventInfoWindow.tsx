@@ -1,17 +1,19 @@
-import { InfoWindow } from '@react-google-maps/api';
+import { Popup } from 'mapbox-gl';
 import { Event } from '@/types/event';
 import { Location } from '@/hooks/useEventLocations';
 import { Button } from '@/components/ui/button';
 import { MapPin, Calendar, Clock } from 'lucide-react';
-import { format, parseISO } from 'date-fns';
+import { useEffect, useRef } from 'react';
 
 interface EventInfoWindowProps {
   event: Event;
   locations: Location[];
   onClose: () => void;
+  map: mapboxgl.Map;
 }
 
-export function EventInfoWindow({ event, locations, onClose }: EventInfoWindowProps) {
+export function EventInfoWindow({ event, locations, onClose, map }: EventInfoWindowProps) {
+  const popupRef = useRef<Popup | null>(null);
   const position = locations.find(loc => loc.event.id === event.id) || locations[0];
 
   const handleGetDirections = () => {
@@ -19,34 +21,63 @@ export function EventInfoWindow({ event, locations, onClose }: EventInfoWindowPr
     window.open(`https://www.google.com/maps/dir/?api=1&destination=${destination}`, '_blank');
   };
 
-  return (
-    <InfoWindow position={position} onCloseClick={onClose}>
-      <div className="p-4 min-w-[250px]">
-        <h3 className="font-semibold mb-2">{event.title}</h3>
-        <div className="space-y-2 mb-4">
-          <div className="flex items-center text-sm text-muted-foreground">
-            <Calendar className="mr-2 h-4 w-4" />
-            <span>{event.date}</span>
-          </div>
-          <div className="flex items-center text-sm text-muted-foreground">
-            <Clock className="mr-2 h-4 w-4" />
-            <span>{event.time}</span>
-          </div>
-          <div className="flex items-center text-sm text-muted-foreground">
-            <MapPin className="mr-2 h-4 w-4" />
-            <span>{event.location}</span>
-          </div>
+  useEffect(() => {
+    if (!map || !position) return;
+
+    // Create popup content
+    const container = document.createElement('div');
+    container.className = 'p-4 min-w-[250px]';
+    container.innerHTML = `
+      <h3 class="font-semibold mb-2">${event.title}</h3>
+      <div class="space-y-2 mb-4">
+        <div class="flex items-center text-sm text-muted-foreground">
+          <span class="mr-2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg></span>
+          <span>${event.date}</span>
         </div>
-        <Button 
-          variant="outline" 
-          size="sm" 
-          className="w-full" 
-          onClick={handleGetDirections}
-        >
-          <MapPin className="mr-2 h-4 w-4" />
-          Get Directions
-        </Button>
+        <div class="flex items-center text-sm text-muted-foreground">
+          <span class="mr-2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span>
+          <span>${event.time}</span>
+        </div>
+        <div class="flex items-center text-sm text-muted-foreground">
+          <span class="mr-2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg></span>
+          <span>${event.location}</span>
+        </div>
       </div>
-    </InfoWindow>
-  );
+    `;
+
+    // Add directions button
+    const buttonContainer = document.createElement('div');
+    const button = document.createElement('button');
+    button.className = 'w-full px-4 py-2 text-sm font-medium border rounded-md shadow-sm hover:bg-gray-50 flex items-center justify-center';
+    button.innerHTML = `
+      <svg class="w-4 h-4 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/>
+        <circle cx="12" cy="10" r="3"/>
+      </svg>
+      Get Directions
+    `;
+    button.onclick = handleGetDirections;
+    buttonContainer.appendChild(button);
+    container.appendChild(buttonContainer);
+
+    // Create and show popup
+    popupRef.current = new Popup({
+      closeButton: true,
+      closeOnClick: false,
+      maxWidth: '300px'
+    })
+      .setLngLat([position.lng, position.lat])
+      .setDOMContent(container)
+      .addTo(map);
+
+    popupRef.current.on('close', onClose);
+
+    return () => {
+      if (popupRef.current) {
+        popupRef.current.remove();
+      }
+    };
+  }, [event, position, map]);
+
+  return null;
 }
