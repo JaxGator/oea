@@ -3,6 +3,8 @@ import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'GET, OPTIONS',
+  'Content-Type': 'application/json'
 }
 
 serve(async (req) => {
@@ -30,7 +32,7 @@ serve(async (req) => {
         }),
         { 
           status: 500,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          headers: corsHeaders
         }
       )
     }
@@ -40,8 +42,8 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ token }),
       { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200 
+        status: 200,
+        headers: corsHeaders
       }
     )
   } catch (error) {
@@ -53,7 +55,7 @@ serve(async (req) => {
       }),
       { 
         status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        headers: corsHeaders
       }
     )
   }
