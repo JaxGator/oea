@@ -33,8 +33,8 @@ export function LeaderboardSection() {
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-center mb-8">
           <div className="flex items-center gap-2">
-            <Trophy className="h-8 w-8 text-primary" />
-            <h2 className="text-3xl font-bold">Leaderboard</h2>
+            <Trophy className="h-6 w-6 text-primary" />
+            <h2 className="text-2xl font-bold">Leaderboard</h2>
           </div>
           <Button 
             variant="outline"
