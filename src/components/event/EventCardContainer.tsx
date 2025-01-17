@@ -3,6 +3,7 @@ import { EventDialogs } from "./dialogs/EventDialogs";
 import { EventRSVPHandler } from "./rsvp/EventRSVPHandler";
 import { EventCardState } from "./card/EventCardState";
 import { EventCardInteractions } from "./card/EventCardInteractions";
+import { processAttendeeNames } from "./attendees/EventAttendeeProcessor";
 
 interface EventCardContainerProps {
   event: Event;
@@ -48,25 +49,7 @@ export function EventCardContainer({
             setShowEditDialog,
             setShowDetailsDialog,
           }) => {
-            // Process attendee names including both primary attendees and their guests
-            const attendeeNames = attendees.reduce((names: string[], attendee) => {
-              // Add the primary attendee name
-              if (attendee.profile) {
-                const name = attendee.profile.full_name || attendee.profile.username || '';
-                if (name) names.push(name);
-              }
-              
-              // Add guest names if any
-              if (attendee.event_guests && attendee.event_guests.length > 0) {
-                attendee.event_guests.forEach(guest => {
-                  if (guest.first_name) {
-                    names.push(`${guest.first_name} (Guest of ${attendee.profile?.full_name || attendee.profile?.username || 'Unknown'})`);
-                  }
-                });
-              }
-              
-              return names;
-            }, []);
+            const attendeeNames = processAttendeeNames(attendees);
 
             return (
               <>
