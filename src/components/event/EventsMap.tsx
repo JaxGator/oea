@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { Event } from '@/types/event';
@@ -16,28 +16,29 @@ interface EventsMapProps {
 export function EventsMap({ events, selectedEventId }: EventsMapProps) {
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [map, setMap] = useState<mapboxgl.Map | null>(null);
+  const mapContainer = useRef<HTMLDivElement>(null);
   const { mapToken, isLoading: isKeyLoading, error: keyError } = useMapboxToken();
   const locations = useEventLocations(events, mapToken);
 
-  const mapContainer = useCallback((node: HTMLDivElement) => {
-    if (node && mapToken && locations.length > 0) {
-      mapboxgl.accessToken = mapToken;
+  // Initialize map when container and token are ready
+  useEffect(() => {
+    if (!mapContainer.current || !mapToken || locations.length === 0 || map) return;
 
-      const newMap = new mapboxgl.Map({
-        container: node,
-        style: 'mapbox://styles/mapbox/light-v11',
-        center: [locations[0].lng, locations[0].lat],
-        zoom: 12
-      });
+    mapboxgl.accessToken = mapToken;
+    const newMap = new mapboxgl.Map({
+      container: mapContainer.current,
+      style: 'mapbox://styles/mapbox/light-v11',
+      center: [locations[0].lng, locations[0].lat],
+      zoom: 12
+    });
 
-      newMap.addControl(new mapboxgl.NavigationControl(), 'top-right');
-      setMap(newMap);
+    newMap.addControl(new mapboxgl.NavigationControl(), 'top-right');
+    setMap(newMap);
 
-      return () => {
-        newMap.remove();
-      };
-    }
-  }, [mapToken, locations]);
+    return () => {
+      newMap.remove();
+    };
+  }, [mapToken, locations, map]);
 
   // Update markers when locations change
   useEffect(() => {
