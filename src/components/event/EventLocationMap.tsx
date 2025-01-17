@@ -24,7 +24,7 @@ export function EventLocationMap({ location, lat, lng }: EventLocationMapProps) 
     
     map.current = new mapboxgl.Map({
       container: mapContainer.current,
-      style: 'mapbox://styles/mapbox/light-v11',
+      style: 'mapbox://styles/mapbox/outdoors-v12',
       center: [lng, lat],
       zoom: 14,
       scrollZoom: false
@@ -35,6 +35,17 @@ export function EventLocationMap({ location, lat, lng }: EventLocationMapProps) 
       .addTo(map.current);
 
     map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
+
+    // Ensure the map loads the location correctly
+    map.current.on('load', () => {
+      if (map.current) {
+        map.current.flyTo({
+          center: [lng, lat],
+          zoom: 14,
+          essential: true
+        });
+      }
+    });
 
     return () => {
       if (map.current) {

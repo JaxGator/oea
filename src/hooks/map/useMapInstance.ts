@@ -20,6 +20,11 @@ export const useMapInstance = (containerRef: React.RefObject<HTMLDivElement>) =>
     map.addControl(new mapboxgl.NavigationControl(), 'top-right');
     mapInstance.current = map;
 
+    // Ensure the map is properly initialized
+    map.on('style.load', () => {
+      console.log('Map style loaded successfully');
+    });
+
     return () => {
       map.remove();
       mapInstance.current = null;
