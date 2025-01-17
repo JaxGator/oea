@@ -53,6 +53,10 @@ export function EventCardState({
           profiles (
             full_name,
             username
+          ),
+          event_guests (
+            id,
+            first_name
           )
         `)
         .eq('event_id', event.id)
@@ -63,7 +67,12 @@ export function EventCardState({
         console.error('Error fetching attendees:', error);
         return [];
       }
-      return rsvps || [];
+
+      // Transform the data to match the expected format
+      return rsvps?.map(rsvp => ({
+        profile: rsvp.profiles,
+        event_guests: rsvp.event_guests
+      })) || [];
     },
     staleTime: 1000 * 60 * 5 // Cache for 5 minutes
   });
