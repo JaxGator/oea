@@ -4,11 +4,8 @@ interface AttendeeListProps {
 }
 
 export function AttendeeList({ attendeeNames, waitlistNames = [] }: AttendeeListProps) {
-  // Skip rendering if no attendees and no waitlist
-  if (attendeeNames.length === 0 && waitlistNames.length === 0) return null;
-
-  // Filter out any "Unknown" entries and group attendees
-  const validAttendees = attendeeNames.filter(name => name !== 'Unknown');
+  // Remove the initial return null check since we want to show "No attendees yet" message
+  const validAttendees = attendeeNames.filter(name => name !== 'Unknown' && name !== '');
   
   // Group attendees by primary RSVP holder and preserve order
   const groupedAttendees = validAttendees.reduce((acc: Record<string, { guests: string[], order: number }>, name: string, index: number) => {
@@ -33,13 +30,12 @@ export function AttendeeList({ attendeeNames, waitlistNames = [] }: AttendeeList
     .sort((a, b) => a[1].order - b[1].order)
     .map(([host, data]) => ({ host, guests: data.guests }));
 
-  if (sortedHosts.length === 0 && waitlistNames.length === 0) return null;
-
   return (
     <div className="text-sm text-gray-600 space-y-4" role="region" aria-label="Event attendees">
-      {sortedHosts.length > 0 && (
+      {sortedHosts.length === 0 ? (
+        <p className="text-gray-500 italic">No attendees yet</p>
+      ) : (
         <div>
-          <h3 className="font-medium mb-2">Attendees:</h3>
           <ul className="list-disc pl-5 space-y-2">
             {sortedHosts.map(({ host, guests }, index) => (
               <li key={index} className="space-y-1">
