@@ -7,6 +7,8 @@ const corsHeaders = {
 
 serve(async (req) => {
   console.log('Received request for Mapbox token')
+  console.log('Request method:', req.method)
+  console.log('Request headers:', Object.fromEntries(req.headers.entries()))
 
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -39,8 +41,8 @@ serve(async (req) => {
       )
     }
 
-    console.log('Successfully retrieved Mapbox token, sending response')
-    return new Response(
+    console.log('Successfully retrieved Mapbox token, preparing response')
+    const response = new Response(
       JSON.stringify({ token }),
       { 
         status: 200,
@@ -50,6 +52,8 @@ serve(async (req) => {
         }
       }
     )
+    console.log('Response prepared, sending back to client')
+    return response
   } catch (error) {
     console.error('Error in get-mapbox-token function:', error)
     return new Response(
