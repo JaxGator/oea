@@ -35,6 +35,8 @@ export function EventEditDialog({
         <div className="space-y-6">
           <EventForm 
             initialData={event}
+            isPastEvent={new Date(event.date) < new Date()}
+            isWixEvent={!!event.imported_rsvp_count}
             onSuccess={() => {
               setShowDialog(false);
               if (onSuccess) onSuccess();
