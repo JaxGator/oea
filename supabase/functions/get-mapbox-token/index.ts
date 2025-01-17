@@ -18,8 +18,9 @@ serve(async (req) => {
   }
 
   try {
+    console.log('Attempting to retrieve MAPBOX_PUBLIC_TOKEN')
     const token = Deno.env.get('MAPBOX_PUBLIC_TOKEN')
-    console.log('Retrieved token from environment:', token ? 'Token exists' : 'Token is missing')
+    console.log('Token retrieval result:', token ? 'Token exists' : 'Token is missing')
     
     if (!token) {
       console.error('MAPBOX_PUBLIC_TOKEN not found in environment')
@@ -38,7 +39,7 @@ serve(async (req) => {
       )
     }
 
-    console.log('Successfully retrieved Mapbox token')
+    console.log('Successfully retrieved Mapbox token, sending response')
     return new Response(
       JSON.stringify({ token }),
       { 
