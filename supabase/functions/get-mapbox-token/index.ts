@@ -6,9 +6,15 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
+  console.log('Received request for Mapbox token')
+
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders })
+    console.log('Handling CORS preflight request')
+    return new Response(null, { 
+      status: 204, 
+      headers: corsHeaders 
+    })
   }
 
   try {
@@ -19,7 +25,10 @@ serve(async (req) => {
         JSON.stringify({ error: 'Map configuration not found' }),
         { 
           status: 500,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          headers: { 
+            ...corsHeaders, 
+            'Content-Type': 'application/json' 
+          }
         }
       )
     }
@@ -28,7 +37,11 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ token }),
       { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        status: 200,
+        headers: { 
+          ...corsHeaders, 
+          'Content-Type': 'application/json' 
+        }
       }
     )
   } catch (error) {
@@ -37,7 +50,10 @@ serve(async (req) => {
       JSON.stringify({ error: 'Internal server error' }),
       { 
         status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        headers: { 
+          ...corsHeaders, 
+          'Content-Type': 'application/json' 
+        }
       }
     )
   }
