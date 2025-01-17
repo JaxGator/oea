@@ -7,27 +7,46 @@ export const useMapInstance = (containerRef: React.RefObject<HTMLDivElement>) =>
   const { mapToken } = useMapboxToken();
 
   useEffect(() => {
-    if (!containerRef.current || !mapToken || mapInstance.current) return;
+    if (!containerRef.current || !mapToken || mapInstance.current) {
+      console.log('Map instance initialization skipped:', {
+        hasContainer: !!containerRef.current,
+        hasToken: !!mapToken,
+        hasExistingInstance: !!mapInstance.current
+      });
+      return;
+    }
 
+    console.log('Initializing map instance with token:', !!mapToken);
     mapboxgl.accessToken = mapToken;
     
-    const map = new mapboxgl.Map({
-      container: containerRef.current,
-      style: 'mapbox://styles/mapbox/outdoors-v12',
-      zoom: 12
-    });
+    try {
+      const map = new mapboxgl.Map({
+        container: containerRef.current,
+        style: 'mapbox://styles/mapbox/outdoors-v12',
+        zoom: 12
+      });
 
-    map.addControl(new mapboxgl.NavigationControl(), 'top-right');
-    mapInstance.current = map;
+      map.addControl(new mapboxgl.NavigationControl(), 'top-right');
+      mapInstance.current = map;
 
-    // Ensure the map is properly initialized
-    map.on('style.load', () => {
-      console.log('Map style loaded successfully');
-    });
+      // Ensure the map is properly initialized
+      map.on('style.load', () => {
+        console.log('Map style loaded successfully');
+      });
+
+      map.on('error', (e) => {
+        console.error('Map instance error:', e);
+      });
+
+    } catch (error) {
+      console.error('Error initializing map instance:', error);
+    }
 
     return () => {
-      map.remove();
-      mapInstance.current = null;
+      if (mapInstance.current) {
+        mapInstance.current.remove();
+        mapInstance.current = null;
+      }
     };
   }, [mapToken]);
 

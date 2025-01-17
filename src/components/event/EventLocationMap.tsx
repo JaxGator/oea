@@ -18,34 +18,53 @@ export function EventLocationMap({ location, lat, lng }: EventLocationMapProps) 
   const { mapToken, isLoading: isKeyLoading, error: keyError } = useMapboxToken();
 
   useEffect(() => {
-    if (!mapContainer.current || !lat || !lng || !mapToken) return;
+    if (!mapContainer.current || !lat || !lng || !mapToken) {
+      console.log('Map initialization skipped:', { 
+        hasContainer: !!mapContainer.current, 
+        lat, 
+        lng, 
+        hasToken: !!mapToken 
+      });
+      return;
+    }
 
+    console.log('Initializing map with:', { lat, lng, mapToken: !!mapToken });
     mapboxgl.accessToken = mapToken;
     
-    map.current = new mapboxgl.Map({
-      container: mapContainer.current,
-      style: 'mapbox://styles/mapbox/outdoors-v12',
-      center: [lng, lat],
-      zoom: 14,
-      scrollZoom: false
-    });
+    try {
+      map.current = new mapboxgl.Map({
+        container: mapContainer.current,
+        style: 'mapbox://styles/mapbox/outdoors-v12',
+        center: [lng, lat],
+        zoom: 14,
+        scrollZoom: false
+      });
 
-    marker.current = new mapboxgl.Marker()
-      .setLngLat([lng, lat])
-      .addTo(map.current);
+      marker.current = new mapboxgl.Marker()
+        .setLngLat([lng, lat])
+        .addTo(map.current);
 
-    map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
+      map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
 
-    // Ensure the map loads the location correctly
-    map.current.on('load', () => {
-      if (map.current) {
-        map.current.flyTo({
-          center: [lng, lat],
-          zoom: 14,
-          essential: true
-        });
-      }
-    });
+      // Ensure the map loads the location correctly
+      map.current.on('load', () => {
+        console.log('Map loaded successfully');
+        if (map.current) {
+          map.current.flyTo({
+            center: [lng, lat],
+            zoom: 14,
+            essential: true
+          });
+        }
+      });
+
+      map.current.on('error', (e) => {
+        console.error('Map error:', e);
+      });
+
+    } catch (error) {
+      console.error('Error initializing map:', error);
+    }
 
     return () => {
       if (map.current) {
