@@ -40,19 +40,24 @@ export default function Profile() {
       
       const { data, error } = await supabase
         .from("profiles")
-        .select("username, full_name, avatar_url, is_approved, is_admin, is_member, interests")
+        .select("*")
         .eq("id", session.user.id)
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching profile:', error);
+        throw error;
+      }
 
-      setUsername(data.username || "");
-      setFullName(data.full_name || "");
-      setAvatarUrl(data.avatar_url || "");
-      setIsApproved(data.is_approved || false);
-      setIsAdmin(data.is_admin || false);
-      setIsMember(data.is_member || false);
-      setInterests(data.interests || []);
+      if (data) {
+        setUsername(data.username || "");
+        setFullName(data.full_name || "");
+        setAvatarUrl(data.avatar_url || "");
+        setIsApproved(data.is_approved || false);
+        setIsAdmin(data.is_admin || false);
+        setIsMember(data.is_member || false);
+        setInterests(data.interests || []);
+      }
     } catch (error) {
       console.error("Error loading profile:", error);
       toast({
@@ -73,6 +78,7 @@ export default function Profile() {
         username,
         full_name: fullName,
         avatar_url: avatarUrl,
+        updated_at: new Date().toISOString(),
       };
 
       const { error } = await supabase
@@ -83,9 +89,11 @@ export default function Profile() {
       if (error) throw error;
 
       toast({
-        title: "Profile updated",
-        description: "Your profile has been updated successfully.",
+        title: "Success",
+        description: "Profile updated successfully",
       });
+      
+      await getProfile(); // Refresh profile data
     } catch (error) {
       console.error("Error updating profile:", error);
       toast({
@@ -109,8 +117,8 @@ export default function Profile() {
 
       setInterests(newInterests);
       toast({
-        title: "Interests updated",
-        description: "Your interests have been updated successfully.",
+        title: "Success",
+        description: "Interests updated successfully",
       });
     } catch (error) {
       console.error("Error updating interests:", error);
@@ -129,7 +137,7 @@ export default function Profile() {
       if (error) throw error;
 
       toast({
-        title: "Email update initiated",
+        title: "Success",
         description: "Please check your new email for confirmation.",
       });
     } catch (error) {
@@ -148,10 +156,10 @@ export default function Profile() {
       
       if (error) throw error;
 
-      setNewPassword(""); // Clear password field after successful update
+      setNewPassword("");
       toast({
-        title: "Password updated",
-        description: "Your password has been updated successfully.",
+        title: "Success",
+        description: "Password updated successfully",
       });
     } catch (error) {
       console.error("Error updating password:", error);
