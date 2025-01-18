@@ -18,7 +18,6 @@ export function LocationSearchInput({ onLocationSelect, currentValue, disabled }
   const [searchValue, setSearchValue] = useState(currentValue || '');
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const { mapToken, isLoading, error } = useMapboxToken();
-  const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
     if (currentValue) {
@@ -50,20 +49,12 @@ export function LocationSearchInput({ onLocationSelect, currentValue, disabled }
           center: feature.center,
         }));
         setSuggestions(newSuggestions);
-        setIsOpen(true);
-      } else {
-        setSuggestions([]);
       }
     } catch (error) {
       console.error('Error searching locations:', error);
       toast.error('Error searching for locations. Please try again.');
       setSuggestions([]);
     }
-  };
-
-  const handleValueChange = (value: string) => {
-    setSearchValue(value);
-    searchLocations(value);
   };
 
   if (error) {
@@ -75,37 +66,34 @@ export function LocationSearchInput({ onLocationSelect, currentValue, disabled }
   }
 
   return (
-    <div className="relative w-full">
-      <Command className="rounded-lg border shadow-md" shouldFilter={false}>
-        <CommandInput
-          placeholder="Search for a location..."
-          value={searchValue}
-          onValueChange={handleValueChange}
-          disabled={disabled}
-          className="w-full"
-        />
-        {isOpen && suggestions.length > 0 && (
-          <>
-            <CommandEmpty>No locations found.</CommandEmpty>
-            <CommandGroup className="max-h-64 overflow-y-auto">
-              {suggestions.map((suggestion) => (
-                <CommandItem
-                  key={suggestion.place_name}
-                  value={suggestion.place_name}
-                  onSelect={() => {
-                    onLocationSelect(suggestion);
-                    setSearchValue(suggestion.place_name);
-                    setSuggestions([]);
-                    setIsOpen(false);
-                  }}
-                >
-                  {suggestion.place_name}
-                </CommandItem>
-              ))}
-            </CommandGroup>
-          </>
+    <Command className="rounded-lg border shadow-md">
+      <CommandInput
+        placeholder="Search for a location..."
+        value={searchValue}
+        onValueChange={(value) => {
+          setSearchValue(value);
+          searchLocations(value);
+        }}
+        disabled={disabled}
+      />
+      <CommandGroup className="max-h-64 overflow-y-auto">
+        {suggestions.length === 0 && searchValue.length >= 3 && (
+          <CommandEmpty>No locations found.</CommandEmpty>
         )}
-      </Command>
-    </div>
+        {suggestions.map((suggestion) => (
+          <CommandItem
+            key={suggestion.place_name}
+            value={suggestion.place_name}
+            onSelect={() => {
+              onLocationSelect(suggestion);
+              setSearchValue(suggestion.place_name);
+              setSuggestions([]);
+            }}
+          >
+            {suggestion.place_name}
+          </CommandItem>
+        ))}
+      </CommandGroup>
+    </Command>
   );
 }
