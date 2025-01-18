@@ -1,8 +1,5 @@
-import { Button } from "@/components/ui/button";
-import { RSVPButton } from "./RSVPButton";
-import { AddGuestsButton } from "./AddGuestsButton";
+import { EventActionButtons } from "./EventActionButtons";
 import { AdminActions } from "./AdminActions";
-import { Eye } from "lucide-react";
 
 interface Guest {
   firstName: string;
@@ -53,41 +50,18 @@ export function EventActions({
 
   return (
     <div className="flex flex-wrap gap-1">
-      {!userRSVPStatus && !isPastEvent && (
-        <RSVPButton 
-          isFullyBooked={isFullyBooked} 
-          onRSVP={onRSVP}
-          canJoinWaitlist={canJoinWaitlist}
-        />
-      )}
-
-      {userRSVPStatus === "attending" && !isPastEvent && (
-        <>
-          <Button
-            variant="destructive"
-            onClick={onCancelRSVP}
-          >
-            Cancel RSVP
-          </Button>
-          {canAddGuests && (
-            <AddGuestsButton 
-              onAddGuests={(newGuests) => onRSVP(newGuests)}
-              currentGuests={currentGuests}
-            />
-          )}
-        </>
-      )}
-
-      {showViewDetails && onViewDetails && (
-        <Button
-          variant="outline"
-          onClick={onViewDetails}
-          className="gap-2"
-        >
-          <Eye className="h-4 w-4" />
-          Details
-        </Button>
-      )}
+      <EventActionButtons
+        userRSVPStatus={userRSVPStatus}
+        isPastEvent={isPastEvent || false}
+        isFullyBooked={isFullyBooked}
+        canJoinWaitlist={canJoinWaitlist}
+        canAddGuests={canAddGuests}
+        currentGuests={currentGuests}
+        onRSVP={onRSVP}
+        onCancelRSVP={onCancelRSVP}
+        onViewDetails={onViewDetails}
+        showViewDetails={showViewDetails}
+      />
 
       {isAdmin && (
         <AdminActions
