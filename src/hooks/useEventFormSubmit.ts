@@ -37,11 +37,23 @@ export function useEventFormSubmit(onSuccess: () => void) {
     try {
       setIsSubmitting(true);
 
+      // Clean up the form data
+      const cleanedData = {
+        ...formData,
+        end_time: formData.end_time || null, // Convert empty string to null
+        time: formData.time || null // Ensure time is not empty
+      };
+
+      // Validate required time field
+      if (!cleanedData.time) {
+        throw new Error('Start time is required');
+      }
+
       // Geocode the location
-      const coordinates = await geocodeLocation(formData.location);
+      const coordinates = await geocodeLocation(cleanedData.location);
       
       const eventData = {
-        ...formData,
+        ...cleanedData,
         ...(coordinates && {
           latitude: coordinates.latitude,
           longitude: coordinates.longitude
