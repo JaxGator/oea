@@ -30,9 +30,11 @@ export function LocationSearchInput({
   }, [currentValue]);
 
   const searchLocations = async (query: string) => {
-    // Reset suggestions if query is too short
+    // Always ensure suggestions is initialized as an array
+    setSuggestions([]);
+
+    // Don't search if query is too short or no token
     if (!query || query.length < 3 || !mapToken) {
-      setSuggestions([]);
       return;
     }
 
@@ -48,23 +50,35 @@ export function LocationSearchInput({
 
       const data = await response.json();
       
-      // Ensure features exists and is an array before mapping
+      // Validate features exists and is an array
       if (!data?.features || !Array.isArray(data.features)) {
         console.log('No valid features in response:', data);
-        setSuggestions([]);
         return;
       }
 
-      const newSuggestions = data.features.map((feature: any) => ({
-        place_name: feature.place_name || '',
-        center: Array.isArray(feature.center) ? feature.center as [number, number] : [0, 0],
-      }));
+      // Safely map features to suggestions with proper type checking
+      const newSuggestions = data.features
+        .filter((feature: any) => feature && typeof feature === 'object')
+        .map((feature: any) => {
+          // Ensure center coordinates are valid
+          const center = Array.isArray(feature.center) && 
+            feature.center.length === 2 && 
+            typeof feature.center[0] === 'number' && 
+            typeof feature.center[1] === 'number'
+            ? feature.center as [number, number]
+            : [0, 0];
+
+          return {
+            place_name: typeof feature.place_name === 'string' ? feature.place_name : '',
+            center
+          };
+        })
+        .filter(suggestion => suggestion.place_name && suggestion.center[0] !== 0);
       
       setSuggestions(newSuggestions);
     } catch (error) {
       console.error('Error searching locations:', error);
       toast.error('Error searching for locations. Please try again.');
-      setSuggestions([]);
     }
   };
 
