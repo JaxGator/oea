@@ -19,7 +19,7 @@ export function LocationSearchInput({
   currentValue = '', 
   disabled = false 
 }: LocationSearchInputProps) {
-  const [searchValue, setSearchValue] = useState<string>('');
+  const [searchValue, setSearchValue] = useState<string>(currentValue);
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const { mapToken, isLoading, error } = useMapboxToken();
 
@@ -89,7 +89,7 @@ export function LocationSearchInput({
             ? "Enter at least 3 characters to search..." 
             : "No locations found."}
         </CommandEmpty>
-        {suggestions && suggestions.length > 0 && suggestions.map((suggestion) => (
+        {suggestions.map((suggestion) => (
           <CommandItem
             key={suggestion.place_name}
             value={suggestion.place_name}
