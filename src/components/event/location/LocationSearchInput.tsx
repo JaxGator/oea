@@ -19,7 +19,7 @@ export function LocationSearchInput({
   currentValue = '', 
   disabled = false 
 }: LocationSearchInputProps) {
-  const [searchValue, setSearchValue] = useState<string>(currentValue || '');
+  const [searchValue, setSearchValue] = useState<string>('');
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const { mapToken, isLoading, error } = useMapboxToken();
 
@@ -50,30 +50,30 @@ export function LocationSearchInput({
       
       if (!data?.features || !Array.isArray(data.features)) {
         console.log('No valid features in response:', data);
+        setSuggestions([]);
         return;
       }
 
-      const newSuggestions = data.features
-        .filter((feature: any) => feature && typeof feature === 'object')
-        .map((feature: any) => {
-          const center = Array.isArray(feature.center) && 
-            feature.center.length === 2 && 
-            typeof feature.center[0] === 'number' && 
-            typeof feature.center[1] === 'number'
-            ? feature.center as [number, number]
-            : [0, 0];
-
-          return {
-            place_name: typeof feature.place_name === 'string' ? feature.place_name : '',
-            center
-          };
-        })
-        .filter(suggestion => suggestion.place_name && suggestion.center[0] !== 0);
+      const validSuggestions = data.features
+        .filter((feature: any) => 
+          feature && 
+          typeof feature === 'object' &&
+          typeof feature.place_name === 'string' &&
+          Array.isArray(feature.center) &&
+          feature.center.length === 2 &&
+          typeof feature.center[0] === 'number' &&
+          typeof feature.center[1] === 'number'
+        )
+        .map((feature: any) => ({
+          place_name: feature.place_name,
+          center: feature.center as [number, number]
+        }));
       
-      setSuggestions(newSuggestions);
+      setSuggestions(validSuggestions);
     } catch (error) {
       console.error('Error searching locations:', error);
       toast.error('Error searching for locations. Please try again.');
+      setSuggestions([]);
     }
   };
 
