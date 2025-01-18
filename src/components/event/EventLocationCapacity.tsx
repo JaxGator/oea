@@ -42,7 +42,7 @@ export function EventLocationCapacity({ form, disableLocation, showMaxGuestsHint
       }
       
       const data = await response.json();
-      return data.features as MapboxFeature[];
+      return (data.features || []) as MapboxFeature[];
     },
     enabled: !!searchValue && !!mapToken,
   });
@@ -92,28 +92,30 @@ export function EventLocationCapacity({ form, disableLocation, showMaxGuestsHint
                       "No locations found."
                     )}
                   </CommandEmpty>
-                  <CommandGroup>
-                    {predictions.map((prediction) => (
-                      <CommandItem
-                        key={prediction.place_name}
-                        value={prediction.place_name}
-                        onSelect={() => {
-                          field.onChange(prediction.place_name);
-                          setOpen(false);
-                        }}
-                      >
-                        <Check
-                          className={cn(
-                            "mr-2 h-4 w-4",
-                            field.value === prediction.place_name
-                              ? "opacity-100"
-                              : "opacity-0"
-                          )}
-                        />
-                        {prediction.place_name}
-                      </CommandItem>
-                    ))}
-                  </CommandGroup>
+                  {predictions.length > 0 && (
+                    <CommandGroup>
+                      {predictions.map((prediction) => (
+                        <CommandItem
+                          key={prediction.place_name}
+                          value={prediction.place_name}
+                          onSelect={() => {
+                            field.onChange(prediction.place_name);
+                            setOpen(false);
+                          }}
+                        >
+                          <Check
+                            className={cn(
+                              "mr-2 h-4 w-4",
+                              field.value === prediction.place_name
+                                ? "opacity-100"
+                                : "opacity-0"
+                            )}
+                          />
+                          {prediction.place_name}
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  )}
                 </Command>
               </PopoverContent>
             </Popover>
