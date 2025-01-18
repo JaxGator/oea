@@ -50,7 +50,7 @@ export function EventCardState({
   };
 
   const isPastEvent = new Date(event.date) < new Date(new Date().setHours(0, 0, 0, 0));
-  const isWixEvent = !!event.imported_rsvp_count;
+  const isWixEvent = Boolean(event.imported_rsvp_count); // Convert to boolean
   const canAddGuests = isAdmin || userRSVPStatus === 'attending';
 
   const handleEditSuccess = () => {
