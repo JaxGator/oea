@@ -18,6 +18,9 @@ export function SessionManager({ children, queryClient }: SessionManagerProps) {
   useEffect(() => {
     let mounted = true;
     let refreshTimer: NodeJS.Timeout;
+    let retryCount = 0;
+    const MAX_RETRIES = 3;
+    const RETRY_DELAY = 2000; // 2 seconds
 
     const checkSession = async () => {
       try {
@@ -26,9 +29,18 @@ export function SessionManager({ children, queryClient }: SessionManagerProps) {
         
         if (error) {
           console.error('Session check error:', error);
+          if (retryCount < MAX_RETRIES) {
+            retryCount++;
+            console.log(`Retrying session check (${retryCount}/${MAX_RETRIES})...`);
+            setTimeout(checkSession, RETRY_DELAY);
+            return;
+          }
           await handleSessionError(error);
           return;
         }
+
+        // Reset retry count on successful check
+        retryCount = 0;
 
         if (!session) {
           console.log('No active session found');
@@ -68,6 +80,12 @@ export function SessionManager({ children, queryClient }: SessionManagerProps) {
         }
       } catch (err) {
         console.error('Session check failed:', err);
+        if (retryCount < MAX_RETRIES) {
+          retryCount++;
+          console.log(`Retrying after error (${retryCount}/${MAX_RETRIES})...`);
+          setTimeout(checkSession, RETRY_DELAY);
+          return;
+        }
         await handleSessionError(err as AuthError);
       }
     };
@@ -77,8 +95,8 @@ export function SessionManager({ children, queryClient }: SessionManagerProps) {
       await clearSessionData();
       
       toast({
-        title: "Session Error",
-        description: "Please sign in again to continue.",
+        title: "Connection Error",
+        description: "Unable to connect to the server. Please check your connection and try again.",
         variant: "destructive",
       });
       
@@ -126,7 +144,6 @@ export function SessionManager({ children, queryClient }: SessionManagerProps) {
           break;
 
         case 'USER_UPDATED':
-          // Refresh the session to ensure we have the latest data
           await checkSession();
           break;
       }
