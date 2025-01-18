@@ -22,16 +22,18 @@ export const useMapInstance = (containerRef: React.RefObject<HTMLDivElement>) =>
     try {
       const map = new mapboxgl.Map({
         container: containerRef.current,
-        style: 'mapbox://styles/mapbox/outdoors-v12',
-        zoom: 12
+        style: 'mapbox://styles/mapbox/streets-v12',
+        zoom: 12,
+        center: [-122.4194, 37.7749] // Default center, will be updated when markers are added
       });
 
       map.addControl(new mapboxgl.NavigationControl(), 'top-right');
       mapInstance.current = map;
 
       // Ensure the map is properly initialized
-      map.on('style.load', () => {
+      map.on('load', () => {
         console.log('Map style loaded successfully');
+        map.resize(); // Ensure proper sizing after load
       });
 
       map.on('error', (e) => {
