@@ -30,10 +30,8 @@ export function LocationSearchInput({
   }, [currentValue]);
 
   const searchLocations = async (query: string) => {
-    // Always ensure suggestions is initialized as an array
     setSuggestions([]);
 
-    // Don't search if query is too short or no token
     if (!query || query.length < 3 || !mapToken) {
       return;
     }
@@ -50,17 +48,14 @@ export function LocationSearchInput({
 
       const data = await response.json();
       
-      // Validate features exists and is an array
       if (!data?.features || !Array.isArray(data.features)) {
         console.log('No valid features in response:', data);
         return;
       }
 
-      // Safely map features to suggestions with proper type checking
       const newSuggestions = data.features
         .filter((feature: any) => feature && typeof feature === 'object')
         .map((feature: any) => {
-          // Ensure center coordinates are valid
           const center = Array.isArray(feature.center) && 
             feature.center.length === 2 && 
             typeof feature.center[0] === 'number' && 
