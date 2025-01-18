@@ -41,14 +41,13 @@ export function LocationSearchInput({ onLocationSelect, currentValue }: Location
       }
 
       const data = await response.json();
-
+      
       if (data.features && Array.isArray(data.features)) {
-        setSuggestions(
-          data.features.map((feature: any) => ({
-            place_name: feature.place_name,
-            center: feature.center,
-          }))
-        );
+        const newSuggestions = data.features.map((feature: any) => ({
+          place_name: feature.place_name,
+          center: feature.center,
+        }));
+        setSuggestions(newSuggestions);
       } else {
         setSuggestions([]);
       }
