@@ -58,6 +58,11 @@ export function LocationSearchInput({ onLocationSelect, currentValue }: Location
     }
   };
 
+  const handleValueChange = (value: string) => {
+    setSearchValue(value);
+    searchLocations(value);
+  };
+
   if (error) {
     return <div className="p-4 text-red-500">Error loading location search</div>;
   }
@@ -71,10 +76,7 @@ export function LocationSearchInput({ onLocationSelect, currentValue }: Location
       <CommandInput
         placeholder="Search for a location..."
         value={searchValue}
-        onValueChange={(value) => {
-          setSearchValue(value);
-          searchLocations(value);
-        }}
+        onValueChange={handleValueChange}
       />
       <CommandEmpty>No locations found.</CommandEmpty>
       <CommandGroup className="max-h-64 overflow-y-auto">
