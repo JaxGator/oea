@@ -34,7 +34,7 @@ export function EventLocationMap({ location, lat, lng }: EventLocationMapProps) 
     try {
       map.current = new mapboxgl.Map({
         container: mapContainer.current,
-        style: 'mapbox://styles/mapbox/outdoors-v12',
+        style: 'mapbox://styles/mapbox/outdoors-v12', // Updated to outdoors style
         center: [lng, lat],
         zoom: 14,
         scrollZoom: false
