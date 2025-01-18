@@ -6,7 +6,7 @@ type EventWithRsvps = {
   description: string | null;
   date: string;
   time: string;
-  location: string | null;
+  location: string;
   max_guests: number;
   created_by: string;
   created_at: string;
@@ -17,7 +17,9 @@ type EventWithRsvps = {
   waitlist_capacity?: number | null;
   display_order?: number | null;
   is_published?: boolean;
-  event_rsvps?: Array<{
+  latitude?: number | null;
+  longitude?: number | null;
+  event_rsvps?: {
     id: string;
     event_id: string;
     user_id: string;
@@ -26,12 +28,12 @@ type EventWithRsvps = {
     profiles: {
       full_name: string | null;
       username: string;
-    };
-  }>;
+    }[];
+  }[];
 };
 
 export const transformEventData = (data: EventWithRsvps[]): Event[] => {
-  return (data || []).map((event): Event => ({
+  return data.map((event): Event => ({
     id: event.id,
     title: event.title,
     description: event.description,
@@ -48,16 +50,15 @@ export const transformEventData = (data: EventWithRsvps[]): Event[] => {
     waitlist_capacity: event.waitlist_capacity,
     display_order: event.display_order,
     is_published: event.is_published,
+    latitude: event.latitude,
+    longitude: event.longitude,
     rsvps: event.event_rsvps?.map((rsvp): EventRSVP => ({
       id: rsvp.id,
       event_id: rsvp.event_id,
       user_id: rsvp.user_id,
       response: rsvp.response,
       created_at: rsvp.created_at,
-      profiles: {
-        full_name: rsvp.profiles.full_name,
-        username: rsvp.profiles.username
-      }
+      profiles: rsvp.profiles[0] || { full_name: null, username: '' }
     })) || []
   }));
 };
