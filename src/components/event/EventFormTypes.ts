@@ -14,6 +14,8 @@ export const eventSchema = z.object({
   waitlist_enabled: z.boolean().default(false),
   waitlist_capacity: z.number().nullable().default(null),
   is_featured: z.boolean().default(false),
+  latitude: z.number().optional(),
+  longitude: z.number().optional(),
 });
 
 export type EventFormValues = z.infer<typeof eventSchema>;
@@ -33,6 +35,8 @@ export interface EventFormData {
   waitlist_enabled?: boolean;
   waitlist_capacity?: number | null;
   is_featured?: boolean;
+  latitude?: number;
+  longitude?: number;
 }
 
 export interface EventFormProps {

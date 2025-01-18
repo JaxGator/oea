@@ -3,6 +3,13 @@ import { Input } from "@/components/ui/input";
 import { UseFormReturn } from "react-hook-form";
 import { EventFormValues } from "./EventFormTypes";
 import { useAdminStatus } from "@/hooks/events/useAdminStatus";
+import { useState, useEffect, useRef } from "react";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Button } from "@/components/ui/button";
+import { Check, ChevronsUpDown } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
 
 interface EventLocationCapacityProps {
   form: UseFormReturn<EventFormValues>;
@@ -10,8 +17,54 @@ interface EventLocationCapacityProps {
   showMaxGuestsHint?: boolean;
 }
 
+interface LocationSuggestion {
+  place_name: string;
+  center: [number, number];
+}
+
 export function EventLocationCapacity({ form, disableLocation, showMaxGuestsHint }: EventLocationCapacityProps) {
   const { isAdmin } = useAdminStatus();
+  const [open, setOpen] = useState(false);
+  const [suggestions, setSuggestions] = useState<LocationSuggestion[]>([]);
+  const [loading, setLoading] = useState(false);
+  const debounceTimer = useRef<NodeJS.Timeout>();
+
+  const fetchSuggestions = async (query: string) => {
+    if (!query) {
+      setSuggestions([]);
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const { data: { token }, error: tokenError } = await supabase.functions.invoke('get-mapbox-token');
+      
+      if (tokenError) throw tokenError;
+
+      const response = await fetch(
+        `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?access_token=${token}&types=place,address`
+      );
+      
+      if (!response.ok) throw new Error('Geocoding failed');
+      
+      const data = await response.json();
+      setSuggestions(data.features.map((feature: any) => ({
+        place_name: feature.place_name,
+        center: feature.center
+      })));
+    } catch (error) {
+      console.error('Error fetching location suggestions:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleLocationSelect = (suggestion: LocationSuggestion) => {
+    form.setValue('location', suggestion.place_name);
+    form.setValue('latitude', suggestion.center[1]);
+    form.setValue('longitude', suggestion.center[0]);
+    setOpen(false);
+  };
 
   return (
     <>
@@ -21,14 +74,56 @@ export function EventLocationCapacity({ form, disableLocation, showMaxGuestsHint
         render={({ field }) => (
           <FormItem className="flex flex-col">
             <FormLabel>Location</FormLabel>
-            <FormControl>
-              <Input
-                placeholder="Enter venue location"
-                {...field}
-                disabled={disableLocation && !isAdmin}
-                className="w-full"
-              />
-            </FormControl>
+            <Popover open={open} onOpenChange={setOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  role="combobox"
+                  aria-expanded={open}
+                  disabled={disableLocation && !isAdmin}
+                  className={cn(
+                    "w-full justify-between",
+                    !field.value && "text-muted-foreground"
+                  )}
+                >
+                  {field.value || "Select a location..."}
+                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-full p-0">
+                <Command>
+                  <CommandInput
+                    placeholder="Search location..."
+                    onValueChange={(value) => {
+                      if (debounceTimer.current) {
+                        clearTimeout(debounceTimer.current);
+                      }
+                      debounceTimer.current = setTimeout(() => {
+                        fetchSuggestions(value);
+                      }, 500);
+                    }}
+                  />
+                  <CommandEmpty>{loading ? "Loading..." : "No location found."}</CommandEmpty>
+                  <CommandGroup>
+                    {suggestions.map((suggestion) => (
+                      <CommandItem
+                        key={suggestion.place_name}
+                        value={suggestion.place_name}
+                        onSelect={() => handleLocationSelect(suggestion)}
+                      >
+                        <Check
+                          className={cn(
+                            "mr-2 h-4 w-4",
+                            field.value === suggestion.place_name ? "opacity-100" : "opacity-0"
+                          )}
+                        />
+                        {suggestion.place_name}
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </Command>
+              </PopoverContent>
+            </Popover>
             <FormMessage />
           </FormItem>
         )}

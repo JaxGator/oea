@@ -32,6 +32,8 @@ export function EventForm({ onSuccess, initialData, isPastEvent, isWixEvent }: E
       waitlist_enabled: initialData?.waitlist_enabled || false,
       waitlist_capacity: initialData?.waitlist_capacity || null,
       is_featured: initialData?.is_featured || false,
+      latitude: initialData?.latitude,
+      longitude: initialData?.longitude,
     },
   });
 
