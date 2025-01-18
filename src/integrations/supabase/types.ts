@@ -906,6 +906,7 @@ export type Database = {
           is_approved: boolean | null
           is_member: boolean | null
           leaderboard_opt_out: boolean | null
+          updated_at: string | null
           username: string
         }
         Insert: {
@@ -922,6 +923,7 @@ export type Database = {
           is_approved?: boolean | null
           is_member?: boolean | null
           leaderboard_opt_out?: boolean | null
+          updated_at?: string | null
           username: string
         }
         Update: {
@@ -938,6 +940,7 @@ export type Database = {
           is_approved?: boolean | null
           is_member?: boolean | null
           leaderboard_opt_out?: boolean | null
+          updated_at?: string | null
           username?: string
         }
         Relationships: []

@@ -5,6 +5,7 @@ import { useToast } from "@/hooks/use-toast";
 import { ProfileHeader } from "@/components/profile/ProfileHeader";
 import { ProfileForm } from "@/components/profile/ProfileForm";
 import { InterestsSection } from "@/components/profile/InterestsSection";
+import { useAuthState } from "@/hooks/useAuthState";
 
 export default function Profile() {
   const [loading, setLoading] = useState(true);
@@ -13,35 +14,27 @@ export default function Profile() {
   const [avatarUrl, setAvatarUrl] = useState("");
   const [email, setEmail] = useState("");
   const [newPassword, setNewPassword] = useState("");
-  const [userId, setUserId] = useState<string | null>(null);
-  const [isApproved, setIsApproved] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [isMember, setIsMember] = useState(false);
   const [interests, setInterests] = useState<string[]>([]);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { user, profile } = useAuthState();
 
   useEffect(() => {
+    if (!user) {
+      navigate("/auth");
+      return;
+    }
     getProfile();
-  }, []);
+  }, [user, navigate]);
 
   async function getProfile() {
     try {
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-      
-      if (sessionError) throw sessionError;
-      if (!session?.user) {
-        navigate("/auth");
-        return;
-      }
+      if (!user?.id) return;
 
-      setUserId(session.user.id);
-      setEmail(session.user.email || "");
-      
       const { data, error } = await supabase
         .from("profiles")
         .select("*")
-        .eq("id", session.user.id)
+        .eq("id", user.id)
         .single();
 
       if (error) {
@@ -53,9 +46,7 @@ export default function Profile() {
         setUsername(data.username || "");
         setFullName(data.full_name || "");
         setAvatarUrl(data.avatar_url || "");
-        setIsApproved(data.is_approved || false);
-        setIsAdmin(data.is_admin || false);
-        setIsMember(data.is_member || false);
+        setEmail(user.email || "");
         setInterests(data.interests || []);
       }
     } catch (error) {
@@ -72,19 +63,19 @@ export default function Profile() {
 
   async function updateProfile() {
     try {
-      if (!userId) throw new Error("No user ID");
+      if (!user?.id) throw new Error("No user ID");
 
       const updates = {
         username,
         full_name: fullName,
         avatar_url: avatarUrl,
-        updated_at: new Date().toISOString(),
+        interests
       };
 
       const { error } = await supabase
         .from("profiles")
         .update(updates)
-        .eq("id", userId);
+        .eq("id", user.id);
 
       if (error) throw error;
 
@@ -93,37 +84,11 @@ export default function Profile() {
         description: "Profile updated successfully",
       });
       
-      await getProfile(); // Refresh profile data
+      await getProfile();
     } catch (error) {
       console.error("Error updating profile:", error);
       toast({
         title: "Error updating profile",
-        description: "Please try again later.",
-        variant: "destructive",
-      });
-    }
-  }
-
-  async function updateInterests(newInterests: string[]) {
-    try {
-      if (!userId) throw new Error("No user ID");
-
-      const { error } = await supabase
-        .from("profiles")
-        .update({ interests: newInterests })
-        .eq("id", userId);
-
-      if (error) throw error;
-
-      setInterests(newInterests);
-      toast({
-        title: "Success",
-        description: "Interests updated successfully",
-      });
-    } catch (error) {
-      console.error("Error updating interests:", error);
-      toast({
-        title: "Error updating interests",
         description: "Please try again later.",
         variant: "destructive",
       });
@@ -179,7 +144,7 @@ export default function Profile() {
     );
   }
 
-  if (!isApproved && !isAdmin && !isMember) {
+  if (!profile?.is_approved && !profile?.is_admin && !profile?.is_member) {
     return (
       <div className="min-h-screen bg-[#222222] py-12 px-4">
         <div className="max-w-2xl mx-auto">
@@ -218,10 +183,13 @@ export default function Profile() {
             onUpdateEmail={updateEmail}
             onUpdatePassword={updatePassword}
           />
-          {(isApproved || isAdmin || isMember) && (
+          {(profile?.is_approved || profile?.is_admin || profile?.is_member) && (
             <InterestsSection
               interests={interests}
-              onUpdateInterests={updateInterests}
+              onUpdateInterests={(newInterests) => {
+                setInterests(newInterests);
+                updateProfile();
+              }}
             />
           )}
         </div>
