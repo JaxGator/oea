@@ -106,7 +106,7 @@ export function EventLocationCapacity({ form, disableLocation, showMaxGuestsHint
                     )}
                   </CommandEmpty>
                   <CommandGroup>
-                    {predictions.map((prediction: MapboxFeature) => (
+                    {Array.isArray(predictions) && predictions.map((prediction: MapboxFeature) => (
                       <CommandItem
                         key={prediction.place_name}
                         value={prediction.place_name}
