@@ -15,7 +15,6 @@ interface RSVPWithProfile {
   response: 'attending' | 'not_attending' | 'maybe';
   created_at: string;
   profiles: {
-    id?: string;
     full_name: string | null;
     username: string;
   };
@@ -56,7 +55,6 @@ export default function EventDetails() {
           response,
           created_at,
           profiles (
-            id,
             full_name,
             username
           )
@@ -65,7 +63,6 @@ export default function EventDetails() {
 
       if (rsvpError) throw rsvpError;
 
-      // Type assertion to help TypeScript understand the structure
       const typedRsvpData = rsvpData as unknown as RSVPWithProfile[];
       
       const rsvpsWithProfiles = typedRsvpData?.map((rsvp): EventRSVP => ({
@@ -75,7 +72,6 @@ export default function EventDetails() {
         response: rsvp.response,
         created_at: rsvp.created_at,
         profiles: {
-          id: rsvp.profiles.id,
           full_name: rsvp.profiles.full_name,
           username: rsvp.profiles.username
         }
