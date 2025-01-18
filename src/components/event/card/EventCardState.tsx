@@ -91,13 +91,6 @@ export function EventCardState({
     }
   };
 
-  const handleInteraction = (e: React.MouseEvent | React.KeyboardEvent) => {
-    const target = e.target as HTMLElement;
-    if (!target.closest('button') && !target.closest('a')) {
-      setShowDetailsDialog(true);
-    }
-  };
-
   return children({
     isAdmin,
     canManageEvents,
@@ -113,7 +106,6 @@ export function EventCardState({
     handleDelete,
     handleTogglePublish,
     setShowEditDialog,
-    setShowDetailsDialog,
-    handleInteraction,
+    setShowDetailsDialog
   });
 }
