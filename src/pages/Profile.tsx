@@ -17,15 +17,18 @@ export default function Profile() {
   const [interests, setInterests] = useState<string[]>([]);
   const { toast } = useToast();
   const navigate = useNavigate();
-  const { user, profile } = useAuthState();
+  const { user, profile, isLoading } = useAuthState();
 
   useEffect(() => {
+    if (isLoading) return;
+    
     if (!user) {
       navigate("/auth");
       return;
     }
+
     getProfile();
-  }, [user, navigate]);
+  }, [user, isLoading, navigate]);
 
   async function getProfile() {
     try {
@@ -89,7 +92,7 @@ export default function Profile() {
       console.error("Error updating profile:", error);
       toast({
         title: "Error updating profile",
-        description: "Please try again later.",
+        description: error instanceof Error ? error.message : "Please try again later.",
         variant: "destructive",
       });
     }
@@ -136,7 +139,7 @@ export default function Profile() {
     }
   }
 
-  if (loading) {
+  if (loading || isLoading) {
     return (
       <div className="min-h-screen bg-[#222222] flex items-center justify-center">
         <div className="text-white">Loading...</div>
