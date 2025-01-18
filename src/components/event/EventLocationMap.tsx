@@ -34,7 +34,7 @@ export function EventLocationMap({ location, lat, lng }: EventLocationMapProps) 
     try {
       map.current = new mapboxgl.Map({
         container: mapContainer.current,
-        style: 'mapbox://styles/mapbox/outdoors-v12', // Updated to outdoors style
+        style: 'mapbox://styles/mapbox/streets-v12',
         center: [lng, lat],
         zoom: 14,
         scrollZoom: false
@@ -50,6 +50,7 @@ export function EventLocationMap({ location, lat, lng }: EventLocationMapProps) 
       map.current.on('load', () => {
         console.log('Map loaded successfully');
         if (map.current) {
+          map.current.resize();
           map.current.flyTo({
             center: [lng, lat],
             zoom: 14,
@@ -83,13 +84,13 @@ export function EventLocationMap({ location, lat, lng }: EventLocationMapProps) 
 
   if (!lat || !lng) {
     return (
-      <div className="h-full w-full bg-gray-100 rounded-lg flex items-center justify-center">
+      <div className="h-[300px] w-full bg-gray-100 rounded-lg flex items-center justify-center">
         <p className="text-gray-500">Location not found on map</p>
       </div>
     );
   }
 
   return (
-    <div ref={mapContainer} className="h-full w-full rounded-lg" />
+    <div ref={mapContainer} className="h-[300px] w-full rounded-lg" />
   );
 }
