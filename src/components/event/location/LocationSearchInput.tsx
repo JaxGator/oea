@@ -42,16 +42,12 @@ export function LocationSearchInput({ onLocationSelect, currentValue, disabled }
       }
 
       const data = await response.json();
-      
-      if (data.features && Array.isArray(data.features)) {
-        const newSuggestions = data.features.map((feature: any) => ({
+      setSuggestions(
+        data.features?.map((feature: any) => ({
           place_name: feature.place_name,
           center: feature.center,
-        }));
-        setSuggestions(newSuggestions);
-      } else {
-        setSuggestions([]);
-      }
+        })) || []
+      );
     } catch (error) {
       console.error('Error searching locations:', error);
       toast.error('Error searching for locations. Please try again.');
@@ -78,9 +74,9 @@ export function LocationSearchInput({ onLocationSelect, currentValue, disabled }
         }}
         disabled={disabled}
       />
-      {searchValue.length >= 3 && (
-        <CommandGroup>
-          {suggestions.length === 0 ? (
+      <CommandGroup>
+        {searchValue.length >= 3 ? (
+          suggestions.length === 0 ? (
             <CommandEmpty>No locations found.</CommandEmpty>
           ) : (
             suggestions.map((suggestion) => (
@@ -96,9 +92,9 @@ export function LocationSearchInput({ onLocationSelect, currentValue, disabled }
                 {suggestion.place_name}
               </CommandItem>
             ))
-          )}
-        </CommandGroup>
-      )}
+          )
+        ) : null}
+      </CommandGroup>
     </Command>
   );
 }
