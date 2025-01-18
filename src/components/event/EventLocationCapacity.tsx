@@ -27,6 +27,7 @@ export function EventLocationCapacity({ form, disableLocation, showMaxGuestsHint
   const [open, setOpen] = useState(false);
   const [suggestions, setSuggestions] = useState<LocationSuggestion[]>([]);
   const [loading, setLoading] = useState(false);
+  const [searchValue, setSearchValue] = useState("");
   const debounceTimer = useRef<NodeJS.Timeout>();
 
   const fetchSuggestions = async (query: string) => {
@@ -39,21 +40,32 @@ export function EventLocationCapacity({ form, disableLocation, showMaxGuestsHint
       setLoading(true);
       const { data: { token }, error: tokenError } = await supabase.functions.invoke('get-mapbox-token');
       
-      if (tokenError) throw tokenError;
+      if (tokenError) {
+        console.error('Error fetching Mapbox token:', tokenError);
+        setSuggestions([]);
+        return;
+      }
 
       const response = await fetch(
         `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?access_token=${token}&types=place,address`
       );
       
-      if (!response.ok) throw new Error('Geocoding failed');
+      if (!response.ok) {
+        console.error('Geocoding request failed');
+        setSuggestions([]);
+        return;
+      }
       
       const data = await response.json();
-      setSuggestions(data.features.map((feature: any) => ({
+      const newSuggestions = data.features?.map((feature: any) => ({
         place_name: feature.place_name,
         center: feature.center
-      })));
+      })) || [];
+      
+      setSuggestions(newSuggestions);
     } catch (error) {
       console.error('Error fetching location suggestions:', error);
+      setSuggestions([]);
     } finally {
       setLoading(false);
     }
@@ -64,6 +76,7 @@ export function EventLocationCapacity({ form, disableLocation, showMaxGuestsHint
     form.setValue('latitude', suggestion.center[1]);
     form.setValue('longitude', suggestion.center[0]);
     setOpen(false);
+    setSearchValue("");
   };
 
   return (
@@ -94,7 +107,9 @@ export function EventLocationCapacity({ form, disableLocation, showMaxGuestsHint
                 <Command>
                   <CommandInput
                     placeholder="Search location..."
+                    value={searchValue}
                     onValueChange={(value) => {
+                      setSearchValue(value);
                       if (debounceTimer.current) {
                         clearTimeout(debounceTimer.current);
                       }
