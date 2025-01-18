@@ -30,6 +30,7 @@ export function LocationSearchInput({
   }, [currentValue]);
 
   const searchLocations = async (query: string) => {
+    // Reset suggestions if query is too short
     if (!query || query.length < 3 || !mapToken) {
       setSuggestions([]);
       return;
@@ -46,14 +47,17 @@ export function LocationSearchInput({
       }
 
       const data = await response.json();
+      
+      // Ensure features exists and is an array before mapping
       if (!data?.features || !Array.isArray(data.features)) {
+        console.log('No valid features in response:', data);
         setSuggestions([]);
         return;
       }
 
       const newSuggestions = data.features.map((feature: any) => ({
-        place_name: feature.place_name,
-        center: feature.center as [number, number],
+        place_name: feature.place_name || '',
+        center: Array.isArray(feature.center) ? feature.center as [number, number] : [0, 0],
       }));
       
       setSuggestions(newSuggestions);
@@ -84,24 +88,27 @@ export function LocationSearchInput({
         disabled={disabled}
       />
       <CommandGroup>
-        <CommandEmpty>
-          {searchValue.length < 3 
-            ? "Enter at least 3 characters to search..." 
-            : "No locations found."}
-        </CommandEmpty>
-        {suggestions?.map((suggestion) => (
-          <CommandItem
-            key={suggestion.place_name}
-            value={suggestion.place_name}
-            onSelect={() => {
-              onLocationSelect(suggestion);
-              setSearchValue(suggestion.place_name);
-              setSuggestions([]);
-            }}
-          >
-            {suggestion.place_name}
-          </CommandItem>
-        ))}
+        {suggestions.length === 0 ? (
+          <CommandEmpty>
+            {searchValue.length < 3 
+              ? "Enter at least 3 characters to search..." 
+              : "No locations found."}
+          </CommandEmpty>
+        ) : (
+          suggestions.map((suggestion) => (
+            <CommandItem
+              key={suggestion.place_name}
+              value={suggestion.place_name}
+              onSelect={() => {
+                onLocationSelect(suggestion);
+                setSearchValue(suggestion.place_name);
+                setSuggestions([]);
+              }}
+            >
+              {suggestion.place_name}
+            </CommandItem>
+          ))
+        )}
       </CommandGroup>
     </Command>
   );
