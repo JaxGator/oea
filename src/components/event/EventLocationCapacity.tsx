@@ -44,7 +44,7 @@ export function EventLocationCapacity({ form, disableLocation, showMaxGuestsHint
         }
         
         const data = await response.json();
-        return (data.features || []) as MapboxFeature[];
+        return data?.features || [];
       } catch (error) {
         console.error('Error fetching locations:', error);
         return [];
@@ -94,9 +94,7 @@ export function EventLocationCapacity({ form, disableLocation, showMaxGuestsHint
                   <CommandInput
                     placeholder="Search for a location..."
                     value={searchValue}
-                    onValueChange={(value) => {
-                      setSearchValue(value);
-                    }}
+                    onValueChange={setSearchValue}
                   />
                   <CommandEmpty>
                     {isLoading ? (
@@ -107,30 +105,28 @@ export function EventLocationCapacity({ form, disableLocation, showMaxGuestsHint
                       "No locations found."
                     )}
                   </CommandEmpty>
-                  {predictions && predictions.length > 0 && (
-                    <CommandGroup>
-                      {predictions.map((prediction) => (
-                        <CommandItem
-                          key={prediction.place_name}
-                          value={prediction.place_name}
-                          onSelect={() => {
-                            field.onChange(prediction.place_name);
-                            setOpen(false);
-                          }}
-                        >
-                          <Check
-                            className={cn(
-                              "mr-2 h-4 w-4",
-                              field.value === prediction.place_name
-                                ? "opacity-100"
-                                : "opacity-0"
-                            )}
-                          />
-                          {prediction.place_name}
-                        </CommandItem>
-                      ))}
-                    </CommandGroup>
-                  )}
+                  <CommandGroup>
+                    {predictions.map((prediction: MapboxFeature) => (
+                      <CommandItem
+                        key={prediction.place_name}
+                        value={prediction.place_name}
+                        onSelect={() => {
+                          field.onChange(prediction.place_name);
+                          setOpen(false);
+                        }}
+                      >
+                        <Check
+                          className={cn(
+                            "mr-2 h-4 w-4",
+                            field.value === prediction.place_name
+                              ? "opacity-100"
+                              : "opacity-0"
+                          )}
+                        />
+                        {prediction.place_name}
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
                 </Command>
               </PopoverContent>
             </Popover>
