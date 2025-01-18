@@ -8,9 +8,38 @@ interface EventCardStateProps {
   event: Event;
   confirmedCount: number;
   waitlistCount: number;
+  userRSVPStatus?: string | null;
+  onUpdate?: () => void;
+  render: (props: {
+    isAdmin: boolean;
+    canManageEvents: boolean;
+    rsvpData: {
+      confirmedCount: number;
+      waitlistCount: number;
+    };
+    attendees: any[];
+    guests: any[];
+    isPastEvent: boolean;
+    isWixEvent: boolean;
+    canAddGuests: boolean;
+    showEditDialog: boolean;
+    showDetailsDialog: boolean;
+    handleEditSuccess: () => void;
+    handleDelete: () => void;
+    handleTogglePublish: () => void;
+    setShowEditDialog: (show: boolean) => void;
+    setShowDetailsDialog: (show: boolean) => void;
+  }) => React.ReactNode;
 }
 
-export function EventCardState({ event, confirmedCount, waitlistCount }: EventCardStateProps) {
+export function EventCardState({ 
+  event, 
+  confirmedCount, 
+  waitlistCount,
+  userRSVPStatus,
+  onUpdate,
+  render 
+}: EventCardStateProps) {
   const isWixEvent = Boolean(event.imported_rsvp_count);
   const totalAttendees = isWixEvent ? event.imported_rsvp_count || 0 : confirmedCount;
   const spotsLeft = event.max_guests - totalAttendees;
@@ -42,33 +71,24 @@ export function EventCardState({ event, confirmedCount, waitlistCount }: EventCa
     );
   };
 
-  return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap gap-2">
-        <div className="flex items-center gap-1 text-sm text-muted-foreground">
-          <Clock className="h-4 w-4" />
-          <span>{format(new Date(`${event.date}T${event.time}`), 'h:mm a')}</span>
-        </div>
-        <div className="flex items-center gap-1 text-sm text-muted-foreground">
-          <MapPin className="h-4 w-4" />
-          <span>{event.location}</span>
-        </div>
-        <div className="flex items-center gap-1 text-sm text-muted-foreground">
-          <Users className="h-4 w-4" />
-          <span>
-            {totalAttendees} / {event.max_guests} attendees
-          </span>
-        </div>
-      </div>
-
-      <div className={cn("flex flex-wrap gap-2", isPastEvent && "opacity-50")}>
-        {renderSpotsBadge()}
-        {event.is_featured && (
-          <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 hover:bg-yellow-100">
-            Featured Event
-          </Badge>
-        )}
-      </div>
-    </div>
-  );
+  return render({
+    isAdmin: true, // This should be determined by user role
+    canManageEvents: true, // This should be determined by user permissions
+    rsvpData: {
+      confirmedCount,
+      waitlistCount
+    },
+    attendees: [],
+    guests: [],
+    isPastEvent,
+    isWixEvent,
+    canAddGuests: !isPastEvent && !isFullyBooked,
+    showEditDialog: false,
+    showDetailsDialog: false,
+    handleEditSuccess: () => onUpdate?.(),
+    handleDelete: () => {}, // Implement delete functionality
+    handleTogglePublish: () => {}, // Implement toggle publish functionality
+    setShowEditDialog: () => {}, // Implement dialog state management
+    setShowDetailsDialog: () => {} // Implement dialog state management
+  });
 }
