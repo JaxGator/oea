@@ -87,7 +87,10 @@ export function EventLocationCapacity({ form, disableLocation, showMaxGuestsHint
         render={({ field }) => (
           <FormItem className="flex flex-col">
             <FormLabel>Location</FormLabel>
-            <Popover open={open} onOpenChange={setOpen}>
+            <Popover 
+              open={open} 
+              onOpenChange={setOpen}
+            >
               <PopoverTrigger asChild>
                 <Button
                   variant="outline"
@@ -104,7 +107,7 @@ export function EventLocationCapacity({ form, disableLocation, showMaxGuestsHint
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-full p-0" align="start">
-                <Command shouldFilter={false}>
+                <Command shouldFilter={false} className="w-full">
                   <CommandInput
                     placeholder="Search location..."
                     value={searchValue}
@@ -118,8 +121,11 @@ export function EventLocationCapacity({ form, disableLocation, showMaxGuestsHint
                       }, 500);
                     }}
                   />
-                  <CommandEmpty>{loading ? "Loading..." : "No location found."}</CommandEmpty>
-                  {suggestions.length > 0 && (
+                  {loading ? (
+                    <CommandEmpty>Loading...</CommandEmpty>
+                  ) : suggestions.length === 0 ? (
+                    <CommandEmpty>No location found.</CommandEmpty>
+                  ) : (
                     <CommandGroup>
                       {suggestions.map((suggestion) => (
                         <CommandItem
