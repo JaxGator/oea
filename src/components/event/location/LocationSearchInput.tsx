@@ -89,7 +89,7 @@ export function LocationSearchInput({
             ? "Enter at least 3 characters to search..." 
             : "No locations found."}
         </CommandEmpty>
-        {Array.isArray(suggestions) && suggestions.map((suggestion) => (
+        {suggestions && suggestions.length > 0 && suggestions.map((suggestion) => (
           <CommandItem
             key={suggestion.place_name}
             value={suggestion.place_name}
