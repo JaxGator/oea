@@ -1,24 +1,21 @@
-import { cn } from "@/lib/utils";
 import { Event } from "@/types/event";
-import { Badge } from "@/components/ui/badge";
-import { Clock, MapPin, Users } from "lucide-react";
-import { format } from "date-fns";
+import { useAdminStatus } from "@/hooks/events/useAdminStatus";
+import { useEventRSVPData } from "@/hooks/events/useEventRSVPData";
+import { useEventGuestData } from "@/hooks/events/useEventGuestData";
+import { useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 interface EventCardStateProps {
   event: Event;
-  confirmedCount: number;
-  waitlistCount: number;
   userRSVPStatus?: string | null;
   onUpdate?: () => void;
-  render: (props: {
+  children: (props: {
     isAdmin: boolean;
     canManageEvents: boolean;
-    rsvpData: {
-      confirmedCount: number;
-      waitlistCount: number;
-    };
+    rsvpData: { confirmedCount: number; waitlistCount: number };
     attendees: any[];
-    guests: any[];
+    guests: { firstName: string }[];
     isPastEvent: boolean;
     isWixEvent: boolean;
     canAddGuests: boolean;
@@ -29,66 +26,95 @@ interface EventCardStateProps {
     handleTogglePublish: () => void;
     setShowEditDialog: (show: boolean) => void;
     setShowDetailsDialog: (show: boolean) => void;
+    handleInteraction: (e: React.MouseEvent | React.KeyboardEvent) => void;
   }) => React.ReactNode;
 }
 
-export function EventCardState({ 
-  event, 
-  confirmedCount, 
-  waitlistCount,
+export function EventCardState({
+  event,
   userRSVPStatus,
   onUpdate,
-  render 
+  children
 }: EventCardStateProps) {
-  const isWixEvent = Boolean(event.imported_rsvp_count);
-  const totalAttendees = isWixEvent ? event.imported_rsvp_count || 0 : confirmedCount;
-  const spotsLeft = event.max_guests - totalAttendees;
-  const isFullyBooked = spotsLeft <= 0;
-  const isPastEvent = new Date(event.date) < new Date();
+  const { isAdmin, canManageEvents } = useAdminStatus();
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [showDetailsDialog, setShowDetailsDialog] = useState(false);
+  
+  // Fetch RSVPs and attendees using custom hooks
+  const { data: attendees = [] } = useEventRSVPData(event.id);
+  const { data: guests = [] } = useEventGuestData(event.id, userRSVPStatus);
 
-  const renderSpotsBadge = () => {
-    if (isPastEvent) {
-      return (
-        <Badge variant="secondary" className="text-muted-foreground">
-          Event Ended
-        </Badge>
-      );
-    }
-
-    if (isFullyBooked) {
-      return (
-        <Badge variant="destructive">
-          Fully Booked
-          {event.waitlist_enabled && waitlistCount > 0 && ` (${waitlistCount} on waitlist)`}
-        </Badge>
-      );
-    }
-
-    return (
-      <Badge variant="outline" className="border-green-500 text-green-600">
-        {spotsLeft} {spotsLeft === 1 ? 'spot' : 'spots'} left
-      </Badge>
-    );
+  const rsvpData = {
+    confirmedCount: attendees.length,
+    waitlistCount: 0 // You might want to implement this in the future
   };
 
-  return render({
-    isAdmin: true, // This should be determined by user role
-    canManageEvents: true, // This should be determined by user permissions
-    rsvpData: {
-      confirmedCount,
-      waitlistCount
-    },
-    attendees: [],
-    guests: [],
+  const isPastEvent = new Date(event.date) < new Date(new Date().setHours(0, 0, 0, 0));
+  const isWixEvent = !!event.imported_rsvp_count;
+  const canAddGuests = isAdmin || userRSVPStatus === 'attending';
+
+  const handleEditSuccess = () => {
+    setShowEditDialog(false);
+    if (onUpdate) onUpdate();
+  };
+
+  const handleDelete = async () => {
+    try {
+      const { error } = await supabase
+        .from('events')
+        .delete()
+        .eq('id', event.id);
+
+      if (error) throw error;
+
+      toast.success("Event deleted successfully");
+      if (onUpdate) onUpdate();
+    } catch (error: any) {
+      console.error('Error deleting event:', error);
+      toast.error(error.message || "Failed to delete event");
+    }
+  };
+
+  const handleTogglePublish = async () => {
+    try {
+      const { error } = await supabase
+        .from('events')
+        .update({ is_published: !event.is_published })
+        .eq('id', event.id);
+
+      if (error) throw error;
+
+      toast.success(`Event ${event.is_published ? 'unpublished' : 'published'} successfully`);
+      if (onUpdate) onUpdate();
+    } catch (error: any) {
+      console.error('Error toggling event publish status:', error);
+      toast.error(error.message || "Failed to update event status");
+    }
+  };
+
+  const handleInteraction = (e: React.MouseEvent | React.KeyboardEvent) => {
+    const target = e.target as HTMLElement;
+    if (!target.closest('button') && !target.closest('a')) {
+      setShowDetailsDialog(true);
+    }
+  };
+
+  return children({
+    isAdmin,
+    canManageEvents,
+    rsvpData,
+    attendees,
+    guests,
     isPastEvent,
     isWixEvent,
-    canAddGuests: !isPastEvent && !isFullyBooked,
-    showEditDialog: false,
-    showDetailsDialog: false,
-    handleEditSuccess: () => onUpdate?.(),
-    handleDelete: () => {}, // Implement delete functionality
-    handleTogglePublish: () => {}, // Implement toggle publish functionality
-    setShowEditDialog: () => {}, // Implement dialog state management
-    setShowDetailsDialog: () => {} // Implement dialog state management
+    canAddGuests,
+    showEditDialog,
+    showDetailsDialog,
+    handleEditSuccess,
+    handleDelete,
+    handleTogglePublish,
+    setShowEditDialog,
+    setShowDetailsDialog,
+    handleInteraction,
   });
 }
