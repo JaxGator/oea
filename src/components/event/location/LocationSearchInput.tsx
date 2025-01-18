@@ -14,15 +14,13 @@ interface Suggestion {
   center: [number, number];
 }
 
-export function LocationSearchInput({ onLocationSelect, currentValue, disabled }: LocationSearchInputProps) {
-  const [searchValue, setSearchValue] = useState(currentValue || '');
+export function LocationSearchInput({ onLocationSelect, currentValue = '', disabled }: LocationSearchInputProps) {
+  const [searchValue, setSearchValue] = useState(currentValue);
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const { mapToken, isLoading, error } = useMapboxToken();
 
   useEffect(() => {
-    if (currentValue) {
-      setSearchValue(currentValue);
-    }
+    setSearchValue(currentValue || '');
   }, [currentValue]);
 
   const searchLocations = async (query: string) => {
@@ -42,12 +40,12 @@ export function LocationSearchInput({ onLocationSelect, currentValue, disabled }
       }
 
       const data = await response.json();
-      setSuggestions(
-        data.features?.map((feature: any) => ({
-          place_name: feature.place_name,
-          center: feature.center,
-        })) || []
-      );
+      const newSuggestions = data.features?.map((feature: any) => ({
+        place_name: feature.place_name,
+        center: feature.center,
+      })) || [];
+      
+      setSuggestions(newSuggestions);
     } catch (error) {
       console.error('Error searching locations:', error);
       toast.error('Error searching for locations. Please try again.');
