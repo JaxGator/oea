@@ -16,7 +16,7 @@ interface EventsMapProps {
 export function EventsMap({ events, selectedEventId }: EventsMapProps) {
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const { mapToken, isLoading: isKeyLoading, error: keyError } = useMapboxToken();
-  const locations = useEventLocations(events, mapToken);
+  const locations = useEventLocations(events);
 
   if (events.length === 0 || locations.length === 0) {
     return null;

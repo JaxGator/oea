@@ -10,7 +10,7 @@ interface EventDetailsProps {
 
 export function EventDetails({ event }: EventDetailsProps) {
   const { mapToken, isLoading: isTokenLoading, error: tokenError } = useMapboxToken();
-  const locations = useEventLocations([event], mapToken);
+  const locations = useEventLocations([event]);
   const location = locations[0];
 
   if (isTokenLoading) {
