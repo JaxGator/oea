@@ -26,7 +26,6 @@ interface EventCardStateProps {
     handleTogglePublish: () => void;
     setShowEditDialog: (show: boolean) => void;
     setShowDetailsDialog: (show: boolean) => void;
-    handleInteraction: (e: React.MouseEvent | React.KeyboardEvent) => void;
   }) => React.ReactNode;
 }
 
