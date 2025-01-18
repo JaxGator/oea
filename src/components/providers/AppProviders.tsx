@@ -1,4 +1,4 @@
-import { ReactNode, useState } from "react";
+import { ReactNode, useState, useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -25,11 +25,10 @@ const queryClient = new QueryClient({
 export function AppProviders({ children }: AppProvidersProps) {
   const [isLoading, setIsLoading] = useState(true);
 
-  // Simulate initial load to prevent flash
-  useState(() => {
+  useEffect(() => {
     const timer = setTimeout(() => setIsLoading(false), 100);
     return () => clearTimeout(timer);
-  });
+  }, []);
 
   if (isLoading) {
     return <LoadingScreen message="Initializing application..." />;
