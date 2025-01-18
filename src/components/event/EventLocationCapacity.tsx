@@ -103,8 +103,8 @@ export function EventLocationCapacity({ form, disableLocation, showMaxGuestsHint
                   <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-full p-0">
-                <Command>
+              <PopoverContent className="w-full p-0" align="start">
+                <Command shouldFilter={false}>
                   <CommandInput
                     placeholder="Search location..."
                     value={searchValue}
@@ -119,23 +119,25 @@ export function EventLocationCapacity({ form, disableLocation, showMaxGuestsHint
                     }}
                   />
                   <CommandEmpty>{loading ? "Loading..." : "No location found."}</CommandEmpty>
-                  <CommandGroup>
-                    {suggestions.map((suggestion) => (
-                      <CommandItem
-                        key={suggestion.place_name}
-                        value={suggestion.place_name}
-                        onSelect={() => handleLocationSelect(suggestion)}
-                      >
-                        <Check
-                          className={cn(
-                            "mr-2 h-4 w-4",
-                            field.value === suggestion.place_name ? "opacity-100" : "opacity-0"
-                          )}
-                        />
-                        {suggestion.place_name}
-                      </CommandItem>
-                    ))}
-                  </CommandGroup>
+                  {suggestions.length > 0 && (
+                    <CommandGroup>
+                      {suggestions.map((suggestion) => (
+                        <CommandItem
+                          key={suggestion.place_name}
+                          value={suggestion.place_name}
+                          onSelect={() => handleLocationSelect(suggestion)}
+                        >
+                          <Check
+                            className={cn(
+                              "mr-2 h-4 w-4",
+                              field.value === suggestion.place_name ? "opacity-100" : "opacity-0"
+                            )}
+                          />
+                          {suggestion.place_name}
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  )}
                 </Command>
               </PopoverContent>
             </Popover>
