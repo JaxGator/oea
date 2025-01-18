@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 interface LocationSearchInputProps {
   onLocationSelect: (suggestion: { place_name: string; center: [number, number] }) => void;
   currentValue?: string;
+  disabled?: boolean;
 }
 
 interface Suggestion {
@@ -13,10 +14,11 @@ interface Suggestion {
   center: [number, number];
 }
 
-export function LocationSearchInput({ onLocationSelect, currentValue }: LocationSearchInputProps) {
+export function LocationSearchInput({ onLocationSelect, currentValue, disabled }: LocationSearchInputProps) {
   const [searchValue, setSearchValue] = useState(currentValue || '');
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const { mapToken, isLoading, error } = useMapboxToken();
+  const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
     if (currentValue) {
@@ -48,6 +50,7 @@ export function LocationSearchInput({ onLocationSelect, currentValue }: Location
           center: feature.center,
         }));
         setSuggestions(newSuggestions);
+        setIsOpen(true);
       } else {
         setSuggestions([]);
       }
@@ -56,6 +59,11 @@ export function LocationSearchInput({ onLocationSelect, currentValue }: Location
       toast.error('Error searching for locations. Please try again.');
       setSuggestions([]);
     }
+  };
+
+  const handleValueChange = (value: string) => {
+    setSearchValue(value);
+    searchLocations(value);
   };
 
   if (error) {
@@ -68,31 +76,35 @@ export function LocationSearchInput({ onLocationSelect, currentValue }: Location
 
   return (
     <div className="relative w-full">
-      <Command className="rounded-lg border shadow-md">
+      <Command className="rounded-lg border shadow-md" shouldFilter={false}>
         <CommandInput
           placeholder="Search for a location..."
           value={searchValue}
-          onValueChange={(value) => {
-            setSearchValue(value);
-            searchLocations(value);
-          }}
+          onValueChange={handleValueChange}
+          disabled={disabled}
+          className="w-full"
         />
-        <CommandEmpty>No locations found.</CommandEmpty>
-        <CommandGroup className="max-h-64 overflow-y-auto">
-          {suggestions.map((suggestion) => (
-            <CommandItem
-              key={suggestion.place_name}
-              value={suggestion.place_name}
-              onSelect={() => {
-                onLocationSelect(suggestion);
-                setSearchValue(suggestion.place_name);
-                setSuggestions([]);
-              }}
-            >
-              {suggestion.place_name}
-            </CommandItem>
-          ))}
-        </CommandGroup>
+        {isOpen && suggestions.length > 0 && (
+          <>
+            <CommandEmpty>No locations found.</CommandEmpty>
+            <CommandGroup className="max-h-64 overflow-y-auto">
+              {suggestions.map((suggestion) => (
+                <CommandItem
+                  key={suggestion.place_name}
+                  value={suggestion.place_name}
+                  onSelect={() => {
+                    onLocationSelect(suggestion);
+                    setSearchValue(suggestion.place_name);
+                    setSuggestions([]);
+                    setIsOpen(false);
+                  }}
+                >
+                  {suggestion.place_name}
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </>
+        )}
       </Command>
     </div>
   );
