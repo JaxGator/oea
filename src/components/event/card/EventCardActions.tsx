@@ -13,6 +13,7 @@ interface EventCardActionsProps {
   onDelete: () => void;
   isPublished?: boolean;
   showPublishToggle?: boolean;
+  showDelete?: boolean;
   onViewDetails: () => void;
   onTogglePublish: () => void;
 }
@@ -30,6 +31,7 @@ export function EventCardActions({
   onDelete,
   isPublished = true,
   showPublishToggle = false,
+  showDelete = false,
   onViewDetails,
   onTogglePublish,
 }: EventCardActionsProps) {
@@ -53,6 +55,7 @@ export function EventCardActions({
       onTogglePublish={onTogglePublish}
       isPublished={isPublished}
       showPublishToggle={showPublishToggle}
+      showDelete={showDelete}
     />
   );
 }
