@@ -72,6 +72,7 @@ export function EventCardContent({
           onCancelRSVP={onCancelRSVP}
           onEdit={onEdit}
           onDelete={onDelete}
+          showDelete={true}
           showPublishToggle={showPublishToggle}
           isPublished={isPublished}
           onViewDetails={onViewDetails}

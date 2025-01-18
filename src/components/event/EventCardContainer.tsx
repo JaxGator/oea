@@ -63,7 +63,6 @@ export function EventCardContainer({
                   canAddGuests={canAddGuests}
                   guests={guests}
                   isSelected={isSelected}
-                  onSelect={onSelect}
                   onRSVP={handleRSVP}
                   onCancelRSVP={() => onCancelRSVP(event.id)}
                   setShowEditDialog={setShowEditDialog}
