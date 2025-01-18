@@ -1,4 +1,4 @@
-import { FormField, FormItem, FormLabel } from "@/components/ui/form";
+import { FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { UseFormReturn } from "react-hook-form";
 import { EventFormValues } from "./EventFormTypes";
 import { useAdminStatus } from "@/hooks/events/useAdminStatus";
@@ -25,6 +25,7 @@ export function EventLocationCapacity({
   const [open, setOpen] = useState(false);
 
   const handleLocationSelect = (suggestion: { place_name: string; center: [number, number] }) => {
+    console.log('Location selected:', suggestion);
     form.setValue('location', suggestion.place_name);
     form.setValue('latitude', suggestion.center[1]);
     form.setValue('longitude', suggestion.center[0]);
@@ -81,6 +82,7 @@ export function EventLocationCapacity({
               isAdmin={isAdmin}
               disabled={showMaxGuestsHint}
             />
+            <FormMessage />
           </FormItem>
         )}
       />
