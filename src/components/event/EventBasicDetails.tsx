@@ -4,6 +4,7 @@ import { UseFormReturn } from "react-hook-form";
 import { EventFormValues } from "./EventFormTypes";
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
+import { useRef } from 'react';
 
 interface EventBasicDetailsProps {
   form: UseFormReturn<EventFormValues>;
@@ -27,6 +28,8 @@ const formats = [
 ];
 
 export function EventBasicDetails({ form }: EventBasicDetailsProps) {
+  const quillRef = useRef<ReactQuill>(null);
+
   return (
     <>
       <FormField
@@ -51,6 +54,7 @@ export function EventBasicDetails({ form }: EventBasicDetailsProps) {
             <FormControl>
               <div className="min-h-[300px]">
                 <ReactQuill 
+                  ref={quillRef}
                   theme="snow"
                   modules={modules}
                   formats={formats}

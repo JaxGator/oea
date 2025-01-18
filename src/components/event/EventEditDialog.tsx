@@ -1,4 +1,4 @@
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { EventForm } from "@/components/event/EventForm";
 import type { Event } from "@/types/event";
 
@@ -32,6 +32,11 @@ export function EventEditDialog({
       onOpenChange={setShowDialog}
     >
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>
+            {initialData?.id ? 'Edit Event' : 'Create Event'}
+          </DialogTitle>
+        </DialogHeader>
         <div className="space-y-6">
           <EventForm 
             initialData={initialData}
