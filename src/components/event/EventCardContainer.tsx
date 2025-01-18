@@ -31,8 +31,7 @@ export function EventCardContainer({
           event={event}
           userRSVPStatus={userRSVPStatus}
           onUpdate={onUpdate}
-        >
-          {({
+          render={({
             isAdmin,
             canManageEvents,
             rsvpData,
@@ -96,7 +95,7 @@ export function EventCardContainer({
               </>
             );
           }}
-        </EventCardState>
+        />
       )}
     </EventRSVPHandler>
   );
