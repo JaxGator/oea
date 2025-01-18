@@ -25,7 +25,10 @@ export function LocationSearchInput({ onLocationSelect, currentValue }: Location
   }, [currentValue]);
 
   const searchLocations = async (query: string) => {
-    if (!query || query.length < 3 || !mapToken) return;
+    if (!query || query.length < 3 || !mapToken) {
+      setSuggestions([]);
+      return;
+    }
 
     try {
       const endpoint = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
@@ -33,15 +36,21 @@ export function LocationSearchInput({ onLocationSelect, currentValue }: Location
       )}.json?access_token=${mapToken}&types=address,place,locality,neighborhood`;
 
       const response = await fetch(endpoint);
+      if (!response.ok) {
+        throw new Error('Failed to fetch locations');
+      }
+
       const data = await response.json();
 
-      if (data.features) {
+      if (data.features && Array.isArray(data.features)) {
         setSuggestions(
           data.features.map((feature: any) => ({
             place_name: feature.place_name,
             center: feature.center,
           }))
         );
+      } else {
+        setSuggestions([]);
       }
     } catch (error) {
       console.error('Error searching locations:', error);
@@ -77,7 +86,7 @@ export function LocationSearchInput({ onLocationSelect, currentValue }: Location
             onSelect={() => {
               onLocationSelect(suggestion);
               setSearchValue(suggestion.place_name);
-              setSuggestions([]);
+              setSuggestions([]); // Clear suggestions after selection
             }}
           >
             {suggestion.place_name}
