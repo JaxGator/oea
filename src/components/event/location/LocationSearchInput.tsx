@@ -1,104 +1,89 @@
-import { useState, useRef } from "react";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command";
-import { Check } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { supabase } from "@/integrations/supabase/client";
+import { useState, useEffect } from 'react';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from '@/components/ui/command';
+import { useMapboxToken } from '@/hooks/useMapboxToken';
+import { toast } from 'sonner';
 
-interface LocationSuggestion {
+interface LocationSearchInputProps {
+  onLocationSelect: (suggestion: { place_name: string; center: [number, number] }) => void;
+  currentValue?: string;
+}
+
+interface Suggestion {
   place_name: string;
   center: [number, number];
 }
 
-interface LocationSearchInputProps {
-  onLocationSelect: (suggestion: LocationSuggestion) => void;
-  currentValue: string;
-}
-
 export function LocationSearchInput({ onLocationSelect, currentValue }: LocationSearchInputProps) {
-  const [suggestions, setSuggestions] = useState<LocationSuggestion[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [searchValue, setSearchValue] = useState("");
-  const debounceTimer = useRef<NodeJS.Timeout>();
+  const [searchValue, setSearchValue] = useState(currentValue || '');
+  const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
+  const { mapToken, isLoading, error } = useMapboxToken();
 
-  const fetchSuggestions = async (query: string) => {
-    if (!query) {
-      setSuggestions([]);
-      return;
+  useEffect(() => {
+    if (currentValue) {
+      setSearchValue(currentValue);
     }
+  }, [currentValue]);
+
+  const searchLocations = async (query: string) => {
+    if (!query || query.length < 3 || !mapToken) return;
 
     try {
-      setLoading(true);
-      const { data: { token }, error: tokenError } = await supabase.functions.invoke('get-mapbox-token');
-      
-      if (tokenError) {
-        console.error('Error fetching Mapbox token:', tokenError);
-        setSuggestions([]);
-        return;
-      }
+      const endpoint = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
+        query
+      )}.json?access_token=${mapToken}&types=address,place,locality,neighborhood`;
 
-      const response = await fetch(
-        `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?access_token=${token}&types=place,address`
-      );
-      
-      if (!response.ok) {
-        console.error('Geocoding request failed');
-        setSuggestions([]);
-        return;
-      }
-      
+      const response = await fetch(endpoint);
       const data = await response.json();
-      const newSuggestions = data.features?.map((feature: any) => ({
-        place_name: feature.place_name,
-        center: feature.center
-      })) || [];
-      
-      setSuggestions(newSuggestions);
+
+      if (data.features) {
+        setSuggestions(
+          data.features.map((feature: any) => ({
+            place_name: feature.place_name,
+            center: feature.center,
+          }))
+        );
+      }
     } catch (error) {
-      console.error('Error fetching location suggestions:', error);
+      console.error('Error searching locations:', error);
+      toast.error('Error searching for locations. Please try again.');
       setSuggestions([]);
-    } finally {
-      setLoading(false);
     }
   };
 
+  if (error) {
+    return <div className="p-4 text-red-500">Error loading location search</div>;
+  }
+
+  if (isLoading) {
+    return <div className="p-4">Loading location search...</div>;
+  }
+
   return (
-    <Command shouldFilter={false} className="w-full">
+    <Command className="rounded-lg border shadow-md">
       <CommandInput
-        placeholder="Search location..."
+        placeholder="Search for a location..."
         value={searchValue}
         onValueChange={(value) => {
           setSearchValue(value);
-          if (debounceTimer.current) {
-            clearTimeout(debounceTimer.current);
-          }
-          debounceTimer.current = setTimeout(() => {
-            fetchSuggestions(value);
-          }, 500);
+          searchLocations(value);
         }}
       />
-      {loading ? (
-        <CommandEmpty>Loading...</CommandEmpty>
-      ) : suggestions.length === 0 ? (
-        <CommandEmpty>No location found.</CommandEmpty>
-      ) : (
-        <CommandGroup>
-          {suggestions.map((suggestion) => (
-            <CommandItem
-              key={suggestion.place_name}
-              value={suggestion.place_name}
-              onSelect={() => onLocationSelect(suggestion)}
-            >
-              <Check
-                className={cn(
-                  "mr-2 h-4 w-4",
-                  currentValue === suggestion.place_name ? "opacity-100" : "opacity-0"
-                )}
-              />
-              {suggestion.place_name}
-            </CommandItem>
-          ))}
-        </CommandGroup>
-      )}
+      <CommandEmpty>No locations found.</CommandEmpty>
+      <CommandGroup className="max-h-64 overflow-y-auto">
+        {suggestions.map((suggestion) => (
+          <CommandItem
+            key={suggestion.place_name}
+            value={suggestion.place_name}
+            onSelect={() => {
+              onLocationSelect(suggestion);
+              setSearchValue(suggestion.place_name);
+              setSuggestions([]);
+            }}
+          >
+            {suggestion.place_name}
+          </CommandItem>
+        ))}
+      </CommandGroup>
     </Command>
   );
 }
