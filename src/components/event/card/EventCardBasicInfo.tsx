@@ -1,4 +1,5 @@
 import { useAuthState } from "@/hooks/useAuthState";
+import { format } from "date-fns";
 
 interface EventCardBasicInfoProps {
   date: string;
@@ -28,12 +29,14 @@ export function EventCardBasicInfo({
   const { profile, isAuthenticated } = useAuthState();
   const showDetails = canViewDetails || (isAuthenticated && profile?.is_approved);
 
+  const formattedDate = format(new Date(date), 'MMMM d, yyyy');
+
   return (
     <div className="space-y-2">
       <div className="flex flex-col gap-1">
         <div className="flex items-center justify-between">
           <p className="text-sm text-muted-foreground">
-            {date}
+            {formattedDate}
           </p>
         </div>
         <p className="text-sm text-muted-foreground">
