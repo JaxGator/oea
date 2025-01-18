@@ -40,7 +40,6 @@ export function EventCardState({
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showDetailsDialog, setShowDetailsDialog] = useState(false);
   
-  // Fetch RSVPs and attendees using custom hooks
   const { data: attendees = [] } = useEventRSVPData(event.id);
   const { data: guests = [] } = useEventGuestData(event.id, userRSVPStatus);
 
@@ -50,7 +49,7 @@ export function EventCardState({
   };
 
   const isPastEvent = new Date(event.date) < new Date(new Date().setHours(0, 0, 0, 0));
-  const isWixEvent = Boolean(event.imported_rsvp_count); // Convert to boolean
+  const isWixEvent = Boolean(event.imported_rsvp_count ?? false);
   const canAddGuests = isAdmin || userRSVPStatus === 'attending';
 
   const handleEditSuccess = () => {
