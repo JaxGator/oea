@@ -58,11 +58,6 @@ export function LocationSearchInput({ onLocationSelect, currentValue }: Location
     }
   };
 
-  const handleValueChange = (value: string) => {
-    setSearchValue(value);
-    searchLocations(value);
-  };
-
   if (error) {
     return <div className="p-4 text-red-500">Error loading location search</div>;
   }
@@ -72,28 +67,33 @@ export function LocationSearchInput({ onLocationSelect, currentValue }: Location
   }
 
   return (
-    <Command className="rounded-lg border shadow-md">
-      <CommandInput
-        placeholder="Search for a location..."
-        value={searchValue}
-        onValueChange={handleValueChange}
-      />
-      <CommandEmpty>No locations found.</CommandEmpty>
-      <CommandGroup className="max-h-64 overflow-y-auto">
-        {suggestions.map((suggestion) => (
-          <CommandItem
-            key={suggestion.place_name}
-            value={suggestion.place_name}
-            onSelect={() => {
-              onLocationSelect(suggestion);
-              setSearchValue(suggestion.place_name);
-              setSuggestions([]); // Clear suggestions after selection
-            }}
-          >
-            {suggestion.place_name}
-          </CommandItem>
-        ))}
-      </CommandGroup>
-    </Command>
+    <div className="relative w-full">
+      <Command className="rounded-lg border shadow-md">
+        <CommandInput
+          placeholder="Search for a location..."
+          value={searchValue}
+          onValueChange={(value) => {
+            setSearchValue(value);
+            searchLocations(value);
+          }}
+        />
+        <CommandEmpty>No locations found.</CommandEmpty>
+        <CommandGroup className="max-h-64 overflow-y-auto">
+          {suggestions.map((suggestion) => (
+            <CommandItem
+              key={suggestion.place_name}
+              value={suggestion.place_name}
+              onSelect={() => {
+                onLocationSelect(suggestion);
+                setSearchValue(suggestion.place_name);
+                setSuggestions([]);
+              }}
+            >
+              {suggestion.place_name}
+            </CommandItem>
+          ))}
+        </CommandGroup>
+      </Command>
+    </div>
   );
 }
