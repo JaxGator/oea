@@ -14,7 +14,6 @@ interface EventCardInteractionsProps {
   canAddGuests: boolean;
   guests: { firstName: string }[];
   isSelected?: boolean;
-  onSelect?: () => void;
   onRSVP: (guests?: { firstName: string }[]) => void;
   onCancelRSVP: () => void;
   setShowEditDialog: (show: boolean) => void;

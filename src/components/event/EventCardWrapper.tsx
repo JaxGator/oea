@@ -22,6 +22,18 @@ export function EventCardWrapper({
   isSelected = false,
   isPublished = true
 }: EventCardWrapperProps) {
+  const handleClick = (e: React.MouseEvent) => {
+    if (onInteraction) {
+      onInteraction(e);
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (onKeyDown) {
+      onKeyDown(e);
+    }
+  };
+
   return (
     <Card
       className={`relative overflow-hidden transition-all duration-200 ${
@@ -29,8 +41,8 @@ export function EventCardWrapper({
       } ${!isPublished ? 'opacity-75' : ''} ${
         isFeatured ? 'ring-2 ring-[#f9c800]' : ''
       }`}
-      onClick={onInteraction}
-      onKeyDown={onKeyDown}
+      onClick={handleClick}
+      onKeyDown={handleKeyDown}
       role="button"
       tabIndex={0}
       aria-label={title}

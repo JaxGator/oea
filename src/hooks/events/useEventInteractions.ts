@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useCallback } from "react";
 
 export function useEventInteractions(setShowDetailsDialog: (show: boolean) => void) {
-  const handleCardClick = (e: React.MouseEvent | React.KeyboardEvent | undefined) => {
+  const handleCardClick = useCallback((e: React.MouseEvent | React.KeyboardEvent | undefined) => {
     if (!e) return;
     
+    // Stop propagation for all interactive elements
     const target = e.target as HTMLElement;
     const isInteractiveElement = 
       target.tagName === 'BUTTON' ||
@@ -11,9 +12,12 @@ export function useEventInteractions(setShowDetailsDialog: (show: boolean) => vo
       target.closest('button') ||
       target.closest('a') ||
       target.closest('[role="button"]') ||
-      target.closest('[data-interactive="true"]');
+      target.closest('[data-interactive="true"]') ||
+      target.closest('dialog') ||
+      target.closest('[role="dialog"]');
 
     if (isInteractiveElement) {
+      e.stopPropagation();
       return;
     }
 
@@ -23,12 +27,12 @@ export function useEventInteractions(setShowDetailsDialog: (show: boolean) => vo
         return;
       }
       if (keyEvent.key === ' ') {
-        keyEvent.preventDefault();
+        e.preventDefault();
       }
     }
 
     setShowDetailsDialog(true);
-  };
+  }, [setShowDetailsDialog]);
 
   return { handleCardClick };
 }
