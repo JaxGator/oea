@@ -49,6 +49,8 @@ export function LocationSearchInput({ onLocationSelect, currentValue, disabled }
           center: feature.center,
         }));
         setSuggestions(newSuggestions);
+      } else {
+        setSuggestions([]);
       }
     } catch (error) {
       console.error('Error searching locations:', error);
@@ -76,24 +78,27 @@ export function LocationSearchInput({ onLocationSelect, currentValue, disabled }
         }}
         disabled={disabled}
       />
-      <CommandGroup className="max-h-64 overflow-y-auto">
-        {suggestions.length === 0 && searchValue.length >= 3 && (
-          <CommandEmpty>No locations found.</CommandEmpty>
-        )}
-        {suggestions.map((suggestion) => (
-          <CommandItem
-            key={suggestion.place_name}
-            value={suggestion.place_name}
-            onSelect={() => {
-              onLocationSelect(suggestion);
-              setSearchValue(suggestion.place_name);
-              setSuggestions([]);
-            }}
-          >
-            {suggestion.place_name}
-          </CommandItem>
-        ))}
-      </CommandGroup>
+      {searchValue.length >= 3 && (
+        <CommandGroup>
+          {suggestions.length === 0 ? (
+            <CommandEmpty>No locations found.</CommandEmpty>
+          ) : (
+            suggestions.map((suggestion) => (
+              <CommandItem
+                key={suggestion.place_name}
+                value={suggestion.place_name}
+                onSelect={() => {
+                  onLocationSelect(suggestion);
+                  setSearchValue(suggestion.place_name);
+                  setSuggestions([]);
+                }}
+              >
+                {suggestion.place_name}
+              </CommandItem>
+            ))
+          )}
+        </CommandGroup>
+      )}
     </Command>
   );
 }
