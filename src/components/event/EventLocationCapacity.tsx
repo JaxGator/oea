@@ -33,19 +33,32 @@ export function EventLocationCapacity({ form, disableLocation, showMaxGuestsHint
     queryFn: async () => {
       if (!searchValue || !mapToken) return [];
       
-      const response = await fetch(
-        `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(searchValue)}.json?access_token=${mapToken}&types=place,address`
-      );
-      
-      if (!response.ok) {
-        throw new Error('Failed to fetch locations');
+      try {
+        const response = await fetch(
+          `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(searchValue)}.json?access_token=${mapToken}&types=place,address`
+        );
+        
+        if (!response.ok) {
+          console.error('Failed to fetch locations');
+          return [];
+        }
+        
+        const data = await response.json();
+        return (data.features || []) as MapboxFeature[];
+      } catch (error) {
+        console.error('Error fetching locations:', error);
+        return [];
       }
-      
-      const data = await response.json();
-      return (data.features || []) as MapboxFeature[];
     },
     enabled: !!searchValue && !!mapToken,
   });
+
+  // Reset search value when popover closes
+  useEffect(() => {
+    if (!open) {
+      setSearchValue("");
+    }
+  }, [open]);
 
   return (
     <>
@@ -61,7 +74,7 @@ export function EventLocationCapacity({ form, disableLocation, showMaxGuestsHint
                   <div className="relative">
                     <Input
                       placeholder="Search for a location..."
-                      value={field.value}
+                      value={field.value || ""}
                       onChange={(e) => {
                         field.onChange(e.target.value);
                         setSearchValue(e.target.value);
@@ -81,7 +94,9 @@ export function EventLocationCapacity({ form, disableLocation, showMaxGuestsHint
                   <CommandInput
                     placeholder="Search for a location..."
                     value={searchValue}
-                    onValueChange={setSearchValue}
+                    onValueChange={(value) => {
+                      setSearchValue(value);
+                    }}
                   />
                   <CommandEmpty>
                     {isLoading ? (
@@ -92,7 +107,7 @@ export function EventLocationCapacity({ form, disableLocation, showMaxGuestsHint
                       "No locations found."
                     )}
                   </CommandEmpty>
-                  {predictions.length > 0 && (
+                  {predictions && predictions.length > 0 && (
                     <CommandGroup>
                       {predictions.map((prediction) => (
                         <CommandItem
@@ -143,7 +158,7 @@ export function EventLocationCapacity({ form, disableLocation, showMaxGuestsHint
                 min="1" 
                 {...field}
                 onChange={(e) => field.onChange(parseInt(e.target.value))}
-                value={field.value}
+                value={field.value || ""}
                 disabled={showMaxGuestsHint && !isAdmin}
               />
             </FormControl>
