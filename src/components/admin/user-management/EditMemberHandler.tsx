@@ -41,19 +41,26 @@ export const EditMemberHandler = memo(function EditMemberHandler({
         .eq('id', member.id)
         .maybeSingle();
 
-      if (error) throw error;
-      if (!data) throw new Error('Member not found');
+      if (error) {
+        console.error('EditMemberHandler: Database error:', error);
+        throw error;
+      }
+      
+      if (!data) {
+        console.error('EditMemberHandler: Member not found');
+        throw new Error('Member not found');
+      }
 
       const enrichedData: Member = {
         id: data.id,
-        username: data.username,
+        username: data.username || '',
         full_name: data.full_name || '',
         avatar_url: data.avatar_url || '',
-        is_admin: data.is_admin || false,
-        is_approved: data.is_approved || false,
-        is_member: data.is_member || false,
-        created_at: data.created_at,
-        event_reminders_enabled: data.event_reminders_enabled || false
+        is_admin: Boolean(data.is_admin),
+        is_approved: Boolean(data.is_approved),
+        is_member: Boolean(data.is_member),
+        created_at: data.created_at || new Date().toISOString(),
+        event_reminders_enabled: Boolean(data.event_reminders_enabled)
       };
 
       console.log('EditMemberHandler: Member data fetched:', enrichedData);
@@ -74,10 +81,17 @@ export const EditMemberHandler = memo(function EditMemberHandler({
   useEffect(() => {
     if (member?.id) {
       fetchMemberData();
+    } else {
+      setMemberData(null);
     }
   }, [member?.id, fetchMemberData]);
 
   const handleUpdateComplete = useCallback(async (updatedData: Member) => {
+    if (!updatedData?.id) {
+      console.error('EditMemberHandler: Invalid update data:', updatedData);
+      return;
+    }
+
     try {
       console.log('EditMemberHandler: Starting update with data:', updatedData);
       setIsLoading(true);
@@ -85,12 +99,12 @@ export const EditMemberHandler = memo(function EditMemberHandler({
       const { error } = await supabase.rpc('admin_update_user', {
         admin_id: (await supabase.auth.getUser()).data.user?.id,
         target_user_id: updatedData.id,
-        new_username: updatedData.username,
-        new_full_name: updatedData.full_name,
-        new_avatar_url: updatedData.avatar_url,
-        new_is_admin: updatedData.is_admin,
-        new_is_approved: updatedData.is_approved,
-        new_is_member: updatedData.is_member
+        new_username: updatedData.username || '',
+        new_full_name: updatedData.full_name || '',
+        new_avatar_url: updatedData.avatar_url || '',
+        new_is_admin: Boolean(updatedData.is_admin),
+        new_is_approved: Boolean(updatedData.is_approved),
+        new_is_member: Boolean(updatedData.is_member)
       });
 
       if (error) throw error;
@@ -124,6 +138,7 @@ export const EditMemberHandler = memo(function EditMemberHandler({
     );
   }
 
+  // Only render dialog when we have valid member data
   if (!memberData?.id || !memberData?.username) {
     console.log('EditMemberHandler: Invalid member data:', memberData);
     return null;
