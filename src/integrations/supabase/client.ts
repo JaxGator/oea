@@ -10,45 +10,22 @@ if (!SUPABASE_URL) throw new Error('Missing SUPABASE_URL');
 if (!SUPABASE_ANON_KEY) throw new Error('Missing SUPABASE_ANON_KEY');
 
 export const supabase = createClient<Database>(
-  SUPABASE_URL, 
-  SUPABASE_ANON_KEY, 
+  SUPABASE_URL,
+  SUPABASE_ANON_KEY,
   {
     auth: {
       persistSession: true,
       autoRefreshToken: true,
-      detectSessionInUrl: true
+      detectSessionInUrl: true,
+      flowType: 'pkce'
     },
     global: {
-      headers: {} // Removed the custom header
-    },
-    db: {
-      schema: 'public'
-    },
-    realtime: {
-      params: {
-        eventsPerSecond: 10
+      headers: {
+        'x-client-info': 'supabase-js-web'
       }
     }
   }
 );
-
-// Add error handling and logging for auth state changes
-supabase.auth.onAuthStateChange((event, session) => {
-  console.log('Auth state changed:', { event, session });
-  
-  if (event === 'SIGNED_OUT') {
-    console.log('User signed out, clearing local storage');
-    localStorage.removeItem('supabase.auth.token');
-  }
-  
-  if (event === 'TOKEN_REFRESHED') {
-    console.log('Token refreshed successfully');
-  }
-  
-  if (event === 'USER_UPDATED') {
-    console.log('User data updated');
-  }
-});
 
 // Test connection and log detailed errors
 export const testSupabaseConnection = async () => {
@@ -57,54 +34,22 @@ export const testSupabaseConnection = async () => {
     const { data: { session }, error } = await supabase.auth.getSession();
     
     if (error) {
-      console.error('Supabase connection test error:', {
-        message: error.message,
-        status: error.status,
-        name: error.name,
-        details: error
-      });
-      return false;
-    }
-    
-    // Test profiles table access
-    const { data: profilesTest, error: profilesError } = await supabase
-      .from('profiles')
-      .select('id')
-      .limit(1);
-      
-    if (profilesError) {
-      console.error('Profiles table access error:', {
-        message: profilesError.message,
-        code: profilesError.code,
-        details: profilesError.details
-      });
-      
-      toast({
-        title: "Database Error",
-        description: "Unable to access profiles. Please check your connection.",
-        variant: "destructive",
-      });
-      
+      console.error('Supabase connection test error:', error);
       return false;
     }
     
     console.log('Supabase connection test successful:', {
       hasSession: !!session,
-      canAccessProfiles: !!profilesTest,
       timestamp: new Date().toISOString()
     });
     return true;
   } catch (error) {
-    console.error('Supabase connection test failed:', {
-      error,
-      url: SUPABASE_URL,
-      timestamp: new Date().toISOString()
-    });
+    console.error('Supabase connection test failed:', error);
     return false;
   }
 };
 
-// Call test connection on init and log the result
+// Call test connection on init
 if (typeof window !== 'undefined') {
   testSupabaseConnection().then(isConnected => {
     if (!isConnected) {

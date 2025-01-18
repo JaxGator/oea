@@ -29,7 +29,8 @@ export function EventCardContainer({
       {(handleRSVP) => (
         <EventCardState
           event={event}
-          userRSVPStatus={userRSVPStatus}
+          confirmedCount={0}
+          waitlistCount={0}
           onUpdate={onUpdate}
         >
           {({
