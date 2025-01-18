@@ -19,12 +19,14 @@ export function LocationSearchInput({
   currentValue = '', 
   disabled = false 
 }: LocationSearchInputProps) {
-  const [searchValue, setSearchValue] = useState<string>(currentValue || '');
+  const [searchValue, setSearchValue] = useState<string>('');
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const { mapToken, isLoading, error } = useMapboxToken();
 
   useEffect(() => {
-    setSearchValue(currentValue || '');
+    if (currentValue !== undefined) {
+      setSearchValue(currentValue);
+    }
   }, [currentValue]);
 
   const searchLocations = async (query: string) => {
@@ -44,7 +46,7 @@ export function LocationSearchInput({
       }
 
       const data = await response.json();
-      if (!data || !Array.isArray(data.features)) {
+      if (!data?.features || !Array.isArray(data.features)) {
         setSuggestions([]);
         return;
       }
@@ -87,7 +89,7 @@ export function LocationSearchInput({
             ? "Enter at least 3 characters to search..." 
             : "No locations found."}
         </CommandEmpty>
-        {suggestions.map((suggestion) => (
+        {Array.isArray(suggestions) && suggestions.map((suggestion) => (
           <CommandItem
             key={suggestion.place_name}
             value={suggestion.place_name}
