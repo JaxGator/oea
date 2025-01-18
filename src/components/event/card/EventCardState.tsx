@@ -1,10 +1,7 @@
 import { Event } from "@/types/event";
-import { useAdminStatus } from "@/hooks/events/useAdminStatus";
 import { useEventRSVPData } from "@/hooks/events/useEventRSVPData";
 import { useEventGuestData } from "@/hooks/events/useEventGuestData";
-import { useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
+import { useEventCardState } from "@/hooks/events/useEventCardState";
 
 interface EventCardStateProps {
   event: Event;
@@ -35,13 +32,20 @@ export function EventCardState({
   onUpdate,
   children
 }: EventCardStateProps) {
-  const { isAdmin, canManageEvents } = useAdminStatus();
-  const [showEditDialog, setShowEditDialog] = useState(false);
-  const [showDetailsDialog, setShowDetailsDialog] = useState(false);
-  
-  // Fetch RSVPs and attendees using custom hooks
   const { data: attendees = [] } = useEventRSVPData(event.id);
   const { data: guests = [] } = useEventGuestData(event.id, userRSVPStatus);
+  
+  const {
+    isAdmin,
+    canManageEvents,
+    showEditDialog,
+    showDetailsDialog,
+    setShowEditDialog,
+    setShowDetailsDialog,
+    handleEditSuccess,
+    handleDelete,
+    handleTogglePublish,
+  } = useEventCardState(event, onUpdate);
 
   const rsvpData = {
     confirmedCount: attendees.length,
@@ -51,45 +55,6 @@ export function EventCardState({
   const isPastEvent = new Date(event.date) < new Date(new Date().setHours(0, 0, 0, 0));
   const isWixEvent = !!event.imported_rsvp_count;
   const canAddGuests = isAdmin || userRSVPStatus === 'attending';
-
-  const handleEditSuccess = () => {
-    setShowEditDialog(false);
-    if (onUpdate) onUpdate();
-  };
-
-  const handleDelete = async () => {
-    try {
-      const { error } = await supabase
-        .from('events')
-        .delete()
-        .eq('id', event.id);
-
-      if (error) throw error;
-
-      toast.success("Event deleted successfully");
-      if (onUpdate) onUpdate();
-    } catch (error: any) {
-      console.error('Error deleting event:', error);
-      toast.error(error.message || "Failed to delete event");
-    }
-  };
-
-  const handleTogglePublish = async () => {
-    try {
-      const { error } = await supabase
-        .from('events')
-        .update({ is_published: !event.is_published })
-        .eq('id', event.id);
-
-      if (error) throw error;
-
-      toast.success(`Event ${event.is_published ? 'unpublished' : 'published'} successfully`);
-      if (onUpdate) onUpdate();
-    } catch (error: any) {
-      console.error('Error toggling event publish status:', error);
-      toast.error(error.message || "Failed to update event status");
-    }
-  };
 
   return children({
     isAdmin,
