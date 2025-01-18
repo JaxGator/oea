@@ -24,7 +24,8 @@ export const useMapInstance = (containerRef: React.RefObject<HTMLDivElement>) =>
         container: containerRef.current,
         style: 'mapbox://styles/mapbox/streets-v12',
         zoom: 12,
-        center: [-122.4194, 37.7749] // Default center, will be updated when markers are added
+        center: [-122.4194, 37.7749], // Default center, will be updated when markers are added
+        preserveDrawingBuffer: true // Helps with map rendering issues
       });
 
       map.addControl(new mapboxgl.NavigationControl(), 'top-right');

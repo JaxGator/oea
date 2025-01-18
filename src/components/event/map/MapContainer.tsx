@@ -24,7 +24,8 @@ export function MapContainer({ children }: MapContainerProps) {
         className="w-full h-[400px]" 
         style={{ 
           minHeight: '400px',
-          background: '#f0f0f0' // Light background while map loads
+          background: '#f0f0f0', // Light background while map loads
+          position: 'relative' // Ensure proper stacking context
         }} 
       />
       {children(mapInstance.current)}
