@@ -24,6 +24,12 @@ export function EventCardContainer({
   onSelect,
   isSelected = false
 }: EventCardContainerProps) {
+  const handleCardClick = () => {
+    if (onSelect && event.latitude && event.longitude) {
+      onSelect();
+    }
+  };
+
   return (
     <EventRSVPHandler eventId={event.id} onRSVP={onRSVP}>
       {(handleRSVP) => (
@@ -52,7 +58,7 @@ export function EventCardContainer({
             const attendeeNames = processAttendeeNames(attendees);
 
             return (
-              <>
+              <div onClick={handleCardClick}>
                 <EventCardInteractions
                   event={event}
                   isAdmin={isAdmin}
@@ -92,7 +98,7 @@ export function EventCardContainer({
                   onDelete={handleDelete}
                   handleEditSuccess={handleEditSuccess}
                 />
-              </>
+              </div>
             );
           }}
         </EventCardState>

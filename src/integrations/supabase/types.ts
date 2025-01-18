@@ -248,7 +248,9 @@ export type Database = {
           imported_rsvp_count: number | null
           is_featured: boolean | null
           is_published: boolean | null
+          latitude: number | null
           location: string
+          longitude: number | null
           max_guests: number
           reminder_enabled: boolean | null
           reminder_intervals: Json | null
@@ -271,7 +273,9 @@ export type Database = {
           imported_rsvp_count?: number | null
           is_featured?: boolean | null
           is_published?: boolean | null
+          latitude?: number | null
           location: string
+          longitude?: number | null
           max_guests: number
           reminder_enabled?: boolean | null
           reminder_intervals?: Json | null
@@ -294,7 +298,9 @@ export type Database = {
           imported_rsvp_count?: number | null
           is_featured?: boolean | null
           is_published?: boolean | null
+          latitude?: number | null
           location?: string
+          longitude?: number | null
           max_guests?: number
           reminder_enabled?: boolean | null
           reminder_intervals?: Json | null

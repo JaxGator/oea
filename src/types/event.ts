@@ -15,6 +15,8 @@ export interface Event {
   waitlist_capacity?: number | null;
   display_order?: number | null;
   is_published?: boolean;
+  latitude?: number | null;
+  longitude?: number | null;
   rsvps?: EventRSVP[];
 }
 
