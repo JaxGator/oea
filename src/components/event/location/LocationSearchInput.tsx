@@ -54,10 +54,10 @@ export function LocationSearchInput({
       }
 
       try {
-        // Include POIs (points of interest) and addresses in the search
+        // Include POIs (points of interest) and addresses in the search, restricted to US
         const endpoint = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
           debouncedSearch
-        )}.json?access_token=${mapToken}&types=address,poi,place,locality,neighborhood&limit=5`;
+        )}.json?access_token=${mapToken}&country=us&types=address,poi,place,locality,neighborhood&limit=5`;
 
         const response = await fetch(endpoint);
         if (!response.ok) {
@@ -107,7 +107,7 @@ export function LocationSearchInput({
   return (
     <div className="relative" ref={dropdownRef}>
       <Input
-        placeholder="Search for an address or business..."
+        placeholder="Search for an address or business in the United States..."
         value={searchValue}
         onChange={(e) => {
           setSearchValue(e.target.value);
