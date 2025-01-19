@@ -16,22 +16,17 @@ export function EventLocationMap({ location, lat, lng }: EventLocationMapProps) 
   const map = useRef<mapboxgl.Map | null>(null);
   const marker = useRef<mapboxgl.Marker | null>(null);
   const { mapToken, isLoading: isKeyLoading, error: keyError } = useMapboxToken();
+  const hasInitialized = useRef(false);
 
   useEffect(() => {
-    if (!mapContainer.current || !lat || !lng || !mapToken) {
-      console.log('Map initialization skipped:', { 
-        hasContainer: !!mapContainer.current, 
-        lat, 
-        lng, 
-        hasToken: !!mapToken 
-      });
+    if (!mapContainer.current || !lat || !lng || !mapToken || hasInitialized.current) {
       return;
     }
 
-    console.log('Initializing map with:', { lat, lng, mapToken: !!mapToken });
-    mapboxgl.accessToken = mapToken;
-    
     try {
+      console.log('Initializing map with coordinates:', { lat, lng });
+      mapboxgl.accessToken = mapToken;
+      
       map.current = new mapboxgl.Map({
         container: mapContainer.current,
         style: 'mapbox://styles/mapbox/streets-v12',
@@ -46,23 +41,14 @@ export function EventLocationMap({ location, lat, lng }: EventLocationMapProps) 
 
       map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
 
-      // Ensure the map loads the location correctly
       map.current.on('load', () => {
         console.log('Map loaded successfully');
         if (map.current) {
           map.current.resize();
-          map.current.flyTo({
-            center: [lng, lat],
-            zoom: 14,
-            essential: true
-          });
         }
       });
 
-      map.current.on('error', (e) => {
-        console.error('Map error:', e);
-      });
-
+      hasInitialized.current = true;
     } catch (error) {
       console.error('Error initializing map:', error);
     }
@@ -70,9 +56,24 @@ export function EventLocationMap({ location, lat, lng }: EventLocationMapProps) 
     return () => {
       if (map.current) {
         map.current.remove();
+        hasInitialized.current = false;
       }
     };
   }, [lat, lng, mapToken]);
+
+  // Update marker position when coordinates change
+  useEffect(() => {
+    if (marker.current && lat && lng) {
+      marker.current.setLngLat([lng, lat]);
+    }
+    if (map.current && lat && lng) {
+      map.current.flyTo({
+        center: [lng, lat],
+        zoom: 14,
+        essential: true
+      });
+    }
+  }, [lat, lng]);
 
   if (isKeyLoading) {
     return <MapLoadingState />;
@@ -84,13 +85,13 @@ export function EventLocationMap({ location, lat, lng }: EventLocationMapProps) 
 
   if (!lat || !lng) {
     return (
-      <div className="h-[300px] w-full bg-gray-100 rounded-lg flex items-center justify-center">
+      <div className="h-full w-full bg-gray-100 rounded-lg flex items-center justify-center">
         <p className="text-gray-500">Location not found on map</p>
       </div>
     );
   }
 
   return (
-    <div ref={mapContainer} className="h-[300px] w-full rounded-lg" />
+    <div ref={mapContainer} className="h-full w-full rounded-lg" />
   );
 }

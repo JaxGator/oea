@@ -16,32 +16,56 @@ export function EventLocationMap({ location, lat, lng }: EventLocationMapProps) 
   const map = useRef<mapboxgl.Map | null>(null);
   const marker = useRef<mapboxgl.Marker | null>(null);
   const { mapToken, isLoading: isKeyLoading, error: keyError } = useMapboxToken();
+  const hasInitialized = useRef(false);
 
   useEffect(() => {
-    if (!mapContainer.current || !lat || !lng || !mapToken) return;
+    if (!mapContainer.current || !lat || !lng || !mapToken || hasInitialized.current) {
+      return;
+    }
 
-    mapboxgl.accessToken = mapToken;
-    
-    map.current = new mapboxgl.Map({
-      container: mapContainer.current,
-      style: 'mapbox://styles/mapbox/outdoors-v12', // Updated to outdoors style
-      center: [lng, lat],
-      zoom: 14,
-      scrollZoom: false
-    });
+    try {
+      mapboxgl.accessToken = mapToken;
+      
+      map.current = new mapboxgl.Map({
+        container: mapContainer.current,
+        style: 'mapbox://styles/mapbox/outdoors-v12',
+        center: [lng, lat],
+        zoom: 14,
+        scrollZoom: false
+      });
 
-    marker.current = new mapboxgl.Marker()
-      .setLngLat([lng, lat])
-      .addTo(map.current);
+      marker.current = new mapboxgl.Marker()
+        .setLngLat([lng, lat])
+        .addTo(map.current);
 
-    map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
+      map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
+      
+      hasInitialized.current = true;
+    } catch (error) {
+      console.error('Error initializing map:', error);
+    }
 
     return () => {
       if (map.current) {
         map.current.remove();
+        hasInitialized.current = false;
       }
     };
   }, [lat, lng, mapToken]);
+
+  // Update marker position when coordinates change
+  useEffect(() => {
+    if (marker.current && lat && lng) {
+      marker.current.setLngLat([lng, lat]);
+    }
+    if (map.current && lat && lng) {
+      map.current.flyTo({
+        center: [lng, lat],
+        zoom: 14,
+        essential: true
+      });
+    }
+  }, [lat, lng]);
 
   if (isKeyLoading) {
     return <MapLoadingState />;
