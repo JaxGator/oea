@@ -15,7 +15,20 @@ export function useEvents(selectedDate?: Date) {
       try {
         let query = supabase
           .from('events')
-          .select('*')
+          .select(`
+            *,
+            event_rsvps (
+              id,
+              event_id,
+              user_id,
+              response,
+              created_at,
+              profiles (
+                full_name,
+                username
+              )
+            )
+          `)
           .order('date');
 
         // Only filter by date if a date is selected
