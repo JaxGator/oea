@@ -18,6 +18,9 @@ export interface Event {
   latitude?: number | null;
   longitude?: number | null;
   rsvps?: EventRSVP[];
+  end_time?: string | null;
+  reminder_enabled?: boolean;
+  reminder_intervals?: string[];
 }
 
 export interface EventRSVP {
@@ -41,4 +44,5 @@ export interface EventFormData {
   location: string;
   max_guests: number;
   image_url: string;
+  created_by?: string;
 }
