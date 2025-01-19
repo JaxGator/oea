@@ -18,7 +18,8 @@ export function useMaintenanceMode() {
         
         if (error) throw error;
         
-        setIsMaintenanceMode(data?.value === "true");
+        // Only set maintenance mode if user is not an admin
+        setIsMaintenanceMode(data?.value === "true" && !profile?.is_admin);
       } catch (error) {
         console.error('Error fetching maintenance mode:', error);
       } finally {
@@ -40,7 +41,8 @@ export function useMaintenanceMode() {
           filter: 'key=eq.maintenance_mode'
         },
         (payload) => {
-          setIsMaintenanceMode(payload.new.value === "true");
+          // Only set maintenance mode if user is not an admin
+          setIsMaintenanceMode(payload.new.value === "true" && !profile?.is_admin);
         }
       )
       .subscribe();
@@ -48,7 +50,7 @@ export function useMaintenanceMode() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, []);
+  }, [profile?.is_admin]); // Add profile.is_admin as dependency
 
   return { isMaintenanceMode, isLoading, profile };
 }
