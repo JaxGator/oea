@@ -37,7 +37,7 @@ export function EventForm({ onSuccess, initialData, isPastEvent, isWixEvent }: E
       is_featured: initialData?.is_featured || false,
       latitude: initialData?.latitude,
       longitude: initialData?.longitude,
-      created_by: initialData?.created_by || user?.id,
+      created_by: initialData?.created_by || user?.id || "",
     },
   });
 
