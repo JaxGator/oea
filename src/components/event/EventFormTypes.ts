@@ -16,7 +16,7 @@ export const eventSchema = z.object({
   is_featured: z.boolean().default(false),
   latitude: z.number().optional(),
   longitude: z.number().optional(),
-  created_by: z.string().optional(), // Add this field
+  created_by: z.string(),
 });
 
 export type EventFormValues = z.infer<typeof eventSchema>;
@@ -38,7 +38,7 @@ export interface EventFormData {
   is_featured?: boolean;
   latitude?: number;
   longitude?: number;
-  created_by: string; // Add this field
+  created_by: string;
 }
 
 export interface EventFormProps {

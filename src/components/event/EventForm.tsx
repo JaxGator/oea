@@ -13,9 +13,12 @@ import { useEventFormSubmit } from "@/hooks/useEventFormSubmit";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { useAdminStatus } from "@/hooks/events/useAdminStatus";
+import { useAuthState } from "@/hooks/useAuthState";
 
 export function EventForm({ onSuccess, initialData, isPastEvent, isWixEvent }: EventFormProps) {
   const { isAdmin } = useAdminStatus();
+  const { user } = useAuthState();
+  
   const form = useForm<EventFormValues>({
     resolver: zodResolver(eventSchema),
     defaultValues: {
@@ -34,13 +37,24 @@ export function EventForm({ onSuccess, initialData, isPastEvent, isWixEvent }: E
       is_featured: initialData?.is_featured || false,
       latitude: initialData?.latitude,
       longitude: initialData?.longitude,
+      created_by: initialData?.created_by || user?.id,
     },
   });
 
   const { handleSubmit: handleFormSubmit } = useEventFormSubmit(onSuccess);
 
   const onSubmit = async (data: EventFormValues) => {
-    await handleFormSubmit(data, initialData);
+    if (!user?.id) {
+      console.error('No user ID available');
+      return;
+    }
+    
+    const eventData = {
+      ...data,
+      created_by: initialData?.created_by || user.id,
+    };
+    
+    await handleFormSubmit(eventData, initialData);
     onSuccess();
   };
 
