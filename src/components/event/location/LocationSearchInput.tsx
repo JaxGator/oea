@@ -56,7 +56,7 @@ export function LocationSearchInput({
       try {
         const endpoint = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
           debouncedSearch
-        )}.json?access_token=${mapToken}&country=us&types=poi,address,place,locality,neighborhood,category&limit=10&fuzzyMatch=true`;
+        )}.json?access_token=${mapToken}&country=us&types=poi,address,place,locality,neighborhood&limit=10`;
 
         const response = await fetch(endpoint);
         if (!response.ok) {
@@ -106,7 +106,7 @@ export function LocationSearchInput({
   return (
     <div className="relative" ref={dropdownRef}>
       <Input
-        placeholder="Search for an address or business..."
+        placeholder="Search for a location or business..."
         value={searchValue}
         onChange={(e) => {
           setSearchValue(e.target.value);
