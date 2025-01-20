@@ -4,40 +4,34 @@ import { useRSVP } from "@/hooks/useRSVP";
 import { useAuthState } from "@/hooks/useAuthState";
 import { EventsHeader } from "@/components/event/sections/EventsHeader";
 import { EventsContent } from "@/components/event/sections/EventsContent";
-import { EventCalendarView } from "@/components/event/calendar/EventCalendarView";
-import { EventViewToggle } from "@/components/event/EventViewToggle";
 import { filterEventsByDate } from "@/utils/dateUtils";
-
-type ViewMode = "grid" | "calendar";
 
 export default function Events() {
   const { isAuthenticated } = useAuthState();
   const [isCreateEventOpen, setIsCreateEventOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
-  const [viewMode, setViewMode] = useState<ViewMode>("grid");
   
   const { data: events = [], isLoading: isEventsLoading, error } = useEvents(selectedDate);
   const { handleRSVP, cancelRSVP } = useRSVP();
 
+  // Only filter by date if a date is selected, otherwise show all events
   const filteredEvents = selectedDate ? filterEventsByDate(events, selectedDate) : events;
   
+  // Separate upcoming and past events, with featured events first
   const now = new Date();
   const upcomingEvents = filteredEvents
     .filter(event => new Date(event.date) >= now)
     .sort((a, b) => {
+      // Sort featured events first
       if (a.is_featured && !b.is_featured) return -1;
       if (!a.is_featured && b.is_featured) return 1;
+      // Then sort by date
       return new Date(a.date).getTime() - new Date(b.date).getTime();
     });
 
   const pastEvents = filteredEvents
     .filter(event => new Date(event.date) < now)
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-
-  const handleEventClick = (eventId: string) => {
-    // Handle event click - you might want to show event details or navigate
-    console.log("Event clicked:", eventId);
-  };
 
   if (error) {
     console.error("Events loading error:", error);
@@ -59,34 +53,19 @@ export default function Events() {
   return (
     <div className="min-h-screen bg-white">
       <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="flex flex-col gap-6">
-          <div className="flex justify-between items-center">
-            <EventsHeader
-              selectedDate={selectedDate}
-              onDateSelect={setSelectedDate}
-              isAuthenticated={isAuthenticated}
-              onCreateEvent={() => setIsCreateEventOpen(true)}
-            />
-            <EventViewToggle
-              currentView={viewMode}
-              onViewChange={setViewMode}
-            />
-          </div>
+        <EventsHeader
+          selectedDate={selectedDate}
+          onDateSelect={setSelectedDate}
+          isAuthenticated={isAuthenticated}
+          onCreateEvent={() => setIsCreateEventOpen(true)}
+        />
 
-          {viewMode === "calendar" ? (
-            <EventCalendarView
-              events={upcomingEvents}
-              onEventClick={handleEventClick}
-            />
-          ) : (
-            <EventsContent
-              upcomingEvents={upcomingEvents}
-              pastEvents={pastEvents}
-              onRSVP={handleRSVP}
-              onCancelRSVP={cancelRSVP}
-            />
-          )}
-        </div>
+        <EventsContent
+          upcomingEvents={upcomingEvents}
+          pastEvents={pastEvents}
+          onRSVP={handleRSVP}
+          onCancelRSVP={cancelRSVP}
+        />
       </div>
     </div>
   );
