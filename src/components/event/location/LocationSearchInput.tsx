@@ -54,10 +54,9 @@ export function LocationSearchInput({
       }
 
       try {
-        // Updated endpoint with reordered types, increased limit, and Jacksonville area bounding box
         const endpoint = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
           debouncedSearch
-        )}.json?access_token=${mapToken}&country=us&types=poi,address,place,locality,neighborhood&limit=10&bbox=-82.049149,30.102761,-81.291759,30.586144`;
+        )}.json?access_token=${mapToken}&country=us&types=poi,address,place,locality,neighborhood,category&limit=10&fuzzyMatch=true`;
 
         const response = await fetch(endpoint);
         if (!response.ok) {
@@ -107,7 +106,7 @@ export function LocationSearchInput({
   return (
     <div className="relative" ref={dropdownRef}>
       <Input
-        placeholder="Search for an address or business in Jacksonville..."
+        placeholder="Search for an address or business..."
         value={searchValue}
         onChange={(e) => {
           setSearchValue(e.target.value);
