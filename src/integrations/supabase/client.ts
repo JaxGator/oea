@@ -1,64 +1,37 @@
 import { createClient } from '@supabase/supabase-js';
-import { Database } from './types/database';
-import { supabaseConfig } from './config/client-config';
-import { toast } from 'sonner';
+import type { Database } from './types/database';
 
-const SUPABASE_URL = "https://qegpuqitjfocyyrivlhv.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFlZ3B1cWl0amZvY3l5cml2bGh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzM5MzU4NTMsImV4cCI6MjA0OTUxMTg1M30.o3yD902DFG0PlLD0V8pEvx-IbnVawP3HDhNEp6cMoW4";
+const supabaseUrl = 'https://qegpuqitjfocyyrivlhv.supabase.co';
+const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFlZ3B1cWl0amZvY3l5cml2bGh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MDU2ODg1NzAsImV4cCI6MjAyMTI2NDU3MH0.qDTKLaVpYWS-VXgHmWB_nM1EHAfKE3d8LNnHhAGz5jE';
 
-if (!SUPABASE_URL) throw new Error('Missing SUPABASE_URL');
-if (!SUPABASE_ANON_KEY) throw new Error('Missing SUPABASE_ANON_KEY');
-
-export const supabase = createClient<Database>(
-  SUPABASE_URL,
-  SUPABASE_ANON_KEY,
-  {
-    auth: {
-      persistSession: true,
-      autoRefreshToken: true,
-      detectSessionInUrl: true,
-      flowType: 'pkce'
-    },
-    global: {
-      headers: {
-        'x-client-info': 'supabase-js-web',
-        'X-Client-Info': 'supabase-js-web'
-      }
-    },
-    db: {
-      schema: 'public'
+export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+    detectSessionInUrl: true
+  },
+  realtime: {
+    params: {
+      eventsPerSecond: 10
     }
   }
-);
+});
 
-// Test connection and log detailed errors
+// Add connection test utility
 export const testSupabaseConnection = async () => {
   try {
-    console.log('Testing Supabase connection...');
-    const { data: { session }, error } = await supabase.auth.getSession();
-    
+    const { data, error } = await supabase.from('events').select('count').limit(1);
     if (error) {
-      console.error('Supabase connection test error:', error);
+      console.error('Supabase connection test failed:', error);
       return false;
     }
-    
-    console.log('Supabase connection test successful:', {
-      hasSession: !!session,
-      timestamp: new Date().toISOString()
-    });
+    console.log('Supabase connection test successful');
     return true;
-  } catch (error) {
-    console.error('Supabase connection test failed:', error);
+  } catch (err) {
+    console.error('Supabase connection test error:', err);
     return false;
   }
 };
 
-// Call test connection on init
-if (typeof window !== 'undefined') {
-  testSupabaseConnection().then(isConnected => {
-    if (!isConnected) {
-      console.error('Failed to establish initial Supabase connection');
-      toast.error("Connection error. Please refresh the page.");
-    }
-  });
-}
+// Test connection on initialization
+testSupabaseConnection();
