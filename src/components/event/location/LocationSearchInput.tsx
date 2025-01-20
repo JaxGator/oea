@@ -56,7 +56,7 @@ export function LocationSearchInput({
       try {
         const endpoint = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
           debouncedSearch
-        )}.json?access_token=${mapToken}&country=us&types=poi,address,place,locality,neighborhood&limit=10`;
+        )}.json?access_token=${mapToken}&country=us&types=place,district,locality,neighborhood,address,poi&limit=10`;
 
         const response = await fetch(endpoint);
         if (!response.ok) {
