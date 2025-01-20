@@ -13,6 +13,12 @@ export function useEvents(selectedDate?: Date) {
     queryKey: ['events', selectedDate?.toISOString(), isApproved],
     queryFn: async () => {
       try {
+        console.log('Fetching events with auth state:', {
+          isApproved,
+          userId: profile?.id,
+          selectedDate: selectedDate?.toISOString()
+        });
+
         let query = supabase
           .from('events')
           .select(`
@@ -40,7 +46,14 @@ export function useEvents(selectedDate?: Date) {
         const { data, error } = await query;
         
         if (error) {
-          console.error('Error fetching events:', error);
+          console.error('Error fetching events:', {
+            error,
+            context: {
+              isApproved,
+              userId: profile?.id,
+              selectedDate: selectedDate?.toISOString()
+            }
+          });
           toast.error('Failed to load events. Please try again.');
           throw error;
         }
@@ -49,6 +62,11 @@ export function useEvents(selectedDate?: Date) {
           console.log('No events found');
           return [];
         }
+
+        console.log('Successfully fetched events:', {
+          count: data.length,
+          firstEvent: data[0]
+        });
 
         return transformEventData(data);
       } catch (error) {
