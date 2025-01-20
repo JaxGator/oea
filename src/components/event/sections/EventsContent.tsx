@@ -4,6 +4,7 @@ import { EventsMap } from "@/components/event/EventsMap";
 import { ErrorBoundary } from "@/components/error/ErrorBoundary";
 import { CalendarFold } from "lucide-react";
 import { useState } from "react";
+import { useAuthState } from "@/hooks/useAuthState";
 
 interface EventsContentProps {
   upcomingEvents: Event[];
@@ -19,14 +20,17 @@ export function EventsContent({
   onCancelRSVP,
 }: EventsContentProps) {
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
+  const { profile, isAuthenticated } = useAuthState();
 
   const handleEventSelect = (eventId: string) => {
     setSelectedEventId(eventId === selectedEventId ? null : eventId);
   };
 
+  const canViewMap = isAuthenticated && profile?.is_approved;
+
   return (
     <>
-      {upcomingEvents.length > 0 && (
+      {upcomingEvents.length > 0 && canViewMap && (
         <div className="mb-8">
           <ErrorBoundary fallback={<div>Error loading map. Please try again later.</div>}>
             <EventsMap 
