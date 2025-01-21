@@ -11,13 +11,23 @@ import { GalleryLoadingState } from "./gallery/GalleryLoadingState";
 export default function GalleryManager() {
   const { images, isLoading, fetchImages } = useGalleryImages();
   const { carouselEnabled, updateCarouselConfig } = useCarouselConfig();
-  const { user } = useSession();
+  const { user, profile } = useSession();
 
   if (!user) {
     return (
       <div className="flex items-center justify-center p-8">
         <div className="text-center space-y-4">
-          <p className="text-muted-foreground">Please sign in to manage the gallery.</p>
+          <p className="text-muted-foreground">Please sign in to view the gallery manager.</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!profile?.is_admin) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <div className="text-center space-y-4">
+          <p className="text-muted-foreground">Only administrators can manage the gallery.</p>
         </div>
       </div>
     );

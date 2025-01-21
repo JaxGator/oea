@@ -10,7 +10,7 @@ interface ImageUploadFormProps {
 }
 
 export function ImageUploadForm({ onUploadComplete }: ImageUploadFormProps) {
-  const { user } = useSession();
+  const { user, profile } = useSession();
   const { isUploading, uploadImage } = useGalleryUpload(onUploadComplete);
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -20,12 +20,8 @@ export function ImageUploadForm({ onUploadComplete }: ImageUploadFormProps) {
     event.target.value = '';
   };
 
-  if (!user) {
-    return (
-      <div className="text-center py-4">
-        <p className="text-muted-foreground">Please sign in to upload images.</p>
-      </div>
-    );
+  if (!user || !profile?.is_admin) {
+    return null;
   }
 
   return (
