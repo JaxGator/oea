@@ -49,11 +49,17 @@ export function EventCardContainer({
             canAddGuests,
             showEditDialog,
             showDetailsDialog,
+            editedRSVPCount,
+            isEditingRSVP,
             handleEditSuccess,
             handleDelete,
             handleTogglePublish,
             setShowEditDialog,
             setShowDetailsDialog,
+            handleEditRSVP,
+            handleSaveRSVP,
+            handleCancelEdit,
+            handleRSVPCountChange,
           }) => {
             const attendeeNames = processAttendeeNames(attendees);
 
@@ -69,6 +75,8 @@ export function EventCardContainer({
                   canAddGuests={canAddGuests}
                   guests={guests}
                   isSelected={isSelected}
+                  editedRSVPCount={editedRSVPCount}
+                  isEditingRSVP={isEditingRSVP}
                   onRSVP={handleRSVP}
                   onCancelRSVP={() => onCancelRSVP(event.id)}
                   setShowEditDialog={setShowEditDialog}
@@ -76,6 +84,10 @@ export function EventCardContainer({
                   handleDelete={handleDelete}
                   isPublished={event.is_published ?? true}
                   onTogglePublish={handleTogglePublish}
+                  onEditRSVP={handleEditRSVP}
+                  onSaveRSVP={handleSaveRSVP}
+                  onCancelEdit={handleCancelEdit}
+                  onRSVPCountChange={handleRSVPCountChange}
                 />
 
                 <EventDialogs

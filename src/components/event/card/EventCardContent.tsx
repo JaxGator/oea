@@ -1,6 +1,7 @@
 import { Event } from "@/types/event";
 import { EventCardBasicInfo } from "./EventCardBasicInfo";
 import { EventCardActions } from "./EventCardActions";
+import { EventAdminEdit } from "./EventAdminEdit";
 
 interface EventCardContentProps {
   event: Event;
@@ -14,6 +15,8 @@ interface EventCardContentProps {
   waitlistCount?: number;
   waitlistCapacity?: number | null;
   currentGuests: { firstName: string }[];
+  editedRSVPCount: string;
+  isEditingRSVP: boolean;
   onRSVP: (guests?: { firstName: string }[]) => void;
   onCancelRSVP: () => void;
   onEdit: () => void;
@@ -22,6 +25,10 @@ interface EventCardContentProps {
   isPublished?: boolean;
   onViewDetails: () => void;
   onTogglePublish?: () => void;
+  onEditRSVP: () => void;
+  onSaveRSVP: () => void;
+  onCancelEdit: () => void;
+  onRSVPCountChange: (value: string) => void;
 }
 
 export function EventCardContent({
@@ -36,6 +43,8 @@ export function EventCardContent({
   waitlistCount,
   waitlistCapacity,
   currentGuests,
+  editedRSVPCount,
+  isEditingRSVP,
   onRSVP,
   onCancelRSVP,
   onEdit,
@@ -44,6 +53,10 @@ export function EventCardContent({
   isPublished = true,
   onViewDetails,
   onTogglePublish,
+  onEditRSVP,
+  onSaveRSVP,
+  onCancelEdit,
+  onRSVPCountChange,
 }: EventCardContentProps) {
   return (
     <div className="p-4">
@@ -59,6 +72,19 @@ export function EventCardContent({
         isWixEvent={!!event.imported_rsvp_count}
         importedRsvpCount={event.imported_rsvp_count}
       />
+
+      {(isAdmin || canManageEvents) && isPastEvent && (
+        <EventAdminEdit
+          isAdmin={isAdmin}
+          isPastEvent={isPastEvent}
+          editedRSVPCount={editedRSVPCount}
+          onEditRSVP={onEditRSVP}
+          onSaveRSVP={onSaveRSVP}
+          onCancelEdit={onCancelEdit}
+          onRSVPCountChange={onRSVPCountChange}
+          isEditingRSVP={isEditingRSVP}
+        />
+      )}
 
       <div className="mt-4">
         <EventCardActions
