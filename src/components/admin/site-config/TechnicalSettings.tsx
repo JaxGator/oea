@@ -1,6 +1,5 @@
 import { MaintenanceMode } from "./technical/MaintenanceMode";
 import { ImageUploadField } from "./technical/ImageUploadField";
-import { CodeEditor } from "./technical/CodeEditor";
 import { FaviconConfig } from "./technical/FaviconConfig";
 import { ReminderSettings } from "./technical/ReminderSettings";
 import { useToast } from "@/hooks/use-toast";
@@ -83,13 +82,6 @@ export function TechnicalSettings({ configs, setConfigs, isLoading }: TechnicalS
             // Refresh configs after update
             setConfigs(prev => ({ ...prev }));
           }}
-        />
-
-        <CodeEditor
-          label="Custom Scripts"
-          value={configs.custom_scripts || ""}
-          onChange={(value) => setConfigs(prev => ({ ...prev, custom_scripts: value }))}
-          onSave={() => updateConfig('custom_scripts', configs.custom_scripts || "")}
         />
       </CardContent>
     </Card>
