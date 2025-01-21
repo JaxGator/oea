@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Event } from '@/types/event';
 import { useEventLocations } from '@/hooks/useEventLocations';
 import { useMapboxToken } from '@/hooks/useMapboxToken';
@@ -18,6 +18,16 @@ export function EventsMap({ events, selectedEventId }: EventsMapProps) {
   const { mapToken, isLoading: isKeyLoading, error: keyError } = useMapboxToken();
   const locations = useEventLocations(events);
 
+  // Find the selected event when selectedEventId changes
+  useEffect(() => {
+    if (selectedEventId) {
+      const event = events.find(e => e.id === selectedEventId);
+      if (event && event.latitude && event.longitude) {
+        setSelectedEvent(event);
+      }
+    }
+  }, [selectedEventId, events]);
+
   if (events.length === 0 || locations.length === 0) {
     return null;
   }
@@ -35,6 +45,15 @@ export function EventsMap({ events, selectedEventId }: EventsMapProps) {
       {(map) => {
         // Initialize markers when map is ready
         useMapMarkers(map, locations, selectedEventId, (event) => setSelectedEvent(event));
+
+        // Center map on selected event
+        if (map && selectedEvent && selectedEvent.latitude && selectedEvent.longitude) {
+          map.flyTo({
+            center: [selectedEvent.longitude, selectedEvent.latitude],
+            zoom: 14,
+            duration: 1500
+          });
+        }
 
         return (
           selectedEvent && map && (
