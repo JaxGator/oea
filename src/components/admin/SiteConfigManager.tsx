@@ -69,11 +69,7 @@ export default function SiteConfigManager() {
           </TabsContent>
 
           <TabsContent value="technical" className="m-0">
-            <TechnicalSettings
-              configs={configs}
-              setConfigs={setConfigs}
-              isLoading={isLoading}
-            />
+            <TechnicalSettings />
           </TabsContent>
         </div>
       </Tabs>

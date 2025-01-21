@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { ReminderSettings } from "./ReminderSettings";
+import { ReminderSettings } from "./technical/ReminderSettings";
 
 export function TechnicalSettings() {
   const [configs, setConfigs] = useState<any>({});
