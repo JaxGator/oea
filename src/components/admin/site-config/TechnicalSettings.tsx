@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { ReminderSettings } from "./technical/ReminderSettings";
 import { MaintenanceMode } from "./technical/MaintenanceMode";
 import { FaviconConfig } from "./technical/FaviconConfig";
 import { ImageUploadField } from "./technical/ImageUploadField";
@@ -21,7 +20,6 @@ export function TechnicalSettings() {
           throw error;
         }
 
-        // Convert array of {key, value} pairs to a Record object
         const configObj = data.reduce((acc: Record<string, string>, curr) => {
           acc[curr.key] = curr.value || "";
           return acc;
@@ -91,16 +89,6 @@ export function TechnicalSettings() {
           value={configs.default_event_image || ''}
           onChange={(value) => setConfigs(prev => ({ ...prev, default_event_image: value }))}
           onSave={async () => updateConfig('default_event_image', configs.default_event_image || '')}
-        />
-
-        <ReminderSettings
-          eventId={configs.current_event_id || ''}
-          enabled={configs.reminder_enabled === 'true'}
-          intervals={configs.reminder_intervals ? JSON.parse(configs.reminder_intervals) : ["7d", "1d", "1h"]}
-          onUpdate={() => {
-            // Refresh configs after update
-            setConfigs(prev => ({ ...prev }));
-          }}
         />
       </div>
     </div>
