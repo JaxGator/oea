@@ -1,89 +1,47 @@
-import { MaintenanceMode } from "./technical/MaintenanceMode";
-import { ImageUploadField } from "./technical/ImageUploadField";
-import { FaviconConfig } from "./technical/FaviconConfig";
-import { ReminderSettings } from "./technical/ReminderSettings";
-import { useToast } from "@/hooks/use-toast";
+import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Dispatch, SetStateAction } from "react";
-import { Card, CardContent } from "@/components/ui/card";
+import { useToast } from "@/hooks/use-toast";
+import { ReminderSettings } from "./ReminderSettings";
 
-interface TechnicalSettingsProps {
-  configs: Record<string, any>;
-  setConfigs: Dispatch<SetStateAction<Record<string, any>>>;
-  isLoading: boolean;
-}
-
-export function TechnicalSettings({ configs, setConfigs, isLoading }: TechnicalSettingsProps) {
+export function TechnicalSettings() {
+  const [configs, setConfigs] = useState<any>({});
   const { toast } = useToast();
 
-  const updateConfig = async (key: string, value: string) => {
-    try {
-      const { error } = await supabase
+  useEffect(() => {
+    const fetchConfigs = async () => {
+      const { data, error } = await supabase
         .from('site_config')
-        .upsert({ 
-          key,
-          value,
-          updated_at: new Date().toISOString()
-        }, {
-          onConflict: 'key'
+        .select('*')
+        .single();
+
+      if (error) {
+        console.error('Error fetching site config:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load site configuration",
+          variant: "destructive",
         });
+        return;
+      }
 
-      if (error) throw error;
+      setConfigs(data);
+    };
 
-      setConfigs(prev => ({ ...prev, [key]: value }));
-
-      toast({
-        title: "Success",
-        description: "Configuration updated successfully",
-      });
-    } catch (error: any) {
-      console.error('Error updating config:', error);
-      toast({
-        title: "Error",
-        description: error.message || "Failed to update configuration",
-        variant: "destructive",
-      });
-    }
-  };
+    fetchConfigs();
+  }, []);
 
   return (
-    <Card>
-      <CardContent className="space-y-6 pt-6">
-        <MaintenanceMode
-          enabled={configs.maintenance_mode === 'true'}
-          onToggle={(enabled) => {
-            updateConfig('maintenance_mode', enabled.toString());
-          }}
-        />
-
-        <FaviconConfig
-          value={configs.favicon_url || ''}
-          onChange={(value) => setConfigs(prev => ({ ...prev, favicon_url: value }))}
-          onSave={() => updateConfig('favicon_url', configs.favicon_url || '')}
-        />
-
-        <ImageUploadField
-          label="Default Event Image"
-          value={configs.default_event_image || ''}
-          onChange={(value) => {
-            setConfigs(prev => ({ ...prev, default_event_image: value }));
-            updateConfig('default_event_image', value);
-          }}
-          onSave={async () => {
-            await updateConfig('default_event_image', configs.default_event_image || '');
-          }}
-        />
-
-        <ReminderSettings
-          eventId={configs.current_event_id || ''}
-          enabled={configs.reminder_enabled === 'true'}
-          intervals={configs.reminder_intervals ? JSON.parse(configs.reminder_intervals) : ["7d", "1d", "1h"]}
-          onUpdate={() => {
-            // Refresh configs after update
-            setConfigs(prev => ({ ...prev }));
-          }}
-        />
-      </CardContent>
-    </Card>
+    <div className="space-y-4">
+      <h2 className="text-lg font-semibold">Technical Settings</h2>
+      <ReminderSettings
+        eventId={configs.current_event_id || ''}
+        enabled={configs.reminder_enabled === 'true'}
+        intervals={configs.reminder_intervals ? JSON.parse(configs.reminder_intervals) : ["7d", "1d", "1h"]}
+        onUpdate={() => {
+          // Refresh configs after update
+          setConfigs(prev => ({ ...prev }));
+        }}
+      />
+    </div>
   );
 }
