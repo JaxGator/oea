@@ -14,6 +14,8 @@ interface EventCardInteractionsProps {
   canAddGuests: boolean;
   guests: { firstName: string }[];
   isSelected?: boolean;
+  editedRSVPCount: string;
+  isEditingRSVP: boolean;
   onRSVP: (guests?: { firstName: string }[]) => void;
   onCancelRSVP: () => void;
   setShowEditDialog: (show: boolean) => void;
@@ -21,6 +23,10 @@ interface EventCardInteractionsProps {
   handleDelete: () => void;
   isPublished: boolean;
   onTogglePublish?: () => void;
+  onEditRSVP: () => void;
+  onSaveRSVP: () => void;
+  onCancelEdit: () => void;
+  onRSVPCountChange: (value: string) => void;
 }
 
 export function EventCardInteractions({
@@ -33,6 +39,8 @@ export function EventCardInteractions({
   canAddGuests,
   guests,
   isSelected = false,
+  editedRSVPCount,
+  isEditingRSVP,
   onRSVP,
   onCancelRSVP,
   setShowEditDialog,
@@ -40,6 +48,10 @@ export function EventCardInteractions({
   handleDelete,
   isPublished,
   onTogglePublish,
+  onEditRSVP,
+  onSaveRSVP,
+  onCancelEdit,
+  onRSVPCountChange,
 }: EventCardInteractionsProps) {
   const { handleCardClick } = useEventInteractions(setShowDetailsDialog);
 
@@ -65,6 +77,8 @@ export function EventCardInteractions({
         waitlistCount={rsvpData.waitlistCount}
         waitlistCapacity={event.waitlist_capacity}
         currentGuests={guests}
+        editedRSVPCount={editedRSVPCount}
+        isEditingRSVP={isEditingRSVP}
         onRSVP={onRSVP}
         onCancelRSVP={onCancelRSVP}
         onEdit={() => setShowEditDialog(true)}
@@ -73,6 +87,10 @@ export function EventCardInteractions({
         isPublished={isPublished}
         onViewDetails={() => setShowDetailsDialog(true)}
         onTogglePublish={onTogglePublish}
+        onEditRSVP={onEditRSVP}
+        onSaveRSVP={onSaveRSVP}
+        onCancelEdit={onCancelEdit}
+        onRSVPCountChange={onRSVPCountChange}
       />
     </EventCardWrapper>
   );
