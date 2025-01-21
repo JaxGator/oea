@@ -76,8 +76,8 @@ export function TechnicalSettings({ configs, setConfigs, isLoading }: TechnicalS
 
         <ReminderSettings
           eventId={configs.current_event_id || ''}
-          enabled={configs.reminder_enabled || false}
-          intervals={configs.reminder_intervals || ["7d", "1d", "1h"]}
+          enabled={configs.reminder_enabled === 'true'}
+          intervals={configs.reminder_intervals ? JSON.parse(configs.reminder_intervals) : ["7d", "1d", "1h"]}
           onUpdate={() => {
             // Refresh configs after update
             setConfigs(prev => ({ ...prev }));

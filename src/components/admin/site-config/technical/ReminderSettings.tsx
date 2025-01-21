@@ -5,6 +5,8 @@ import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertCircle } from "lucide-react";
 
 interface ReminderSettingsProps {
   eventId: string;
@@ -18,6 +20,18 @@ export function ReminderSettings({ eventId, enabled, intervals, onUpdate }: Remi
   const [reminderIntervals, setReminderIntervals] = useState<string[]>(intervals);
   const [newInterval, setNewInterval] = useState("");
   const { toast } = useToast();
+
+  // If no eventId is provided, show a message
+  if (!eventId) {
+    return (
+      <Alert variant="destructive">
+        <AlertCircle className="h-4 w-4" />
+        <AlertDescription>
+          Please select an event to configure reminders
+        </AlertDescription>
+      </Alert>
+    );
+  }
 
   const handleToggle = async (checked: boolean) => {
     try {
