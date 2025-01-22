@@ -11,14 +11,18 @@ import { DeleteConversationDialog } from "./DeleteConversationDialog";
 interface MessageListProps {
   conversations: Record<string, ConversationType>;
   selectedConversation: string | null;
+  isSending: boolean;
   onSelect: (userId: string) => void;
+  onMessageSend: (content: string) => void;
   onCancel: () => void;
 }
 
 export function MessageList({
   conversations,
   selectedConversation,
+  isSending,
   onSelect,
+  onMessageSend,
   onCancel,
 }: MessageListProps) {
   const { user } = useSession();

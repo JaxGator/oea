@@ -15,20 +15,24 @@ interface DeleteConversationDialogProps {
   onDelete: () => void;
 }
 
-export function DeleteConversationDialog({ open, onOpenChange, onDelete }: DeleteConversationDialogProps) {
+export function DeleteConversationDialog({
+  open,
+  onOpenChange,
+  onDelete,
+}: DeleteConversationDialogProps) {
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Delete Conversation</AlertDialogTitle>
+          <AlertDialogTitle>Delete Messages</AlertDialogTitle>
           <AlertDialogDescription>
-            Are you sure you want to delete all messages in this conversation? This action cannot be undone.
+            Are you sure you want to delete these messages? This action cannot be undone.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction onClick={onDelete} className="bg-red-600 hover:bg-red-700">
-            Delete
+          <AlertDialogAction onClick={onDelete} className="bg-destructive text-destructive-foreground">
+            Delete Messages
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
