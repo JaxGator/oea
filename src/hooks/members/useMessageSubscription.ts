@@ -21,7 +21,7 @@ export function useMessageSubscription(initialMembers: Profile[]) {
           schema: 'public',
           table: 'messages'
         },
-        (payload: any) => {
+        async (payload: any) => {
           // Update unread status for the receiver
           setMembers(prevMembers => 
             prevMembers.map(member => {
@@ -33,8 +33,9 @@ export function useMessageSubscription(initialMembers: Profile[]) {
           );
 
           // Show toast notification for new messages
-          const session = supabase.auth.getSession();
-          const currentUserId = session?.data?.session?.user?.id;
+          const { data: { session } } = await supabase.auth.getSession();
+          const currentUserId = session?.user?.id;
+          
           if (payload.new.receiver_id === currentUserId) {
             toast({
               title: "New Message",
