@@ -33,7 +33,9 @@ export function useMessageSubscription(initialMembers: Profile[]) {
           );
 
           // Show toast notification for new messages
-          if (payload.new.receiver_id === supabase.auth.getUser()?.data?.user?.id) {
+          const session = supabase.auth.getSession();
+          const currentUserId = session?.data?.session?.user?.id;
+          if (payload.new.receiver_id === currentUserId) {
             toast({
               title: "New Message",
               description: "You have received a new message",
