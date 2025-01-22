@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Inbox, Loader2 } from "lucide-react";
 import { useMessageSubscription } from "@/hooks/members/useMessageSubscription";
 import { MessageForm } from "@/components/members/communication/MessageForm";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 
 export default function Messages() {
@@ -29,6 +29,32 @@ export default function Messages() {
     enabled: !!user,
   });
 
+  // Subscribe to real-time message updates
+  useEffect(() => {
+    if (!user) return;
+
+    const channel = supabase
+      .channel('messages-updates')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'messages',
+          filter: `receiver_id=eq.${user.id}`,
+        },
+        () => {
+          // Invalidate and refetch messages query
+          queryClient.invalidateQueries({ queryKey: ['messages'] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user]);
+
   // Group messages by conversation
   const conversations = messages?.reduce((acc: any, message: any) => {
     const otherUser = message.sender_id === user?.id ? message.receiver : message.sender;
@@ -48,7 +74,6 @@ export default function Messages() {
       acc[conversationId].unreadCount++;
     }
     
-    // Track the most recent message
     if (!acc[conversationId].lastMessage || 
         new Date(message.created_at) > new Date(acc[conversationId].lastMessage.created_at)) {
       acc[conversationId].lastMessage = message;
