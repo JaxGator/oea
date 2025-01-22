@@ -27,7 +27,7 @@ export function MessageList({
   const { deleteMessage, editMessage } = useMessageOperations();
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-3xl mx-auto">
       {Object.values(conversations || {}).map((conversation) => (
         <Card 
           key={conversation.user.id} 

@@ -2,7 +2,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuthState } from "@/hooks/useAuthState";
 import { Card } from "@/components/ui/card";
-import { Inbox, Loader2 } from "lucide-react";
+import { Inbox, Loader2, Mail } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useMessageReading } from "@/hooks/messages/useMessageReading";
@@ -124,7 +124,7 @@ export default function Messages() {
 
   if (!messages?.length) {
     return (
-      <Card className="p-8">
+      <Card className="p-8 max-w-3xl mx-auto">
         <div className="flex flex-col items-center justify-center text-center space-y-4">
           <Inbox className="h-12 w-12 text-muted-foreground" />
           <div className="space-y-2">
@@ -165,8 +165,9 @@ export default function Messages() {
   }, {});
 
   return (
-    <div className="space-y-8">
-      <div className="flex justify-between items-center">
+    <div className="space-y-8 max-w-4xl mx-auto px-4">
+      <div className="flex items-center gap-2">
+        <Mail className="h-8 w-8" />
         <h1 className="text-3xl font-bold">Messages</h1>
       </div>
       <MessageList
