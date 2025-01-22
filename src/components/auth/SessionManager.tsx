@@ -25,6 +25,7 @@ export function SessionManager({ children, queryClient }: SessionManagerProps) {
     const checkSession = async () => {
       try {
         console.log('Checking session...');
+        // First, try to get the current session
         const { data: { session }, error } = await supabase.auth.getSession();
         
         if (error) {
@@ -64,8 +65,9 @@ export function SessionManager({ children, queryClient }: SessionManagerProps) {
 
             if (refreshError) {
               console.error('Session refresh failed:', refreshError);
-              // If refresh fails due to invalid/missing refresh token, clear session
-              if (refreshError.message.includes('refresh_token_not_found')) {
+              // Handle specific refresh token errors silently
+              if (refreshError.message.includes('refresh_token_not_found') || 
+                  refreshError.message.includes('Invalid Refresh Token')) {
                 console.log('Invalid refresh token, clearing session...');
                 await clearSessionData();
                 if (isProtectedRoute(location.pathname)) {
@@ -79,8 +81,8 @@ export function SessionManager({ children, queryClient }: SessionManagerProps) {
 
             if (!refreshedSession) {
               console.log('Session refresh returned no session');
+              await clearSessionData();
               if (isProtectedRoute(location.pathname)) {
-                await clearSessionData();
                 navigate('/auth');
               }
               return;
@@ -109,7 +111,8 @@ export function SessionManager({ children, queryClient }: SessionManagerProps) {
       await clearSessionData();
       
       // Only show toast for network errors or unexpected issues
-      if (!error.message.includes('refresh_token_not_found')) {
+      if (!error.message.includes('refresh_token_not_found') && 
+          !error.message.includes('Invalid Refresh Token')) {
         toast({
           title: "Session Error",
           description: "Your session has expired. Please sign in again.",
