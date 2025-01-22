@@ -6,6 +6,7 @@ import { useMessageOperations } from "@/hooks/messages/useMessageOperations";
 import { useSession } from "@/hooks/auth/useSession";
 import { format } from "date-fns";
 import { useEffect, useRef } from "react";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface MessageListProps {
   conversations: Record<string, ConversationType>;
@@ -27,9 +28,15 @@ export function MessageList({
   const { user } = useSession();
   const { deleteMessage, editMessage } = useMessageOperations();
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const isMobile = useIsMobile();
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ 
+        behavior: "smooth",
+        block: "end"
+      });
+    }
   };
 
   useEffect(() => {
@@ -48,7 +55,7 @@ export function MessageList({
           }`}
           onClick={() => onConversationSelect(conversation.user.id)}
         >
-          <div className="p-6 border-b">
+          <div className="sticky top-0 z-10 p-6 border-b bg-background">
             <div className="flex justify-between items-start">
               <div>
                 <h3 className="text-lg font-semibold">
@@ -69,7 +76,7 @@ export function MessageList({
             </div>
           </div>
 
-          <div className="flex-1 overflow-y-auto p-6 space-y-4">
+          <div className={`flex-1 overflow-y-auto p-6 space-y-4 ${isMobile ? 'pb-32' : 'pb-6'}`}>
             {conversation.messages.map((message) => (
               <ConversationMessage
                 key={message.id}
