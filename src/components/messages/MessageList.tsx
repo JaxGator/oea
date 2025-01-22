@@ -4,6 +4,7 @@ import { ConversationType } from "./types";
 import { ConversationMessage } from "./ConversationMessage";
 import { useMessageOperations } from "@/hooks/messages/useMessageOperations";
 import { useSession } from "@/hooks/auth/useSession";
+import { format } from "date-fns";
 
 interface MessageListProps {
   conversations: Record<string, ConversationType>;
@@ -26,32 +27,37 @@ export function MessageList({
   const { deleteMessage, editMessage } = useMessageOperations();
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {Object.values(conversations || {}).map((conversation) => (
         <Card 
           key={conversation.user.id} 
-          className="p-4 cursor-pointer hover:bg-accent/50 transition-colors"
+          className={`p-6 transition-colors ${
+            selectedConversation === conversation.user.id 
+              ? 'ring-2 ring-primary' 
+              : 'hover:bg-accent/50 cursor-pointer'
+          }`}
           onClick={() => onConversationSelect(conversation.user.id)}
         >
-          <div className="flex justify-between items-start">
+          <div className="flex justify-between items-start mb-4">
             <div>
-              <p className="font-medium">
+              <h3 className="text-lg font-semibold">
                 {conversation.user.username}
-              </p>
+              </h3>
               <p className="text-sm text-muted-foreground">
-                {new Date(conversation.lastMessage.created_at).toLocaleDateString()}
+                {format(new Date(conversation.lastMessage.created_at), 'MMM d, yyyy')}
               </p>
             </div>
             {conversation.unreadCount > 0 && (
-              <div className="flex items-center space-x-2">
-                <div className="bg-primary w-2 h-2 rounded-full" />
-                <span className="text-sm text-muted-foreground">
+              <div className="flex items-center gap-2 bg-primary/10 text-primary px-2 py-1 rounded-full">
+                <div className="bg-primary w-2 h-2 rounded-full animate-pulse" />
+                <span className="text-sm font-medium">
                   {conversation.unreadCount} unread
                 </span>
               </div>
             )}
           </div>
-          <div className="mt-4 space-y-2">
+
+          <div className="space-y-4">
             {conversation.messages.map((message) => (
               <ConversationMessage
                 key={message.id}
@@ -62,12 +68,15 @@ export function MessageList({
               />
             ))}
           </div>
+
           {selectedConversation === conversation.user.id && (
-            <MessageForm
-              isSending={isSending}
-              onSend={onMessageSend}
-              onCancel={onCancel}
-            />
+            <div className="mt-6 pt-4 border-t">
+              <MessageForm
+                isSending={isSending}
+                onSend={onMessageSend}
+                onCancel={onCancel}
+              />
+            </div>
           )}
         </Card>
       ))}
