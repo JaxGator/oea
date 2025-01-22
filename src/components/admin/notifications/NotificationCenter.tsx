@@ -44,7 +44,6 @@ export function NotificationCenter() {
     },
   });
 
-  // Subscribe to real-time notifications
   useEffect(() => {
     const channel = supabase
       .channel('admin-notifications')
@@ -81,7 +80,7 @@ export function NotificationCenter() {
           className="relative text-white hover:text-primary-100 hover:bg-gray-800"
         >
           <Bell className="h-5 w-5" />
-          <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-red-500 text-xs text-white flex items-center justify-center">
+          <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] text-white">
             {notifications.length}
           </span>
         </Button>

@@ -31,9 +31,13 @@ export function AdminNotifications() {
   return (
     <HoverCard>
       <HoverCardTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative text-white hover:text-primary-100 hover:bg-gray-800">
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          className="relative text-white hover:text-primary-100 hover:bg-gray-800"
+        >
           <Bell className="h-5 w-5" />
-          <span className="absolute top-0 right-0 h-4 w-4 rounded-full bg-red-500 text-[10px] text-white flex items-center justify-center translate-x-1/3 -translate-y-1/3">
+          <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] text-white">
             {unapprovedUsers.length}
           </span>
         </Button>
