@@ -23,7 +23,8 @@ export const supabase = createClient<Database>(
     },
     global: {
       headers: {
-        'x-client-info': 'supabase-js-web',
+        'X-Client-Info': 'supabase-js-web',
+        'Access-Control-Allow-Origin': '*'
       },
     },
     db: {
@@ -39,7 +40,11 @@ export const testSupabaseConnection = async () => {
     const { data: { session }, error } = await supabase.auth.getSession();
     
     if (error) {
-      console.error('Supabase connection test error:', error);
+      console.error('Supabase connection test error:', {
+        error,
+        url: SUPABASE_URL,
+        timestamp: new Date().toISOString()
+      });
       toast({
         title: "Connection Error",
         description: "Failed to connect to database. Please try refreshing the page.",
@@ -50,11 +55,16 @@ export const testSupabaseConnection = async () => {
     
     console.log('Supabase connection test successful:', {
       hasSession: !!session,
+      url: SUPABASE_URL,
       timestamp: new Date().toISOString()
     });
     return true;
   } catch (error) {
-    console.error('Supabase connection test failed:', error);
+    console.error('Supabase connection test failed:', {
+      error,
+      url: SUPABASE_URL,
+      timestamp: new Date().toISOString()
+    });
     toast({
       title: "Connection Error",
       description: "Failed to connect to database. Please try refreshing the page.",
