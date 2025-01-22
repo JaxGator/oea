@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Message } from "./types";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -21,6 +21,13 @@ export function ConversationMessage({
 }: ConversationMessageProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editedContent, setEditedContent] = useState(message.content);
+  const messageRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (messageRef.current) {
+      messageRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [message.content]);
 
   const handleSaveEdit = () => {
     onEdit(message.id, editedContent);
@@ -37,17 +44,20 @@ export function ConversationMessage({
   };
 
   return (
-    <div className={`group flex gap-2 ${isCurrentUser ? 'flex-row-reverse' : 'flex-row'} items-start mb-4`}>
-      <Avatar className="h-8 w-8 mt-1">
+    <div 
+      ref={messageRef}
+      className={`group flex gap-2 ${isCurrentUser ? 'flex-row-reverse' : 'flex-row'} items-start mb-4`}
+    >
+      <Avatar className="h-8 w-8 mt-1 flex-shrink-0">
         <AvatarImage src={isCurrentUser ? message.sender.avatar_url : message.receiver.avatar_url} />
         <AvatarFallback>
           {getInitials(isCurrentUser ? message.sender.username : message.receiver.username)}
         </AvatarFallback>
       </Avatar>
       
-      <div className={`flex flex-col ${isCurrentUser ? 'items-end' : 'items-start'} max-w-[70%]`}>
+      <div className={`flex flex-col ${isCurrentUser ? 'items-end' : 'items-start'} max-w-[85%] sm:max-w-[70%]`}>
         <div className={`
-          rounded-2xl px-4 py-2 shadow-sm
+          rounded-2xl px-4 py-2 shadow-sm break-words
           ${isCurrentUser 
             ? 'bg-primary text-primary-foreground rounded-tr-none' 
             : 'bg-muted rounded-tl-none'
@@ -58,7 +68,9 @@ export function ConversationMessage({
               <Textarea
                 value={editedContent}
                 onChange={(e) => setEditedContent(e.target.value)}
-                className="min-h-[60px] bg-background"
+                className="min-h-[60px] bg-background resize-none"
+                rows={3}
+                maxLength={1000}
               />
               <div className="flex justify-end gap-2">
                 <Button
@@ -81,7 +93,7 @@ export function ConversationMessage({
             </div>
           ) : (
             <div className="space-y-1">
-              <p className="whitespace-pre-wrap break-words">{message.content}</p>
+              <p className="whitespace-pre-wrap">{message.content}</p>
             </div>
           )}
         </div>
