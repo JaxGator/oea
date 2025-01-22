@@ -1,10 +1,11 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { UserCircle } from "lucide-react";
+import { MessageSquare, UserCircle } from "lucide-react";
 import { Profile } from "@/types/auth";
 import { supabase } from "@/integrations/supabase/client";
-import { useCallback, useState } from "react";
+import { useCallback, useState, useEffect } from "react";
+import { Badge } from "@/components/ui/badge";
 
 interface UserMenuProps {
   user: any;
@@ -13,9 +14,51 @@ interface UserMenuProps {
 
 export function UserMenu({ user, profile }: UserMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
+
   const handleSignOut = useCallback(async () => {
     await supabase.auth.signOut();
   }, []);
+
+  useEffect(() => {
+    if (!user) return;
+
+    // Subscribe to messages
+    const channel = supabase
+      .channel('messages-channel')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'messages',
+          filter: `receiver_id=eq.${user.id}`
+        },
+        () => {
+          fetchUnreadCount();
+        }
+      )
+      .subscribe();
+
+    // Initial fetch of unread count
+    fetchUnreadCount();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user]);
+
+  const fetchUnreadCount = async () => {
+    if (!user) return;
+
+    const { count } = await supabase
+      .from('messages')
+      .select('*', { count: 'exact', head: true })
+      .eq('receiver_id', user.id)
+      .eq('is_read', false);
+
+    setUnreadCount(count || 0);
+  };
 
   if (!user) {
     return (
@@ -34,6 +77,22 @@ export function UserMenu({ user, profile }: UserMenuProps) {
 
   return (
     <div className="flex items-center space-x-4" role="menu">
+      <Link
+        to="/messages"
+        className="relative flex items-center hover:opacity-80"
+        role="menuitem"
+        tabIndex={0}
+      >
+        <MessageSquare className="h-6 w-6" />
+        {unreadCount > 0 && (
+          <Badge 
+            variant="destructive" 
+            className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center p-0 text-xs"
+          >
+            {unreadCount}
+          </Badge>
+        )}
+      </Link>
       <Link
         to="/profile"
         className="flex items-center space-x-2 hover:opacity-80"

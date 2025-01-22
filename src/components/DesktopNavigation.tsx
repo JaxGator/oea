@@ -14,7 +14,7 @@ export function DesktopNavigation() {
 
   const navigationItems = createNavigationItems(user, profile, handleSignOut)
     .filter(item => !item.onClick && (!item.show || item.show(user, profile)))
-    .filter(item => item.path !== '/auth' && item.path !== '#' && item.path !== '/' && item.path !== '/messages');
+    .filter(item => item.path !== '/auth' && item.path !== '#' && item.path !== '/');
 
   return (
     <nav className="hidden md:block bg-gray-900 text-white p-4" role="navigation" aria-label="Main navigation">
