@@ -32,7 +32,6 @@ export default function Messages() {
     enabled: !!user,
   });
 
-  // Subscribe to real-time message updates
   useEffect(() => {
     if (!user) return;
 
