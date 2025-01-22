@@ -4,9 +4,15 @@ import { useAuthState } from "@/hooks/useAuthState";
 import { Card } from "@/components/ui/card";
 import { Inbox, Loader2 } from "lucide-react";
 import { useMessageSubscription } from "@/hooks/members/useMessageSubscription";
+import { MessageForm } from "@/components/members/communication/MessageForm";
+import { useState } from "react";
+import { useToast } from "@/hooks/use-toast";
 
 export default function Messages() {
   const { user } = useAuthState();
+  const { toast } = useToast();
+  const [selectedConversation, setSelectedConversation] = useState<string | null>(null);
+  const [isSending, setIsSending] = useState(false);
 
   const { data: messages, isLoading } = useQuery({
     queryKey: ['messages'],
@@ -51,6 +57,38 @@ export default function Messages() {
     return acc;
   }, {});
 
+  const handleSendMessage = async (content: string) => {
+    if (!selectedConversation || !user) return;
+
+    setIsSending(true);
+    try {
+      const { error } = await supabase
+        .from('messages')
+        .insert({
+          sender_id: user.id,
+          receiver_id: selectedConversation,
+          content,
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "Message sent",
+        description: "Your message has been sent successfully.",
+      });
+      setSelectedConversation(null);
+    } catch (error) {
+      console.error('Error sending message:', error);
+      toast({
+        title: "Error",
+        description: "Failed to send message. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSending(false);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -82,7 +120,11 @@ export default function Messages() {
       </div>
       <div className="space-y-4">
         {Object.values(conversations || {}).map((conversation: any) => (
-          <Card key={conversation.user.id} className="p-4">
+          <Card 
+            key={conversation.user.id} 
+            className="p-4 cursor-pointer hover:bg-accent/50 transition-colors"
+            onClick={() => setSelectedConversation(conversation.user.id)}
+          >
             <div className="flex justify-between items-start">
               <div>
                 <p className="font-medium">
@@ -104,6 +146,13 @@ export default function Messages() {
             <p className="mt-2 text-muted-foreground">
               {conversation.lastMessage.content}
             </p>
+            {selectedConversation === conversation.user.id && (
+              <MessageForm
+                isSending={isSending}
+                onSend={handleSendMessage}
+                onCancel={() => setSelectedConversation(null)}
+              />
+            )}
           </Card>
         ))}
       </div>
