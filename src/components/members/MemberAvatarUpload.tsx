@@ -31,20 +31,41 @@ export function MemberAvatarUpload({
       setUploading(true);
 
       const file = event.target.files[0];
+      if (!file.type.startsWith('image/')) {
+        throw new Error('Please upload an image file');
+      }
+
       const fileExt = file.name.split('.').pop();
-      const filePath = `${memberId}-${Math.random()}.${fileExt}`;
+      const timestamp = Date.now();
+      const filePath = `avatars/${memberId}/${timestamp}.${fileExt}`;
 
       const { error: uploadError } = await supabase.storage
         .from('media')
-        .upload(filePath, file);
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          contentType: file.type,
+          upsert: true // Allow overwriting existing avatar
+        });
 
       if (uploadError) {
+        console.error('Error uploading avatar:', uploadError);
         throw uploadError;
       }
 
       const { data: { publicUrl } } = supabase.storage
         .from('media')
         .getPublicUrl(filePath);
+
+      // Update the profile with new avatar URL
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ avatar_url: publicUrl })
+        .eq('id', memberId);
+
+      if (updateError) {
+        console.error('Error updating profile:', updateError);
+        throw updateError;
+      }
 
       onAvatarUpdate(publicUrl);
 
@@ -53,14 +74,17 @@ export function MemberAvatarUpload({
         description: "Avatar uploaded successfully",
       });
     } catch (error) {
-      console.error('Error uploading avatar:', error);
+      console.error('Error in avatar upload:', error);
       toast({
         title: "Error",
-        description: "Failed to upload avatar",
+        description: error instanceof Error ? error.message : "Failed to upload avatar",
         variant: "destructive",
       });
     } finally {
       setUploading(false);
+      if (event.target) {
+        event.target.value = '';
+      }
     }
   };
 
