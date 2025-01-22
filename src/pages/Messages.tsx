@@ -7,6 +7,7 @@ import { useMessageSubscription } from "@/hooks/members/useMessageSubscription";
 import { MessageForm } from "@/components/members/communication/MessageForm";
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { useMessageReading } from "@/hooks/messages/useMessageReading";
 
 export default function Messages() {
   const { user } = useAuthState();
@@ -14,6 +15,7 @@ export default function Messages() {
   const queryClient = useQueryClient();
   const [selectedConversation, setSelectedConversation] = useState<string | null>(null);
   const [isSending, setIsSending] = useState(false);
+  const { markMessagesAsRead } = useMessageReading();
 
   const { data: messages, isLoading } = useQuery({
     queryKey: ['messages'],
@@ -45,7 +47,6 @@ export default function Messages() {
           filter: `receiver_id=eq.${user.id}`,
         },
         () => {
-          // Invalidate and refetch messages query
           queryClient.invalidateQueries({ queryKey: ['messages'] });
         }
       )
@@ -56,32 +57,15 @@ export default function Messages() {
     };
   }, [user, queryClient]);
 
-  // Group messages by conversation
-  const conversations = messages?.reduce((acc: any, message: any) => {
-    const otherUser = message.sender_id === user?.id ? message.receiver : message.sender;
-    const conversationId = otherUser.id;
-    
-    if (!acc[conversationId]) {
-      acc[conversationId] = {
-        user: otherUser,
-        messages: [],
-        lastMessage: null,
-        unreadCount: 0
-      };
+  // Mark messages as read when conversation is selected
+  useEffect(() => {
+    if (selectedConversation && user) {
+      markMessagesAsRead({ 
+        receiverId: user.id, 
+        senderId: selectedConversation 
+      });
     }
-    
-    acc[conversationId].messages.push(message);
-    if (!message.is_read && message.receiver_id === user?.id) {
-      acc[conversationId].unreadCount++;
-    }
-    
-    if (!acc[conversationId].lastMessage || 
-        new Date(message.created_at) > new Date(acc[conversationId].lastMessage.created_at)) {
-      acc[conversationId].lastMessage = message;
-    }
-    
-    return acc;
-  }, {});
+  }, [selectedConversation, user, markMessagesAsRead]);
 
   const handleSendMessage = async (content: string) => {
     if (!selectedConversation || !user) return;
@@ -138,6 +122,33 @@ export default function Messages() {
       </Card>
     );
   }
+
+  // Group messages by conversation
+  const conversations = messages?.reduce((acc: any, message: any) => {
+    const otherUser = message.sender_id === user?.id ? message.receiver : message.sender;
+    const conversationId = otherUser.id;
+    
+    if (!acc[conversationId]) {
+      acc[conversationId] = {
+        user: otherUser,
+        messages: [],
+        lastMessage: null,
+        unreadCount: 0
+      };
+    }
+    
+    acc[conversationId].messages.push(message);
+    if (!message.is_read && message.receiver_id === user?.id) {
+      acc[conversationId].unreadCount++;
+    }
+    
+    if (!acc[conversationId].lastMessage || 
+        new Date(message.created_at) > new Date(acc[conversationId].lastMessage.created_at)) {
+      acc[conversationId].lastMessage = message;
+    }
+    
+    return acc;
+  }, {});
 
   return (
     <div className="space-y-8">
