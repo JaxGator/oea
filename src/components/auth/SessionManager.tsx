@@ -57,26 +57,40 @@ export function SessionManager({ children, queryClient }: SessionManagerProps) {
         const isExpiringSoon = (expiresAt * 1000) - Date.now() < 5 * 60 * 1000;
 
         if (isExpiringSoon) {
-          console.log('Token expiring soon, refreshing...');
-          const { data: { session: refreshedSession }, error: refreshError } = 
-            await supabase.auth.refreshSession();
+          console.log('Token expiring soon, attempting refresh...');
+          try {
+            const { data: { session: refreshedSession }, error: refreshError } = 
+              await supabase.auth.refreshSession();
 
-          if (refreshError) {
-            console.error('Session refresh failed:', refreshError);
-            await handleSessionError(refreshError);
-            return;
-          }
-
-          if (!refreshedSession) {
-            console.log('Session refresh returned no session');
-            if (isProtectedRoute(location.pathname)) {
-              await clearSessionData();
-              navigate('/auth');
+            if (refreshError) {
+              console.error('Session refresh failed:', refreshError);
+              // If refresh fails due to invalid/missing refresh token, clear session
+              if (refreshError.message.includes('refresh_token_not_found')) {
+                console.log('Invalid refresh token, clearing session...');
+                await clearSessionData();
+                if (isProtectedRoute(location.pathname)) {
+                  navigate('/auth');
+                }
+                return;
+              }
+              await handleSessionError(refreshError);
+              return;
             }
-            return;
-          }
 
-          console.log('Session refreshed successfully');
+            if (!refreshedSession) {
+              console.log('Session refresh returned no session');
+              if (isProtectedRoute(location.pathname)) {
+                await clearSessionData();
+                navigate('/auth');
+              }
+              return;
+            }
+
+            console.log('Session refreshed successfully');
+          } catch (refreshErr) {
+            console.error('Session refresh failed:', refreshErr);
+            await handleSessionError(refreshErr as AuthError);
+          }
         }
       } catch (err) {
         console.error('Session check failed:', err);
@@ -94,11 +108,14 @@ export function SessionManager({ children, queryClient }: SessionManagerProps) {
       console.error('Session error:', error);
       await clearSessionData();
       
-      toast({
-        title: "Connection Error",
-        description: "Unable to connect to the server. Please check your connection and try again.",
-        variant: "destructive",
-      });
+      // Only show toast for network errors or unexpected issues
+      if (!error.message.includes('refresh_token_not_found')) {
+        toast({
+          title: "Session Error",
+          description: "Your session has expired. Please sign in again.",
+          variant: "destructive",
+        });
+      }
       
       if (isProtectedRoute(location.pathname)) {
         navigate('/auth');
