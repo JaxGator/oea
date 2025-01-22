@@ -1,8 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 
 export async function uploadImage(file: File): Promise<{ fileName: string; error: Error | null }> {
-  const fileName = `${Date.now()}-${file.name}`;
-
   try {
     const { data: { user } } = await supabase.auth.getUser();
     
@@ -10,16 +8,24 @@ export async function uploadImage(file: File): Promise<{ fileName: string; error
       throw new Error('User not authenticated');
     }
 
+    // Create a folder structure with user ID
+    const timestamp = Date.now();
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${user.id}/gallery-${timestamp}.${fileExt}`;
+
     const { error: uploadError } = await supabase.storage
-      .from('gallery')
-      .upload(fileName, file);
+      .from('media')
+      .upload(fileName, file, {
+        contentType: file.type,
+        upsert: false
+      });
 
     if (uploadError) throw uploadError;
 
     return { fileName, error: null };
   } catch (error) {
     console.error('Error uploading image:', error);
-    return { fileName, error: error as Error };
+    return { fileName: '', error: error as Error };
   }
 }
 
@@ -32,7 +38,7 @@ export async function deleteImage(fileName: string): Promise<boolean> {
     }
 
     const { error } = await supabase.storage
-      .from('gallery')
+      .from('media')
       .remove([fileName]);
 
     if (error) throw error;

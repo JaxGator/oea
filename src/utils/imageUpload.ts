@@ -1,50 +1,43 @@
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "@/hooks/use-toast";
 
-interface UploadResult {
-  fileName: string;
-  publicUrl: string;
-}
+export type ImageType = 'metaImage' | 'favicon' | 'default';
 
-export async function uploadImageToStorage(
-  file: File,
-  bucket: 'gallery' | 'media' = 'gallery'
-): Promise<UploadResult> {
+export async function uploadImage(file: File, imageType: ImageType) {
+  if (!file.type.startsWith('image/')) {
+    throw new Error('Please upload an image file');
+  }
+
+  // Get current user
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    throw new Error('User must be authenticated to upload images');
+  }
+
+  const arrayBuffer = await file.arrayBuffer();
+  const fileData = new Uint8Array(arrayBuffer);
+
   const timestamp = Date.now();
-  const randomString = Math.random().toString(36).substring(2, 8);
   const fileExt = file.name.split('.').pop();
-  const fileName = `${timestamp}-${randomString}.${fileExt}`;
+  // Create a folder structure with user ID
+  const fileName = `${user.id}/${imageType}-${timestamp}.${fileExt}`;
 
   const { error: uploadError } = await supabase.storage
-    .from(bucket)
-    .upload(fileName, file, {
-      cacheControl: '3600',
+    .from('media')
+    .upload(fileName, fileData, {
       contentType: file.type,
+      duplex: 'half',
+      cacheControl: '3600',
       upsert: false
     });
 
   if (uploadError) {
-    console.error('Storage upload error:', uploadError);
+    console.error('Upload error:', uploadError);
     throw uploadError;
   }
 
   const { data: { publicUrl } } = supabase.storage
-    .from(bucket)
+    .from('media')
     .getPublicUrl(fileName);
 
-  return { fileName, publicUrl };
-}
-
-export async function deleteImageFromStorage(
-  fileName: string,
-  bucket: 'gallery' | 'media' = 'gallery'
-): Promise<void> {
-  const { error } = await supabase.storage
-    .from(bucket)
-    .remove([fileName]);
-
-  if (error) {
-    console.error('Storage delete error:', error);
-    throw error;
-  }
+  return publicUrl;
 }
