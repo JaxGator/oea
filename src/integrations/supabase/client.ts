@@ -24,11 +24,15 @@ export const supabase = createClient<Database>(
     global: {
       headers: {
         'X-Client-Info': 'supabase-js-web',
-        'Access-Control-Allow-Origin': '*'
       },
     },
     db: {
       schema: 'public'
+    },
+    realtime: {
+      params: {
+        eventsPerSecond: 10
+      }
     }
   }
 );
