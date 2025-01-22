@@ -181,7 +181,7 @@ export default function Messages() {
           conversations={conversations}
           selectedConversation={selectedConversation}
           isSending={isSending}
-          onConversationSelect={setSelectedConversation}
+          onSelect={setSelectedConversation}
           onMessageSend={handleSendMessage}
           onCancel={() => setSelectedConversation(null)}
         />
