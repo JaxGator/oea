@@ -5,8 +5,13 @@ import { ConversationMessage } from "./ConversationMessage";
 import { useMessageOperations } from "@/hooks/messages/useMessageOperations";
 import { useSession } from "@/hooks/auth/useSession";
 import { format } from "date-fns";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { Button } from "@/components/ui/button";
+import { Trash2 } from "lucide-react";
+import { DeleteEventDialog } from "../event/DeleteEventDialog";
+import { toast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface MessageListProps {
   conversations: Record<string, ConversationType>;
@@ -29,6 +34,8 @@ export function MessageList({
   const { deleteMessage, editMessage } = useMessageOperations();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   const scrollToBottom = () => {
     if (messagesEndRef.current) {
@@ -42,6 +49,39 @@ export function MessageList({
   useEffect(() => {
     scrollToBottom();
   }, [conversations]);
+
+  const handleDeleteConversation = async () => {
+    if (!selectedConversation || !user) return;
+    
+    setIsDeleting(true);
+    try {
+      const { error } = await supabase
+        .from('messages')
+        .delete()
+        .or(`sender_id.eq.${user.id},receiver_id.eq.${user.id}`)
+        .eq(user.id === conversations[selectedConversation].user.id ? 'sender_id' : 'receiver_id', 
+            conversations[selectedConversation].user.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Conversation deleted",
+        description: "The conversation has been permanently deleted.",
+      });
+      
+      onCancel(); // Close the conversation view
+    } catch (error) {
+      console.error('Error deleting conversation:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete conversation. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDeleting(false);
+      setShowDeleteDialog(false);
+    }
+  };
 
   return (
     <div className="space-y-6 max-w-3xl mx-auto">
@@ -65,14 +105,30 @@ export function MessageList({
                   {format(new Date(conversation.lastMessage.created_at), 'MMM d, yyyy')}
                 </p>
               </div>
-              {conversation.unreadCount > 0 && (
-                <div className="flex items-center gap-2 bg-primary/10 text-primary px-2 py-1 rounded-full">
-                  <div className="bg-primary w-2 h-2 rounded-full animate-pulse" />
-                  <span className="text-sm font-medium">
-                    {conversation.unreadCount} unread
-                  </span>
-                </div>
-              )}
+              <div className="flex items-center gap-2">
+                {conversation.unreadCount > 0 && (
+                  <div className="flex items-center gap-2 bg-primary/10 text-primary px-2 py-1 rounded-full">
+                    <div className="bg-primary w-2 h-2 rounded-full animate-pulse" />
+                    <span className="text-sm font-medium">
+                      {conversation.unreadCount} unread
+                    </span>
+                  </div>
+                )}
+                {selectedConversation === conversation.user.id && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setShowDeleteDialog(true);
+                    }}
+                    disabled={isDeleting}
+                  >
+                    <Trash2 className="h-5 w-5" />
+                  </Button>
+                )}
+              </div>
             </div>
           </div>
 
@@ -100,6 +156,12 @@ export function MessageList({
           )}
         </Card>
       ))}
+
+      <DeleteEventDialog
+        open={showDeleteDialog}
+        onOpenChange={setShowDeleteDialog}
+        onDelete={handleDeleteConversation}
+      />
     </div>
   );
 }
