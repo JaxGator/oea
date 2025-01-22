@@ -124,17 +124,23 @@ export default function Messages() {
 
   if (!messages?.length) {
     return (
-      <Card className="p-8 max-w-3xl mx-auto">
-        <div className="flex flex-col items-center justify-center text-center space-y-4">
-          <Inbox className="h-12 w-12 text-muted-foreground" />
-          <div className="space-y-2">
-            <h3 className="text-xl font-semibold">No messages yet</h3>
-            <p className="text-muted-foreground">
-              When you send or receive messages, they'll appear here.
-            </p>
-          </div>
+      <div className="max-w-4xl mx-auto px-4 py-8 mb-12">
+        <div className="flex items-center gap-3 mb-8">
+          <Mail className="h-7 w-7" />
+          <h1 className="text-3xl font-bold">Messages</h1>
         </div>
-      </Card>
+        <Card className="p-8">
+          <div className="flex flex-col items-center justify-center text-center space-y-4">
+            <Inbox className="h-12 w-12 text-muted-foreground" />
+            <div className="space-y-2">
+              <h3 className="text-xl font-semibold">No messages yet</h3>
+              <p className="text-muted-foreground">
+                When you send or receive messages, they'll appear here.
+              </p>
+            </div>
+          </div>
+        </Card>
+      </div>
     );
   }
 
@@ -165,19 +171,21 @@ export default function Messages() {
   }, {});
 
   return (
-    <div className="space-y-8 max-w-4xl mx-auto px-4">
-      <div className="flex items-center gap-2">
-        <Mail className="h-8 w-8" />
-        <h1 className="text-3xl font-bold">Messages</h1>
+    <div className="min-h-[calc(100vh-theme(spacing.16))] bg-gray-50/50">
+      <div className="max-w-4xl mx-auto px-4 py-8 mb-12">
+        <div className="flex items-center gap-3 mb-8 bg-white p-6 rounded-lg shadow-sm">
+          <Mail className="h-7 w-7" />
+          <h1 className="text-3xl font-bold">Messages</h1>
+        </div>
+        <MessageList
+          conversations={conversations}
+          selectedConversation={selectedConversation}
+          isSending={isSending}
+          onConversationSelect={setSelectedConversation}
+          onMessageSend={handleSendMessage}
+          onCancel={() => setSelectedConversation(null)}
+        />
       </div>
-      <MessageList
-        conversations={conversations}
-        selectedConversation={selectedConversation}
-        isSending={isSending}
-        onConversationSelect={setSelectedConversation}
-        onMessageSend={handleSendMessage}
-        onCancel={() => setSelectedConversation(null)}
-      />
     </div>
   );
 }
