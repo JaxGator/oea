@@ -6,6 +6,11 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+function isValidEmail(email: string): boolean {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
@@ -49,6 +54,24 @@ serve(async (req) => {
 
     // Get request body
     const { email, password, username, fullName, isAdmin, isApproved, isMember } = await req.json()
+
+    // Validate email
+    if (!email || !isValidEmail(email)) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid email format' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    // Validate required fields
+    if (!password || !username) {
+      return new Response(
+        JSON.stringify({ error: 'Password and username are required' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    console.log('Creating user with email:', email);
 
     // Create the user in Auth
     const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
