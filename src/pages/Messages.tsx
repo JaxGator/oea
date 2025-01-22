@@ -50,6 +50,18 @@ export default function Messages() {
           queryClient.invalidateQueries({ queryKey: ['messages'] });
         }
       )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'messages',
+          filter: `receiver_id=eq.${user.id}`,
+        },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ['messages'] });
+        }
+      )
       .subscribe();
 
     return () => {
