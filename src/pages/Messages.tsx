@@ -59,7 +59,9 @@ export default function Messages() {
           filter: `receiver_id=eq.${user.id}`,
         },
         () => {
+          // Invalidate both messages and unread count queries
           queryClient.invalidateQueries({ queryKey: ['messages'] });
+          queryClient.invalidateQueries({ queryKey: ['unreadCount'] });
         }
       )
       .subscribe();
@@ -76,8 +78,10 @@ export default function Messages() {
         receiverId: user.id, 
         senderId: selectedConversation 
       });
+      // Invalidate unread count after marking messages as read
+      queryClient.invalidateQueries({ queryKey: ['unreadCount'] });
     }
-  }, [selectedConversation, user, markMessagesAsRead]);
+  }, [selectedConversation, user, markMessagesAsRead, queryClient]);
 
   const handleSendMessage = async (content: string) => {
     if (!selectedConversation || !user) return;
@@ -135,7 +139,6 @@ export default function Messages() {
     );
   }
 
-  // Group messages by conversation
   const conversations = messages?.reduce((acc: any, message: any) => {
     const otherUser = message.sender_id === user?.id ? message.receiver : message.sender;
     const conversationId = otherUser.id;
@@ -207,4 +210,3 @@ export default function Messages() {
       </div>
     </div>
   );
-}
