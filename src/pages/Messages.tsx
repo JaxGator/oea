@@ -58,7 +58,6 @@ export default function Messages() {
           filter: `receiver_id=eq.${user.id}`,
         },
         () => {
-          // Invalidate both messages and unread count queries
           queryClient.invalidateQueries({ queryKey: ['messages'] });
           queryClient.invalidateQueries({ queryKey: ['unreadCount'] });
         }
@@ -70,14 +69,12 @@ export default function Messages() {
     };
   }, [user, queryClient]);
 
-  // Mark messages as read when conversation is selected
   useEffect(() => {
     if (selectedConversation && user) {
       markMessagesAsRead({ 
         receiverId: user.id, 
         senderId: selectedConversation 
       });
-      // Invalidate unread count after marking messages as read
       queryClient.invalidateQueries({ queryKey: ['unreadCount'] });
     }
   }, [selectedConversation, user, markMessagesAsRead, queryClient]);
@@ -111,6 +108,38 @@ export default function Messages() {
       });
     } finally {
       setIsSending(false);
+    }
+  };
+
+  const handleDeleteConversation = async () => {
+    if (!selectedConversation || !user) return;
+    
+    try {
+      // Delete all messages between the two users in both directions
+      const { error } = await supabase
+        .from('messages')
+        .delete()
+        .or(
+          `and(sender_id.eq.${user.id},receiver_id.eq.${selectedConversation}),` +
+          `and(sender_id.eq.${selectedConversation},receiver_id.eq.${user.id})`
+        );
+
+      if (error) throw error;
+
+      toast({
+        title: "Conversation deleted",
+        description: "The conversation has been permanently deleted.",
+      });
+      
+      queryClient.invalidateQueries({ queryKey: ['messages'] });
+      setSelectedConversation(null);
+    } catch (error) {
+      console.error('Error deleting conversation:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete conversation. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -184,6 +213,7 @@ export default function Messages() {
           onSelect={setSelectedConversation}
           onMessageSend={handleSendMessage}
           onCancel={() => setSelectedConversation(null)}
+          onDelete={handleDeleteConversation}
         />
       </div>
     </div>
