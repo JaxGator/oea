@@ -15,6 +15,7 @@ interface MessageListProps {
   onSelect: (userId: string) => void;
   onMessageSend: (content: string) => void;
   onCancel: () => void;
+  onDelete: () => void;
 }
 
 export function MessageList({
@@ -24,6 +25,7 @@ export function MessageList({
   onSelect,
   onMessageSend,
   onCancel,
+  onDelete,
 }: MessageListProps) {
   const { user } = useSession();
   const { deleteMessage, editMessage } = useMessageOperations();
@@ -43,24 +45,13 @@ export function MessageList({
   }, [conversations]);
 
   const handleDeleteConversation = async () => {
-    if (!selectedConversation || !user) return;
-    
     setIsDeleting(true);
     try {
-      const { error } = await supabase
-        .from('messages')
-        .delete()
-        .or(`sender_id.eq.${user.id},receiver_id.eq.${user.id}`)
-        .eq(user.id === conversations[selectedConversation].user.id ? 'sender_id' : 'receiver_id', 
-            conversations[selectedConversation].user.id);
-
-      if (error) throw error;
-
+      await onDelete();
       toast({
         title: "Conversation deleted",
         description: "The conversation has been permanently deleted.",
       });
-      
       onCancel(); // Close the conversation view
     } catch (error) {
       console.error('Error deleting conversation:', error);
