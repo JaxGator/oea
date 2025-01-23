@@ -375,7 +375,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
-          display_order: number
+          display_order?: number
           file_name: string
           id?: string
           user_id: string
