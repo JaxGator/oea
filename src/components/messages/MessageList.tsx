@@ -1,15 +1,16 @@
-import { ConversationType } from "./types";
-import { useMessageOperations } from "@/hooks/messages/useMessageOperations";
-import { useSession } from "@/hooks/auth/useSession";
-import { useEffect, useRef, useState } from "react";
-import { useIsMobile } from "@/hooks/use-mobile";
-import { toast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
-import { ConversationCard } from "./ConversationCard";
-import { DeleteConversationDialog } from "./DeleteConversationDialog";
+import { useNavigate } from "react-router-dom";
+
+type SearchResult = {
+  type: string;
+  id: string;
+  title: string;
+  description: string | null;
+  url: string;
+  created_at: string;
+};
 
 interface MessageListProps {
-  conversations: Record<string, ConversationType>;
+  conversations: Record<string, any>;
   selectedConversation: string | null;
   isSending: boolean;
   onSelect: (userId: string) => void;
@@ -18,72 +19,39 @@ interface MessageListProps {
   onDelete: () => void;
 }
 
-export function MessageList({
+export function MessageList({ 
   conversations,
   selectedConversation,
   isSending,
   onSelect,
   onMessageSend,
   onCancel,
-  onDelete,
+  onDelete
 }: MessageListProps) {
-  const { user } = useSession();
-  const { deleteMessage, editMessage } = useMessageOperations();
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  const isMobile = useIsMobile();
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-
-  const scrollToBottom = () => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
-    }
-  };
-
-  useEffect(() => {
-    scrollToBottom();
-  }, [conversations]);
-
-  const handleDeleteConversation = async () => {
-    setIsDeleting(true);
-    try {
-      await onDelete();
-      toast({
-        title: "Conversation deleted",
-        description: "The conversation has been permanently deleted.",
-      });
-      onCancel(); // Close the conversation view
-    } catch (error) {
-      console.error('Error deleting conversation:', error);
-      toast({
-        title: "Error",
-        description: "Failed to delete conversation. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsDeleting(false);
-      setShowDeleteDialog(false);
-    }
-  };
+  const navigate = useNavigate();
 
   return (
     <div className="space-y-6 max-w-3xl mx-auto">
       {Object.entries(conversations).map(([userId, conversation]) => (
-        <ConversationCard
+        <button
           key={userId}
-          conversation={conversation}
-          isSelected={selectedConversation === userId}
-          onSelect={() => onSelect(userId)}
-          onDelete={() => setShowDeleteDialog(true)}
-          isDeleting={isDeleting}
-        />
+          className="w-full text-left p-2 hover:bg-accent rounded-md transition-colors cursor-pointer active:bg-accent/80"
+          onClick={() => onSelect(userId)}
+          type="button"
+        >
+          <div className="flex items-center justify-between">
+            <span className="font-medium">{conversation.user.username}</span>
+            <span className="text-xs text-muted-foreground capitalize">
+              {new Date(conversation.lastMessage.created_at).toLocaleDateString()}
+            </span>
+          </div>
+          {conversation.lastMessage && (
+            <span className="text-sm text-muted-foreground line-clamp-1">
+              {conversation.lastMessage.content}
+            </span>
+          )}
+        </button>
       ))}
-
-      <DeleteConversationDialog
-        open={showDeleteDialog}
-        onOpenChange={setShowDeleteDialog}
-        onDelete={handleDeleteConversation}
-      />
     </div>
   );
 }
