@@ -37,18 +37,13 @@ export function useGalleryUpload(onUploadComplete?: () => void) {
         throw uploadError;
       }
 
-      // Get the public URL
-      const { data: { publicUrl } } = supabase.storage
-        .from('gallery')
-        .getPublicUrl(fileName);
-
       // Create database record with user_id
       const { error: dbError } = await supabase
         .from('gallery_images')
         .insert({
           file_name: fileName,
           display_order: 0,
-          user_id: user.id // Important: Associate the image with the user
+          user_id: user.id // Explicitly set the user_id
         });
 
       if (dbError) {
