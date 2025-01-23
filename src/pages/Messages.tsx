@@ -58,6 +58,8 @@ export default function Messages() {
         title: "Message sent",
         description: "Your message has been sent successfully.",
       });
+      
+      queryClient.invalidateQueries({ queryKey: ['messages'] });
     } catch (error) {
       console.error('Error sending message:', error);
       toast({
@@ -103,6 +105,10 @@ export default function Messages() {
       setIsDeleting(false);
       setShowDeleteDialog(false);
     }
+  };
+
+  const handleEditMessage = (messageId: string, content: string) => {
+    editMessage({ messageId, content });
   };
 
   if (isLoading) {
@@ -191,7 +197,7 @@ export default function Messages() {
               <ConversationContent
                 messages={selectedConversationData.messages}
                 currentUserId={user?.id || ''}
-                onEdit={editMessage}
+                onEdit={handleEditMessage}
                 onDelete={deleteMessage}
               />
               <ConversationInput
