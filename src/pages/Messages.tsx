@@ -2,11 +2,17 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuthState } from "@/hooks/useAuthState";
 import { Card } from "@/components/ui/card";
-import { Inbox, Loader2, Mail } from "lucide-react";
-import { useState, useEffect } from "react";
+import { Mail, Loader2, Inbox } from "lucide-react";
+import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { useMessageReading } from "@/hooks/messages/useMessageReading";
-import { MessageList } from "@/components/messages/MessageList";
+import { useMessageOperations } from "@/hooks/messages/useMessageOperations";
+import { ConversationList } from "@/components/messages/conversation/ConversationList";
+import { ConversationHeader } from "@/components/messages/conversation/ConversationHeader";
+import { ConversationContent } from "@/components/messages/conversation/ConversationContent";
+import { ConversationInput } from "@/components/messages/conversation/ConversationInput";
+import { DeleteConversationDialog } from "@/components/messages/DeleteConversationDialog";
+import { Message } from "@/components/messages/types";
+import { ConversationType } from "@/components/messages/types/conversation";
 
 export default function Messages() {
   const { user } = useAuthState();
@@ -14,7 +20,9 @@ export default function Messages() {
   const queryClient = useQueryClient();
   const [selectedConversation, setSelectedConversation] = useState<string | null>(null);
   const [isSending, setIsSending] = useState(false);
-  const { markMessagesAsRead } = useMessageReading();
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const { deleteMessage, editMessage } = useMessageOperations();
 
   const { data: messages, isLoading } = useQuery({
     queryKey: ['messages'],
@@ -26,58 +34,10 @@ export default function Messages() {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return data;
+      return data as Message[];
     },
     enabled: !!user,
   });
-
-  // Subscribe to real-time message updates
-  useEffect(() => {
-    if (!user) return;
-
-    const channel = supabase
-      .channel('messages-updates')
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'messages',
-          filter: `receiver_id=eq.${user.id}`,
-        },
-        () => {
-          queryClient.invalidateQueries({ queryKey: ['messages'] });
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'messages',
-          filter: `receiver_id=eq.${user.id}`,
-        },
-        () => {
-          queryClient.invalidateQueries({ queryKey: ['messages'] });
-          queryClient.invalidateQueries({ queryKey: ['unreadCount'] });
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [user, queryClient]);
-
-  useEffect(() => {
-    if (selectedConversation && user) {
-      markMessagesAsRead({ 
-        receiverId: user.id, 
-        senderId: selectedConversation 
-      });
-      queryClient.invalidateQueries({ queryKey: ['unreadCount'] });
-    }
-  }, [selectedConversation, user, markMessagesAsRead, queryClient]);
 
   const handleSendMessage = async (content: string) => {
     if (!selectedConversation || !user) return;
@@ -98,7 +58,6 @@ export default function Messages() {
         title: "Message sent",
         description: "Your message has been sent successfully.",
       });
-      setSelectedConversation(null);
     } catch (error) {
       console.error('Error sending message:', error);
       toast({
@@ -114,8 +73,8 @@ export default function Messages() {
   const handleDeleteConversation = async () => {
     if (!selectedConversation || !user) return;
     
+    setIsDeleting(true);
     try {
-      // Delete all messages between the two users in both directions
       const { error } = await supabase
         .from('messages')
         .delete()
@@ -140,6 +99,9 @@ export default function Messages() {
         description: "Failed to delete conversation. Please try again.",
         variant: "destructive",
       });
+    } finally {
+      setIsDeleting(false);
+      setShowDeleteDialog(false);
     }
   };
 
@@ -173,7 +135,7 @@ export default function Messages() {
     );
   }
 
-  const conversations = messages?.reduce((acc: any, message: any) => {
+  const conversations = messages?.reduce((acc: Record<string, ConversationType>, message: Message) => {
     const otherUser = message.sender_id === user?.id ? message.receiver : message.sender;
     const conversationId = otherUser.id;
     
@@ -181,7 +143,7 @@ export default function Messages() {
       acc[conversationId] = {
         user: otherUser,
         messages: [],
-        lastMessage: null,
+        lastMessage: message,
         unreadCount: 0
       };
     }
@@ -199,6 +161,8 @@ export default function Messages() {
     return acc;
   }, {});
 
+  const selectedConversationData = selectedConversation ? conversations[selectedConversation] : null;
+
   return (
     <div className="min-h-[calc(100vh-theme(spacing.16))] bg-gray-50/50">
       <div className="max-w-4xl mx-auto px-4 py-8 mb-12">
@@ -206,13 +170,41 @@ export default function Messages() {
           <Mail className="h-7 w-7" />
           <h1 className="text-3xl font-bold">Messages</h1>
         </div>
-        <MessageList
-          conversations={conversations}
-          selectedConversation={selectedConversation}
-          isSending={isSending}
-          onSelect={setSelectedConversation}
-          onMessageSend={handleSendMessage}
-          onCancel={() => setSelectedConversation(null)}
+
+        <div className="grid md:grid-cols-[350px,1fr] gap-4">
+          <Card className="p-4">
+            <ConversationList
+              conversations={conversations}
+              selectedConversation={selectedConversation}
+              onSelect={setSelectedConversation}
+            />
+          </Card>
+
+          {selectedConversationData && (
+            <Card className="flex flex-col h-[600px]">
+              <ConversationHeader
+                conversation={selectedConversationData}
+                onBack={() => setSelectedConversation(null)}
+                onDelete={() => setShowDeleteDialog(true)}
+                isDeleting={isDeleting}
+              />
+              <ConversationContent
+                messages={selectedConversationData.messages}
+                currentUserId={user?.id || ''}
+                onEdit={editMessage}
+                onDelete={deleteMessage}
+              />
+              <ConversationInput
+                onSend={handleSendMessage}
+                isSending={isSending}
+              />
+            </Card>
+          )}
+        </div>
+
+        <DeleteConversationDialog
+          open={showDeleteDialog}
+          onOpenChange={setShowDeleteDialog}
           onDelete={handleDeleteConversation}
         />
       </div>
