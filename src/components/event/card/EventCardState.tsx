@@ -2,7 +2,7 @@ import { Event } from "@/types/event";
 import { useEventRSVPData } from "@/hooks/events/useEventRSVPData";
 import { useEventGuestData } from "@/hooks/events/useEventGuestData";
 import { useEventCardState } from "@/hooks/events/useEventCardState";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -42,7 +42,7 @@ export function EventCardState({
   children
 }: EventCardStateProps) {
   const { data: attendees = [] } = useEventRSVPData(event.id);
-  const { data: guests = [] } = useEventGuestData(event.id, userRSVPStatus);
+  const { data: guests = [], refetch: refetchGuests } = useEventGuestData(event.id, userRSVPStatus);
   const [editedRSVPCount, setEditedRSVPCount] = useState("");
   const [isEditingRSVP, setIsEditingRSVP] = useState(false);
   
@@ -57,6 +57,43 @@ export function EventCardState({
     handleDelete,
     handleTogglePublish,
   } = useEventCardState(event, onUpdate);
+
+  // Subscribe to real-time updates for guest list changes
+  useEffect(() => {
+    const channel = supabase
+      .channel('event-guests-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*', // Listen to all changes (INSERT, UPDATE, DELETE)
+          schema: 'public',
+          table: 'event_guests',
+          filter: `rsvp_id=eq.${event.id}`
+        },
+        async (payload) => {
+          console.log('Guest list changed:', payload);
+          await refetchGuests();
+          
+          // Show toast notification based on the change type
+          switch (payload.eventType) {
+            case 'INSERT':
+              toast.success('New guest added to the event');
+              break;
+            case 'DELETE':
+              toast.info('Guest removed from the event');
+              break;
+            case 'UPDATE':
+              toast.info('Guest information updated');
+              break;
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [event.id, refetchGuests]);
 
   const rsvpData = {
     confirmedCount: attendees.length,
