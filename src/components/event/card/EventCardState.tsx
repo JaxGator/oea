@@ -1,10 +1,9 @@
 import { Event } from "@/types/event";
 import { useEventRSVPData } from "@/hooks/events/useEventRSVPData";
 import { useEventGuestData } from "@/hooks/events/useEventGuestData";
-import { useEventCardState } from "@/hooks/events/useEventCardState";
-import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
+import { useAdminStatus } from "@/hooks/events/useAdminStatus";
+import { useEventStateManager } from "@/hooks/events/useEventStateManager";
+import { useGuestListUpdates } from "@/hooks/events/useGuestListUpdates";
 
 interface EventCardStateProps {
   event: Event;
@@ -41,59 +40,28 @@ export function EventCardState({
   onUpdate,
   children
 }: EventCardStateProps) {
+  const { isAdmin, canManageEvents } = useAdminStatus();
   const { data: attendees = [] } = useEventRSVPData(event.id);
   const { data: guests = [], refetch: refetchGuests } = useEventGuestData(event.id, userRSVPStatus);
-  const [editedRSVPCount, setEditedRSVPCount] = useState("");
-  const [isEditingRSVP, setIsEditingRSVP] = useState(false);
+  
+  // Use the new hooks
+  useGuestListUpdates(event.id, refetchGuests);
   
   const {
-    isAdmin,
-    canManageEvents,
     showEditDialog,
     showDetailsDialog,
+    editedRSVPCount,
+    isEditingRSVP,
     setShowEditDialog,
     setShowDetailsDialog,
     handleEditSuccess,
     handleDelete,
     handleTogglePublish,
-  } = useEventCardState(event, onUpdate);
-
-  // Subscribe to real-time updates for guest list changes
-  useEffect(() => {
-    const channel = supabase
-      .channel('event-guests-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*', // Listen to all changes (INSERT, UPDATE, DELETE)
-          schema: 'public',
-          table: 'event_guests',
-          filter: `rsvp_id=eq.${event.id}`
-        },
-        async (payload) => {
-          console.log('Guest list changed:', payload);
-          await refetchGuests();
-          
-          // Show toast notification based on the change type
-          switch (payload.eventType) {
-            case 'INSERT':
-              toast.success('New guest added to the event');
-              break;
-            case 'DELETE':
-              toast.info('Guest removed from the event');
-              break;
-            case 'UPDATE':
-              toast.info('Guest information updated');
-              break;
-          }
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [event.id, refetchGuests]);
+    handleEditRSVP,
+    handleSaveRSVP,
+    handleCancelEdit,
+    handleRSVPCountChange,
+  } = useEventStateManager(event, onUpdate);
 
   const rsvpData = {
     confirmedCount: attendees.length,
@@ -103,44 +71,6 @@ export function EventCardState({
   const isPastEvent = new Date(event.date) < new Date(new Date().setHours(0, 0, 0, 0));
   const isWixEvent = !!event.imported_rsvp_count;
   const canAddGuests = isAdmin || userRSVPStatus === 'attending';
-
-  const handleEditRSVP = () => {
-    setEditedRSVPCount(rsvpData.confirmedCount.toString());
-    setIsEditingRSVP(true);
-  };
-
-  const handleSaveRSVP = async () => {
-    try {
-      const count = parseInt(editedRSVPCount);
-      if (isNaN(count) || count < 0) {
-        toast.error("Please enter a valid number");
-        return;
-      }
-
-      const { error } = await supabase
-        .from('events')
-        .update({ imported_rsvp_count: count })
-        .eq('id', event.id);
-
-      if (error) throw error;
-
-      toast.success("RSVP count updated successfully");
-      setIsEditingRSVP(false);
-      if (onUpdate) onUpdate();
-    } catch (error) {
-      console.error('Error updating RSVP count:', error);
-      toast.error("Failed to update RSVP count");
-    }
-  };
-
-  const handleCancelEdit = () => {
-    setIsEditingRSVP(false);
-    setEditedRSVPCount("");
-  };
-
-  const handleRSVPCountChange = (value: string) => {
-    setEditedRSVPCount(value);
-  };
 
   return children({
     isAdmin,
@@ -163,6 +93,6 @@ export function EventCardState({
     handleEditRSVP,
     handleSaveRSVP,
     handleCancelEdit,
-    handleRSVPCountChange
+    handleRSVPCountChange,
   });
 }
