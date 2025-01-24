@@ -17,6 +17,9 @@ interface EventCardActionsProps {
   onViewDetails: () => void;
   onTogglePublish: () => void;
   isAuthChecking?: boolean;
+  isFullyBooked?: boolean;
+  canJoinWaitlist?: boolean;
+  isWixEvent?: boolean;
 }
 
 export function EventCardActions({
@@ -35,10 +38,11 @@ export function EventCardActions({
   showDelete = false,
   onViewDetails,
   onTogglePublish,
-  isAuthChecking = false
+  isAuthChecking = false,
+  isFullyBooked = false,
+  canJoinWaitlist = false,
+  isWixEvent = false
 }: EventCardActionsProps) {
-  const isWixEvent = false;
-
   if (isAuthChecking) {
     return (
       <div className="animate-pulse">
@@ -52,7 +56,7 @@ export function EventCardActions({
       isAdmin={isAdmin}
       canManageEvents={canManageEvents}
       userRSVPStatus={userRSVPStatus}
-      isFullyBooked={false}
+      isFullyBooked={isFullyBooked}
       onRSVP={onRSVP}
       onCancelRSVP={onCancelRSVP}
       onEdit={onEdit}
@@ -66,6 +70,7 @@ export function EventCardActions({
       isPublished={isPublished}
       showPublishToggle={showPublishToggle}
       showDelete={showDelete}
+      canJoinWaitlist={canJoinWaitlist}
     />
   );
 }
