@@ -46,21 +46,23 @@ export const useFeaturedEvents = () => {
       .on(
         'postgres_changes',
         {
-          event: 'INSERT',
+          event: '*',
           schema: 'public',
           table: 'events'
         },
         (payload) => {
-          console.log('New event created:', payload);
+          console.log('Event change received:', payload);
           
-          // Show a toast notification
-          toast({
-            title: "New Event",
-            description: "A new event has been added!"
-          });
-          
-          // Invalidate and refetch the events query
-          queryClient.invalidateQueries({ queryKey: ['featuredEvents'] });
+          if (payload.eventType === 'UPDATE') {
+            // Show toast notification
+            toast({
+              title: "Event Updated",
+              description: `The event "${payload.new.title}" has been updated.`
+            });
+            
+            // Invalidate and refetch the events query
+            queryClient.invalidateQueries({ queryKey: ['featuredEvents'] });
+          }
         }
       )
       .subscribe();
