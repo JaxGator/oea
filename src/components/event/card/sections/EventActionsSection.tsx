@@ -17,6 +17,9 @@ interface EventActionsSectionProps {
   onViewDetails: () => void;
   onTogglePublish: () => void;
   isAuthChecking?: boolean;
+  isFullyBooked?: boolean;
+  canJoinWaitlist?: boolean;
+  isWixEvent?: boolean;
 }
 
 export function EventActionsSection({
@@ -35,7 +38,10 @@ export function EventActionsSection({
   isPublished = true,
   onViewDetails,
   onTogglePublish,
-  isAuthChecking = false
+  isAuthChecking = false,
+  isFullyBooked = false,
+  canJoinWaitlist = false,
+  isWixEvent = false
 }: EventActionsSectionProps) {
   return (
     <div className="mt-4">
@@ -56,6 +62,9 @@ export function EventActionsSection({
         onViewDetails={onViewDetails}
         onTogglePublish={onTogglePublish}
         isAuthChecking={isAuthChecking}
+        isFullyBooked={isFullyBooked}
+        canJoinWaitlist={canJoinWaitlist}
+        isWixEvent={isWixEvent}
       />
     </div>
   );

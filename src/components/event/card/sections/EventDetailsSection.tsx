@@ -10,12 +10,14 @@ interface EventDetailsSectionProps {
   isPastEvent: boolean;
   waitlistEnabled?: boolean;
   waitlistCapacity?: number | null;
-  editedRSVPCount: string;
-  isEditingRSVP: boolean;
-  onEditRSVP: () => void;
-  onSaveRSVP: () => void;
-  onCancelEdit: () => void;
-  onRSVPCountChange: (value: string) => void;
+  editedRSVPCount?: string;
+  isEditingRSVP?: boolean;
+  onEditRSVP?: () => void;
+  onSaveRSVP?: () => void;
+  onCancelEdit?: () => void;
+  onRSVPCountChange?: (value: string) => void;
+  maxGuests?: number;
+  attendeeNames?: string[];
 }
 
 export function EventDetailsSection({
@@ -26,12 +28,14 @@ export function EventDetailsSection({
   isPastEvent,
   waitlistEnabled,
   waitlistCapacity,
-  editedRSVPCount,
-  isEditingRSVP,
-  onEditRSVP,
-  onSaveRSVP,
-  onCancelEdit,
-  onRSVPCountChange,
+  editedRSVPCount = "",
+  isEditingRSVP = false,
+  onEditRSVP = () => {},
+  onSaveRSVP = () => {},
+  onCancelEdit = () => {},
+  onRSVPCountChange = () => {},
+  maxGuests,
+  attendeeNames = [],
 }: EventDetailsSectionProps) {
   return (
     <>
