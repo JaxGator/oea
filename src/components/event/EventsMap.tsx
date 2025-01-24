@@ -7,6 +7,7 @@ import { EventPopup } from './map/EventPopup';
 import { useMapMarkers } from '@/hooks/map/useMapMarkers';
 import { MapLoadingState } from './map/MapLoadingState';
 import { MapErrorState } from './map/MapErrorState';
+import { useMemo } from 'react';
 
 interface EventsMapProps {
   events: Event[];
@@ -17,6 +18,9 @@ export function EventsMap({ events, selectedEventId }: EventsMapProps) {
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const { mapToken, isLoading: isKeyLoading, error: keyError } = useMapboxToken();
   const locations = useEventLocations(events);
+
+  // Memoize locations to prevent unnecessary recalculations
+  const memoizedLocations = useMemo(() => locations, [locations]);
 
   // Find the selected event when selectedEventId changes
   useEffect(() => {
@@ -44,14 +48,15 @@ export function EventsMap({ events, selectedEventId }: EventsMapProps) {
     <MapContainer>
       {(map) => {
         // Initialize markers when map is ready
-        useMapMarkers(map, locations, selectedEventId, (event) => setSelectedEvent(event));
+        useMapMarkers(map, memoizedLocations, selectedEventId, (event) => setSelectedEvent(event));
 
-        // Center map on selected event
+        // Center map on selected event with smooth animation
         if (map && selectedEvent && selectedEvent.latitude && selectedEvent.longitude) {
           map.flyTo({
             center: [selectedEvent.longitude, selectedEvent.latitude],
             zoom: 14,
-            duration: 1500
+            duration: 1500,
+            essential: true // This ensures the animation runs smoothly
           });
         }
 

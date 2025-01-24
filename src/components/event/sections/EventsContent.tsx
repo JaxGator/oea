@@ -1,6 +1,6 @@
 import { Event } from "@/types/event";
 import { EventList } from "@/components/event/EventList";
-import { EventsMap } from "@/components/event/EventsMap";
+import { LazyMap } from "@/components/event/map/LazyMap";
 import { ErrorBoundary } from "@/components/error/ErrorBoundary";
 import { CalendarFold } from "lucide-react";
 import { useState } from "react";
@@ -33,7 +33,7 @@ export function EventsContent({
       {upcomingEvents.length > 0 && canViewMap && (
         <div className="mb-8">
           <ErrorBoundary fallback={<div>Error loading map. Please try again later.</div>}>
-            <EventsMap 
+            <LazyMap 
               events={upcomingEvents} 
               selectedEventId={selectedEventId}
             />
