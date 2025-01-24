@@ -3,12 +3,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { useRSVPManagement } from "@/hooks/events/useRSVPManagement";
 import { Event } from "@/types/event";
 import { useEffect } from "react";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "@/components/ui/use-toast";
 
 export const useFeaturedEvents = () => {
   const queryClient = useQueryClient();
   const { userRSVPs, handleRSVP, handleCancelRSVP } = useRSVPManagement();
-  const { toast } = useToast();
 
   const { data: events = [], isLoading } = useQuery({
     queryKey: ['featuredEvents'],
@@ -70,7 +69,7 @@ export const useFeaturedEvents = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [queryClient, toast]);
+  }, [queryClient]);
 
   return {
     events,
