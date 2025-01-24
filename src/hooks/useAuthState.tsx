@@ -27,7 +27,9 @@ export function useAuthState() {
         },
         (payload) => {
           console.log('Profile changed:', payload);
-          queryClient.invalidateQueries(['profile', user.id]);
+          queryClient.invalidateQueries({
+            queryKey: ['profile', user.id]
+          });
         }
       )
       .subscribe();
