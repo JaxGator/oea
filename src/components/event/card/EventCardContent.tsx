@@ -29,6 +29,7 @@ interface EventCardContentProps {
   onSaveRSVP: () => void;
   onCancelEdit: () => void;
   onRSVPCountChange: (value: string) => void;
+  isAuthChecking?: boolean;
 }
 
 export function EventCardContent({
@@ -57,6 +58,7 @@ export function EventCardContent({
   onSaveRSVP,
   onCancelEdit,
   onRSVPCountChange,
+  isAuthChecking = false
 }: EventCardContentProps) {
   return (
     <div className="p-4">
@@ -103,6 +105,7 @@ export function EventCardContent({
           isPublished={isPublished}
           onViewDetails={onViewDetails}
           onTogglePublish={onTogglePublish}
+          isAuthChecking={isAuthChecking}
         />
       </div>
     </div>

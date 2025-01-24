@@ -13,6 +13,7 @@ interface EventCardContainerProps {
   onUpdate?: () => void;
   onSelect?: () => void;
   isSelected?: boolean;
+  isAuthChecking?: boolean;
 }
 
 export function EventCardContainer({
@@ -22,7 +23,8 @@ export function EventCardContainer({
   userRSVPStatus,
   onUpdate,
   onSelect,
-  isSelected = false
+  isSelected = false,
+  isAuthChecking = false
 }: EventCardContainerProps) {
   const handleCardClick = () => {
     if (onSelect && event.latitude && event.longitude) {
@@ -88,6 +90,7 @@ export function EventCardContainer({
                   onSaveRSVP={handleSaveRSVP}
                   onCancelEdit={handleCancelEdit}
                   onRSVPCountChange={handleRSVPCountChange}
+                  isAuthChecking={isAuthChecking}
                 />
 
                 <EventDialogs
