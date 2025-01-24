@@ -1,33 +1,65 @@
-import { LocationDisplay } from "../../details/LocationDisplay";
 import { Event } from "@/types/event";
+import { EventCardBasicInfo } from "../EventCardBasicInfo";
+import { EventAdminEdit } from "../EventAdminEdit";
 
 interface EventDetailsSectionProps {
   event: Event;
   rsvpCount: number;
-  maxGuests: number;
-  attendeeNames: string[];
+  isAdmin: boolean;
+  canManageEvents: boolean;
   isPastEvent: boolean;
+  waitlistEnabled?: boolean;
+  waitlistCapacity?: number | null;
+  editedRSVPCount: string;
+  isEditingRSVP: boolean;
+  onEditRSVP: () => void;
+  onSaveRSVP: () => void;
+  onCancelEdit: () => void;
+  onRSVPCountChange: (value: string) => void;
 }
 
 export function EventDetailsSection({
   event,
   rsvpCount,
-  maxGuests,
-  attendeeNames,
-  isPastEvent
+  isAdmin,
+  canManageEvents,
+  isPastEvent,
+  waitlistEnabled,
+  waitlistCapacity,
+  editedRSVPCount,
+  isEditingRSVP,
+  onEditRSVP,
+  onSaveRSVP,
+  onCancelEdit,
+  onRSVPCountChange,
 }: EventDetailsSectionProps) {
   return (
-    <div className="space-y-4">
-      <LocationDisplay location={event.location} showLocation={true} />
-      <div className="text-sm text-gray-600">
-        <p>{new Date(event.date).toLocaleDateString('en-US', {
-          weekday: 'long',
-          year: 'numeric',
-          month: 'long',
-          day: 'numeric'
-        })}</p>
-        <p>{event.time}</p>
-      </div>
-    </div>
+    <>
+      <EventCardBasicInfo
+        date={event.date}
+        location={event.location}
+        rsvpCount={rsvpCount}
+        maxGuests={event.max_guests}
+        isPastEvent={isPastEvent}
+        canViewDetails={isAdmin || canManageEvents}
+        waitlistEnabled={waitlistEnabled}
+        waitlistCapacity={waitlistCapacity}
+        isWixEvent={!!event.imported_rsvp_count}
+        importedRsvpCount={event.imported_rsvp_count}
+      />
+
+      {(isAdmin || canManageEvents) && isPastEvent && (
+        <EventAdminEdit
+          isAdmin={isAdmin}
+          isPastEvent={isPastEvent}
+          editedRSVPCount={editedRSVPCount}
+          onEditRSVP={onEditRSVP}
+          onSaveRSVP={onSaveRSVP}
+          onCancelEdit={onCancelEdit}
+          onRSVPCountChange={onRSVPCountChange}
+          isEditingRSVP={isEditingRSVP}
+        />
+      )}
+    </>
   );
 }

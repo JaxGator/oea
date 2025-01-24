@@ -1,58 +1,61 @@
-import { EventActions } from "../../actions/EventActions";
+import { EventCardActions } from "../EventCardActions";
 
 interface EventActionsSectionProps {
   isAdmin: boolean;
   canManageEvents: boolean;
   userRSVPStatus: string | null;
-  isFullyBooked: boolean;
-  canJoinWaitlist: boolean;
+  isPastEvent: boolean;
+  canAddGuests: boolean;
+  currentGuests: { firstName: string }[];
   onRSVP: (guests?: { firstName: string }[]) => void;
   onCancelRSVP: () => void;
-  onEdit?: () => void;
-  onDelete?: () => void;
-  onTogglePublish?: () => void;
-  isPastEvent: boolean;
-  isWixEvent: boolean;
-  isPublished: boolean;
-  canAddGuests: boolean;
-  currentGuests?: { firstName: string }[];
+  onEdit: () => void;
+  onDelete: () => void;
+  showDelete?: boolean;
+  showPublishToggle?: boolean;
+  isPublished?: boolean;
+  onViewDetails: () => void;
+  onTogglePublish: () => void;
+  isAuthChecking?: boolean;
 }
 
 export function EventActionsSection({
   isAdmin,
   canManageEvents,
   userRSVPStatus,
-  isFullyBooked,
-  canJoinWaitlist,
+  isPastEvent,
+  canAddGuests,
+  currentGuests,
   onRSVP,
   onCancelRSVP,
   onEdit,
   onDelete,
+  showDelete = true,
+  showPublishToggle = false,
+  isPublished = true,
+  onViewDetails,
   onTogglePublish,
-  isPastEvent,
-  isWixEvent,
-  isPublished,
-  canAddGuests,
-  currentGuests = []
+  isAuthChecking = false
 }: EventActionsSectionProps) {
   return (
-    <div className="shadow-sm rounded-lg bg-white p-4">
-      <EventActions
+    <div className="mt-4">
+      <EventCardActions
         isAdmin={isAdmin}
         canManageEvents={canManageEvents}
         userRSVPStatus={userRSVPStatus}
-        isFullyBooked={isFullyBooked}
-        canJoinWaitlist={canJoinWaitlist}
+        isPastEvent={isPastEvent}
+        canAddGuests={canAddGuests}
+        currentGuests={currentGuests}
         onRSVP={onRSVP}
         onCancelRSVP={onCancelRSVP}
         onEdit={onEdit}
         onDelete={onDelete}
-        onTogglePublish={onTogglePublish}
-        isPastEvent={isPastEvent}
-        isWixEvent={isWixEvent}
+        showDelete={showDelete}
+        showPublishToggle={showPublishToggle}
         isPublished={isPublished}
-        canAddGuests={canAddGuests}
-        currentGuests={currentGuests}
+        onViewDetails={onViewDetails}
+        onTogglePublish={onTogglePublish}
+        isAuthChecking={isAuthChecking}
       />
     </div>
   );

@@ -1,7 +1,6 @@
 import { Event } from "@/types/event";
-import { EventCardBasicInfo } from "./EventCardBasicInfo";
-import { EventCardActions } from "./EventCardActions";
-import { EventAdminEdit } from "./EventAdminEdit";
+import { EventDetailsSection } from "./sections/EventDetailsSection";
+import { EventActionsSection } from "./sections/EventActionsSection";
 
 interface EventCardContentProps {
   event: Event;
@@ -41,7 +40,6 @@ export function EventCardContent({
   isPastEvent,
   canAddGuests,
   waitlistEnabled,
-  waitlistCount,
   waitlistCapacity,
   currentGuests,
   editedRSVPCount,
@@ -62,52 +60,39 @@ export function EventCardContent({
 }: EventCardContentProps) {
   return (
     <div className="p-4">
-      <EventCardBasicInfo
-        date={event.date}
-        location={event.location}
+      <EventDetailsSection
+        event={event}
         rsvpCount={rsvpCount}
-        maxGuests={event.max_guests}
+        isAdmin={isAdmin}
+        canManageEvents={canManageEvents}
         isPastEvent={isPastEvent}
-        canViewDetails={isAdmin || canManageEvents || (isPublished && userRSVPStatus === "attending")}
         waitlistEnabled={waitlistEnabled}
         waitlistCapacity={waitlistCapacity}
-        isWixEvent={!!event.imported_rsvp_count}
-        importedRsvpCount={event.imported_rsvp_count}
+        editedRSVPCount={editedRSVPCount}
+        isEditingRSVP={isEditingRSVP}
+        onEditRSVP={onEditRSVP}
+        onSaveRSVP={onSaveRSVP}
+        onCancelEdit={onCancelEdit}
+        onRSVPCountChange={onRSVPCountChange}
       />
 
-      {(isAdmin || canManageEvents) && isPastEvent && (
-        <EventAdminEdit
-          isAdmin={isAdmin}
-          isPastEvent={isPastEvent}
-          editedRSVPCount={editedRSVPCount}
-          onEditRSVP={onEditRSVP}
-          onSaveRSVP={onSaveRSVP}
-          onCancelEdit={onCancelEdit}
-          onRSVPCountChange={onRSVPCountChange}
-          isEditingRSVP={isEditingRSVP}
-        />
-      )}
-
-      <div className="mt-4">
-        <EventCardActions
-          isAdmin={isAdmin}
-          canManageEvents={canManageEvents}
-          userRSVPStatus={userRSVPStatus}
-          isPastEvent={isPastEvent}
-          canAddGuests={canAddGuests}
-          currentGuests={currentGuests}
-          onRSVP={onRSVP}
-          onCancelRSVP={onCancelRSVP}
-          onEdit={onEdit}
-          onDelete={onDelete}
-          showDelete={true}
-          showPublishToggle={showPublishToggle}
-          isPublished={isPublished}
-          onViewDetails={onViewDetails}
-          onTogglePublish={onTogglePublish}
-          isAuthChecking={isAuthChecking}
-        />
-      </div>
+      <EventActionsSection
+        isAdmin={isAdmin}
+        canManageEvents={canManageEvents}
+        userRSVPStatus={userRSVPStatus}
+        isPastEvent={isPastEvent}
+        canAddGuests={canAddGuests}
+        currentGuests={currentGuests}
+        onRSVP={onRSVP}
+        onCancelRSVP={onCancelRSVP}
+        onEdit={onEdit}
+        onDelete={onDelete}
+        showPublishToggle={showPublishToggle}
+        isPublished={isPublished}
+        onViewDetails={onViewDetails}
+        onTogglePublish={onTogglePublish}
+        isAuthChecking={isAuthChecking}
+      />
     </div>
   );
 }
