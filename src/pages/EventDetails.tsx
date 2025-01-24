@@ -13,6 +13,7 @@ interface RSVPWithProfile {
   event_id: string;
   user_id: string;
   response: 'attending' | 'not_attending' | 'maybe';
+  status: 'confirmed' | 'waitlisted';
   created_at: string;
   profiles: {
     full_name: string | null;
@@ -53,6 +54,7 @@ export default function EventDetails() {
           event_id,
           user_id,
           response,
+          status,
           created_at,
           profiles (
             full_name,
@@ -70,6 +72,7 @@ export default function EventDetails() {
         event_id: rsvp.event_id,
         user_id: rsvp.user_id,
         response: rsvp.response,
+        status: rsvp.status,
         created_at: rsvp.created_at,
         profiles: {
           full_name: rsvp.profiles.full_name,
