@@ -16,6 +16,7 @@ interface EventCardActionsProps {
   showDelete?: boolean;
   onViewDetails: () => void;
   onTogglePublish: () => void;
+  isAuthChecking?: boolean;
 }
 
 export function EventCardActions({
@@ -34,8 +35,17 @@ export function EventCardActions({
   showDelete = false,
   onViewDetails,
   onTogglePublish,
+  isAuthChecking = false
 }: EventCardActionsProps) {
-  const isWixEvent = false; // This should be passed as a prop if needed
+  const isWixEvent = false;
+
+  if (isAuthChecking) {
+    return (
+      <div className="animate-pulse">
+        <div className="h-10 bg-gray-200 rounded w-24"></div>
+      </div>
+    );
+  }
 
   return (
     <EventActions

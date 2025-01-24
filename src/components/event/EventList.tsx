@@ -1,5 +1,6 @@
 import { Event } from "@/types/event";
 import { EventCard } from "@/components/EventCard";
+import { useAuthState } from "@/hooks/useAuthState";
 
 interface EventListProps {
   events: Event[];
@@ -16,6 +17,8 @@ export function EventList({
   onEventSelect,
   selectedEventId 
 }: EventListProps) {
+  const { isLoading: isAuthChecking } = useAuthState();
+
   if (!Array.isArray(events)) {
     console.error("Events is not an array:", events);
     return (
@@ -49,6 +52,7 @@ export function EventList({
             userRSVPStatus={userRSVP?.response || null}
             onSelect={() => onEventSelect?.(event.id)}
             isSelected={event.id === selectedEventId}
+            isAuthChecking={isAuthChecking}
           />
         );
       })}

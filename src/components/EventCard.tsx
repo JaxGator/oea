@@ -9,6 +9,7 @@ interface EventCardProps {
   onSelect?: () => void;
   isSelected?: boolean;
   onUpdate?: () => void;
+  isAuthChecking?: boolean;
 }
 
 export function EventCard({ 
@@ -18,7 +19,8 @@ export function EventCard({
   userRSVPStatus = null,
   onSelect,
   isSelected = false,
-  onUpdate
+  onUpdate,
+  isAuthChecking = false
 }: EventCardProps) {
   if (!event) {
     console.error("Event object is undefined");
@@ -34,6 +36,7 @@ export function EventCard({
       onSelect={onSelect}
       isSelected={isSelected}
       onUpdate={onUpdate}
+      isAuthChecking={isAuthChecking}
     />
   );
 }
