@@ -14,6 +14,7 @@ interface EventActionButtonsProps {
   onCancelRSVP: () => void;
   onViewDetails?: () => void;
   showViewDetails?: boolean;
+  isAuthChecking?: boolean;
 }
 
 export function EventActionButtons({
@@ -26,8 +27,17 @@ export function EventActionButtons({
   onRSVP,
   onCancelRSVP,
   onViewDetails,
-  showViewDetails
+  showViewDetails,
+  isAuthChecking = false
 }: EventActionButtonsProps) {
+  if (isAuthChecking) {
+    return (
+      <div className="animate-pulse">
+        <div className="h-10 bg-gray-200 rounded w-24"></div>
+      </div>
+    );
+  }
+
   return (
     <>
       {!userRSVPStatus && !isPastEvent && (

@@ -24,6 +24,7 @@ interface EventActionsProps {
   onViewDetails?: () => void;
   isPublished?: boolean;
   showPublishToggle?: boolean;
+  isAuthChecking?: boolean;
 }
 
 export function EventActions({
@@ -44,9 +45,20 @@ export function EventActions({
   currentGuests = [],
   onViewDetails,
   isPublished,
-  showPublishToggle = false
+  showPublishToggle = false,
+  isAuthChecking = false
 }: EventActionsProps) {
   const showViewDetails = isAdmin || canManageEvents || userRSVPStatus === "attending";
+
+  if (isAuthChecking) {
+    return (
+      <div className="flex flex-wrap gap-1">
+        <div className="animate-pulse">
+          <div className="h-10 bg-gray-200 rounded w-24"></div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-wrap gap-1">
