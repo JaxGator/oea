@@ -54,7 +54,7 @@ export const useFeaturedEvents = () => {
           console.log('Event change received:', payload);
           
           if (payload.eventType === 'UPDATE') {
-            // Show toast notification
+            // Show toast notification for updates
             toast({
               title: "Event Updated",
               description: `The event "${payload.new.title}" has been updated.`
@@ -62,6 +62,19 @@ export const useFeaturedEvents = () => {
             
             // Invalidate and refetch the events query
             queryClient.invalidateQueries({ queryKey: ['featuredEvents'] });
+          } else if (payload.eventType === 'DELETE') {
+            // Show toast notification for deletions
+            toast({
+              title: "Event Deleted",
+              description: `An event has been removed from the calendar.`,
+              variant: "destructive"
+            });
+            
+            // Remove the deleted event from the cache
+            queryClient.setQueryData(['featuredEvents'], (oldData: Event[] | undefined) => {
+              if (!oldData) return [];
+              return oldData.filter(event => event.id !== payload.old.id);
+            });
           }
         }
       )
