@@ -9,7 +9,7 @@ export const clearSessionData = async () => {
     queryClient.clear();
     localStorage.clear();
     sessionStorage.clear();
-    console.log('Session data cleared');
+    console.log('Session data cleared successfully');
   } catch (error) {
     console.error('Error clearing session data:', error);
   }
@@ -21,20 +21,32 @@ export const isRefreshTokenError = (error: AuthError) => {
 };
 
 export const refreshSession = async () => {
-  const { data: { session: refreshedSession }, error: refreshError } = 
-    await supabase.auth.refreshSession();
+  try {
+    const { data: { session: refreshedSession }, error: refreshError } = 
+      await supabase.auth.refreshSession();
+      
+    if (refreshError) {
+      console.error('Session refresh error:', refreshError);
+      throw refreshError;
+    }
     
-  if (refreshError) {
-    throw refreshError;
+    return refreshedSession;
+  } catch (error) {
+    console.error('Error refreshing session:', error);
+    throw error;
   }
-  
-  return refreshedSession;
 };
 
 export const getSession = async () => {
-  const { data: { session }, error } = await supabase.auth.getSession();
-  if (error) {
+  try {
+    const { data: { session }, error } = await supabase.auth.getSession();
+    if (error) {
+      console.error('Get session error:', error);
+      throw error;
+    }
+    return session;
+  } catch (error) {
+    console.error('Error getting session:', error);
     throw error;
   }
-  return session;
 };

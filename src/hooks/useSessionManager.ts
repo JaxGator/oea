@@ -17,8 +17,11 @@ export const useSessionManager = (queryClient: any) => {
 
   const handleSessionError = useCallback(async (error: AuthError) => {
     console.error('Session error:', error);
+    
+    // Clear session data on any auth error
     await clearSessionData();
     
+    // Only show toast for non-refresh token errors
     if (!isRefreshTokenError(error)) {
       toast({
         title: "Session Error",
@@ -27,16 +30,18 @@ export const useSessionManager = (queryClient: any) => {
       });
     }
     
+    // Redirect to auth page if on protected route
     if (isProtectedRoute(location.pathname)) {
-      navigate('/auth');
+      navigate('/auth', { state: { from: location } });
     }
-  }, [navigate, location.pathname, toast]);
+  }, [navigate, location, toast]);
 
   const checkSession = useCallback(async () => {
     try {
       console.log('Checking session...');
       const session = await getSession();
 
+      // Reset retry count on successful check
       retryCount.current = 0;
 
       if (!session) {
@@ -44,7 +49,7 @@ export const useSessionManager = (queryClient: any) => {
         if (isProtectedRoute(location.pathname)) {
           console.log('Protected route - redirecting to auth');
           await clearSessionData();
-          navigate('/auth');
+          navigate('/auth', { state: { from: location } });
         }
         return;
       }
@@ -60,7 +65,7 @@ export const useSessionManager = (queryClient: any) => {
             console.log('Session refresh returned no session');
             await clearSessionData();
             if (isProtectedRoute(location.pathname)) {
-              navigate('/auth');
+              navigate('/auth', { state: { from: location } });
             }
             return;
           }
@@ -96,7 +101,7 @@ export const useSessionManager = (queryClient: any) => {
             console.log('User signed out, clearing data');
             await clearSessionData();
             if (isProtectedRoute(location.pathname)) {
-              navigate('/auth');
+              navigate('/auth', { state: { from: location } });
             }
             break;
             
@@ -126,7 +131,7 @@ export const useSessionManager = (queryClient: any) => {
     // Set up auth listener
     const subscription = setupAuthListener();
 
-    // Set up periodic session checks
+    // Set up periodic session checks (every 4 minutes)
     refreshTimer = setInterval(checkSession, 4 * 60 * 1000);
 
     return () => {
