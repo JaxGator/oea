@@ -18,6 +18,8 @@ export interface Event {
   latitude?: number | null;
   longitude?: number | null;
   rsvps?: EventRSVP[];
+  attendees?: EventRSVP[];
+  guests?: EventGuest[];
   end_time?: string | null;
   reminder_enabled?: boolean;
   reminder_intervals?: string[];
@@ -28,11 +30,18 @@ export interface EventRSVP {
   event_id: string;
   user_id: string;
   response: 'attending' | 'not_attending' | 'maybe';
+  status: 'confirmed' | 'waitlisted';
   created_at: string;
   profiles: {
     full_name: string | null;
     username: string;
   };
+  event_guests?: EventGuest[];
+}
+
+export interface EventGuest {
+  id: string;
+  first_name: string;
 }
 
 export interface EventFormData {

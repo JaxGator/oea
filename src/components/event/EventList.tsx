@@ -1,6 +1,5 @@
 import { Event } from "@/types/event";
 import { EventCard } from "@/components/EventCard";
-import { useRSVPManagement } from "@/hooks/events/useRSVPManagement";
 
 interface EventListProps {
   events: Event[];
@@ -17,8 +16,6 @@ export function EventList({
   onEventSelect,
   selectedEventId 
 }: EventListProps) {
-  const { userRSVPs } = useRSVPManagement();
-
   if (!Array.isArray(events)) {
     console.error("Events is not an array:", events);
     return (
@@ -38,17 +35,23 @@ export function EventList({
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {events.map((event) => (
-        <EventCard
-          key={event.id}
-          event={event}
-          onRSVP={onRSVP}
-          onCancelRSVP={() => onCancelRSVP(event.id)}
-          userRSVPStatus={userRSVPs[event.id]}
-          onSelect={() => onEventSelect?.(event.id)}
-          isSelected={event.id === selectedEventId}
-        />
-      ))}
+      {events.map((event) => {
+        const userRSVP = event.rsvps?.find(
+          rsvp => rsvp.user_id === event.created_by
+        );
+        
+        return (
+          <EventCard
+            key={event.id}
+            event={event}
+            onRSVP={onRSVP}
+            onCancelRSVP={() => onCancelRSVP(event.id)}
+            userRSVPStatus={userRSVP?.response || null}
+            onSelect={() => onEventSelect?.(event.id)}
+            isSelected={event.id === selectedEventId}
+          />
+        );
+      })}
     </div>
   );
 }

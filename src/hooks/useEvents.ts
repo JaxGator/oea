@@ -20,44 +20,35 @@ export function useEvents(selectedDate?: Date) {
           selectedDate: selectedDate?.toISOString()
         });
 
-        // Basic query for public access (only published events)
+        // Comprehensive query that includes all related data
         let query = supabase
           .from('events')
           .select(`
             *,
             event_rsvps (
               id,
-              event_id,
               user_id,
               response,
+              status,
               created_at,
               profiles (
                 full_name,
                 username
+              ),
+              event_guests (
+                id,
+                first_name
               )
             )
-          `)
-          .eq('is_published', true)
-          .order('date');
+          `);
 
-        // If user is authenticated and approved, modify query to show all events
+        // If user is authenticated and approved, show all events
         if (isAuthenticated && isApproved) {
-          query = supabase
-            .from('events')
-            .select(`
-              *,
-              event_rsvps (
-                id,
-                event_id,
-                user_id,
-                response,
-                created_at,
-                profiles (
-                  full_name,
-                  username
-                )
-              )
-            `)
+          query = query.order('date');
+        } else {
+          // For public access, only show published events
+          query = query
+            .eq('is_published', true)
             .order('date');
         }
 
@@ -80,7 +71,6 @@ export function useEvents(selectedDate?: Date) {
             }
           });
           
-          // More specific error message based on the error type
           if (error.code === '401') {
             toast.error('Session expired. Please sign in again.');
           } else if (error.code === '403') {
@@ -97,21 +87,32 @@ export function useEvents(selectedDate?: Date) {
           return [];
         }
 
+        // Transform and organize the data
+        const transformedEvents = data.map(event => ({
+          ...event,
+          rsvps: event.event_rsvps || [],
+          attendees: event.event_rsvps?.filter(rsvp => 
+            rsvp.response === 'attending' && rsvp.status === 'confirmed'
+          ) || [],
+          guests: event.event_rsvps?.flatMap(rsvp => 
+            rsvp.event_guests || []
+          ) || []
+        }));
+
         console.log('Successfully fetched events:', {
-          count: data.length,
-          firstEvent: data[0]
+          count: transformedEvents.length,
+          firstEvent: transformedEvents[0]
         });
 
-        return transformEventData(data);
+        return transformedEvents;
       } catch (error) {
         console.error('Error in useEvents:', error);
         toast.error('Failed to load events. Please try again.');
         throw error;
       }
     },
-    retry: 2,
-    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
-    refetchOnWindowFocus: false,
     staleTime: 1000 * 60 * 5, // Cache for 5 minutes
+    refetchOnWindowFocus: false,
+    refetchInterval: 1000 * 60 * 5, // Refetch every 5 minutes
   });
 }
