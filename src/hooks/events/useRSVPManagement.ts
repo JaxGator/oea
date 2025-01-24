@@ -34,47 +34,61 @@ export const useRSVPManagement = () => {
   useEffect(() => {
     fetchUserRSVPs();
 
-    // Subscribe to RSVP changes
-    const channel = supabase
-      .channel('schema-db-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*', // Listen to all events (INSERT, UPDATE, DELETE)
-          schema: 'public',
-          table: 'event_rsvps',
-          filter: `user_id=eq.${supabase.auth.getUser().then(({ data }) => data.user?.id)}`
-        },
-        (payload) => {
-          console.log('RSVP change received:', payload);
-          
-          // Refresh RSVPs when changes occur
-          fetchUserRSVPs();
+    const setupRealtimeSubscription = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
 
-          // Show toast notification based on the type of change
-          if (payload.eventType === 'INSERT') {
-            toast({
-              title: "RSVP Confirmed",
-              description: "Your RSVP has been successfully recorded.",
-            });
-          } else if (payload.eventType === 'DELETE') {
-            toast({
-              title: "RSVP Cancelled",
-              description: "Your RSVP has been cancelled.",
-            });
-          } else if (payload.eventType === 'UPDATE') {
-            toast({
-              title: "RSVP Updated",
-              description: "Your RSVP has been updated.",
-            });
+      const channel = supabase
+        .channel('schema-db-changes')
+        .on(
+          'postgres_changes',
+          {
+            event: '*', // Listen to all events (INSERT, UPDATE, DELETE)
+            schema: 'public',
+            table: 'event_rsvps',
+            filter: `user_id=eq.${user.id}`
+          },
+          (payload) => {
+            console.log('RSVP change received:', payload);
+            
+            // Refresh RSVPs when changes occur
+            fetchUserRSVPs();
+
+            // Show toast notification based on the type of change
+            if (payload.eventType === 'INSERT') {
+              toast({
+                title: "RSVP Confirmed",
+                description: "Your RSVP has been successfully recorded.",
+              });
+            } else if (payload.eventType === 'DELETE') {
+              toast({
+                title: "RSVP Cancelled",
+                description: "Your RSVP has been cancelled.",
+              });
+            } else if (payload.eventType === 'UPDATE') {
+              toast({
+                title: "RSVP Updated",
+                description: "Your RSVP has been updated.",
+              });
+            }
           }
-        }
-      )
-      .subscribe();
+        )
+        .subscribe();
+
+      return channel;
+    };
+
+    // Set up subscription and store for cleanup
+    let channel: any;
+    setupRealtimeSubscription().then(ch => {
+      channel = ch;
+    });
 
     // Cleanup subscription
     return () => {
-      supabase.removeChannel(channel);
+      if (channel) {
+        supabase.removeChannel(channel);
+      }
     };
   }, []);
 
