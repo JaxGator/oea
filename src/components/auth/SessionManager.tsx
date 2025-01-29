@@ -3,7 +3,8 @@ import { QueryClient } from "@tanstack/react-query";
 import { useSessionManager } from "@/hooks/useSessionManager";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
+import { isProtectedRoute } from "@/utils/routeConfig";
 
 interface SessionManagerProps {
   children: ReactNode;
@@ -13,6 +14,7 @@ interface SessionManagerProps {
 export function SessionManager({ children, queryClient }: SessionManagerProps) {
   const { toast } = useToast();
   const navigate = useNavigate();
+  const location = useLocation();
   useSessionManager(queryClient);
 
   useEffect(() => {
@@ -23,7 +25,10 @@ export function SessionManager({ children, queryClient }: SessionManagerProps) {
       if (error || !session) {
         console.log('No initial session found, clearing data');
         queryClient.clear();
-        navigate('/auth');
+        // Only redirect to auth if trying to access a protected route
+        if (isProtectedRoute(location.pathname)) {
+          navigate('/auth');
+        }
         return;
       }
     };
@@ -46,7 +51,10 @@ export function SessionManager({ children, queryClient }: SessionManagerProps) {
           title: "Signed out",
           description: "You have been signed out successfully",
         });
-        navigate('/auth');
+        // Only redirect to auth if on a protected route
+        if (isProtectedRoute(location.pathname)) {
+          navigate('/auth');
+        }
         return;
       }
 
@@ -68,8 +76,8 @@ export function SessionManager({ children, queryClient }: SessionManagerProps) {
       }
 
       if (event === 'INITIAL_SESSION') {
-        if (!session) {
-          console.log('No initial session, redirecting to auth');
+        if (!session && isProtectedRoute(location.pathname)) {
+          console.log('No initial session and protected route, redirecting to auth');
           navigate('/auth');
           return;
         }
@@ -81,7 +89,7 @@ export function SessionManager({ children, queryClient }: SessionManagerProps) {
       console.log('Cleaning up auth state listener');
       subscription.unsubscribe();
     };
-  }, [queryClient, toast, navigate]);
+  }, [queryClient, toast, navigate, location.pathname]);
 
   return <>{children}</>;
 }
