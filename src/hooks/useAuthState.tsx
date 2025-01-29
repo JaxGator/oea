@@ -32,9 +32,12 @@ export function useAuthState() {
           });
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log('Profile subscription status:', status);
+      });
 
     return () => {
+      console.log('Cleaning up profile subscription');
       supabase.removeChannel(channel);
     };
   }, [user?.id, queryClient]);
@@ -57,25 +60,29 @@ export function useAuthState() {
     timestamp: new Date().toISOString()
   });
 
-  // Handle and log session errors
-  if (sessionError) {
-    console.error('Session error:', sessionError);
-    toast({
-      title: "Authentication Error",
-      description: "Please try signing in again",
-      variant: "destructive",
-    });
-  }
+  // Handle session errors
+  useEffect(() => {
+    if (sessionError) {
+      console.error('Session error:', sessionError);
+      toast({
+        title: "Authentication Error",
+        description: "Please try signing in again",
+        variant: "destructive",
+      });
+    }
+  }, [sessionError, toast]);
 
-  // Handle and log profile errors
-  if (profileError) {
-    console.error('Profile error:', profileError);
-    toast({
-      title: "Profile Error",
-      description: "Unable to load user profile",
-      variant: "destructive",
-    });
-  }
+  // Handle profile errors
+  useEffect(() => {
+    if (profileError) {
+      console.error('Profile error:', profileError);
+      toast({
+        title: "Profile Error",
+        description: "Unable to load user profile",
+        variant: "destructive",
+      });
+    }
+  }, [profileError, toast]);
 
   return {
     user,
