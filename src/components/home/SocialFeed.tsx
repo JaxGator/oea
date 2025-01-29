@@ -1,11 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Loader2, Rss } from "lucide-react";
+import { Rss } from "lucide-react";
 import { useEffect } from "react";
 
 export function SocialFeed() {
-  const { data: feeds, isLoading, error } = useQuery({
+  const { data: feeds = [] } = useQuery({
     queryKey: ['social-feeds'],
     queryFn: async () => {
       console.log('Fetching social feeds...');
@@ -23,7 +22,9 @@ export function SocialFeed() {
       console.log('Fetched social feeds:', data);
       return data;
     },
-    retry: 1
+    retry: 1,
+    staleTime: 1000 * 60 * 5, // Cache for 5 minutes
+    refetchOnWindowFocus: false
   });
 
   useEffect(() => {
@@ -55,25 +56,6 @@ export function SocialFeed() {
       scripts.forEach(script => script.remove());
     };
   }, [feeds]);
-
-  if (isLoading) {
-    return (
-      <div className="flex justify-center items-center min-h-[200px]">
-        <Loader2 className="h-8 w-8 animate-spin" />
-      </div>
-    );
-  }
-
-  if (error) {
-    console.error('Social feed error:', error);
-    return (
-      <Alert variant="destructive">
-        <AlertDescription>
-          Error loading social media feed. Please try again later.
-        </AlertDescription>
-      </Alert>
-    );
-  }
 
   if (!feeds || feeds.length === 0) {
     return null;

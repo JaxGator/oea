@@ -22,7 +22,8 @@ export function LeaderboardSection() {
           )
         `)
         .gt('events_attended', 0)
-        .order('events_attended', { ascending: false });
+        .order('events_attended', { ascending: false })
+        .limit(5);
 
       if (error) {
         console.error('Error fetching leaderboard:', error);
@@ -32,30 +33,9 @@ export function LeaderboardSection() {
       console.log('Leaderboard data:', data);
       return data || [];
     },
+    staleTime: 1000 * 60 * 5, // Cache for 5 minutes
+    refetchOnWindowFocus: false
   });
-
-  if (isLoading) {
-    return (
-      <section className="py-12 bg-gray-50">
-        <div className="container mx-auto px-4">
-          <div className="text-center">Loading leaderboard...</div>
-        </div>
-      </section>
-    );
-  }
-
-  if (error) {
-    console.error('Leaderboard error:', error);
-    return (
-      <section className="py-12 bg-gray-50">
-        <div className="container mx-auto px-4">
-          <div className="text-center text-red-500">
-            Failed to load leaderboard. Please try again later.
-          </div>
-        </div>
-      </section>
-    );
-  }
 
   return (
     <section className="py-12 bg-gray-50">

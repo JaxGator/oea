@@ -33,30 +33,6 @@ export function GalleryPreview() {
   const isFirstImage = selectedImage === images[0];
   const isLastImage = selectedImage === images[images.length - 1];
 
-  if (isLoading) {
-    return (
-      <div className="py-8 bg-white">
-        <div className="container mx-auto px-4">
-          <div className="text-center">
-            Loading gallery...
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (isError) {
-    return (
-      <div className="py-8 bg-white">
-        <div className="container mx-auto px-4">
-          <div className="text-center text-red-500">
-            Failed to load gallery images. Please try again later.
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="py-8 bg-white">
       <div className="container mx-auto px-4">
@@ -77,6 +53,7 @@ export function GalleryPreview() {
           images={images} 
           onImageSelect={handleImageSelect}
           isPreview={true}
+          isLoading={isLoading}
         />
 
         <FullGalleryDialog
