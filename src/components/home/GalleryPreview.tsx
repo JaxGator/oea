@@ -11,7 +11,9 @@ export function GalleryPreview() {
   const [showFullGallery, setShowFullGallery] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
-  const { data: images = [], isError } = useGalleryPreview(6);
+  const { data: images = [], isError, isLoading } = useGalleryPreview(6);
+
+  console.log('GalleryPreview render:', { images, isError, isLoading });
 
   const handleImageSelect = (imageUrl: string) => {
     setSelectedImage(imageUrl);
@@ -30,6 +32,18 @@ export function GalleryPreview() {
 
   const isFirstImage = selectedImage === images[0];
   const isLastImage = selectedImage === images[images.length - 1];
+
+  if (isLoading) {
+    return (
+      <div className="py-8 bg-white">
+        <div className="container mx-auto px-4">
+          <div className="text-center">
+            Loading gallery...
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (isError) {
     return (

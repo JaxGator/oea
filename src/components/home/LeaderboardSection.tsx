@@ -7,9 +7,10 @@ import { Trophy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export function LeaderboardSection() {
-  const { data: leaderboardData } = useQuery({
+  const { data: leaderboardData, isLoading, error } = useQuery({
     queryKey: ["leaderboard-preview"],
     queryFn: async () => {
+      console.log('Fetching leaderboard data...');
       const { data, error } = await supabase
         .from("leaderboard_metrics")
         .select(`
@@ -23,10 +24,38 @@ export function LeaderboardSection() {
         .gt('events_attended', 0)
         .order('events_attended', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching leaderboard:', error);
+        throw error;
+      }
+      
+      console.log('Leaderboard data:', data);
       return data || [];
     },
   });
+
+  if (isLoading) {
+    return (
+      <section className="py-12 bg-gray-50">
+        <div className="container mx-auto px-4">
+          <div className="text-center">Loading leaderboard...</div>
+        </div>
+      </section>
+    );
+  }
+
+  if (error) {
+    console.error('Leaderboard error:', error);
+    return (
+      <section className="py-12 bg-gray-50">
+        <div className="container mx-auto px-4">
+          <div className="text-center text-red-500">
+            Failed to load leaderboard. Please try again later.
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="py-12 bg-gray-50">
