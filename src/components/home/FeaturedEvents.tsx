@@ -1,17 +1,8 @@
 import React from 'react';
 import { useFeaturedEvents } from "@/hooks/useFeaturedEvents";
 import { UpcomingEventsSection } from "./UpcomingEventsSection";
-import { NotificationProvider } from "@/components/providers/NotificationProvider";
 
 export const FeaturedEvents = () => {
-  return (
-    <NotificationProvider>
-      <FeaturedEventsContent />
-    </NotificationProvider>
-  );
-};
-
-const FeaturedEventsContent = () => {
   const { events, isLoading, userRSVPs, handleRSVP, handleCancelRSVP } = useFeaturedEvents();
 
   // Filter out past events and limit to 4 upcoming events
