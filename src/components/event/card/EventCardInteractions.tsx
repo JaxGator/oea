@@ -28,6 +28,7 @@ interface EventCardInteractionsProps {
   onCancelEdit: () => void;
   onRSVPCountChange: (value: string) => void;
   isAuthChecking?: boolean;
+  requireAuth?: boolean;
 }
 
 export function EventCardInteractions({
@@ -54,6 +55,7 @@ export function EventCardInteractions({
   onCancelEdit,
   onRSVPCountChange,
   isAuthChecking = false,
+  requireAuth = false,
 }: EventCardInteractionsProps) {
   const { handleCardClick } = useEventInteractions(setShowDetailsDialog);
 
@@ -94,6 +96,7 @@ export function EventCardInteractions({
         onCancelEdit={onCancelEdit}
         onRSVPCountChange={onRSVPCountChange}
         isAuthChecking={isAuthChecking}
+        requireAuth={requireAuth}
       />
     </EventCardWrapper>
   );
