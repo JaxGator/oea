@@ -18,6 +18,7 @@ export function SocialFeed() {
       if (error) throw error;
       return data;
     },
+    enabled: true // Always fetch data, even for logged-out users
   });
 
   useEffect(() => {
