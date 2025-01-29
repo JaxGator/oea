@@ -36,6 +36,7 @@ export const useFeaturedEvents = () => {
           `)
           .eq('is_published', true)
           .gte('date', today)
+          .order('is_featured', { ascending: false })
           .order('date', { ascending: true });
 
         if (error) {
@@ -50,6 +51,7 @@ export const useFeaturedEvents = () => {
         throw error;
       }
     },
+    staleTime: 1000 * 60 * 5, // Cache for 5 minutes
     refetchOnWindowFocus: false
   });
 
