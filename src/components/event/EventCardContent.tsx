@@ -1,6 +1,6 @@
 import { Event } from "@/types/event";
-import { EventDetailsSection } from "./sections/EventDetailsSection";
-import { EventActionsSection } from "./sections/EventActionsSection";
+import { EventDetailsSection } from "./card/sections/EventDetailsSection";
+import { EventActionsSection } from "./card/sections/EventActionsSection";
 
 interface EventCardContentProps {
   event: Event;
