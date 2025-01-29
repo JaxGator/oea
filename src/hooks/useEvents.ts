@@ -42,11 +42,16 @@ export function useEvents(selectedDate?: Date) {
             )
           `);
 
-        // If user is authenticated and approved, show all events
-        if (isAuthenticated && isApproved) {
+        // For public access, only show published events
+        if (!isAuthenticated) {
+          query = query
+            .eq('is_published', true)
+            .order('date');
+        } else if (isAuthenticated && isApproved) {
+          // If user is authenticated and approved, show all events
           query = query.order('date');
         } else {
-          // For public access, only show published events
+          // For authenticated but not approved users, show only published events
           query = query
             .eq('is_published', true)
             .order('date');

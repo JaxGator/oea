@@ -53,6 +53,7 @@ export function EventList({
             onSelect={() => onEventSelect?.(event.id)}
             isSelected={event.id === selectedEventId}
             isAuthChecking={isAuthChecking}
+            requireAuth={true}
           />
         );
       })}
