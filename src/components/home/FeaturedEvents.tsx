@@ -5,6 +5,9 @@ import { UpcomingEventsSection } from "./UpcomingEventsSection";
 export const FeaturedEvents = () => {
   const { events, isLoading, userRSVPs, handleRSVP, handleCancelRSVP } = useFeaturedEvents();
 
+  console.log('FeaturedEvents component - events:', events);
+  console.log('FeaturedEvents component - isLoading:', isLoading);
+
   // Filter out past events and limit to 4 upcoming events
   const upcomingEvents = events
     .filter(event => {
@@ -22,7 +25,7 @@ export const FeaturedEvents = () => {
     })
     .slice(0, 4);
 
-  console.log('Upcoming events:', upcomingEvents);
+  console.log('FeaturedEvents component - upcomingEvents:', upcomingEvents);
 
   return (
     <section className="py-4 bg-[#F1F0FB]" aria-labelledby="featured-events-heading">

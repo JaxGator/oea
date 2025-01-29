@@ -16,6 +16,8 @@ export const useFeaturedEvents = () => {
     queryFn: async () => {
       console.log('Fetching featured events...');
       try {
+        const today = new Date().toISOString().split('T')[0];
+        
         const { data, error } = await supabase
           .from('events')
           .select(`
@@ -33,6 +35,7 @@ export const useFeaturedEvents = () => {
             )
           `)
           .eq('is_published', true)
+          .gte('date', today)
           .order('date', { ascending: true });
 
         if (error) {
