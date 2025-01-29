@@ -78,7 +78,7 @@ export function EventActions({
         requireAuth={requireAuth}
       />
 
-      {isAdmin && (
+      {(isAdmin || canManageEvents) && (
         <AdminActions
           onEdit={onEdit}
           onDelete={onDelete}
