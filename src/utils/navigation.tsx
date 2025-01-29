@@ -24,25 +24,11 @@ export const createNavigationItems = (user: any, profile: Profile | null, handle
       !!user && profile && (profile.is_admin || (profile.is_approved && profile.is_member)),
   },
   {
-    label: "Members",
-    path: "/members",
-    icon: Star,
-    show: (user: any, profile: Profile | null) => 
-      !!user && profile?.is_admin === true,
-  },
-  {
     label: "Messages",
     path: "/messages",
     icon: Mail,
     show: (user: any, profile: Profile | null) => 
-      !!user && profile?.is_admin === true,
-  },
-  {
-    label: "Admin",
-    path: "/admin",
-    icon: Shield,
-    show: (user: any, profile: Profile | null) => 
-      !!user && profile?.is_admin === true,
+      !!user && profile && (profile.is_admin || (profile.is_approved && profile.is_member)),
   },
   {
     label: "Resources",
@@ -53,5 +39,19 @@ export const createNavigationItems = (user: any, profile: Profile | null, handle
     label: "About",
     path: "/about",
     icon: Info,
+  },
+  {
+    label: "Members",
+    path: "/members",
+    icon: Star,
+    show: (user: any, profile: Profile | null) => 
+      !!user && profile && (profile.is_member || profile.is_admin),
+  },
+  {
+    label: "Admin",
+    path: "/admin",
+    icon: Shield,
+    show: (user: any, profile: Profile | null) => 
+      !!user && profile?.is_admin === true,
   },
 ];
