@@ -16,6 +16,8 @@ export function SessionManager({ children, queryClient }: SessionManagerProps) {
   useSessionManager(queryClient);
 
   useEffect(() => {
+    let mounted = true;
+
     const checkInitialSession = async () => {
       const { data: { session }, error } = await supabase.auth.getSession();
       if (error || !session) {
@@ -31,10 +33,12 @@ export function SessionManager({ children, queryClient }: SessionManagerProps) {
     console.log('Setting up auth state listener');
     
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (!mounted) return;
+      
       console.log('Auth state changed:', event, session?.user?.id);
       
-      if (event === 'SIGNED_OUT' || event === 'USER_DELETED') {
-        console.log('User signed out or deleted, clearing queries');
+      if (event === 'SIGNED_OUT') {
+        console.log('User signed out, clearing queries');
         queryClient.clear();
         localStorage.clear();
         sessionStorage.clear();
@@ -74,6 +78,7 @@ export function SessionManager({ children, queryClient }: SessionManagerProps) {
     });
 
     return () => {
+      mounted = false;
       console.log('Cleaning up auth state listener');
       subscription.unsubscribe();
     };
