@@ -80,6 +80,7 @@ export const useFeaturedEvents = () => {
 
   if (error) {
     console.error('Error in useFeaturedEvents:', error);
+    toast.error('Failed to load events');
   }
 
   return {

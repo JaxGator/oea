@@ -9,19 +9,9 @@ export const FeaturedEvents = () => {
   console.log('FeaturedEvents component - events:', events);
   console.log('FeaturedEvents component - isLoading:', isLoading);
 
-  if (isLoading) {
-    return (
-      <section className="py-4 bg-[#F1F0FB]">
-        <div className="container mx-auto px-4 flex justify-center items-center min-h-[200px]">
-          <Loader2 className="h-8 w-8 animate-spin" />
-        </div>
-      </section>
-    );
-  }
-
   // Filter out past events and limit to 4 upcoming events
   const upcomingEvents = events
-    .filter(event => {
+    ?.filter(event => {
       const eventDate = new Date(event.date);
       const today = new Date();
       today.setHours(0, 0, 0, 0);
@@ -34,9 +24,19 @@ export const FeaturedEvents = () => {
       // Then sort by date
       return new Date(a.date).getTime() - new Date(b.date).getTime();
     })
-    .slice(0, 4);
+    .slice(0, 4) || [];
 
   console.log('FeaturedEvents component - upcomingEvents:', upcomingEvents);
+
+  if (isLoading) {
+    return (
+      <section className="py-4 bg-[#F1F0FB]">
+        <div className="container mx-auto px-4 flex justify-center items-center min-h-[200px]">
+          <Loader2 className="h-8 w-8 animate-spin" />
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="py-4 bg-[#F1F0FB]" aria-labelledby="featured-events-heading">
