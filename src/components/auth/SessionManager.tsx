@@ -16,23 +16,36 @@ export function SessionManager({ children, queryClient }: SessionManagerProps) {
   useSessionManager(queryClient);
 
   useEffect(() => {
+    const checkInitialSession = async () => {
+      const { data: { session }, error } = await supabase.auth.getSession();
+      if (error || !session) {
+        console.log('No initial session found, clearing data');
+        queryClient.clear();
+        navigate('/auth');
+        return;
+      }
+    };
+
+    checkInitialSession();
+
     console.log('Setting up auth state listener');
     
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log('Auth state changed:', event, session?.user?.id);
       
-      // Clear all queries on sign out
-      if (event === 'SIGNED_OUT') {
-        console.log('User signed out, clearing queries');
+      if (event === 'SIGNED_OUT' || event === 'USER_DELETED') {
+        console.log('User signed out or deleted, clearing queries');
         queryClient.clear();
+        localStorage.clear();
+        sessionStorage.clear();
         toast({
           title: "Signed out",
           description: "You have been signed out successfully",
         });
         navigate('/auth');
+        return;
       }
 
-      // Refresh queries on sign in
       if (event === 'SIGNED_IN') {
         console.log('User signed in, invalidating queries');
         queryClient.invalidateQueries();
@@ -41,12 +54,22 @@ export function SessionManager({ children, queryClient }: SessionManagerProps) {
           description: "Welcome back!",
         });
         navigate('/');
+        return;
       }
 
-      // Handle token refresh
       if (event === 'TOKEN_REFRESHED') {
         console.log('Token refreshed, invalidating queries');
         queryClient.invalidateQueries();
+        return;
+      }
+
+      // Handle session recovery
+      if (event === 'INITIAL_SESSION') {
+        if (!session) {
+          console.log('No initial session, redirecting to auth');
+          navigate('/auth');
+          return;
+        }
       }
     });
 

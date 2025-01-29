@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { User } from '@supabase/supabase-js';
 import { Profile } from '@/types/auth';
+import { useToast } from '@/hooks/use-toast';
 
 interface SessionState {
   user: User | null;
@@ -17,107 +18,138 @@ export function useSession() {
     isLoading: true,
     error: null,
   });
+  const { toast } = useToast();
 
   useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(async ({ data: { session }, error }) => {
-      if (error) {
-        console.error('Error getting session:', error);
-        setState({ user: null, profile: null, isLoading: false, error });
-        return;
-      }
-      
-      console.log('Initial session state:', {
-        hasSession: !!session,
-        user: session?.user,
-        timestamp: new Date().toISOString()
-      });
+    let mounted = true;
 
-      if (session?.user) {
-        // Fetch profile data
-        const { data: profile, error: profileError } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', session.user.id)
-          .single();
-
-        if (profileError) {
-          console.error('Error fetching profile:', profileError);
-          setState({ 
-            user: session.user, 
-            profile: null, 
-            isLoading: false, 
-            error: profileError 
-          });
+    const initializeSession = async () => {
+      try {
+        // Get initial session
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        
+        if (sessionError) {
+          console.error('Error getting session:', sessionError);
+          if (mounted) {
+            setState(prev => ({ ...prev, isLoading: false, error: sessionError }));
+          }
           return;
         }
 
-        setState({ 
-          user: session.user, 
-          profile, 
-          isLoading: false, 
-          error: null 
-        });
-      } else {
-        setState({ 
-          user: null, 
-          profile: null, 
-          isLoading: false, 
-          error: null 
-        });
-      }
-    });
+        if (!session) {
+          console.log('No active session');
+          if (mounted) {
+            setState(prev => ({ ...prev, isLoading: false }));
+          }
+          return;
+        }
 
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        console.log('Auth state changed:', {
-          event,
-          hasSession: !!session,
-          user: session?.user,
-          timestamp: new Date().toISOString()
-        });
-        
+        console.log('Session found:', session.user.id);
+
+        // Fetch profile data if we have a session
         if (session?.user) {
-          // Fetch profile data
           const { data: profile, error: profileError } = await supabase
             .from('profiles')
             .select('*')
             .eq('id', session.user.id)
-            .single();
+            .maybeSingle();
 
           if (profileError) {
             console.error('Error fetching profile:', profileError);
-            setState({ 
-              user: session.user, 
-              profile: null, 
-              isLoading: false, 
-              error: profileError 
-            });
+            if (mounted) {
+              setState({
+                user: session.user,
+                profile: null,
+                isLoading: false,
+                error: profileError
+              });
+            }
             return;
           }
 
-          setState({
-            user: session.user,
-            profile,
-            isLoading: false,
-            error: null,
-          });
-        } else {
-          setState({
-            user: null,
-            profile: null,
-            isLoading: false,
-            error: null,
-          });
+          if (mounted) {
+            setState({
+              user: session.user,
+              profile,
+              isLoading: false,
+              error: null
+            });
+          }
+        }
+      } catch (error) {
+        console.error('Session initialization error:', error);
+        if (mounted) {
+          setState(prev => ({ ...prev, isLoading: false, error: error as Error }));
+        }
+      }
+    };
+
+    initializeSession();
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        console.log('Auth state changed:', event, session?.user?.id);
+
+        if (!session) {
+          if (mounted) {
+            setState({
+              user: null,
+              profile: null,
+              isLoading: false,
+              error: null
+            });
+          }
+          return;
+        }
+
+        try {
+          const { data: profile, error: profileError } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', session.user.id)
+            .maybeSingle();
+
+          if (profileError) {
+            console.error('Error fetching profile:', profileError);
+            toast({
+              title: "Error loading profile",
+              description: "Please try refreshing the page",
+              variant: "destructive",
+            });
+            if (mounted) {
+              setState({
+                user: session.user,
+                profile: null,
+                isLoading: false,
+                error: profileError
+              });
+            }
+            return;
+          }
+
+          if (mounted) {
+            setState({
+              user: session.user,
+              profile,
+              isLoading: false,
+              error: null
+            });
+          }
+        } catch (error) {
+          console.error('Profile fetch error:', error);
+          if (mounted) {
+            setState(prev => ({ ...prev, error: error as Error }));
+          }
         }
       }
     );
 
     return () => {
+      mounted = false;
       subscription.unsubscribe();
     };
-  }, []);
+  }, [toast]);
 
   return state;
 }
