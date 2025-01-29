@@ -6,26 +6,42 @@ import { SocialFeed } from "@/components/home/SocialFeed";
 import { HomeLayout, HomeSection } from '@/components/home/HomeLayout';
 import { LeaderboardSection } from '@/components/home/LeaderboardSection';
 import { NotificationProvider } from "@/components/providers/NotificationProvider";
+import { Suspense } from 'react';
+import { Loader2 } from 'lucide-react';
+
+const LoadingSection = () => (
+  <div className="flex justify-center items-center py-12">
+    <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
+  </div>
+);
 
 export default function Index() {
   return (
     <NotificationProvider>
       <HomeLayout>
-        <HomeSection title="Events">
-          <FeaturedEvents />
-        </HomeSection>
+        <Suspense fallback={<LoadingSection />}>
+          <HomeSection title="Events">
+            <FeaturedEvents />
+          </HomeSection>
+        </Suspense>
 
-        <HomeSection title="Leaderboard">
-          <LeaderboardSection />
-        </HomeSection>
+        <Suspense fallback={<LoadingSection />}>
+          <HomeSection title="Leaderboard">
+            <LeaderboardSection />
+          </HomeSection>
+        </Suspense>
 
-        <HomeSection title="Gallery">
-          <GalleryPreview />
-        </HomeSection>
+        <Suspense fallback={<LoadingSection />}>
+          <HomeSection title="Gallery">
+            <GalleryPreview />
+          </HomeSection>
+        </Suspense>
 
-        <HomeSection title="Social Feed">
-          <SocialFeed />
-        </HomeSection>
+        <Suspense fallback={<LoadingSection />}>
+          <HomeSection title="Social Feed">
+            <SocialFeed />
+          </HomeSection>
+        </Suspense>
       </HomeLayout>
     </NotificationProvider>
   );
