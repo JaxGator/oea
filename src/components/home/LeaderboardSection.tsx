@@ -5,11 +5,8 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Trophy } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useAuthState } from "@/hooks/useAuthState";
 
 export function LeaderboardSection() {
-  const { isAuthenticated } = useAuthState();
-  
   const { data: leaderboardData } = useQuery({
     queryKey: ["leaderboard-preview"],
     queryFn: async () => {
@@ -29,7 +26,6 @@ export function LeaderboardSection() {
       if (error) throw error;
       return data || [];
     },
-    enabled: true // Always fetch data, even for logged-out users
   });
 
   return (
@@ -58,11 +54,6 @@ export function LeaderboardSection() {
             timeFilter="all"
             limit={5}
           />
-          {!isAuthenticated && (
-            <div className="mt-4 p-4 bg-gray-100 rounded-lg text-center">
-              <p className="text-gray-600">Sign in to participate in the leaderboard!</p>
-            </div>
-          )}
         </Card>
       </div>
     </section>

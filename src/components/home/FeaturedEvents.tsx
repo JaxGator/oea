@@ -28,7 +28,7 @@ export const FeaturedEvents = () => {
         <h2 id="featured-events-heading" className="sr-only">Featured Events</h2>
         <UpcomingEventsSection 
           events={upcomingEvents}
-          userRSVPs={userRSVPs}
+          userRSVPs={userRSVPs || {}}
           handleRSVP={handleRSVP}
           handleCancelRSVP={handleCancelRSVP}
           isLoading={isLoading}
