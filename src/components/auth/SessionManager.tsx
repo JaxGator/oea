@@ -67,7 +67,6 @@ export function SessionManager({ children, queryClient }: SessionManagerProps) {
         return;
       }
 
-      // Handle session recovery
       if (event === 'INITIAL_SESSION') {
         if (!session) {
           console.log('No initial session, redirecting to auth');
