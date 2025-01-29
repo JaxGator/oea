@@ -49,16 +49,15 @@ export const UpcomingEventsSection = ({
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {events.slice(0, 3).map((event) => (
-            <div key={event.id}>
-              <EventCard 
-                event={event} 
-                onRSVP={handleRSVP}
-                onCancelRSVP={handleCancelRSVP}
-                userRSVPStatus={userRSVPs[event.id]}
-                isAuthChecking={false}
-                requireAuth={!isAuthenticated}
-              />
-            </div>
+            <EventCard 
+              key={event.id}
+              event={event} 
+              onRSVP={handleRSVP}
+              onCancelRSVP={handleCancelRSVP}
+              userRSVPStatus={userRSVPs[event.id]}
+              isAuthChecking={false}
+              requireAuth={!isAuthenticated}
+            />
           ))}
         </div>
       )}
