@@ -1,7 +1,16 @@
 import { Home, Info, Calendar, Users, Store, Settings, LogOut, MessageSquare, User2 } from "lucide-react";
 import { Profile } from "@/types/auth";
 
-export const createNavigationItems = (user: any, profile: Profile | null, handleSignOut: () => void) => [
+interface NavigationItem {
+  label: string;
+  path: string;
+  icon: any;
+  external?: boolean;
+  show?: (user: any, profile: Profile | null) => boolean;
+  onClick?: () => void;
+}
+
+export const createNavigationItems = (user: any, profile: Profile | null, handleSignOut: () => void): NavigationItem[] => [
   {
     label: "Home",
     path: "/",
