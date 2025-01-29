@@ -1,4 +1,4 @@
-import { Info, Calendar, Users } from "lucide-react";
+import { Info, Calendar, Users, Star, Mail, Shield } from "lucide-react";
 import { Profile } from "@/types/auth";
 
 interface NavigationItem {
@@ -22,6 +22,27 @@ export const createNavigationItems = (user: any, profile: Profile | null, handle
     icon: Users,
     show: (user: any, profile: Profile | null) => 
       !!user && profile && (profile.is_admin || (profile.is_approved && profile.is_member)),
+  },
+  {
+    label: "Members",
+    path: "/members",
+    icon: Star,
+    show: (user: any, profile: Profile | null) => 
+      !!user && profile?.is_admin === true,
+  },
+  {
+    label: "Messages",
+    path: "/messages",
+    icon: Mail,
+    show: (user: any, profile: Profile | null) => 
+      !!user && profile?.is_admin === true,
+  },
+  {
+    label: "Admin",
+    path: "/admin",
+    icon: Shield,
+    show: (user: any, profile: Profile | null) => 
+      !!user && profile?.is_admin === true,
   },
   {
     label: "Resources",
