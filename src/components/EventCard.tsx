@@ -29,17 +29,21 @@ export function EventCard({
     return null;
   }
 
+  console.log("Rendering event:", event); // Add logging to debug
+
   return (
-    <EventCardContainer 
-      event={event}
-      onRSVP={onRSVP}
-      onCancelRSVP={onCancelRSVP}
-      userRSVPStatus={userRSVPStatus}
-      onSelect={onSelect}
-      isSelected={isSelected}
-      onUpdate={onUpdate}
-      isAuthChecking={isAuthChecking}
-      requireAuth={requireAuth}
-    />
+    <div className="h-full">
+      <EventCardContainer 
+        event={event}
+        onRSVP={onRSVP}
+        onCancelRSVP={onCancelRSVP}
+        userRSVPStatus={userRSVPStatus}
+        onSelect={onSelect}
+        isSelected={isSelected}
+        onUpdate={onUpdate}
+        isAuthChecking={isAuthChecking}
+        requireAuth={requireAuth}
+      />
+    </div>
   );
 }
