@@ -20,6 +20,7 @@ interface EventCardActionsProps {
   isFullyBooked?: boolean;
   canJoinWaitlist?: boolean;
   isWixEvent?: boolean;
+  requireAuth?: boolean;
 }
 
 export function EventCardActions({
@@ -41,7 +42,8 @@ export function EventCardActions({
   isAuthChecking = false,
   isFullyBooked = false,
   canJoinWaitlist = false,
-  isWixEvent = false
+  isWixEvent = false,
+  requireAuth = false
 }: EventCardActionsProps) {
   if (isAuthChecking) {
     return (
@@ -71,6 +73,7 @@ export function EventCardActions({
       showPublishToggle={showPublishToggle}
       showDelete={showDelete}
       canJoinWaitlist={canJoinWaitlist}
+      requireAuth={requireAuth}
     />
   );
 }
