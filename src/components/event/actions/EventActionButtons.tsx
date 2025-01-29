@@ -1,8 +1,10 @@
 import { Button } from "@/components/ui/button";
-import { Eye, Loader2 } from "lucide-react";
 import { RSVPButton } from "./RSVPButton";
 import { AddGuestsButton } from "./AddGuestsButton";
-import { toast } from "sonner";
+
+interface Guest {
+  firstName: string;
+}
 
 interface EventActionButtonsProps {
   userRSVPStatus: string | null;
@@ -10,12 +12,12 @@ interface EventActionButtonsProps {
   isFullyBooked: boolean;
   canJoinWaitlist?: boolean;
   canAddGuests?: boolean;
-  currentGuests?: { firstName: string }[];
-  onRSVP: (guests?: { firstName: string }[]) => void;
+  currentGuests?: Guest[];
+  onRSVP: (guests?: Guest[]) => void;
   onCancelRSVP: () => void;
   onViewDetails?: () => void;
   showViewDetails?: boolean;
-  isAuthChecking?: boolean;
+  requireAuth?: boolean;
 }
 
 export function EventActionButtons({
@@ -28,70 +30,45 @@ export function EventActionButtons({
   onRSVP,
   onCancelRSVP,
   onViewDetails,
-  showViewDetails,
-  isAuthChecking = false
+  showViewDetails = false,
+  requireAuth = false
 }: EventActionButtonsProps) {
-  const handleCancelRSVP = () => {
-    const confirmCancel = window.confirm("Are you sure you want to cancel your RSVP?");
-    if (confirmCancel) {
-      onCancelRSVP();
-      toast.success("Your RSVP has been cancelled");
-    }
-  };
-
-  if (isAuthChecking) {
-    return (
-      <div className="animate-pulse">
-        <div className="h-10 bg-gray-200 rounded w-24"></div>
-      </div>
-    );
-  }
-
   return (
-    <div className="flex flex-wrap items-center gap-2">
+    <>
       {!userRSVPStatus && !isPastEvent && (
         <RSVPButton 
           isFullyBooked={isFullyBooked} 
-          onRSVP={onRSVP}
+          onRSVP={onRSVP} 
           canJoinWaitlist={canJoinWaitlist}
+          requireAuth={requireAuth}
         />
       )}
 
       {userRSVPStatus === "attending" && !isPastEvent && (
-        <div className="flex items-center gap-2 animate-fade-in">
+        <>
           <Button
             variant="destructive"
-            onClick={handleCancelRSVP}
-            className="group relative"
+            onClick={onCancelRSVP}
           >
-            <span className="relative z-10">Cancel RSVP</span>
-            <div className="absolute inset-0 bg-white/10 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
+            Cancel RSVP
           </Button>
           {canAddGuests && (
             <AddGuestsButton 
-              onAddGuests={(newGuests) => {
-                onRSVP(newGuests);
-                toast.success("Guests added successfully");
-              }}
+              onAddGuests={(newGuests) => onRSVP(newGuests)}
               currentGuests={currentGuests}
             />
           )}
-          <div className="text-sm text-green-600 bg-green-50 px-3 py-1 rounded-full">
-            ✓ Confirmed
-          </div>
-        </div>
+        </>
       )}
 
       {showViewDetails && onViewDetails && (
         <Button
           variant="outline"
           onClick={onViewDetails}
-          className="gap-2 hover:bg-gray-50 transition-colors"
         >
-          <Eye className="h-4 w-4" />
-          Details
+          View Details
         </Button>
       )}
-    </div>
+    </>
   );
 }

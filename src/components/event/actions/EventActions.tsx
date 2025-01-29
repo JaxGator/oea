@@ -25,6 +25,7 @@ interface EventActionsProps {
   isPublished?: boolean;
   showPublishToggle?: boolean;
   isAuthChecking?: boolean;
+  requireAuth?: boolean;
 }
 
 export function EventActions({
@@ -46,7 +47,8 @@ export function EventActions({
   onViewDetails,
   isPublished,
   showPublishToggle = false,
-  isAuthChecking = false
+  isAuthChecking = false,
+  requireAuth = false
 }: EventActionsProps) {
   const showViewDetails = isAdmin || canManageEvents || userRSVPStatus === "attending";
 
@@ -73,6 +75,7 @@ export function EventActions({
         onCancelRSVP={onCancelRSVP}
         onViewDetails={onViewDetails}
         showViewDetails={showViewDetails}
+        requireAuth={requireAuth}
       />
 
       {isAdmin && (
