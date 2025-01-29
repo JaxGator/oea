@@ -20,7 +20,8 @@ export const createNavigationItems = (user: any, profile: Profile | null, handle
     label: "Users",
     path: "/users",
     icon: Users,
-    show: (user: any, profile: Profile | null) => profile?.is_admin === true,
+    show: (user: any, profile: Profile | null) => 
+      !!user && profile && (profile.is_admin || (profile.is_approved && profile.is_member)),
   },
   {
     label: "Resources",
