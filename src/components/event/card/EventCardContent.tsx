@@ -29,6 +29,7 @@ interface EventCardContentProps {
   onCancelEdit: () => void;
   onRSVPCountChange: (value: string) => void;
   isAuthChecking?: boolean;
+  requireAuth?: boolean;
 }
 
 export function EventCardContent({
@@ -56,7 +57,8 @@ export function EventCardContent({
   onSaveRSVP,
   onCancelEdit,
   onRSVPCountChange,
-  isAuthChecking = false
+  isAuthChecking = false,
+  requireAuth = false
 }: EventCardContentProps) {
   return (
     <div className="p-4">
@@ -92,6 +94,7 @@ export function EventCardContent({
         onViewDetails={onViewDetails}
         onTogglePublish={onTogglePublish}
         isAuthChecking={isAuthChecking}
+        requireAuth={requireAuth}
       />
     </div>
   );
