@@ -22,6 +22,8 @@ export const FeaturedEvents = () => {
     })
     .slice(0, 4);
 
+  console.log('Upcoming events:', upcomingEvents);
+
   return (
     <section className="py-4 bg-[#F1F0FB]" aria-labelledby="featured-events-heading">
       <div className="container mx-auto px-4">
