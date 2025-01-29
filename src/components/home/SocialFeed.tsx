@@ -8,6 +8,7 @@ export function SocialFeed() {
   const { data: feeds, isLoading, error } = useQuery({
     queryKey: ['social-feeds'],
     queryFn: async () => {
+      console.log('Fetching social feeds...');
       const { data, error } = await supabase
         .from('social_media_feeds')
         .select('*')
@@ -15,10 +16,14 @@ export function SocialFeed() {
         .order('created_at', { ascending: false })
         .limit(1);
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching social feeds:', error);
+        throw error;
+      }
+      console.log('Fetched social feeds:', data);
       return data;
     },
-    enabled: true // Always fetch data, even for logged-out users
+    retry: 1
   });
 
   useEffect(() => {
@@ -60,6 +65,7 @@ export function SocialFeed() {
   }
 
   if (error) {
+    console.error('Social feed error:', error);
     return (
       <Alert variant="destructive">
         <AlertDescription>

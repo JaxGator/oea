@@ -7,6 +7,7 @@ export function useGalleryPreview(limit: number = 6) {
     queryKey: ['gallery-preview', limit],
     queryFn: async () => {
       try {
+        console.log('Fetching gallery preview images...');
         const { data, error } = await supabase
           .from('gallery_images')
           .select('*')
@@ -15,20 +16,26 @@ export function useGalleryPreview(limit: number = 6) {
 
         if (error) {
           console.error('Error fetching gallery images:', error);
-          toast.error('Failed to load gallery images');
           throw error;
         }
 
+        console.log('Fetched gallery data:', data);
+
         if (!data) return [];
 
-        return data.map(image => {
+        const imageUrls = data.map(image => {
           const { data: urlData } = supabase.storage
             .from('gallery')
             .getPublicUrl(image.file_name);
+          
+          console.log('Generated URL for image:', image.file_name, urlData.publicUrl);
           return urlData.publicUrl;
         });
+
+        console.log('Final image URLs:', imageUrls);
+        return imageUrls;
       } catch (error) {
-        console.error('Gallery fetch error:', error);
+        console.error('Gallery preview error:', error);
         toast.error('Failed to load gallery images');
         throw error;
       }
