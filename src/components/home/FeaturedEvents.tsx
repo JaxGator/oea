@@ -6,9 +6,6 @@ import { Loader2 } from "lucide-react";
 export const FeaturedEvents = () => {
   const { events, isLoading, userRSVPs, handleRSVP, handleCancelRSVP } = useFeaturedEvents();
 
-  console.log('FeaturedEvents component - events:', events);
-  console.log('FeaturedEvents component - isLoading:', isLoading);
-
   // Filter out past events and limit to 4 upcoming events
   const upcomingEvents = events
     ?.filter(event => {
@@ -26,13 +23,23 @@ export const FeaturedEvents = () => {
     })
     .slice(0, 4) || [];
 
-  console.log('FeaturedEvents component - upcomingEvents:', upcomingEvents);
-
   if (isLoading) {
     return (
       <section className="py-4 bg-[#F1F0FB]">
         <div className="container mx-auto px-4 flex justify-center items-center min-h-[200px]">
           <Loader2 className="h-8 w-8 animate-spin" />
+        </div>
+      </section>
+    );
+  }
+
+  if (events.length === 0) {
+    return (
+      <section className="py-4 bg-[#F1F0FB]">
+        <div className="container mx-auto px-4">
+          <div className="text-center py-8 text-gray-500">
+            No upcoming events found. Check back soon!
+          </div>
         </div>
       </section>
     );

@@ -50,33 +50,30 @@ export const useFeaturedEvents = () => {
         throw error;
       }
     },
-    retry: 1,
     refetchOnWindowFocus: false
   });
 
+  // Set up real-time subscription for events
   useEffect(() => {
-    if (events.length > 0) {
-      const channel = supabase
-        .channel('schema-db-changes')
-        .on(
-          'postgres_changes',
-          {
-            event: '*',
-            schema: 'public',
-            table: 'events'
-          },
-          (payload) => {
-            console.log('Event change received:', payload);
-            queryClient.invalidateQueries({ queryKey: ['featuredEvents'] });
-          }
-        )
-        .subscribe();
+    const channel = supabase
+      .channel('events-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'events'
+        },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ['featuredEvents'] });
+        }
+      )
+      .subscribe();
 
-      return () => {
-        supabase.removeChannel(channel);
-      };
-    }
-  }, [events.length, queryClient]);
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [queryClient]);
 
   if (error) {
     console.error('Error in useFeaturedEvents:', error);

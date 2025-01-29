@@ -24,8 +24,6 @@ export const UpcomingEventsSection = ({
   const navigate = useNavigate();
   const { isAuthenticated } = useAuthState();
 
-  console.log("UpcomingEventsSection - events:", events);
-
   return (
     <div className="py-1">
       <div className="flex justify-between items-center mb-4 gap-4">
