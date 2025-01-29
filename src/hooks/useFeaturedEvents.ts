@@ -44,7 +44,7 @@ export const useFeaturedEvents = () => {
         }
 
         console.log('Fetched events:', data);
-        return data || [];
+        return data as Event[];
       } catch (error) {
         console.error('Query error:', error);
         throw error;
@@ -55,7 +55,6 @@ export const useFeaturedEvents = () => {
   });
 
   useEffect(() => {
-    // Only set up real-time subscription if we have events
     if (events.length > 0) {
       const channel = supabase
         .channel('schema-db-changes')
@@ -68,14 +67,7 @@ export const useFeaturedEvents = () => {
           },
           (payload) => {
             console.log('Event change received:', payload);
-            
-            if (payload.eventType === 'UPDATE') {
-              toast.info("Event Updated", {
-                description: `The event has been updated.`
-              });
-              
-              queryClient.invalidateQueries({ queryKey: ['featuredEvents'] });
-            }
+            queryClient.invalidateQueries({ queryKey: ['featuredEvents'] });
           }
         )
         .subscribe();
@@ -86,8 +78,12 @@ export const useFeaturedEvents = () => {
     }
   }, [events.length, queryClient]);
 
+  if (error) {
+    console.error('Error in useFeaturedEvents:', error);
+  }
+
   return {
-    events,
+    events: events || [],
     isLoading,
     error,
     userRSVPs: isAuthenticated ? userRSVPs : {},

@@ -48,7 +48,7 @@ export const UpcomingEventsSection = ({
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {events.slice(0, 3).map((event) => (
+          {events.map((event) => (
             <EventCard 
               key={event.id}
               event={event} 
