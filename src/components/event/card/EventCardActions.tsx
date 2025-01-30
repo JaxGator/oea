@@ -21,6 +21,7 @@ interface EventCardActionsProps {
   canJoinWaitlist?: boolean;
   isWixEvent?: boolean;
   requireAuth?: boolean;
+  event: { id: string; title: string };
 }
 
 export function EventCardActions({
@@ -43,7 +44,8 @@ export function EventCardActions({
   isFullyBooked = false,
   canJoinWaitlist = false,
   isWixEvent = false,
-  requireAuth = false
+  requireAuth = false,
+  event
 }: EventCardActionsProps) {
   if (isAuthChecking) {
     return (
@@ -74,6 +76,7 @@ export function EventCardActions({
       showDelete={showDelete}
       canJoinWaitlist={canJoinWaitlist}
       requireAuth={requireAuth}
+      event={event}
     />
   );
 }

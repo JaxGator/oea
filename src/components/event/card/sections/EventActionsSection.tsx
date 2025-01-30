@@ -11,11 +11,10 @@ interface EventActionsSectionProps {
   onCancelRSVP: () => void;
   onEdit: () => void;
   onDelete: () => void;
-  showDelete?: boolean;
   showPublishToggle?: boolean;
   isPublished?: boolean;
   onViewDetails: () => void;
-  onTogglePublish: () => void;
+  onTogglePublish?: () => void;
   isAuthChecking?: boolean;
   isFullyBooked?: boolean;
   canJoinWaitlist?: boolean;
@@ -35,7 +34,6 @@ export function EventActionsSection({
   onCancelRSVP,
   onEdit,
   onDelete,
-  showDelete = true,
   showPublishToggle = false,
   isPublished = true,
   onViewDetails,
@@ -60,7 +58,6 @@ export function EventActionsSection({
         onCancelRSVP={onCancelRSVP}
         onEdit={onEdit}
         onDelete={onDelete}
-        showDelete={showDelete}
         showPublishToggle={showPublishToggle}
         isPublished={isPublished}
         onViewDetails={onViewDetails}

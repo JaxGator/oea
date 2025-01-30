@@ -45,7 +45,6 @@ export function EventCardDetailedView({
   const canViewRSVPs = isAdmin || canManageEvents || userRSVPStatus === "attending";
 
   const handleViewDetails = () => {
-    // This is a placeholder since we're already in the detailed view
     console.log("Already in detailed view");
   };
 
@@ -110,6 +109,7 @@ export function EventCardDetailedView({
           canAddGuests={canAddGuests}
           currentGuests={currentGuests}
           onViewDetails={handleViewDetails}
+          event={{ id: event.id, title: event.title }}
         />
 
         {event.waitlist_enabled && (
