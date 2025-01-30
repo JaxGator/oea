@@ -16,6 +16,14 @@ interface EmailRequest {
   type: 'confirmation' | 'cancellation';
 }
 
+const formatTime = (timeStr: string): string => {
+  const [hours, minutes] = timeStr.split(':');
+  const hour = parseInt(hours, 10);
+  const ampm = hour >= 12 ? 'PM' : 'AM';
+  const hour12 = hour % 12 || 12;
+  return `${hour12}:${minutes} ${ampm}`;
+};
+
 const handler = async (req: Request): Promise<Response> => {
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
@@ -80,7 +88,7 @@ const handler = async (req: Request): Promise<Response> => {
       day: 'numeric'
     });
     
-    const eventTime = event.time.slice(0, 5); // Format HH:mm
+    const eventTime = formatTime(event.time);
 
     // Get email template with detailed logging
     const templateName = type === 'confirmation' ? 'rsvp_confirmation' : 'rsvp_cancellation';
@@ -106,7 +114,6 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Replace template variables
     let emailContent = template.content
-      .replace('{user_name}', profile.full_name || profile.username)
       .replace('{event_title}', event.title)
       .replace('{event_date}', eventDate)
       .replace('{event_time}', eventTime)
@@ -116,7 +123,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log('Sending email with Resend API...');
     
-    // Send email using Resend - note the to field is now a string, not an array
+    // Send email using Resend
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
@@ -125,7 +132,7 @@ const handler = async (req: Request): Promise<Response> => {
       },
       body: JSON.stringify({
         from: "OEA Events <events@resend.dev>",
-        to: profile.email, // Single email address as string
+        to: profile.email,
         subject: emailSubject,
         html: emailContent,
       }),
