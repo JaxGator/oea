@@ -1,20 +1,36 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useEvents } from "@/hooks/useEvents";
 import { useRSVP } from "@/hooks/useRSVP";
 import { useAuthState } from "@/hooks/useAuthState";
 import { EventsHeader } from "@/components/event/sections/EventsHeader";
 import { EventsContent } from "@/components/event/sections/EventsContent";
 import { filterEventsByDate } from "@/utils/dateUtils";
+import { useInView } from "react-intersection-observer";
+import { Loader2 } from "lucide-react";
 
 export default function Events() {
   const { isAuthenticated } = useAuthState();
   const [isCreateEventOpen, setIsCreateEventOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
+  const [page, setPage] = useState(1);
   
-  const { data: events = [], isLoading: isEventsLoading, error } = useEvents(selectedDate);
+  const { data, isLoading: isEventsLoading, error, hasNextPage, fetchNextPage, isFetchingNextPage } = useEvents(selectedDate, page);
   const { handleRSVP, cancelRSVP } = useRSVP();
 
-  // Only filter by date if a date is selected, otherwise show all events
+  // Set up intersection observer for infinite scroll
+  const { ref, inView } = useInView();
+
+  // Load more events when the user scrolls to the bottom
+  useEffect(() => {
+    if (inView && !isFetchingNextPage && hasNextPage) {
+      setPage(prev => prev + 1);
+    }
+  }, [inView, isFetchingNextPage, hasNextPage]);
+
+  const events = data?.events || [];
+  const totalCount = data?.totalCount || 0;
+
+  // Only filter by date if a date is selected
   const filteredEvents = selectedDate ? filterEventsByDate(events, selectedDate) : events;
   
   // Separate upcoming and past events, with featured events first
@@ -42,14 +58,6 @@ export default function Events() {
     );
   }
 
-  if (isEventsLoading) {
-    return (
-      <div className="min-h-screen bg-[#F1F0FB] flex items-center justify-center">
-        <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-white">
       <div className="max-w-7xl mx-auto px-4 py-8">
@@ -66,6 +74,16 @@ export default function Events() {
           onRSVP={handleRSVP}
           onCancelRSVP={cancelRSVP}
         />
+
+        {/* Infinite scroll trigger */}
+        <div ref={ref} className="h-10 flex items-center justify-center">
+          {isFetchingNextPage && (
+            <div className="flex items-center gap-2 text-gray-500">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              <span>Loading more events...</span>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

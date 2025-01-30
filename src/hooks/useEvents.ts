@@ -5,20 +5,27 @@ import type { Event } from '@/types/event';
 import { toast } from 'sonner';
 import { useAuthState } from './useAuthState';
 
-export function useEvents(selectedDate?: Date) {
+const EVENTS_PER_PAGE = 9;
+
+export function useEvents(selectedDate?: Date, page: number = 1) {
   const { profile, isAuthenticated } = useAuthState();
   const isApproved = profile?.is_approved;
 
   return useQuery({
-    queryKey: ['events', selectedDate?.toISOString(), isAuthenticated, isApproved],
+    queryKey: ['events', selectedDate?.toISOString(), isAuthenticated, isApproved, page],
     queryFn: async () => {
       try {
         console.log('Fetching events with auth state:', {
           isAuthenticated,
           isApproved,
           userId: profile?.id,
-          selectedDate: selectedDate?.toISOString()
+          selectedDate: selectedDate?.toISOString(),
+          page
         });
+
+        // Calculate the range for pagination
+        const from = (page - 1) * EVENTS_PER_PAGE;
+        const to = from + EVENTS_PER_PAGE - 1;
 
         // Comprehensive query that includes all related data
         let query = supabase
@@ -40,7 +47,8 @@ export function useEvents(selectedDate?: Date) {
                 first_name
               )
             )
-          `);
+          `)
+          .range(from, to);
 
         // For public access, only show published events
         if (!isAuthenticated) {
@@ -63,7 +71,7 @@ export function useEvents(selectedDate?: Date) {
           query = query.gte('date', dateStr);
         }
 
-        const { data, error } = await query;
+        const { data: events, error, count } = await query;
         
         if (error) {
           console.error('Error fetching events:', {
@@ -87,13 +95,13 @@ export function useEvents(selectedDate?: Date) {
           throw error;
         }
 
-        if (!data) {
+        if (!events) {
           console.log('No events found');
-          return [];
+          return { events: [], totalCount: 0 };
         }
 
         // Transform and organize the data
-        const transformedEvents = data.map(event => ({
+        const transformedEvents = events.map(event => ({
           ...event,
           rsvps: event.event_rsvps || [],
           attendees: event.event_rsvps?.filter(rsvp => 
@@ -109,7 +117,10 @@ export function useEvents(selectedDate?: Date) {
           firstEvent: transformedEvents[0]
         });
 
-        return transformedEvents;
+        return { 
+          events: transformedEvents,
+          totalCount: count || 0
+        };
       } catch (error) {
         console.error('Error in useEvents:', error);
         toast.error('Failed to load events. Please try again.');
