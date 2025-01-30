@@ -1,5 +1,6 @@
 import { EventActionButtons } from "./EventActionButtons";
 import { AdminActions } from "./AdminActions";
+import { EventShareMenu } from "../share/EventShareMenu";
 
 interface Guest {
   firstName: string;
@@ -26,6 +27,7 @@ interface EventActionsProps {
   showPublishToggle?: boolean;
   isAuthChecking?: boolean;
   requireAuth?: boolean;
+  event: { id: string; title: string };
 }
 
 export function EventActions({
@@ -48,7 +50,8 @@ export function EventActions({
   isPublished,
   showPublishToggle = false,
   isAuthChecking = false,
-  requireAuth = false
+  requireAuth = false,
+  event
 }: EventActionsProps) {
   const showViewDetails = isAdmin || canManageEvents || userRSVPStatus === "attending";
 
@@ -77,6 +80,8 @@ export function EventActions({
         showViewDetails={showViewDetails}
         requireAuth={requireAuth}
       />
+
+      <EventShareMenu eventId={event.id} title={event.title} />
 
       {(isAdmin || canManageEvents) && (
         <AdminActions

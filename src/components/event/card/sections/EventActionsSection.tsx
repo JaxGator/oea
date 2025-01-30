@@ -21,6 +21,7 @@ interface EventActionsSectionProps {
   canJoinWaitlist?: boolean;
   isWixEvent?: boolean;
   requireAuth?: boolean;
+  event: { id: string; title: string };
 }
 
 export function EventActionsSection({
@@ -43,7 +44,8 @@ export function EventActionsSection({
   isFullyBooked = false,
   canJoinWaitlist = false,
   isWixEvent = false,
-  requireAuth = false
+  requireAuth = false,
+  event
 }: EventActionsSectionProps) {
   return (
     <div className="mt-4">
@@ -68,6 +70,7 @@ export function EventActionsSection({
         canJoinWaitlist={canJoinWaitlist}
         isWixEvent={isWixEvent}
         requireAuth={requireAuth}
+        event={event}
       />
     </div>
   );

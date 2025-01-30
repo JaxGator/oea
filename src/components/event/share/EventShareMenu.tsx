@@ -51,7 +51,7 @@ export function EventShareMenu({ eventId, title }: EventShareMenuProps) {
           Share
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
+      <DropdownMenuContent align="end" className="bg-white">
         <DropdownMenuItem onClick={handleCopyLink} className="gap-2 cursor-pointer">
           <Link className="h-4 w-4" />
           Copy Link

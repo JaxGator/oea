@@ -95,6 +95,7 @@ export function EventCardContent({
         onTogglePublish={onTogglePublish}
         isAuthChecking={isAuthChecking}
         requireAuth={requireAuth}
+        event={event}
       />
     </div>
   );
