@@ -12,9 +12,16 @@ export default function Events() {
   const { isAuthenticated } = useAuthState();
   const [isCreateEventOpen, setIsCreateEventOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
-  const [page, setPage] = useState(1);
   
-  const { data, isLoading: isEventsLoading, error, hasNextPage, fetchNextPage, isFetchingNextPage } = useEvents(selectedDate, page);
+  const { 
+    data, 
+    isLoading: isEventsLoading, 
+    error,
+    hasNextPage,
+    fetchNextPage,
+    isFetchingNextPage
+  } = useEvents(selectedDate);
+  
   const { handleRSVP, cancelRSVP } = useRSVP();
 
   // Set up intersection observer for infinite scroll
@@ -22,13 +29,14 @@ export default function Events() {
 
   // Load more events when the user scrolls to the bottom
   useEffect(() => {
-    if (inView && !isFetchingNextPage && hasNextPage) {
-      setPage(prev => prev + 1);
+    if (inView && hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
     }
-  }, [inView, isFetchingNextPage, hasNextPage]);
+  }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
-  const events = data?.events || [];
-  const totalCount = data?.totalCount || 0;
+  // Combine all pages of events
+  const events = data?.pages.flatMap(page => page.events) || [];
+  const totalCount = data?.pages[0]?.totalCount || 0;
 
   // Only filter by date if a date is selected
   const filteredEvents = selectedDate ? filterEventsByDate(events, selectedDate) : events;
@@ -73,6 +81,7 @@ export default function Events() {
           pastEvents={pastEvents}
           onRSVP={handleRSVP}
           onCancelRSVP={cancelRSVP}
+          isLoading={isEventsLoading}
         />
 
         {/* Infinite scroll trigger */}

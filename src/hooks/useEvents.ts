@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useInfiniteQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { transformEventData } from './events/useEventTransform';
 import type { Event } from '@/types/event';
@@ -7,24 +7,24 @@ import { useAuthState } from './useAuthState';
 
 const EVENTS_PER_PAGE = 9;
 
-export function useEvents(selectedDate?: Date, page: number = 1) {
+export function useEvents(selectedDate?: Date) {
   const { profile, isAuthenticated } = useAuthState();
   const isApproved = profile?.is_approved;
 
-  return useQuery({
-    queryKey: ['events', selectedDate?.toISOString(), isAuthenticated, isApproved, page],
-    queryFn: async () => {
+  return useInfiniteQuery({
+    queryKey: ['events', selectedDate?.toISOString(), isAuthenticated, isApproved],
+    queryFn: async ({ pageParam = 0 }) => {
       try {
         console.log('Fetching events with auth state:', {
           isAuthenticated,
           isApproved,
           userId: profile?.id,
           selectedDate: selectedDate?.toISOString(),
-          page
+          pageParam
         });
 
         // Calculate the range for pagination
-        const from = (page - 1) * EVENTS_PER_PAGE;
+        const from = pageParam * EVENTS_PER_PAGE;
         const to = from + EVENTS_PER_PAGE - 1;
 
         // Comprehensive query that includes all related data
@@ -97,7 +97,11 @@ export function useEvents(selectedDate?: Date, page: number = 1) {
 
         if (!events) {
           console.log('No events found');
-          return { events: [], totalCount: 0 };
+          return { 
+            events: [], 
+            totalCount: 0,
+            nextPage: null 
+          };
         }
 
         // Transform and organize the data
@@ -117,9 +121,12 @@ export function useEvents(selectedDate?: Date, page: number = 1) {
           firstEvent: transformedEvents[0]
         });
 
+        const nextPage = events.length === EVENTS_PER_PAGE ? pageParam + 1 : null;
+
         return { 
           events: transformedEvents,
-          totalCount: count || 0
+          totalCount: count || 0,
+          nextPage
         };
       } catch (error) {
         console.error('Error in useEvents:', error);
@@ -127,8 +134,8 @@ export function useEvents(selectedDate?: Date, page: number = 1) {
         throw error;
       }
     },
+    getNextPageParam: (lastPage) => lastPage.nextPage,
     staleTime: 1000 * 60 * 5, // Cache for 5 minutes
     refetchOnWindowFocus: false,
-    refetchInterval: 1000 * 60 * 5, // Refetch every 5 minutes
   });
 }
