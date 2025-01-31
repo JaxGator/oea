@@ -1,30 +1,72 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useAuthState } from "@/hooks/useAuthState";
-import { ShoppingBag } from "lucide-react";
+import { ShoppingBag, Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+
+interface PrintfulProduct {
+  id: number;
+  name: string;
+  thumbnail_url: string;
+  retail_price: string;
+}
 
 export const FeaturedMerch = () => {
   const { profile } = useAuthState();
+  const { toast } = useToast();
+  const [products, setProducts] = useState<PrintfulProduct[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const canAccessStore = profile?.is_member || profile?.is_admin;
 
-  const featuredItems = [
-    {
-      name: "Embroidered Hat",
-      image: "https://cdn.printful.me/t/quick-stores/products/w168/15064221-206-67709c96c7922__360",
-      price: "$14.50"
-    },
-    {
-      name: "Unisex Two-Sided Cotton T-Shirt",
-      image: "https://cdn.printful.me/t/quick-stores/products/w168/15064221-438-67604fc7efd6c__360",
-      price: "$15.50"
-    },
-    {
-      name: "Short Sleeve Jersey - Solid",
-      image: "https://cdn.printful.me/t/quick-stores/products/w168/15064221-644-676032870e1bf__360",
-      price: "$30.00"
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const { data, error } = await supabase.functions.invoke('get-printful-store');
+        
+        if (error) {
+          throw error;
+        }
+
+        if (data.result) {
+          // Take the first 3 products
+          setProducts(data.result.slice(0, 3).map((product: any) => ({
+            id: product.id,
+            name: product.name,
+            thumbnail_url: product.thumbnail_url,
+            retail_price: product.retail_price,
+          })));
+        }
+      } catch (error) {
+        console.error('Error fetching products:', error);
+        toast({
+          title: "Error loading products",
+          description: "Unable to load store products. Please try again later.",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    if (canAccessStore) {
+      fetchProducts();
+    } else {
+      setIsLoading(false);
     }
-  ];
+  }, [canAccessStore, toast]);
+
+  if (!canAccessStore) {
+    return (
+      <div className="container mx-auto px-4">
+        <div className="text-center py-8">
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">Member-Only Merch</h2>
+          <p className="text-gray-600">Become a member to access our exclusive merchandise store!</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto px-4">
@@ -43,23 +85,29 @@ export const FeaturedMerch = () => {
         )}
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {featuredItems.map((item, index) => (
-          <Card key={index} className="hover:shadow-lg transition-shadow duration-300">
-            <CardContent className="p-4">
-              <div className="aspect-square overflow-hidden rounded-lg mb-4">
-                <img
-                  src={item.image}
-                  alt={item.name}
-                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                />
-              </div>
-              <h3 className="font-semibold text-lg mb-2">{item.name}</h3>
-              <p className="text-blue-700 font-medium">{item.price}</p>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      {isLoading ? (
+        <div className="flex justify-center items-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {products.map((product) => (
+            <Card key={product.id} className="hover:shadow-lg transition-shadow duration-300">
+              <CardContent className="p-4">
+                <div className="aspect-square overflow-hidden rounded-lg mb-4">
+                  <img
+                    src={product.thumbnail_url}
+                    alt={product.name}
+                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                  />
+                </div>
+                <h3 className="font-semibold text-lg mb-2">{product.name}</h3>
+                <p className="text-blue-700 font-medium">${product.retail_price}</p>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
     </div>
   );
 };
