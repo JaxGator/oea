@@ -22,6 +22,7 @@ interface EventCardDetailedViewProps {
   onCancelRSVP: () => void;
   onEdit?: () => void;
   onDelete?: () => void;
+  onTogglePublish?: () => void;
 }
 
 export function EventCardDetailedView({
@@ -39,6 +40,7 @@ export function EventCardDetailedView({
   onCancelRSVP,
   onEdit,
   onDelete,
+  onTogglePublish,
 }: EventCardDetailedViewProps) {
   const isFullyBooked = rsvpCount >= event.max_guests;
   const canJoinWaitlist = event.waitlist_enabled && isFullyBooked;
@@ -98,10 +100,11 @@ export function EventCardDetailedView({
           onCancelRSVP={onCancelRSVP}
           onEdit={onEdit}
           onDelete={onDelete}
-          onTogglePublish={() => {}}
+          onTogglePublish={onTogglePublish}
           isPastEvent={isPastEvent}
           isWixEvent={isWixEvent}
-          isPublished={event.is_published ?? true}
+          isPublished={event.is_published}
+          showPublishToggle={true}
           canAddGuests={canAddGuests}
           currentGuests={currentGuests}
           event={{ id: event.id, title: event.title }}
