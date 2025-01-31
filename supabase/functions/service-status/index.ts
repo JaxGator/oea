@@ -61,6 +61,7 @@ async function checkLovableStatus(): Promise<StatusResponse> {
 }
 
 serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
@@ -97,7 +98,11 @@ serve(async (req) => {
     console.log('Service status checks completed:', response);
 
     return new Response(JSON.stringify(response), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: { 
+        ...corsHeaders, 
+        'Content-Type': 'application/json',
+        'Cache-Control': 'no-cache'
+      },
       status: 200,
     })
   } catch (error) {
