@@ -44,10 +44,6 @@ export function EventCardDetailedView({
   const canJoinWaitlist = event.waitlist_enabled && isFullyBooked;
   const canViewRSVPs = isAdmin || canManageEvents || userRSVPStatus === "attending";
 
-  const handleViewDetails = () => {
-    console.log("Already in detailed view");
-  };
-
   return (
     <div className="flex flex-col gap-6 animate-fade-in">
       <EventImageSection imageUrl={event.image_url} title={event.title} />
@@ -108,7 +104,6 @@ export function EventCardDetailedView({
           isPublished={event.is_published ?? true}
           canAddGuests={canAddGuests}
           currentGuests={currentGuests}
-          onViewDetails={handleViewDetails}
           event={{ id: event.id, title: event.title }}
         />
 
