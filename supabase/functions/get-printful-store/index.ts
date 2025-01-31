@@ -23,7 +23,8 @@ serve(async (req) => {
     console.log('Making request to Printful API...')
     const response = await fetch('https://api.printful.com/store/products', {
       headers: {
-        'Authorization': `Bearer ${printfulApiKey}`,
+        // Changed from Bearer to Basic auth with API key
+        'Authorization': printfulApiKey,
       },
     })
 
