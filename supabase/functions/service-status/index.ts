@@ -1,4 +1,4 @@
-import { serve } from 'https://deno.fresh.runtime.dev/server'
+import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { corsHeaders } from '../_shared/cors.ts'
 
 interface StatusResponse {
@@ -66,29 +66,35 @@ serve(async (req) => {
   }
 
   try {
+    console.log('Starting service status checks...');
+    
+    const startTime = performance.now();
     const [github, netlify, lovable] = await Promise.all([
       checkGitHubStatus(),
       checkNetlifyStatus(),
       checkLovableStatus()
     ]);
+    const endTime = performance.now();
 
     const response = {
       github: {
         status: github.status.indicator === 'none' ? 'healthy' : 'error',
-        latency: 0,
+        latency: Math.round(endTime - startTime),
         error: github.status.indicator !== 'none' ? github.status.description : undefined
       },
       netlify: {
         status: netlify.status.indicator === 'none' ? 'healthy' : 'error',
-        latency: 0,
+        latency: Math.round(endTime - startTime),
         error: netlify.status.indicator !== 'none' ? netlify.status.description : undefined
       },
       lovable: {
         status: lovable.status.indicator === 'operational' ? 'healthy' : 'error',
-        latency: 0,
+        latency: Math.round(endTime - startTime),
         error: lovable.status.indicator !== 'operational' ? lovable.status.description : undefined
       }
     };
+
+    console.log('Service status checks completed:', response);
 
     return new Response(JSON.stringify(response), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
