@@ -1,46 +1,49 @@
+import { supabase } from "@/integrations/supabase/client";
 import { HealthCheckResponse } from "../types";
-import { getServiceUrl } from "../config/serviceEndpoints";
 
 export async function checkServiceHealth(url: string): Promise<HealthCheckResponse> {
   const startTime = performance.now();
   
   try {
-    // Use a timeout to prevent long-running requests
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 5000);
-
-    const formattedUrl = getServiceUrl(url);
+    const { data, error } = await supabase.functions.invoke('service-status');
     
-    // Validate URL format
-    if (!formattedUrl || !formattedUrl.match(/^https?:\/\/[^/]+/)) {
-      throw new Error('Invalid URL format');
+    if (error) throw error;
+
+    const endTime = performance.now();
+    const latency = endTime - startTime;
+
+    // Map the service URL to the corresponding status data
+    if (url.includes('github')) {
+      return {
+        ok: data.github.status === 'healthy',
+        latency,
+        error: data.github.error
+      };
+    } else if (url.includes('netlify')) {
+      return {
+        ok: data.netlify.status === 'healthy',
+        latency,
+        error: data.netlify.error
+      };
+    } else if (url.includes('lovable')) {
+      return {
+        ok: data.lovable.status === 'healthy',
+        latency,
+        error: data.lovable.error
+      };
     }
 
-    const response = await fetch(formattedUrl, {
-      method: 'HEAD',
-      mode: 'no-cors', // This allows the request to succeed even with CORS restrictions
-      signal: controller.signal,
-      cache: 'no-cache'
-    });
-
-    clearTimeout(timeoutId);
-    const endTime = performance.now();
-
-    // With no-cors mode, we won't get a proper status code
-    // but if we get here without throwing, the service is reachable
-    return {
-      ok: true,
-      latency: endTime - startTime
-    };
-  } catch (error) {
-    console.error('Health check error:', error);
-    // If we get here, the service is either down or unreachable
     return {
       ok: false,
       latency: 0,
-      error: error instanceof Error 
-        ? `Service unreachable: ${error.message}`
-        : 'Service unreachable'
+      error: 'Unknown service'
+    };
+  } catch (error) {
+    console.error('Health check error:', error);
+    return {
+      ok: false,
+      latency: 0,
+      error: error instanceof Error ? error.message : 'Service check failed'
     };
   }
 }
