@@ -24,12 +24,16 @@ export default function Events() {
   
   const { handleRSVP, cancelRSVP } = useRSVP();
 
-  // Set up intersection observer for infinite scroll
-  const { ref, inView } = useInView();
+  // Set up intersection observer for infinite scroll with a higher threshold
+  const { ref, inView } = useInView({
+    threshold: 0.5, // Trigger when 50% of the element is visible
+    rootMargin: '100px', // Start loading 100px before the element comes into view
+  });
 
   // Load more events when the user scrolls to the bottom
   useEffect(() => {
     if (inView && hasNextPage && !isFetchingNextPage) {
+      console.log('Loading more events...');
       fetchNextPage();
     }
   }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
@@ -84,15 +88,22 @@ export default function Events() {
           isLoading={isEventsLoading}
         />
 
-        {/* Infinite scroll trigger */}
-        <div ref={ref} className="h-10 flex items-center justify-center">
-          {isFetchingNextPage && (
-            <div className="flex items-center gap-2 text-gray-500">
-              <Loader2 className="h-4 w-4 animate-spin" />
-              <span>Loading more events...</span>
-            </div>
-          )}
-        </div>
+        {/* Infinite scroll trigger with better loading indicator */}
+        {(hasNextPage || isFetchingNextPage) && (
+          <div 
+            ref={ref} 
+            className="h-20 flex items-center justify-center mt-8"
+          >
+            {isFetchingNextPage ? (
+              <div className="flex items-center gap-2 text-gray-500">
+                <Loader2 className="h-5 w-5 animate-spin" />
+                <span className="text-sm font-medium">Loading more events...</span>
+              </div>
+            ) : (
+              <div className="h-10" /> // Spacer for scroll trigger
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
