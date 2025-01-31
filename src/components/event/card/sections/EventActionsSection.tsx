@@ -13,7 +13,7 @@ interface EventActionsSectionProps {
   onDelete: () => void;
   showPublishToggle?: boolean;
   isPublished?: boolean;
-  onViewDetails: () => void;
+  onViewDetails?: () => void;  // Made optional with ?
   onTogglePublish?: () => void;
   isAuthChecking?: boolean;
   isFullyBooked?: boolean;
@@ -45,6 +45,14 @@ export function EventActionsSection({
   requireAuth = false,
   event
 }: EventActionsSectionProps) {
+  if (isAuthChecking) {
+    return (
+      <div className="animate-pulse">
+        <div className="h-10 bg-gray-200 rounded w-24"></div>
+      </div>
+    );
+  }
+
   return (
     <div className="mt-4">
       <EventCardActions
