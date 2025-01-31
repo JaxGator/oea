@@ -12,18 +12,33 @@ serve(async (req) => {
   }
 
   try {
+    console.log('Starting Printful API request...')
+    
     const printfulApiKey = Deno.env.get('PRINTFUL_API_KEY')
     if (!printfulApiKey) {
+      console.error('Printful API key not configured')
       throw new Error('Printful API key not configured')
     }
 
+    console.log('Making request to Printful API...')
     const response = await fetch('https://api.printful.com/store/products', {
       headers: {
         'Authorization': `Bearer ${printfulApiKey}`,
       },
     })
 
+    if (!response.ok) {
+      const errorText = await response.text()
+      console.error('Printful API error:', {
+        status: response.status,
+        statusText: response.statusText,
+        error: errorText
+      })
+      throw new Error(`Printful API error: ${response.status} ${response.statusText}`)
+    }
+
     const data = await response.json()
+    console.log('Successfully retrieved Printful products')
     
     return new Response(JSON.stringify(data), {
       headers: {
@@ -32,7 +47,7 @@ serve(async (req) => {
       },
     })
   } catch (error) {
-    console.error('Error fetching Printful products:', error)
+    console.error('Error in get-printful-store function:', error)
     return new Response(JSON.stringify({ error: error.message }), {
       status: 500,
       headers: {
