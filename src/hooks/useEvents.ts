@@ -7,11 +7,17 @@ import { useAuthState } from './useAuthState';
 
 const EVENTS_PER_PAGE = 9;
 
+interface EventsResponse {
+  events: Event[];
+  totalCount: number;
+  nextPage: number | null;
+}
+
 export function useEvents(selectedDate?: Date) {
   const { profile, isAuthenticated } = useAuthState();
   const isApproved = profile?.is_approved;
 
-  return useInfiniteQuery({
+  return useInfiniteQuery<EventsResponse, Error>({
     queryKey: ['events', selectedDate?.toISOString(), isAuthenticated, isApproved],
     queryFn: async ({ pageParam = 0 }) => {
       try {
@@ -24,7 +30,7 @@ export function useEvents(selectedDate?: Date) {
         });
 
         // Calculate the range for pagination
-        const from = pageParam * EVENTS_PER_PAGE;
+        const from = Number(pageParam) * EVENTS_PER_PAGE;
         const to = from + EVENTS_PER_PAGE - 1;
 
         // Comprehensive query that includes all related data
@@ -121,7 +127,7 @@ export function useEvents(selectedDate?: Date) {
           firstEvent: transformedEvents[0]
         });
 
-        const nextPage = events.length === EVENTS_PER_PAGE ? pageParam + 1 : null;
+        const nextPage = events.length === EVENTS_PER_PAGE ? Number(pageParam) + 1 : null;
 
         return { 
           events: transformedEvents,
@@ -135,6 +141,7 @@ export function useEvents(selectedDate?: Date) {
       }
     },
     getNextPageParam: (lastPage) => lastPage.nextPage,
+    initialPageParam: 0,
     staleTime: 1000 * 60 * 5, // Cache for 5 minutes
     refetchOnWindowFocus: false,
   });

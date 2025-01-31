@@ -11,6 +11,7 @@ interface EventsContentProps {
   pastEvents: Event[];
   onRSVP: (eventId: string, guests?: { firstName: string }[]) => Promise<void>;
   onCancelRSVP: (eventId: string) => Promise<void>;
+  isLoading?: boolean;
 }
 
 export function EventsContent({
@@ -18,6 +19,7 @@ export function EventsContent({
   pastEvents,
   onRSVP,
   onCancelRSVP,
+  isLoading = false,
 }: EventsContentProps) {
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const { profile, isAuthenticated } = useAuthState();
@@ -48,6 +50,7 @@ export function EventsContent({
           onCancelRSVP={onCancelRSVP}
           onEventSelect={handleEventSelect}
           selectedEventId={selectedEventId}
+          isLoading={isLoading}
         />
       </ErrorBoundary>
 
