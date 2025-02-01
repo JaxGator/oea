@@ -20,9 +20,9 @@ serve(async (req) => {
       throw new Error('Printful API key not configured')
     }
 
-    // First, get the list of products
-    console.log('Fetching product catalog...')
-    const productsResponse = await fetch('https://api.printful.com/products', {
+    // Get the list of products from your store
+    console.log('Fetching store products...')
+    const productsResponse = await fetch('https://api.printful.com/sync/products', {
       headers: {
         'Authorization': `Bearer ${printfulApiKey}`,
         'Content-Type': 'application/json'
@@ -45,15 +45,15 @@ serve(async (req) => {
       firstProduct: productsData.result[0]?.name
     })
 
-    // Take only the first 3 products from the catalog
+    // Take only the first 3 products
     const selectedProducts = productsData.result.slice(0, 3)
 
-    // Format the response with sample data since we're using the catalog
+    // Format the response with actual store data
     const formattedProducts = selectedProducts.map((product: any) => ({
       id: product.id,
-      name: product.title,
-      thumbnail_url: product.image,
-      retail_price: '29.99' // Sample price since catalog products don't have prices
+      name: product.name,
+      thumbnail_url: product.thumbnail_url,
+      retail_price: product.retail_price || '29.99' // Fallback price if not set
     }))
 
     return new Response(JSON.stringify({ result: formattedProducts }), {
