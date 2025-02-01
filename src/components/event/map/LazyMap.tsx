@@ -7,9 +7,10 @@ import { Skeleton } from '@/components/ui/skeleton';
 interface LazyMapProps {
   events: Event[];
   selectedEventId?: string | null;
+  isLoading?: boolean;
 }
 
-export function LazyMap({ events, selectedEventId }: LazyMapProps) {
+export function LazyMap({ events, selectedEventId, isLoading = false }: LazyMapProps) {
   const [shouldLoad, setShouldLoad] = useState(false);
   const { ref, inView } = useInView({
     threshold: 0,
@@ -24,11 +25,15 @@ export function LazyMap({ events, selectedEventId }: LazyMapProps) {
   }, [inView, shouldLoad]);
 
   return (
-    <div ref={ref} className="w-full h-[400px] rounded-lg overflow-hidden">
+    <div ref={ref} className="w-full h-[400px] rounded-lg overflow-hidden animate-fade-in">
       {shouldLoad ? (
-        <EventsMap events={events} selectedEventId={selectedEventId} />
+        <EventsMap 
+          events={events} 
+          selectedEventId={selectedEventId} 
+          isLoading={isLoading}
+        />
       ) : (
-        <Skeleton className="w-full h-full" />
+        <Skeleton className="w-full h-full bg-gray-100" />
       )}
     </div>
   );

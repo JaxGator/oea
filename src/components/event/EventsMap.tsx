@@ -12,9 +12,10 @@ import { useMemo } from 'react';
 interface EventsMapProps {
   events: Event[];
   selectedEventId?: string | null;
+  isLoading?: boolean;
 }
 
-export function EventsMap({ events, selectedEventId }: EventsMapProps) {
+export function EventsMap({ events, selectedEventId, isLoading = false }: EventsMapProps) {
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const { mapToken, isLoading: isKeyLoading, error: keyError } = useMapboxToken();
   const locations = useEventLocations(events);
@@ -32,8 +33,8 @@ export function EventsMap({ events, selectedEventId }: EventsMapProps) {
     }
   }, [selectedEventId, events]);
 
-  if (events.length === 0 || locations.length === 0) {
-    return null;
+  if (isLoading || events.length === 0 || locations.length === 0) {
+    return <MapLoadingState />;
   }
 
   if (isKeyLoading) {
