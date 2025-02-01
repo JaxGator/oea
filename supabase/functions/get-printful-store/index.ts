@@ -12,7 +12,7 @@ serve(async (req) => {
   }
 
   try {
-    console.log('Starting Printful API request for OEA store...')
+    console.log('Starting Printful API request...')
     
     const printfulApiKey = Deno.env.get('PRINTFUL_API_KEY')
     if (!printfulApiKey) {
@@ -20,37 +20,37 @@ serve(async (req) => {
       throw new Error('Printful API key not configured')
     }
 
-    // Directly fetch store products
-    console.log('Fetching store products...')
-    const productsResponse = await fetch('https://api.printful.com/store/products', {
+    // Use the sync variants endpoint instead of store products
+    console.log('Fetching sync variants...')
+    const response = await fetch('https://api.printful.com/sync/variants', {
       headers: {
         'Authorization': `Bearer ${printfulApiKey}`,
         'Content-Type': 'application/json'
       },
     })
 
-    if (!productsResponse.ok) {
-      const errorText = await productsResponse.text()
-      console.error('Products fetch error:', {
-        status: productsResponse.status,
-        statusText: productsResponse.statusText,
+    if (!response.ok) {
+      const errorText = await response.text()
+      console.error('API request failed:', {
+        status: response.status,
+        statusText: response.statusText,
         error: errorText
       })
       throw new Error(`Failed to fetch products: ${errorText}`)
     }
 
-    const data = await productsResponse.json()
+    const data = await response.json()
     console.log('Successfully retrieved products:', {
       count: data.result.length,
-      firstProduct: data.result[0]?.name
+      firstProduct: data.result[0]?.sync_variant?.name
     })
     
-    // Format the response to include only necessary product information
-    const formattedProducts = data.result.map((product: any) => ({
-      id: product.id,
-      name: product.name,
-      thumbnail_url: product.thumbnail_url,
-      retail_price: product.retail_price
+    // Format the response to match our expected structure
+    const formattedProducts = data.result.map((item: any) => ({
+      id: item.id,
+      name: item.sync_variant.name,
+      thumbnail_url: item.sync_variant.files[0]?.preview_url || item.sync_product.thumbnail_url,
+      retail_price: item.retail_price,
     }))
 
     return new Response(JSON.stringify({ result: formattedProducts }), {
