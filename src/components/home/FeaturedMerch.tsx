@@ -23,21 +23,30 @@ export const FeaturedMerch = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
+        console.log('Fetching products from Printful...');
         const { data, error } = await supabase.functions.invoke('get-printful-store');
         
         if (error) {
+          console.error('Supabase function error:', error);
           throw error;
         }
 
-        if (data.result) {
-          // Take the first 3 products
-          setProducts(data.result.slice(0, 3).map((product: any) => ({
-            id: product.id,
-            name: product.name,
-            thumbnail_url: product.thumbnail_url,
-            retail_price: product.retail_price,
-          })));
+        if (!data || !data.result) {
+          console.error('Invalid data format received:', data);
+          throw new Error('Invalid data format received from Printful');
         }
+
+        console.log('Received products:', data.result);
+
+        // Take the first 3 products
+        const formattedProducts = data.result.slice(0, 3).map((product: any) => ({
+          id: product.id,
+          name: product.name,
+          thumbnail_url: product.thumbnail_url,
+          retail_price: product.retail_price,
+        }));
+
+        setProducts(formattedProducts);
       } catch (error) {
         console.error('Error fetching products:', error);
         toast({
@@ -89,7 +98,7 @@ export const FeaturedMerch = () => {
         <div className="flex justify-center items-center py-12">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
-      ) : (
+      ) : products.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {products.map((product) => (
             <Card key={product.id} className="hover:shadow-lg transition-shadow duration-300">
@@ -106,6 +115,10 @@ export const FeaturedMerch = () => {
               </CardContent>
             </Card>
           ))}
+        </div>
+      ) : (
+        <div className="text-center py-8">
+          <p className="text-gray-600">No products available at the moment.</p>
         </div>
       )}
     </div>
