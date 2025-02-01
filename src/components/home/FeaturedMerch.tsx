@@ -9,73 +9,73 @@ const products = [
     id: '1',
     title: 'Columbia Embroidered Short Sleeve Button Shirt',
     price: 55.00,
-    image_url: '/lovable-uploads/609edf01-3169-439a-80f5-f6f15de7a5a6.png'
+    image_url: 'https://qegpuqitjfocyyrivlhv.supabase.co/storage/v1/object/public/media//columbia_shirt.webp'
   },
   {
     id: '2',
     title: 'Unisex Columbia Fleece Jacket',
     price: 58.50,
-    image_url: '/lovable-uploads/609edf01-3169-439a-80f5-f6f15de7a5a6.png'
+    image_url: 'https://qegpuqitjfocyyrivlhv.supabase.co/storage/v1/object/public/media//columbia_jacket.webp'
   },
   {
     id: '3',
     title: 'Backpack',
     price: 32.95,
-    image_url: '/lovable-uploads/609edf01-3169-439a-80f5-f6f15de7a5a6.png'
+    image_url: 'https://qegpuqitjfocyyrivlhv.supabase.co/storage/v1/object/public/media//backpack.webp'
   },
   {
     id: '4',
     title: 'Embroidered Columbia Booney Hat',
     price: 29.95,
-    image_url: '/lovable-uploads/609edf01-3169-439a-80f5-f6f15de7a5a6.png'
+    image_url: 'https://qegpuqitjfocyyrivlhv.supabase.co/storage/v1/object/public/media//columbia_hat.webp'
   },
   {
     id: '5',
     title: 'Offtrack Adventure Team Rash Guard - Blue Waves',
     price: 34.00,
-    image_url: '/lovable-uploads/609edf01-3169-439a-80f5-f6f15de7a5a6.png'
+    image_url: 'https://qegpuqitjfocyyrivlhv.supabase.co/storage/v1/object/public/media//rashguard_waves.webp'
   },
   {
     id: '6',
     title: 'Offtrack Adventure Team Rash Guard - Grey',
     price: 34.00,
-    image_url: '/lovable-uploads/609edf01-3169-439a-80f5-f6f15de7a5a6.png'
+    image_url: 'https://qegpuqitjfocyyrivlhv.supabase.co/storage/v1/object/public/media//rashguard_grey.webp'
   },
   {
     id: '7',
     title: 'Offtrack Adventure Team Jersey - Blue Waves',
     price: 30.00,
-    image_url: '/lovable-uploads/609edf01-3169-439a-80f5-f6f15de7a5a6.png'
+    image_url: 'https://qegpuqitjfocyyrivlhv.supabase.co/storage/v1/object/public/media//jersey_waves.webp'
   },
   {
     id: '8',
     title: 'Offtrack Adventure Team Jersey - Grey',
     price: 30.00,
-    image_url: '/lovable-uploads/609edf01-3169-439a-80f5-f6f15de7a5a6.png'
+    image_url: 'https://qegpuqitjfocyyrivlhv.supabase.co/storage/v1/object/public/media//rashguard_grey.webp'
   },
   {
     id: '9',
     title: 'Offtrack Adventure Team T-Shirt',
     price: 15.50,
-    image_url: '/lovable-uploads/609edf01-3169-439a-80f5-f6f15de7a5a6.png'
+    image_url: 'https://qegpuqitjfocyyrivlhv.supabase.co/storage/v1/object/public/media//offtrack_tshirt.webp'
   },
   {
     id: '10',
     title: 'Embroidered Hat',
     price: 14.50,
-    image_url: '/lovable-uploads/609edf01-3169-439a-80f5-f6f15de7a5a6.png'
+    image_url: 'https://qegpuqitjfocyyrivlhv.supabase.co/storage/v1/object/public/media//embroidered_hat.webp'
   },
   {
     id: '11',
     title: 'Embroidered Polo',
     price: 20.00,
-    image_url: '/lovable-uploads/609edf01-3169-439a-80f5-f6f15de7a5a6.png'
+    image_url: 'https://qegpuqitjfocyyrivlhv.supabase.co/storage/v1/object/public/media//embroidered_polo.webp'
   },
   {
     id: '12',
     title: 'Embroidered Visor',
     price: 17.50,
-    image_url: '/lovable-uploads/609edf01-3169-439a-80f5-f6f15de7a5a6.png'
+    image_url: 'https://qegpuqitjfocyyrivlhv.supabase.co/storage/v1/object/public/media//embroidered_visor.webp'
   }
 ];
 
