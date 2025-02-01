@@ -1,4 +1,5 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { corsHeaders } from '../_shared/cors.ts'
 
 const STORE_URL = 'https://outdoorenergyadventures.printful.me/';
@@ -34,7 +35,10 @@ serve(async (req) => {
             multiple: true,
             data: {
               title: '.product-title',
-              price: '.product-price',
+              price: {
+                selector: '.product-price',
+                transform: (text: string) => parseFloat(text.replace(/[^0-9.]/g, ''))
+              },
               image: {
                 selector: '.product-image img',
                 attr: 'src'
@@ -54,6 +58,11 @@ serve(async (req) => {
     const data = await response.json();
     console.log('Firecrawl response:', data);
 
+    if (!data.products || !Array.isArray(data.products)) {
+      console.error('Invalid data format:', data);
+      throw new Error('Invalid data format received from Firecrawl');
+    }
+
     // Create Supabase client
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
@@ -67,7 +76,7 @@ serve(async (req) => {
       .upsert(
         data.products.map((product: any) => ({
           title: product.title,
-          price: parseFloat(product.price.replace(/[^0-9.]/g, '')),
+          price: parseFloat(product.price),
           image_url: product.image
         }))
       );
@@ -80,7 +89,7 @@ serve(async (req) => {
     console.log('Successfully stored products in database');
 
     return new Response(
-      JSON.stringify({ products }),
+      JSON.stringify({ products: data.products }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200,
