@@ -1,11 +1,14 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-import { corsHeaders } from '../_shared/cors.ts'
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+}
 
 const STORE_URL = 'https://outdoorenergyadventures.printful.me/';
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
@@ -18,9 +21,21 @@ serve(async (req) => {
       throw new Error('Firecrawl API key not found')
     }
 
-    console.log('Fetching HTML content using Firecrawl...');
-    
-    // Fetch HTML content using Firecrawl with detailed error logging
+    // First try a simple request to verify API connectivity
+    const testResponse = await fetch('https://api.firecrawl.io/health', {
+      headers: {
+        'Authorization': `Bearer ${firecrawlKey}`
+      }
+    });
+
+    if (!testResponse.ok) {
+      console.error('Firecrawl API health check failed:', await testResponse.text());
+      throw new Error('Failed to connect to Firecrawl API');
+    }
+
+    console.log('Firecrawl API health check successful, proceeding with scrape request...');
+
+    // Main scraping request with simplified selectors
     const response = await fetch('https://api.firecrawl.io/scrape', {
       method: 'POST',
       headers: {
@@ -29,24 +44,17 @@ serve(async (req) => {
       },
       body: JSON.stringify({
         url: STORE_URL,
-        waitForSelector: '.product-item', // Wait for products to load
-        timeout: 30000, // 30 second timeout
+        waitUntil: 'networkidle0',
+        timeout: 60000,
         selectors: {
           products: {
-            selector: '.product-item',
+            selector: '.product-grid .product-item',
             multiple: true,
             data: {
               title: '.product-title',
-              price: {
-                selector: '.product-price',
-                transform: (text: string) => {
-                  const price = parseFloat(text.replace(/[^0-9.]/g, ''));
-                  console.log('Parsed price:', price, 'from text:', text);
-                  return price;
-                }
-              },
+              price: '.product-price',
               image: {
-                selector: '.product-image img',
+                selector: 'img',
                 attr: 'src'
               }
             }
@@ -57,7 +65,7 @@ serve(async (req) => {
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('Firecrawl API error response:', {
+      console.error('Firecrawl API error:', {
         status: response.status,
         statusText: response.statusText,
         body: errorText
@@ -66,44 +74,43 @@ serve(async (req) => {
     }
 
     const data = await response.json();
-    console.log('Firecrawl response data:', JSON.stringify(data, null, 2));
+    console.log('Raw Firecrawl response:', JSON.stringify(data, null, 2));
 
     if (!data.products || !Array.isArray(data.products)) {
-      console.error('Invalid data format received:', data);
-      throw new Error('Invalid data format received from Firecrawl');
+      console.error('Invalid data structure received:', data);
+      throw new Error('Invalid data structure received from Firecrawl');
     }
 
-    // Log the products we're about to process
-    console.log('Products found:', data.products.length);
-    console.log('First product sample:', JSON.stringify(data.products[0], null, 2));
+    // Process and clean the data
+    const processedProducts = data.products.map((product: any) => ({
+      title: String(product.title).trim(),
+      price: typeof product.price === 'string' 
+        ? parseFloat(product.price.replace(/[^0-9.]/g, '')) || 0
+        : 0,
+      image_url: String(product.image || '').trim()
+    })).filter(p => p.title && p.image_url && p.price > 0);
 
-    // Create Supabase client
+    console.log('Processed products:', JSON.stringify(processedProducts, null, 2));
+
+    // Store in Supabase
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
-      { db: { schema: 'public' } }
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    // Store scraped products in the database
-    const { data: products, error } = await supabaseClient
+    const { error: dbError } = await supabaseClient
       .from('scraped_products')
-      .upsert(
-        data.products.map((product: any) => ({
-          title: product.title,
-          price: product.price,
-          image_url: product.image
-        }))
-      );
+      .upsert(processedProducts);
 
-    if (error) {
-      console.error('Database error:', error);
-      throw error;
+    if (dbError) {
+      console.error('Database error:', dbError);
+      throw dbError;
     }
 
     console.log('Successfully stored products in database');
 
     return new Response(
-      JSON.stringify({ products: data.products }),
+      JSON.stringify({ products: processedProducts }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200,
@@ -112,7 +119,10 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error in scrape-printful-store function:', error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        error: error.message,
+        details: error.stack
+      }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 500,
