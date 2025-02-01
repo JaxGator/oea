@@ -21,7 +21,35 @@ serve(async (req) => {
     }
 
     console.log('Making request to Printful API for store products...')
-    const productsResponse = await fetch('https://api.printful.com/store/products', {
+    // First get the store information
+    const storeResponse = await fetch('https://api.printful.com/stores', {
+      headers: {
+        'Authorization': `Bearer ${printfulApiKey}`,
+        'Content-Type': 'application/json'
+      },
+    })
+
+    if (!storeResponse.ok) {
+      const errorText = await storeResponse.text()
+      console.error('Store fetch error:', {
+        status: storeResponse.status,
+        statusText: storeResponse.statusText,
+        error: errorText
+      })
+      throw new Error(`Failed to fetch store info: ${errorText}`)
+    }
+
+    const storeData = await storeResponse.json()
+    const storeId = storeData.result[0]?.id
+    
+    if (!storeId) {
+      throw new Error('No store ID found')
+    }
+
+    console.log('Retrieved store ID:', storeId)
+
+    // Now get the products using the store ID
+    const productsResponse = await fetch(`https://api.printful.com/store/products?store_id=${storeId}`, {
       headers: {
         'Authorization': `Bearer ${printfulApiKey}`,
         'Content-Type': 'application/json'
@@ -48,7 +76,7 @@ serve(async (req) => {
     // Format the response with actual store data
     const formattedProducts = await Promise.all(productsData.result.map(async (product: any) => {
       // Fetch variant details to get accurate pricing
-      const variantResponse = await fetch(`https://api.printful.com/store/products/${product.id}`, {
+      const variantResponse = await fetch(`https://api.printful.com/store/products/${product.id}?store_id=${storeId}`, {
         headers: {
           'Authorization': `Bearer ${printfulApiKey}`,
           'Content-Type': 'application/json'
