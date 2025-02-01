@@ -20,7 +20,7 @@ serve(async (req) => {
 
     console.log('Fetching HTML content using Firecrawl...');
     
-    // Fetch HTML content using Firecrawl
+    // Fetch HTML content using Firecrawl with detailed error logging
     const response = await fetch('https://api.firecrawl.io/scrape', {
       method: 'POST',
       headers: {
@@ -29,6 +29,8 @@ serve(async (req) => {
       },
       body: JSON.stringify({
         url: STORE_URL,
+        waitForSelector: '.product-item', // Wait for products to load
+        timeout: 30000, // 30 second timeout
         selectors: {
           products: {
             selector: '.product-item',
@@ -37,7 +39,11 @@ serve(async (req) => {
               title: '.product-title',
               price: {
                 selector: '.product-price',
-                transform: (text: string) => parseFloat(text.replace(/[^0-9.]/g, ''))
+                transform: (text: string) => {
+                  const price = parseFloat(text.replace(/[^0-9.]/g, ''));
+                  console.log('Parsed price:', price, 'from text:', text);
+                  return price;
+                }
               },
               image: {
                 selector: '.product-image img',
@@ -51,17 +57,25 @@ serve(async (req) => {
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('Firecrawl API error:', errorText);
-      throw new Error(`Firecrawl API error: ${errorText}`);
+      console.error('Firecrawl API error response:', {
+        status: response.status,
+        statusText: response.statusText,
+        body: errorText
+      });
+      throw new Error(`Firecrawl API error: ${response.status} - ${errorText}`);
     }
 
     const data = await response.json();
-    console.log('Firecrawl response:', data);
+    console.log('Firecrawl response data:', JSON.stringify(data, null, 2));
 
     if (!data.products || !Array.isArray(data.products)) {
-      console.error('Invalid data format:', data);
+      console.error('Invalid data format received:', data);
       throw new Error('Invalid data format received from Firecrawl');
     }
+
+    // Log the products we're about to process
+    console.log('Products found:', data.products.length);
+    console.log('First product sample:', JSON.stringify(data.products[0], null, 2));
 
     // Create Supabase client
     const supabaseClient = createClient(
@@ -76,7 +90,7 @@ serve(async (req) => {
       .upsert(
         data.products.map((product: any) => ({
           title: product.title,
-          price: parseFloat(product.price),
+          price: product.price,
           image_url: product.image
         }))
       );
