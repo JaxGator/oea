@@ -24,13 +24,11 @@ export default function Events() {
   
   const { handleRSVP, cancelRSVP } = useRSVP();
 
-  // Set up intersection observer for infinite scroll with a higher threshold
   const { ref, inView } = useInView({
-    threshold: 0.5, // Trigger when 50% of the element is visible
-    rootMargin: '100px', // Start loading 100px before the element comes into view
+    threshold: 0.5,
+    rootMargin: '100px',
   });
 
-  // Load more events when the user scrolls to the bottom
   useEffect(() => {
     if (inView && hasNextPage && !isFetchingNextPage) {
       console.log('Loading more events...');
@@ -38,22 +36,17 @@ export default function Events() {
     }
   }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
-  // Combine all pages of events
   const events = data?.pages.flatMap(page => page.events) || [];
   const totalCount = data?.pages[0]?.totalCount || 0;
 
-  // Only filter by date if a date is selected
   const filteredEvents = selectedDate ? filterEventsByDate(events, selectedDate) : events;
   
-  // Separate upcoming and past events, with featured events first
   const now = new Date();
   const upcomingEvents = filteredEvents
     .filter(event => new Date(event.date) >= now)
     .sort((a, b) => {
-      // Sort featured events first
       if (a.is_featured && !b.is_featured) return -1;
       if (!a.is_featured && b.is_featured) return 1;
-      // Then sort by date
       return new Date(a.date).getTime() - new Date(b.date).getTime();
     });
 
@@ -64,7 +57,7 @@ export default function Events() {
   if (error) {
     console.error("Events loading error:", error);
     return (
-      <div className="min-h-screen bg-[#F1F0FB] flex items-center justify-center">
+      <div className="min-h-screen bg-[#F1F0FB] flex items-center justify-center animate-fade-in">
         <div className="text-black">Error loading events. Please try again.</div>
       </div>
     );
@@ -88,11 +81,10 @@ export default function Events() {
           isLoading={isEventsLoading}
         />
 
-        {/* Infinite scroll trigger with better loading indicator */}
         {(hasNextPage || isFetchingNextPage) && (
           <div 
             ref={ref} 
-            className="h-20 flex items-center justify-center mt-8"
+            className="h-20 flex items-center justify-center mt-8 animate-fade-in"
           >
             {isFetchingNextPage ? (
               <div className="flex items-center gap-2 text-gray-500">
@@ -100,7 +92,7 @@ export default function Events() {
                 <span className="text-sm font-medium">Loading more events...</span>
               </div>
             ) : (
-              <div className="h-10" /> // Spacer for scroll trigger
+              <div className="h-10" />
             )}
           </div>
         )}
