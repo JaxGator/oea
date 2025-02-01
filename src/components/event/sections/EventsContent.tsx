@@ -25,6 +25,7 @@ export function EventsContent({
   const { profile, isAuthenticated } = useAuthState();
 
   const handleEventSelect = (eventId: string) => {
+    console.log('Event selected:', eventId);
     setSelectedEventId(eventId === selectedEventId ? null : eventId);
   };
 
@@ -38,6 +39,7 @@ export function EventsContent({
             <LazyMap 
               events={upcomingEvents} 
               selectedEventId={selectedEventId}
+              isLoading={isLoading}
             />
           </ErrorBoundary>
         </div>

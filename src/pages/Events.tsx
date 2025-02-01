@@ -4,7 +4,6 @@ import { useRSVP } from "@/hooks/useRSVP";
 import { useAuthState } from "@/hooks/useAuthState";
 import { EventsHeader } from "@/components/event/sections/EventsHeader";
 import { EventsContent } from "@/components/event/sections/EventsContent";
-import { filterEventsByDate } from "@/utils/dateUtils";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 
@@ -27,7 +26,7 @@ export default function Events() {
   const events = data?.pages.flatMap(page => page.events) || [];
   const totalCount = data?.pages[0]?.totalCount || 0;
 
-  const filteredEvents = selectedDate ? filterEventsByDate(events, selectedDate) : events;
+  const filteredEvents = selectedDate ? events : events;
   
   const now = new Date();
   const upcomingEvents = filteredEvents
