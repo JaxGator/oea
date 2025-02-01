@@ -22,7 +22,7 @@ serve(async (req) => {
 
     // Get the list of products from your specific store
     console.log('Fetching products from OEA Merch Store (ID: 15064221)...')
-    const productsResponse = await fetch('https://api.printful.com/store/products?store_id=15064221', {
+    const productsResponse = await fetch('https://api.printful.com/store/products', {
       headers: {
         'Authorization': `Bearer ${printfulApiKey}`,
         'Content-Type': 'application/json'
