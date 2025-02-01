@@ -44,7 +44,6 @@ export function EventsMap({ events, selectedEventId, isLoading = false }: Events
         setSelectedEvent(event);
       }
     } else {
-      // Clear selection when selectedEventId is null
       setSelectedEvent(null);
     }
   }, [selectedEventId, events]);
