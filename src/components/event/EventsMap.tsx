@@ -7,7 +7,8 @@ import { EventPopup } from './map/EventPopup';
 import { useMapMarkers } from '@/hooks/map/useMapMarkers';
 import { MapLoadingState } from './map/MapLoadingState';
 import { MapErrorState } from './map/MapErrorState';
-import { useMemo } from 'react';
+import { useMemo, useCallback } from 'react';
+import { toast } from 'sonner';
 
 interface EventsMapProps {
   events: Event[];
@@ -22,6 +23,16 @@ export function EventsMap({ events, selectedEventId, isLoading = false }: Events
 
   // Memoize locations to prevent unnecessary recalculations
   const memoizedLocations = useMemo(() => locations, [locations]);
+
+  // Handle marker click with proper error handling
+  const handleMarkerClick = useCallback((event: Event) => {
+    try {
+      setSelectedEvent(event);
+    } catch (error) {
+      console.error('Error selecting event:', error);
+      toast.error('Failed to select event location');
+    }
+  }, []);
 
   // Find the selected event when selectedEventId changes
   useEffect(() => {
@@ -49,7 +60,7 @@ export function EventsMap({ events, selectedEventId, isLoading = false }: Events
     <MapContainer>
       {(map) => {
         // Initialize markers when map is ready
-        useMapMarkers(map, memoizedLocations, selectedEventId, (event) => setSelectedEvent(event));
+        useMapMarkers(map, memoizedLocations, selectedEventId, handleMarkerClick);
 
         // Center map on selected event with smooth animation
         if (map && selectedEvent && selectedEvent.latitude && selectedEvent.longitude) {
@@ -57,7 +68,9 @@ export function EventsMap({ events, selectedEventId, isLoading = false }: Events
             center: [selectedEvent.longitude, selectedEvent.latitude],
             zoom: 14,
             duration: 1500,
-            essential: true // This ensures the animation runs smoothly
+            essential: true,
+            curve: 1.42, // Smooth easing function
+            padding: { top: 50, bottom: 50, left: 50, right: 50 } // Add padding for better view
           });
         }
 
