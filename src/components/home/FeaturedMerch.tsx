@@ -1,76 +1,87 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useAuthState } from "@/hooks/useAuthState";
-import { ShoppingBag, Loader2 } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { ShoppingBag } from "lucide-react";
 
-interface ScrapedProduct {
-  id: string;
-  title: string;
-  price: number;
-  image_url: string;
-}
+const products = [
+  {
+    id: '1',
+    title: 'Columbia Embroidered Short Sleeve Button Shirt',
+    price: 55.00,
+    image_url: '/lovable-uploads/609edf01-3169-439a-80f5-f6f15de7a5a6.png'
+  },
+  {
+    id: '2',
+    title: 'Unisex Columbia Fleece Jacket',
+    price: 58.50,
+    image_url: '/lovable-uploads/609edf01-3169-439a-80f5-f6f15de7a5a6.png'
+  },
+  {
+    id: '3',
+    title: 'Backpack',
+    price: 32.95,
+    image_url: '/lovable-uploads/609edf01-3169-439a-80f5-f6f15de7a5a6.png'
+  },
+  {
+    id: '4',
+    title: 'Embroidered Columbia Booney Hat',
+    price: 29.95,
+    image_url: '/lovable-uploads/609edf01-3169-439a-80f5-f6f15de7a5a6.png'
+  },
+  {
+    id: '5',
+    title: 'Offtrack Adventure Team Rash Guard - Blue Waves',
+    price: 34.00,
+    image_url: '/lovable-uploads/609edf01-3169-439a-80f5-f6f15de7a5a6.png'
+  },
+  {
+    id: '6',
+    title: 'Offtrack Adventure Team Rash Guard - Grey',
+    price: 34.00,
+    image_url: '/lovable-uploads/609edf01-3169-439a-80f5-f6f15de7a5a6.png'
+  },
+  {
+    id: '7',
+    title: 'Offtrack Adventure Team Jersey - Blue Waves',
+    price: 30.00,
+    image_url: '/lovable-uploads/609edf01-3169-439a-80f5-f6f15de7a5a6.png'
+  },
+  {
+    id: '8',
+    title: 'Offtrack Adventure Team Jersey - Grey',
+    price: 30.00,
+    image_url: '/lovable-uploads/609edf01-3169-439a-80f5-f6f15de7a5a6.png'
+  },
+  {
+    id: '9',
+    title: 'Offtrack Adventure Team T-Shirt',
+    price: 15.50,
+    image_url: '/lovable-uploads/609edf01-3169-439a-80f5-f6f15de7a5a6.png'
+  },
+  {
+    id: '10',
+    title: 'Embroidered Hat',
+    price: 14.50,
+    image_url: '/lovable-uploads/609edf01-3169-439a-80f5-f6f15de7a5a6.png'
+  },
+  {
+    id: '11',
+    title: 'Embroidered Polo',
+    price: 20.00,
+    image_url: '/lovable-uploads/609edf01-3169-439a-80f5-f6f15de7a5a6.png'
+  },
+  {
+    id: '12',
+    title: 'Embroidered Visor',
+    price: 17.50,
+    image_url: '/lovable-uploads/609edf01-3169-439a-80f5-f6f15de7a5a6.png'
+  }
+];
 
 export const FeaturedMerch = () => {
   const { profile } = useAuthState();
-  const { toast } = useToast();
-  const [products, setProducts] = useState<ScrapedProduct[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const canAccessStore = profile?.is_member || profile?.is_admin;
-
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        setIsLoading(true);
-        
-        // First try to get cached products from the database
-        const { data: cachedProducts, error: dbError } = await supabase
-          .from('scraped_products')
-          .select('*')
-          .order('created_at', { ascending: false });
-
-        if (dbError) throw dbError;
-
-        // If we have cached products, use them
-        if (cachedProducts && cachedProducts.length > 0) {
-          setProducts(cachedProducts);
-          setIsLoading(false);
-          return;
-        }
-
-        // If no cached products, trigger the scraper
-        const { data, error } = await supabase.functions.invoke('scrape-printful-store');
-        
-        if (error) {
-          console.error('Scraping error:', error);
-          throw error;
-        }
-
-        if (!data || !data.products) {
-          throw new Error('Invalid data format received from scraper');
-        }
-
-        setProducts(data.products);
-      } catch (error) {
-        console.error('Error fetching products:', error);
-        toast({
-          title: "Error loading products",
-          description: "Unable to load store products. Please try again later.",
-          variant: "destructive",
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    if (canAccessStore) {
-      fetchProducts();
-    } else {
-      setIsLoading(false);
-    }
-  }, [canAccessStore, toast]);
 
   if (!canAccessStore) {
     return (
@@ -90,43 +101,31 @@ export const FeaturedMerch = () => {
           <ShoppingBag className="h-6 w-6" />
           Member-Only Merch
         </h2>
-        {canAccessStore && (
-          <Button
-            variant="outline"
-            onClick={() => window.open('https://outdoorenergyadventures.printful.me/', '_blank')}
-          >
-            Visit Store
-          </Button>
-        )}
+        <Button
+          variant="outline"
+          onClick={() => window.open('https://outdoorenergyadventures.printful.me/', '_blank')}
+        >
+          Visit Store
+        </Button>
       </div>
       
-      {isLoading ? (
-        <div className="flex justify-center items-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        </div>
-      ) : products.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
-          {products.map((product) => (
-            <Card key={product.id} className="hover:shadow-lg transition-shadow duration-300">
-              <CardContent className="p-4">
-                <div className="aspect-square overflow-hidden rounded-lg mb-4">
-                  <img
-                    src={product.image_url}
-                    alt={product.title}
-                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                  />
-                </div>
-                <h3 className="font-semibold text-lg mb-2">{product.title}</h3>
-                <p className="text-blue-700 font-medium">${product.price.toFixed(2)}</p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      ) : (
-        <div className="text-center py-8">
-          <p className="text-gray-600">No products available at the moment.</p>
-        </div>
-      )}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+        {products.map((product) => (
+          <Card key={product.id} className="hover:shadow-lg transition-shadow duration-300">
+            <CardContent className="p-4">
+              <div className="aspect-square overflow-hidden rounded-lg mb-4">
+                <img
+                  src={product.image_url}
+                  alt={product.title}
+                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                />
+              </div>
+              <h3 className="font-semibold text-lg mb-2 line-clamp-2">{product.title}</h3>
+              <p className="text-blue-700 font-medium">From ${product.price.toFixed(2)}</p>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
     </div>
   );
 };
