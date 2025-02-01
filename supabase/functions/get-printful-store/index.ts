@@ -20,9 +20,6 @@ serve(async (req) => {
       throw new Error('Printful API key not configured')
     }
 
-    // Create base64 encoded credentials - make sure to only use the API key
-    const credentials = btoa(printfulApiKey)
-
     console.log('Making request to Printful API...')
     const response = await fetch('https://api.printful.com/store/products', {
       headers: {
@@ -36,13 +33,14 @@ serve(async (req) => {
       console.error('Printful API error:', {
         status: response.status,
         statusText: response.statusText,
-        error: errorText
+        error: errorText,
+        headers: Object.fromEntries(response.headers.entries())
       })
       throw new Error(`Printful API error: ${response.status} ${response.statusText}`)
     }
 
     const data = await response.json()
-    console.log('Successfully retrieved Printful products:', data)
+    console.log('Successfully retrieved Printful products')
     
     return new Response(JSON.stringify(data), {
       headers: {
