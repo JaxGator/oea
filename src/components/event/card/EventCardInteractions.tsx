@@ -29,6 +29,7 @@ interface EventCardInteractionsProps {
   onRSVPCountChange: (value: string) => void;
   isAuthChecking?: boolean;
   requireAuth?: boolean;
+  onSelect?: () => void;
 }
 
 export function EventCardInteractions({
@@ -56,16 +57,25 @@ export function EventCardInteractions({
   onRSVPCountChange,
   isAuthChecking = false,
   requireAuth = false,
+  onSelect,
 }: EventCardInteractionsProps) {
   const { handleCardClick } = useEventInteractions(setShowDetailsDialog);
+
+  const handleInteraction = (e: React.MouseEvent | React.KeyboardEvent) => {
+    // Prevent event bubbling
+    e.stopPropagation();
+    
+    // Call onSelect if provided
+    if (onSelect) {
+      console.log('Card clicked, triggering selection for event:', event.id);
+      onSelect();
+    }
+  };
 
   return (
     <EventCardWrapper
       title={event.title}
-      onInteraction={() => {
-        // Only trigger card selection, modal will be handled separately
-        console.log('Card clicked, triggering selection');
-      }}
+      onInteraction={handleInteraction}
       isFeatured={event.is_featured}
       isSelected={isSelected}
       isPublished={isPublished}

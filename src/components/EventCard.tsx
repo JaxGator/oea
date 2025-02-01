@@ -29,7 +29,7 @@ export function EventCard({
     return null;
   }
 
-  console.log("Rendering event:", event); // Add logging to debug
+  console.log("Rendering event:", event.id, "isSelected:", isSelected); // Debug log
 
   return (
     <div className="h-full">
