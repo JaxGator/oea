@@ -21,8 +21,8 @@ serve(async (req) => {
     }
 
     // First, get the list of products
-    console.log('Fetching store products...')
-    const productsResponse = await fetch('https://api.printful.com/store/products', {
+    console.log('Fetching product catalog...')
+    const productsResponse = await fetch('https://api.printful.com/products', {
       headers: {
         'Authorization': `Bearer ${printfulApiKey}`,
         'Content-Type': 'application/json'
@@ -45,12 +45,15 @@ serve(async (req) => {
       firstProduct: productsData.result[0]?.name
     })
 
-    // Format the response to include only necessary product information
-    const formattedProducts = productsData.result.map((product: any) => ({
+    // Take only the first 3 products from the catalog
+    const selectedProducts = productsData.result.slice(0, 3)
+
+    // Format the response with sample data since we're using the catalog
+    const formattedProducts = selectedProducts.map((product: any) => ({
       id: product.id,
-      name: product.name,
-      thumbnail_url: product.thumbnail_url,
-      retail_price: product.retail_price || '0.00'
+      name: product.title,
+      thumbnail_url: product.image,
+      retail_price: '29.99' // Sample price since catalog products don't have prices
     }))
 
     return new Response(JSON.stringify({ result: formattedProducts }), {
