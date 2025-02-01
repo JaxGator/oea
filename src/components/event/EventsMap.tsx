@@ -34,11 +34,12 @@ export function EventsMap({ events, selectedEventId, isLoading = false }: Events
     }
   }, []);
 
-  // Find the selected event when selectedEventId changes
+  // Update selected event when selectedEventId changes
   useEffect(() => {
     if (selectedEventId) {
       const event = events.find(e => e.id === selectedEventId);
       if (event && event.latitude && event.longitude) {
+        console.log('Setting selected event:', event.title);
         setSelectedEvent(event);
       }
     }
@@ -64,6 +65,7 @@ export function EventsMap({ events, selectedEventId, isLoading = false }: Events
 
         // Center map on selected event with smooth animation
         if (map && selectedEvent && selectedEvent.latitude && selectedEvent.longitude) {
+          console.log('Centering map on:', selectedEvent.title);
           map.flyTo({
             center: [selectedEvent.longitude, selectedEvent.latitude],
             zoom: 14,
