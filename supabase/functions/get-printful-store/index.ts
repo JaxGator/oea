@@ -42,21 +42,39 @@ serve(async (req) => {
     const productsData = await productsResponse.json()
     console.log('Successfully retrieved products:', {
       count: productsData.result.length,
-      firstProduct: productsData.result[0]?.name
+      firstProduct: productsData.result[0]
     })
 
-    // Take only the first 3 products and format them
-    const selectedProducts = productsData.result.slice(0, 3)
-
     // Format the response with actual store data
-    const formattedProducts = selectedProducts.map((product: any) => ({
-      id: product.id,
-      name: product.name,
-      thumbnail_url: product.thumbnail_url || product.sync_product.thumbnail_url,
-      retail_price: product.retail_price || '29.99' // Fallback price if not set
+    const formattedProducts = await Promise.all(productsData.result.map(async (product: any) => {
+      // Fetch variant details to get accurate pricing
+      const variantResponse = await fetch(`https://api.printful.com/sync/products/${product.id}`, {
+        headers: {
+          'Authorization': `Bearer ${printfulApiKey}`,
+          'Content-Type': 'application/json'
+        },
+      })
+      
+      if (!variantResponse.ok) {
+        console.error(`Failed to fetch variants for product ${product.id}`)
+        return null
+      }
+
+      const variantData = await variantResponse.json()
+      const variant = variantData.result.sync_variants[0] // Get first variant's price
+
+      return {
+        id: product.id,
+        name: product.name,
+        thumbnail_url: product.thumbnail_url || product.sync_product.thumbnail_url,
+        retail_price: variant?.retail_price || '0.00'
+      }
     }))
 
-    return new Response(JSON.stringify({ result: formattedProducts }), {
+    // Filter out any null products from failed variant fetches
+    const validProducts = formattedProducts.filter(product => product !== null)
+
+    return new Response(JSON.stringify({ result: validProducts }), {
       headers: {
         ...corsHeaders,
         'Content-Type': 'application/json',

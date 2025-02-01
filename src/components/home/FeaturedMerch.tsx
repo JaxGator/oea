@@ -37,16 +37,7 @@ export const FeaturedMerch = () => {
         }
 
         console.log('Received products:', data.result);
-
-        // Format all products instead of taking just 3
-        const formattedProducts = data.result.map((product: any) => ({
-          id: product.id,
-          name: product.name,
-          thumbnail_url: product.thumbnail_url,
-          retail_price: product.retail_price,
-        }));
-
-        setProducts(formattedProducts);
+        setProducts(data.result);
       } catch (error) {
         console.error('Error fetching products:', error);
         toast({
@@ -111,7 +102,7 @@ export const FeaturedMerch = () => {
                   />
                 </div>
                 <h3 className="font-semibold text-lg mb-2">{product.name}</h3>
-                <p className="text-blue-700 font-medium">${product.retail_price}</p>
+                <p className="text-blue-700 font-medium">${parseFloat(product.retail_price).toFixed(2)}</p>
               </CardContent>
             </Card>
           ))}
