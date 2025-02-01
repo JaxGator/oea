@@ -51,7 +51,7 @@ const products = [
     id: '8',
     title: 'Offtrack Adventure Team Jersey - Grey',
     price: 30.00,
-    image_url: 'https://qegpuqitjfocyyrivlhv.supabase.co/storage/v1/object/public/media//rashguard_grey.webp'
+    image_url: 'https://qegpuqitjfocyyrivlhv.supabase.co/storage/v1/object/public/media//jersey_grey.webp'
   },
   {
     id: '9',
