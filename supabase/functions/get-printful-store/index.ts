@@ -21,7 +21,6 @@ serve(async (req) => {
     }
 
     console.log('Making request to Printful API for store products...')
-    // Get the list of products using the store products endpoint
     const productsResponse = await fetch('https://api.printful.com/store/products', {
       headers: {
         'Authorization': `Bearer ${printfulApiKey}`,

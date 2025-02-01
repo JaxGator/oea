@@ -1,1 +1,5 @@
 project_id = "qegpuqitjfocyyrivlhv"
+
+[functions]
+[functions.get-printful-store]
+verify_jwt = false
