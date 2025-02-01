@@ -20,32 +20,7 @@ serve(async (req) => {
       throw new Error('Printful API key not configured')
     }
 
-    // First, get the store information to ensure we're connected
-    console.log('Fetching store information...')
-    const storeResponse = await fetch('https://api.printful.com/store', {
-      headers: {
-        'Authorization': `Bearer ${printfulApiKey}`,
-        'Content-Type': 'application/json'
-      },
-    })
-
-    if (!storeResponse.ok) {
-      const errorText = await storeResponse.text()
-      console.error('Store fetch error:', {
-        status: storeResponse.status,
-        statusText: storeResponse.statusText,
-        error: errorText
-      })
-      throw new Error(`Failed to fetch store information: ${errorText}`)
-    }
-
-    const storeData = await storeResponse.json()
-    console.log('Store information retrieved:', {
-      name: storeData.result.name,
-      id: storeData.result.id
-    })
-
-    // Now fetch the store's products
+    // Directly fetch store products
     console.log('Fetching store products...')
     const productsResponse = await fetch('https://api.printful.com/store/products', {
       headers: {
@@ -75,12 +50,7 @@ serve(async (req) => {
       id: product.id,
       name: product.name,
       thumbnail_url: product.thumbnail_url,
-      retail_price: product.retail_price,
-      sync_product: {
-        name: product.sync_product?.name,
-        thumbnail_url: product.sync_product?.thumbnail_url,
-        retail_price: product.sync_product?.retail_price
-      }
+      retail_price: product.retail_price
     }))
 
     return new Response(JSON.stringify({ result: formattedProducts }), {
