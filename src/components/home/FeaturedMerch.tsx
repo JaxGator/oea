@@ -38,8 +38,8 @@ export const FeaturedMerch = () => {
 
         console.log('Received products:', data.result);
 
-        // Take the first 3 products
-        const formattedProducts = data.result.slice(0, 3).map((product: any) => ({
+        // Format all products instead of taking just 3
+        const formattedProducts = data.result.map((product: any) => ({
           id: product.id,
           name: product.name,
           thumbnail_url: product.thumbnail_url,
@@ -99,7 +99,7 @@ export const FeaturedMerch = () => {
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
       ) : products.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
           {products.map((product) => (
             <Card key={product.id} className="hover:shadow-lg transition-shadow duration-300">
               <CardContent className="p-4">
