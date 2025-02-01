@@ -29,11 +29,11 @@ export function useEvents(selectedDate?: Date) {
           pageParam
         });
 
-        // Calculate the range for pagination
+        const today = new Date().toISOString().split('T')[0];
         const from = Number(pageParam) * EVENTS_PER_PAGE;
         const to = from + EVENTS_PER_PAGE - 1;
 
-        // Comprehensive query that includes all related data
+        // First, get upcoming events
         let query = supabase
           .from('events')
           .select(`
@@ -54,31 +54,27 @@ export function useEvents(selectedDate?: Date) {
               )
             )
           `)
-          .range(from, to);
+          .gte('date', today)
+          .order('date', { ascending: true });
 
-        // For public access, only show published events
+        // Apply auth filters
         if (!isAuthenticated) {
-          query = query
-            .eq('is_published', true)
-            .order('date');
-        } else if (isAuthenticated && isApproved) {
-          // If user is authenticated and approved, show all events
-          query = query.order('date');
-        } else {
-          // For authenticated but not approved users, show only published events
-          query = query
-            .eq('is_published', true)
-            .order('date');
+          query = query.eq('is_published', true);
+        } else if (!isApproved) {
+          query = query.eq('is_published', true);
         }
 
-        // Only filter by date if a date is selected
+        // Apply date filter if selected
         if (selectedDate) {
           const dateStr = selectedDate.toISOString().split('T')[0];
           query = query.gte('date', dateStr);
         }
 
+        // Apply pagination
+        query = query.range(from, to);
+
         const { data: events, error, count } = await query;
-        
+
         if (error) {
           console.error('Error fetching events:', {
             error,

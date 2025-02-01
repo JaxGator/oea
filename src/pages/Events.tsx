@@ -5,7 +5,7 @@ import { useAuthState } from "@/hooks/useAuthState";
 import { EventsHeader } from "@/components/event/sections/EventsHeader";
 import { EventsContent } from "@/components/event/sections/EventsContent";
 import { filterEventsByDate } from "@/utils/dateUtils";
-import { useInView } from "react-intersection-observer";
+import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 
 export default function Events() {
@@ -23,18 +23,6 @@ export default function Events() {
   } = useEvents(selectedDate);
   
   const { handleRSVP, cancelRSVP } = useRSVP();
-
-  const { ref, inView } = useInView({
-    threshold: 0.5,
-    rootMargin: '100px',
-  });
-
-  useEffect(() => {
-    if (inView && hasNextPage && !isFetchingNextPage) {
-      console.log('Loading more events...');
-      fetchNextPage();
-    }
-  }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   const events = data?.pages.flatMap(page => page.events) || [];
   const totalCount = data?.pages[0]?.totalCount || 0;
@@ -82,18 +70,22 @@ export default function Events() {
         />
 
         {(hasNextPage || isFetchingNextPage) && (
-          <div 
-            ref={ref} 
-            className="h-20 flex items-center justify-center mt-8 animate-fade-in"
-          >
-            {isFetchingNextPage ? (
-              <div className="flex items-center gap-2 text-gray-500">
-                <Loader2 className="h-5 w-5 animate-spin" />
-                <span className="text-sm font-medium">Loading more events...</span>
-              </div>
-            ) : (
-              <div className="h-10" />
-            )}
+          <div className="flex justify-center mt-8 mb-4">
+            <Button
+              onClick={() => fetchNextPage()}
+              disabled={isFetchingNextPage}
+              variant="outline"
+              className="w-full max-w-xs"
+            >
+              {isFetchingNextPage ? (
+                <div className="flex items-center gap-2">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span>Loading more events...</span>
+                </div>
+              ) : (
+                <span>Load More Events</span>
+              )}
+            </Button>
           </div>
         )}
       </div>
