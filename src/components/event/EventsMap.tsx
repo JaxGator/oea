@@ -27,6 +27,7 @@ export function EventsMap({ events, selectedEventId, isLoading = false }: Events
   // Handle marker click with proper error handling
   const handleMarkerClick = useCallback((event: Event) => {
     try {
+      console.log('Marker clicked for event:', event.title);
       setSelectedEvent(event);
     } catch (error) {
       console.error('Error selecting event:', error);
@@ -39,9 +40,12 @@ export function EventsMap({ events, selectedEventId, isLoading = false }: Events
     if (selectedEventId) {
       const event = events.find(e => e.id === selectedEventId);
       if (event && event.latitude && event.longitude) {
-        console.log('Setting selected event:', event.title);
+        console.log('Setting selected event from card click:', event.title);
         setSelectedEvent(event);
       }
+    } else {
+      // Clear selection when selectedEventId is null
+      setSelectedEvent(null);
     }
   }, [selectedEventId, events]);
 
@@ -69,10 +73,10 @@ export function EventsMap({ events, selectedEventId, isLoading = false }: Events
           map.flyTo({
             center: [selectedEvent.longitude, selectedEvent.latitude],
             zoom: 14,
-            duration: 1500,
+            duration: 1000, // Faster animation
             essential: true,
-            curve: 1.42, // Smooth easing function
-            padding: { top: 50, bottom: 50, left: 50, right: 50 } // Add padding for better view
+            curve: 1.42,
+            padding: { top: 50, bottom: 50, left: 50, right: 50 }
           });
         }
 
