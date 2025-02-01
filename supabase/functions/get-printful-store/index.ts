@@ -24,7 +24,8 @@ serve(async (req) => {
     const response = await fetch('https://api.printful.com/store/products', {
       headers: {
         'Authorization': `Bearer ${printfulApiKey}`,
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'X-PF-Store-Id': 'all'
       },
     })
 
@@ -36,7 +37,7 @@ serve(async (req) => {
         error: errorText,
         headers: Object.fromEntries(response.headers.entries())
       })
-      throw new Error(`Printful API error: ${response.status} ${response.statusText}`)
+      throw new Error(`Printful API error: ${response.status} ${response.statusText} - ${errorText}`)
     }
 
     const data = await response.json()
