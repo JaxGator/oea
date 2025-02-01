@@ -23,6 +23,8 @@ export function EventCardWrapper({
   isPublished = true
 }: EventCardWrapperProps) {
   const handleClick = (e: React.MouseEvent) => {
+    // Stop event propagation to prevent modal from opening
+    e.stopPropagation();
     if (onInteraction) {
       onInteraction(e);
     }
@@ -36,7 +38,7 @@ export function EventCardWrapper({
 
   return (
     <Card
-      className={`relative overflow-hidden transition-all duration-200 ${
+      className={`relative overflow-hidden transition-all duration-200 cursor-pointer hover:shadow-md ${
         isSelected ? 'ring-2 ring-primary' : ''
       } ${!isPublished ? 'opacity-75' : ''} ${
         isFeatured ? 'ring-2 ring-[#f9c800]' : ''

@@ -62,8 +62,10 @@ export function EventCardInteractions({
   return (
     <EventCardWrapper
       title={event.title}
-      onInteraction={handleCardClick}
-      onKeyDown={handleCardClick}
+      onInteraction={() => {
+        // Only trigger card selection, modal will be handled separately
+        console.log('Card clicked, triggering selection');
+      }}
       isFeatured={event.is_featured}
       isSelected={isSelected}
       isPublished={isPublished}
