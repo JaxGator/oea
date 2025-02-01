@@ -25,7 +25,7 @@ export function EventsContent({
   const { profile, isAuthenticated } = useAuthState();
 
   const handleEventSelect = (eventId: string) => {
-    console.log('Event selected:', eventId);
+    console.log('EventsContent - Event selected:', eventId);
     setSelectedEventId(eventId === selectedEventId ? null : eventId);
   };
 

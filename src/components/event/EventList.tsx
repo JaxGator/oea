@@ -77,7 +77,10 @@ export function EventList({
             onRSVP={onRSVP}
             onCancelRSVP={() => onCancelRSVP(event.id)}
             userRSVPStatus={userRSVP?.response || null}
-            onSelect={() => onEventSelect?.(event.id)}
+            onSelect={() => {
+              console.log('EventList - Card clicked:', event.id);
+              onEventSelect?.(event.id);
+            }}
             isSelected={event.id === selectedEventId}
             isAuthChecking={isAuthChecking}
             requireAuth={true}
