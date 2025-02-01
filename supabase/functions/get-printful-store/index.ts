@@ -20,37 +20,37 @@ serve(async (req) => {
       throw new Error('Printful API key not configured')
     }
 
-    // Use the sync variants endpoint instead of store products
-    console.log('Fetching sync variants...')
-    const response = await fetch('https://api.printful.com/sync/variants', {
+    // First, get the list of products
+    console.log('Fetching store products...')
+    const productsResponse = await fetch('https://api.printful.com/store/products', {
       headers: {
         'Authorization': `Bearer ${printfulApiKey}`,
         'Content-Type': 'application/json'
       },
     })
 
-    if (!response.ok) {
-      const errorText = await response.text()
-      console.error('API request failed:', {
-        status: response.status,
-        statusText: response.statusText,
+    if (!productsResponse.ok) {
+      const errorText = await productsResponse.text()
+      console.error('Products fetch error:', {
+        status: productsResponse.status,
+        statusText: productsResponse.statusText,
         error: errorText
       })
       throw new Error(`Failed to fetch products: ${errorText}`)
     }
 
-    const data = await response.json()
+    const productsData = await productsResponse.json()
     console.log('Successfully retrieved products:', {
-      count: data.result.length,
-      firstProduct: data.result[0]?.sync_variant?.name
+      count: productsData.result.length,
+      firstProduct: productsData.result[0]?.name
     })
-    
-    // Format the response to match our expected structure
-    const formattedProducts = data.result.map((item: any) => ({
-      id: item.id,
-      name: item.sync_variant.name,
-      thumbnail_url: item.sync_variant.files[0]?.preview_url || item.sync_product.thumbnail_url,
-      retail_price: item.retail_price,
+
+    // Format the response to include only necessary product information
+    const formattedProducts = productsData.result.map((product: any) => ({
+      id: product.id,
+      name: product.name,
+      thumbnail_url: product.thumbnail_url,
+      retail_price: product.retail_price || '0.00'
     }))
 
     return new Response(JSON.stringify({ result: formattedProducts }), {
