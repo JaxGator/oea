@@ -6,38 +6,53 @@ import { ShoppingBag, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
-interface PrintfulProduct {
-  id: number;
-  name: string;
-  thumbnail_url: string;
-  retail_price: string;
+interface ScrapedProduct {
+  id: string;
+  title: string;
+  price: number;
+  image_url: string;
 }
 
 export const FeaturedMerch = () => {
   const { profile } = useAuthState();
   const { toast } = useToast();
-  const [products, setProducts] = useState<PrintfulProduct[]>([]);
+  const [products, setProducts] = useState<ScrapedProduct[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const canAccessStore = profile?.is_member || profile?.is_admin;
 
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        console.log('Fetching products from Printful...');
-        const { data, error } = await supabase.functions.invoke('get-printful-store');
+        setIsLoading(true);
+        
+        // First try to get cached products from the database
+        const { data: cachedProducts, error: dbError } = await supabase
+          .from('scraped_products')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (dbError) throw dbError;
+
+        // If we have cached products, use them
+        if (cachedProducts && cachedProducts.length > 0) {
+          setProducts(cachedProducts);
+          setIsLoading(false);
+          return;
+        }
+
+        // If no cached products, trigger the scraper
+        const { data, error } = await supabase.functions.invoke('scrape-printful-store');
         
         if (error) {
-          console.error('Supabase function error:', error);
+          console.error('Scraping error:', error);
           throw error;
         }
 
-        if (!data || !data.result) {
-          console.error('Invalid data format received:', data);
-          throw new Error('Invalid data format received from Printful');
+        if (!data || !data.products) {
+          throw new Error('Invalid data format received from scraper');
         }
 
-        console.log('Received products:', data.result);
-        setProducts(data.result);
+        setProducts(data.products);
       } catch (error) {
         console.error('Error fetching products:', error);
         toast({
@@ -96,13 +111,13 @@ export const FeaturedMerch = () => {
               <CardContent className="p-4">
                 <div className="aspect-square overflow-hidden rounded-lg mb-4">
                   <img
-                    src={product.thumbnail_url}
-                    alt={product.name}
+                    src={product.image_url}
+                    alt={product.title}
                     className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
                   />
                 </div>
-                <h3 className="font-semibold text-lg mb-2">{product.name}</h3>
-                <p className="text-blue-700 font-medium">${parseFloat(product.retail_price).toFixed(2)}</p>
+                <h3 className="font-semibold text-lg mb-2">{product.title}</h3>
+                <p className="text-blue-700 font-medium">${product.price.toFixed(2)}</p>
               </CardContent>
             </Card>
           ))}

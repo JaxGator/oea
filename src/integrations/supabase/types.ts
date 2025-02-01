@@ -994,6 +994,30 @@ export type Database = {
           },
         ]
       }
+      scraped_products: {
+        Row: {
+          created_at: string
+          id: string
+          image_url: string
+          price: number
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          image_url: string
+          price: number
+          title: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          image_url?: string
+          price?: number
+          title?: string
+        }
+        Relationships: []
+      }
       site_config: {
         Row: {
           created_at: string | null
