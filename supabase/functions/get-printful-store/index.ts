@@ -20,9 +20,9 @@ serve(async (req) => {
       throw new Error('Printful API key not configured')
     }
 
-    console.log('Making request to Printful API...')
+    console.log('Making request to Printful API for store 15064221...')
     // Get the list of products from your specific store using the sync endpoint
-    const productsResponse = await fetch('https://api.printful.com/sync/products', {
+    const productsResponse = await fetch('https://api.printful.com/stores/15064221/products', {
       headers: {
         'Authorization': `Bearer ${printfulApiKey}`,
         'Content-Type': 'application/json'
@@ -49,7 +49,7 @@ serve(async (req) => {
     // Format the response with actual store data
     const formattedProducts = await Promise.all(productsData.result.map(async (product: any) => {
       // Fetch variant details to get accurate pricing
-      const variantResponse = await fetch(`https://api.printful.com/sync/products/${product.id}`, {
+      const variantResponse = await fetch(`https://api.printful.com/stores/15064221/products/${product.id}`, {
         headers: {
           'Authorization': `Bearer ${printfulApiKey}`,
           'Content-Type': 'application/json'
