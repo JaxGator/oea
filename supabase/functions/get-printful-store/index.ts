@@ -20,9 +20,9 @@ serve(async (req) => {
       throw new Error('Printful API key not configured')
     }
 
-    // Get the list of products from your store
-    console.log('Fetching store products...')
-    const productsResponse = await fetch('https://api.printful.com/sync/products', {
+    // Get the list of products from your specific store
+    console.log('Fetching products from OEA Merch Store (ID: 15064221)...')
+    const productsResponse = await fetch('https://api.printful.com/store/products?store_id=15064221', {
       headers: {
         'Authorization': `Bearer ${printfulApiKey}`,
         'Content-Type': 'application/json'
