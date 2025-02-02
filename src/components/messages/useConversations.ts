@@ -63,23 +63,30 @@ export function useConversations(userId: string | undefined) {
         id: msg.id,
         content: msg.content,
         created_at: msg.created_at,
-        sender: msg.sender as Profile,
-        group_chat: {
+        sender: msg.sender,
+        receiver: {
+          id: msg.group_chat.id,
+          username: msg.group_chat.name,
+          avatar_url: null
+        },
+        is_read: true,
+        isGroup: true,
+        groupInfo: {
           id: msg.group_chat.id,
           name: msg.group_chat.name,
           description: msg.group_chat.description
         }
-      })) as GroupMessage[];
+      })) as Message[];
 
       console.log('Transformed group messages:', transformedGroupMessages);
 
-      const finalMessages = {
-        directMessages: directMessages as Message[],
-        groupMessages: transformedGroupMessages
-      };
+      // Combine both types of messages
+      const allMessages = [...(directMessages || []), ...transformedGroupMessages].sort(
+        (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      );
 
-      console.log('Final messages object:', finalMessages);
-      return finalMessages;
+      console.log('Final combined messages:', allMessages);
+      return allMessages;
     },
     enabled: !!userId,
   });
