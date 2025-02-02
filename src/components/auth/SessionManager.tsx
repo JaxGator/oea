@@ -20,6 +20,9 @@ export function SessionManager({ children, queryClient }: SessionManagerProps) {
 
   useEffect(() => {
     let mounted = true;
+    let retryCount = 0;
+    const MAX_RETRIES = 3;
+    const RETRY_DELAY = 1000;
 
     const checkInitialSession = async () => {
       try {
@@ -28,9 +31,21 @@ export function SessionManager({ children, queryClient }: SessionManagerProps) {
         
         if (error) {
           console.error('Session check error:', error);
+          if (error.message === 'Failed to fetch') {
+            if (retryCount < MAX_RETRIES) {
+              retryCount++;
+              console.log(`Retrying session check (${retryCount}/${MAX_RETRIES})...`);
+              setTimeout(checkInitialSession, RETRY_DELAY);
+              return;
+            }
+          }
+          
           if (mounted) {
             queryClient.clear();
             setIsInitialized(true);
+            if (isProtectedRoute(location.pathname)) {
+              navigate('/auth');
+            }
           }
           return;
         }
@@ -54,6 +69,9 @@ export function SessionManager({ children, queryClient }: SessionManagerProps) {
         console.error('Session initialization error:', err);
         if (mounted) {
           setIsInitialized(true);
+          if (isProtectedRoute(location.pathname)) {
+            navigate('/auth');
+          }
         }
       }
     };
