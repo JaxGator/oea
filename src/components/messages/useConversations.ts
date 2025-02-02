@@ -4,26 +4,12 @@ import { useEffect } from "react";
 import { Message, GroupMessage } from "./types";
 import { Profile } from "@/types/auth";
 
-interface GroupMessageResponse {
-  id: string;
-  content: string;
-  created_at: string;
-  sender: Profile;
-  group_chat: {
-    id: string;
-    name: string;
-    description: string | null;
-  };
-}
-
 export function useConversations(userId: string | undefined) {
   const queryClient = useQueryClient();
 
   const { data: messages, isLoading } = useQuery({
     queryKey: ['messages', userId],
     queryFn: async () => {
-      console.log('Fetching messages for user:', userId);
-
       // Fetch direct messages
       const { data: directMessages, error: directError } = await supabase
         .from('messages')
@@ -32,7 +18,6 @@ export function useConversations(userId: string | undefined) {
         .order('created_at', { ascending: false });
 
       if (directError) throw directError;
-      console.log('Direct messages response:', directMessages);
 
       // Fetch group messages for groups the user is part of
       const { data: groupMessages, error: groupError } = await supabase
@@ -41,60 +26,42 @@ export function useConversations(userId: string | undefined) {
           id,
           content,
           created_at,
-          sender:profiles!sender_id(*),
-          group_chat:group_chats!inner(
-            id,
-            name,
-            description,
-            participants:group_chat_participants!inner(user_id)
-          )
+          sender:profiles!inner(*),
+          group_chat:group_chats!inner(*)
         `)
-        .eq('group_chat.participants.user_id', userId)
+        .eq('group_chat.group_chat_participants.user_id', userId)
         .order('created_at', { ascending: false });
 
-      if (groupError) {
-        console.error('Group messages error:', groupError);
-        throw groupError;
-      }
-      console.log('Group messages response:', groupMessages);
+      if (groupError) throw groupError;
 
-      // Transform group messages to match the Message type
-      const transformedGroupMessages = (groupMessages || []).map((msg: any) => ({
+      // Transform group messages to match the expected type
+      const transformedGroupMessages = groupMessages?.map(msg => ({
         id: msg.id,
         content: msg.content,
         created_at: msg.created_at,
-        sender: msg.sender,
-        sender_id: msg.sender.id,
-        receiver_id: msg.group_chat.id,
-        receiver: {
-          id: msg.group_chat.id,
-          username: msg.group_chat.name,
-          avatar_url: null,
-          full_name: msg.group_chat.name,
-          is_admin: false,
-          is_approved: true,
-          is_member: true,
-          created_at: msg.created_at,
-          event_reminders_enabled: false
+        sender: {
+          id: msg.sender.id,
+          username: msg.sender.username,
+          full_name: msg.sender.full_name,
+          avatar_url: msg.sender.avatar_url,
+          created_at: msg.sender.created_at,
+          is_admin: msg.sender.is_admin,
+          is_approved: msg.sender.is_approved,
+          is_member: msg.sender.is_member,
+          email_notifications: msg.sender.email_notifications,
+          event_reminders_enabled: msg.sender.event_reminders_enabled
         } as Profile,
-        is_read: true,
-        isGroup: true,
-        groupInfo: {
+        group_chat: {
           id: msg.group_chat.id,
           name: msg.group_chat.name,
           description: msg.group_chat.description
         }
-      })) as Message[];
+      })) as GroupMessage[];
 
-      console.log('Transformed group messages:', transformedGroupMessages);
-
-      // Combine both types of messages
-      const allMessages = [...(directMessages || []), ...transformedGroupMessages].sort(
-        (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-      );
-
-      console.log('Final combined messages:', allMessages);
-      return allMessages;
+      return {
+        directMessages: directMessages as Message[],
+        groupMessages: transformedGroupMessages
+      };
     },
     enabled: !!userId,
   });
@@ -113,8 +80,7 @@ export function useConversations(userId: string | undefined) {
           table: 'messages',
           filter: `receiver_id=eq.${userId}`,
         },
-        (payload) => {
-          console.log('New direct message received:', payload);
+        () => {
           queryClient.invalidateQueries({ queryKey: ['messages', userId] });
         }
       )
@@ -126,8 +92,7 @@ export function useConversations(userId: string | undefined) {
           table: 'messages',
           filter: `receiver_id=eq.${userId}`,
         },
-        (payload) => {
-          console.log('Direct message updated:', payload);
+        () => {
           queryClient.invalidateQueries({ queryKey: ['messages', userId] });
         }
       )
@@ -143,8 +108,7 @@ export function useConversations(userId: string | undefined) {
           schema: 'public',
           table: 'group_chat_messages',
         },
-        (payload) => {
-          console.log('New group message received:', payload);
+        () => {
           queryClient.invalidateQueries({ queryKey: ['messages', userId] });
         }
       )
