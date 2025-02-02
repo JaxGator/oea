@@ -2,7 +2,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuthState } from "@/hooks/useAuthState";
 import { Card } from "@/components/ui/card";
-import { Mail, Loader2, Inbox, Users } from "lucide-react";
+import { Mail, Loader2, Inbox } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useMessageOperations } from "@/hooks/messages/useMessageOperations";
@@ -11,8 +11,7 @@ import { ConversationHeader } from "@/components/messages/conversation/Conversat
 import { ConversationContent } from "@/components/messages/conversation/ConversationContent";
 import { ConversationInput } from "@/components/messages/conversation/ConversationInput";
 import { DeleteConversationDialog } from "@/components/messages/DeleteConversationDialog";
-import { GroupChatDialog } from "@/components/messages/group/GroupChatDialog";
-import { Button } from "@/components/ui/button";
+import { CreateGroupChatDialog } from "@/components/messages/group/CreateGroupChatDialog";
 import { Message } from "@/components/messages/types";
 import { ConversationType } from "@/components/messages/types/conversation";
 
@@ -29,14 +28,47 @@ export default function Messages() {
   const { data: messages, isLoading } = useQuery({
     queryKey: ['messages'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data: directMessages, error: directError } = await supabase
         .from('messages')
         .select('*, sender:profiles!sender_id(*), receiver:profiles!receiver_id(*)')
         .or(`sender_id.eq.${user?.id},receiver_id.eq.${user?.id}`)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
-      return data as Message[];
+      if (directError) throw directError;
+
+      const { data: groupParticipations, error: groupError } = await supabase
+        .from('group_chat_participants')
+        .select(`
+          group_chat_id,
+          group_chat:group_chats(
+            id,
+            name,
+            description,
+            messages:group_chat_messages(
+              *,
+              sender:profiles(*)
+            )
+          )
+        `)
+        .eq('user_id', user?.id);
+
+      if (groupError) throw groupError;
+
+      const formattedGroupMessages = groupParticipations?.flatMap(participation => 
+        participation.group_chat.messages.map(msg => ({
+          ...msg,
+          isGroupMessage: true,
+          groupInfo: {
+            id: participation.group_chat.id,
+            name: participation.group_chat.name,
+            description: participation.group_chat.description
+          }
+        }))
+      ) || [];
+
+      return [...directMessages, ...formattedGroupMessages].sort(
+        (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      );
     },
     enabled: !!user,
   });
@@ -129,7 +161,7 @@ export default function Messages() {
             <Mail className="h-7 w-7" />
             <h1 className="text-3xl font-bold">Messages</h1>
           </div>
-          <GroupChatDialog groupId="default" groupName="General Chat" />
+          <CreateGroupChatDialog />
         </div>
         <Card className="p-8">
           <div className="flex flex-col items-center justify-center text-center space-y-4">
@@ -137,7 +169,7 @@ export default function Messages() {
             <div className="space-y-2">
               <h3 className="text-xl font-semibold">No messages yet</h3>
               <p className="text-muted-foreground">
-                When you send or receive messages, they'll appear here.
+                Start a conversation or create a group chat to begin messaging.
               </p>
             </div>
           </div>
@@ -182,7 +214,7 @@ export default function Messages() {
             <Mail className="h-7 w-7" />
             <h1 className="text-3xl font-bold">Messages</h1>
           </div>
-          <GroupChatDialog groupId="default" groupName="General Chat" />
+          <CreateGroupChatDialog />
         </div>
 
         <div className="grid md:grid-cols-[350px,1fr] gap-4">
