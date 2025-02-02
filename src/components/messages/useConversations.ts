@@ -26,7 +26,17 @@ export function useConversations(userId: string | undefined) {
           id,
           content,
           created_at,
-          sender:profiles!sender_id(*),
+          sender:profiles!sender_id(
+            id,
+            username,
+            full_name,
+            avatar_url,
+            created_at,
+            is_admin,
+            is_approved,
+            is_member,
+            email_notifications
+          ),
           group_chat:group_chats!group_chat_id(
             id,
             name,
@@ -45,9 +55,9 @@ export function useConversations(userId: string | undefined) {
         created_at: msg.created_at,
         sender: msg.sender as Profile,
         group_chat: {
-          id: msg.group_chat?.id,
-          name: msg.group_chat?.name,
-          description: msg.group_chat?.description
+          id: msg.group_chat.id,
+          name: msg.group_chat.name,
+          description: msg.group_chat.description
         }
       })) as GroupMessage[];
 
