@@ -1,20 +1,8 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect } from "react";
-import { Message } from "./types";
+import { Message, GroupMessage } from "./types";
 import { Profile } from "@/types/auth";
-
-interface GroupChatMessage {
-  id: string;
-  content: string;
-  created_at: string;
-  sender: Profile;
-  group_chat: {
-    id: string;
-    name: string;
-    description: string | null;
-  };
-}
 
 export function useConversations(userId: string | undefined) {
   const queryClient = useQueryClient();
@@ -39,7 +27,7 @@ export function useConversations(userId: string | undefined) {
           content,
           created_at,
           sender:profiles!sender_id(*),
-          group_chat:group_chats(
+          group_chat:group_chats!group_chat_id(
             id,
             name,
             description
@@ -50,9 +38,22 @@ export function useConversations(userId: string | undefined) {
 
       if (groupError) throw groupError;
 
+      // Transform group messages to match the expected type
+      const transformedGroupMessages = (groupMessages || []).map(msg => ({
+        id: msg.id,
+        content: msg.content,
+        created_at: msg.created_at,
+        sender: msg.sender as Profile,
+        group_chat: {
+          id: msg.group_chat?.id,
+          name: msg.group_chat?.name,
+          description: msg.group_chat?.description
+        }
+      })) as GroupMessage[];
+
       return {
         directMessages: directMessages as Message[],
-        groupMessages: groupMessages as GroupChatMessage[]
+        groupMessages: transformedGroupMessages
       };
     },
     enabled: !!userId,
