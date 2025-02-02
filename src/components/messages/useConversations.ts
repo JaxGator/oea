@@ -69,8 +69,14 @@ export function useConversations(userId: string | undefined) {
         receiver: {
           id: msg.group_chat.id,
           username: msg.group_chat.name,
-          avatar_url: null
-        },
+          avatar_url: null,
+          full_name: msg.group_chat.name,
+          is_admin: false,
+          is_approved: true,
+          is_member: true,
+          created_at: msg.created_at,
+          event_reminders_enabled: false
+        } as Profile,
         is_read: true,
         isGroup: true,
         groupInfo: {
