@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { MessageForm } from "../communication/MessageForm";
+import { MessageForm } from "@/components/members/communication/MessageForm";
 import { useToast } from "@/hooks/use-toast";
 import { Users } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
