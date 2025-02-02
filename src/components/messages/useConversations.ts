@@ -22,6 +22,8 @@ export function useConversations(userId: string | undefined) {
   const { data: messages, isLoading } = useQuery({
     queryKey: ['messages', userId],
     queryFn: async () => {
+      console.log('Fetching messages for user:', userId);
+
       // Fetch direct messages
       const { data: directMessages, error: directError } = await supabase
         .from('messages')
@@ -30,6 +32,7 @@ export function useConversations(userId: string | undefined) {
         .order('created_at', { ascending: false });
 
       if (directError) throw directError;
+      console.log('Direct messages response:', directMessages);
 
       // Fetch group messages for groups the user is part of
       const { data: groupMessages, error: groupError } = await supabase
@@ -49,7 +52,11 @@ export function useConversations(userId: string | undefined) {
         .eq('group_chat.participants.user_id', userId)
         .order('created_at', { ascending: false });
 
-      if (groupError) throw groupError;
+      if (groupError) {
+        console.error('Group messages error:', groupError);
+        throw groupError;
+      }
+      console.log('Group messages response:', groupMessages);
 
       // Transform group messages to match the expected type
       const transformedGroupMessages = (groupMessages || []).map((msg: any) => ({
@@ -64,10 +71,15 @@ export function useConversations(userId: string | undefined) {
         }
       })) as GroupMessage[];
 
-      return {
+      console.log('Transformed group messages:', transformedGroupMessages);
+
+      const finalMessages = {
         directMessages: directMessages as Message[],
         groupMessages: transformedGroupMessages
       };
+
+      console.log('Final messages object:', finalMessages);
+      return finalMessages;
     },
     enabled: !!userId,
   });
@@ -86,7 +98,8 @@ export function useConversations(userId: string | undefined) {
           table: 'messages',
           filter: `receiver_id=eq.${userId}`,
         },
-        () => {
+        (payload) => {
+          console.log('New direct message received:', payload);
           queryClient.invalidateQueries({ queryKey: ['messages', userId] });
         }
       )
@@ -98,7 +111,8 @@ export function useConversations(userId: string | undefined) {
           table: 'messages',
           filter: `receiver_id=eq.${userId}`,
         },
-        () => {
+        (payload) => {
+          console.log('Direct message updated:', payload);
           queryClient.invalidateQueries({ queryKey: ['messages', userId] });
         }
       )
@@ -114,7 +128,8 @@ export function useConversations(userId: string | undefined) {
           schema: 'public',
           table: 'group_chat_messages',
         },
-        () => {
+        (payload) => {
+          console.log('New group message received:', payload);
           queryClient.invalidateQueries({ queryKey: ['messages', userId] });
         }
       )
