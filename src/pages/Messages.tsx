@@ -15,20 +15,22 @@ import { CreateGroupChatDialog } from "@/components/messages/group/CreateGroupCh
 import { Message } from "@/components/messages/types";
 import { ConversationType } from "@/components/messages/types/conversation";
 
+interface GroupMessage {
+  id: string;
+  content: string;
+  created_at: string;
+  sender: {
+    id: string;
+    username: string;
+    avatar_url: string;
+  };
+}
+
 interface GroupChat {
   id: string;
   name: string;
   description: string | null;
-  messages: {
-    id: string;
-    content: string;
-    created_at: string;
-    sender: {
-      id: string;
-      username: string;
-      avatar_url: string;
-    };
-  }[];
+  messages: GroupMessage[];
 }
 
 interface GroupParticipation {
@@ -59,13 +61,19 @@ export default function Messages() {
       const { data: groupParticipations, error: groupError } = await supabase
         .from('group_chat_participants')
         .select(`
-          group_chat:group_chats(
+          group_chat:group_chats!inner(
             id,
             name,
             description,
             messages:group_chat_messages(
-              *,
-              sender:profiles(*)
+              id,
+              content,
+              created_at,
+              sender:profiles!inner(
+                id,
+                username,
+                avatar_url
+              )
             )
           )
         `)
@@ -73,7 +81,10 @@ export default function Messages() {
 
       if (groupError) throw groupError;
 
-      const formattedGroupMessages = (groupParticipations as GroupParticipation[])?.map(participation => {
+      // Type assertion to ensure correct typing
+      const typedGroupParticipations = groupParticipations as unknown as GroupParticipation[];
+      
+      const formattedGroupMessages = typedGroupParticipations?.map(participation => {
         const groupChat = participation.group_chat;
         return groupChat.messages.map(msg => ({
           ...msg,
