@@ -26,23 +26,8 @@ export function useConversations(userId: string | undefined) {
           id,
           content,
           created_at,
-          sender:profiles!inner(
-            id,
-            username,
-            full_name,
-            avatar_url,
-            created_at,
-            is_admin,
-            is_approved,
-            is_member,
-            email_notifications,
-            event_reminders_enabled
-          ),
-          group_chat:group_chats!inner(
-            id,
-            name,
-            description
-          )
+          sender:profiles!inner(*),
+          group_chat:group_chats!inner(*)
         `)
         .eq('group_chat.group_chat_participants.user_id', userId)
         .order('created_at', { ascending: false });

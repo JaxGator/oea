@@ -1,6 +1,6 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Trash2 } from "lucide-react";
+import { Trash2, Users } from "lucide-react";
 import { format } from "date-fns";
 import { ConversationType } from "./types";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -32,10 +32,18 @@ export function ConversationCard({
           <div className="flex items-center gap-3">
             <Avatar>
               <AvatarImage src={conversation.user.avatar_url || ''} />
-              <AvatarFallback>{conversation.user.username?.[0]?.toUpperCase()}</AvatarFallback>
+              <AvatarFallback>
+                {conversation.isGroup ? (
+                  <Users className="h-4 w-4" />
+                ) : (
+                  conversation.user.username?.[0]?.toUpperCase()
+                )}
+              </AvatarFallback>
             </Avatar>
             <div>
-              <h3 className="font-medium">{conversation.user.username}</h3>
+              <h3 className="font-medium">
+                {conversation.isGroup ? conversation.groupInfo?.name : conversation.user.username}
+              </h3>
               <p className="text-sm text-muted-foreground">
                 {format(new Date(conversation.lastMessage.created_at), 'MMM d, yyyy')}
               </p>
