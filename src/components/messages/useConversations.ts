@@ -4,6 +4,29 @@ import { useEffect } from "react";
 import { Message, GroupMessage } from "./types";
 import { Profile } from "@/types/auth";
 
+interface GroupMessageResponse {
+  id: string;
+  content: string;
+  created_at: string;
+  sender: {
+    id: string;
+    username: string;
+    full_name: string | null;
+    avatar_url: string | null;
+    created_at: string;
+    is_admin: boolean;
+    is_approved: boolean;
+    is_member: boolean;
+    email_notifications: boolean;
+    event_reminders_enabled: boolean;
+  };
+  group_chat: {
+    id: string;
+    name: string;
+    description: string | null;
+  };
+}
+
 export function useConversations(userId: string | undefined) {
   const queryClient = useQueryClient();
 
@@ -35,22 +58,11 @@ export function useConversations(userId: string | undefined) {
       if (groupError) throw groupError;
 
       // Transform group messages to match the expected type
-      const transformedGroupMessages = groupMessages?.map(msg => ({
+      const transformedGroupMessages = (groupMessages as GroupMessageResponse[])?.map(msg => ({
         id: msg.id,
         content: msg.content,
         created_at: msg.created_at,
-        sender: {
-          id: msg.sender.id,
-          username: msg.sender.username,
-          full_name: msg.sender.full_name,
-          avatar_url: msg.sender.avatar_url,
-          created_at: msg.sender.created_at,
-          is_admin: msg.sender.is_admin,
-          is_approved: msg.sender.is_approved,
-          is_member: msg.sender.is_member,
-          email_notifications: msg.sender.email_notifications,
-          event_reminders_enabled: msg.sender.event_reminders_enabled
-        } as Profile,
+        sender: msg.sender as Profile,
         group_chat: {
           id: msg.group_chat.id,
           name: msg.group_chat.name,
