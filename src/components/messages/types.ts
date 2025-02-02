@@ -11,9 +11,27 @@ export interface Message {
   receiver: Profile;
 }
 
+export interface GroupMessage {
+  id: string;
+  content: string;
+  created_at: string;
+  sender: Profile;
+  group_chat: {
+    id: string;
+    name: string;
+    description: string | null;
+  };
+}
+
 export interface ConversationType {
   user: Profile;
   messages: Message[];
   lastMessage: Message;
   unreadCount: number;
+  isGroup?: boolean;
+  groupInfo?: {
+    id: string;
+    name: string;
+    description: string | null;
+  };
 }
