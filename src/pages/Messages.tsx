@@ -31,6 +31,24 @@ interface GroupChat {
   }[];
 }
 
+interface GroupParticipation {
+  group_chat: {
+    id: string;
+    name: string;
+    description: string | null;
+    messages: {
+      id: string;
+      content: string;
+      created_at: string;
+      sender: {
+        id: string;
+        username: string;
+        avatar_url: string;
+      };
+    }[];
+  };
+}
+
 export default function Messages() {
   const { user } = useAuthState();
   const { toast } = useToast();
@@ -69,8 +87,8 @@ export default function Messages() {
 
       if (groupError) throw groupError;
 
-      const formattedGroupMessages = groupParticipations?.map(participation => {
-        const groupChat = participation.group_chat as GroupChat;
+      const formattedGroupMessages = (groupParticipations as GroupParticipation[])?.map(participation => {
+        const groupChat = participation.group_chat;
         return groupChat.messages.map(msg => ({
           ...msg,
           isGroupMessage: true,
