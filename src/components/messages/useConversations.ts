@@ -26,7 +26,7 @@ export function useConversations(userId: string | undefined) {
           id,
           content,
           created_at,
-          sender:profiles!sender_id(
+          sender:profiles!inner(
             id,
             username,
             full_name,
@@ -37,7 +37,7 @@ export function useConversations(userId: string | undefined) {
             is_member,
             email_notifications
           ),
-          group_chat:group_chats!group_chat_id(
+          group_chat:group_chats!inner(
             id,
             name,
             description
@@ -49,11 +49,21 @@ export function useConversations(userId: string | undefined) {
       if (groupError) throw groupError;
 
       // Transform group messages to match the expected type
-      const transformedGroupMessages = (groupMessages || []).map(msg => ({
+      const transformedGroupMessages = groupMessages?.map(msg => ({
         id: msg.id,
         content: msg.content,
         created_at: msg.created_at,
-        sender: msg.sender as Profile,
+        sender: {
+          id: msg.sender.id,
+          username: msg.sender.username,
+          full_name: msg.sender.full_name,
+          avatar_url: msg.sender.avatar_url,
+          created_at: msg.sender.created_at,
+          is_admin: msg.sender.is_admin,
+          is_approved: msg.sender.is_approved,
+          is_member: msg.sender.is_member,
+          email_notifications: msg.sender.email_notifications
+        } as Profile,
         group_chat: {
           id: msg.group_chat.id,
           name: msg.group_chat.name,
