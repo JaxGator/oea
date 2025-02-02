@@ -32,21 +32,7 @@ interface GroupChat {
 }
 
 interface GroupParticipation {
-  group_chat: {
-    id: string;
-    name: string;
-    description: string | null;
-    messages: {
-      id: string;
-      content: string;
-      created_at: string;
-      sender: {
-        id: string;
-        username: string;
-        avatar_url: string;
-      };
-    }[];
-  };
+  group_chat: GroupChat;
 }
 
 export default function Messages() {
