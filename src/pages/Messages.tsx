@@ -109,6 +109,10 @@ export default function Messages() {
     }
   };
 
+  const handleEditMessage = (messageId: string, content: string) => {
+    editMessage({ messageId, content });
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -201,7 +205,7 @@ export default function Messages() {
               <ConversationContent
                 messages={selectedConversationData.messages}
                 currentUserId={user?.id || ''}
-                onEdit={editMessage}
+                onEdit={handleEditMessage}
                 onDelete={deleteMessage}
               />
               <ConversationInput
