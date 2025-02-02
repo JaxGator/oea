@@ -57,8 +57,7 @@ export function useConversations(userId: string | undefined) {
         content: msg.content,
         created_at: msg.created_at,
         sender: msg.sender as Profile,
-        isGroup: true,
-        groupInfo: {
+        group_chat: {
           id: msg.group_chat.id,
           name: msg.group_chat.name,
           description: msg.group_chat.description
