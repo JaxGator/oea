@@ -38,10 +38,15 @@ export function useConversations(userId: string | undefined) {
           id,
           content,
           created_at,
-          sender:profiles!inner(*),
-          group_chat:group_chats!inner(*)
+          sender:profiles!sender_id(*),
+          group_chat:group_chats!inner(
+            id,
+            name,
+            description,
+            participants:group_chat_participants!inner(user_id)
+          )
         `)
-        .eq('group_chat.group_chat_participants.user_id', userId)
+        .eq('group_chat.participants.user_id', userId)
         .order('created_at', { ascending: false });
 
       if (groupError) throw groupError;
@@ -52,7 +57,8 @@ export function useConversations(userId: string | undefined) {
         content: msg.content,
         created_at: msg.created_at,
         sender: msg.sender as Profile,
-        group_chat: {
+        isGroup: true,
+        groupInfo: {
           id: msg.group_chat.id,
           name: msg.group_chat.name,
           description: msg.group_chat.description
