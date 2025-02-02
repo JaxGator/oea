@@ -8,18 +8,7 @@ interface GroupMessageResponse {
   id: string;
   content: string;
   created_at: string;
-  sender: {
-    id: string;
-    username: string;
-    full_name: string | null;
-    avatar_url: string | null;
-    created_at: string;
-    is_admin: boolean;
-    is_approved: boolean;
-    is_member: boolean;
-    email_notifications: boolean;
-    event_reminders_enabled: boolean;
-  };
+  sender: Profile;
   group_chat: {
     id: string;
     name: string;
@@ -58,7 +47,7 @@ export function useConversations(userId: string | undefined) {
       if (groupError) throw groupError;
 
       // Transform group messages to match the expected type
-      const transformedGroupMessages = (groupMessages as GroupMessageResponse[])?.map(msg => ({
+      const transformedGroupMessages = (groupMessages || []).map((msg: any) => ({
         id: msg.id,
         content: msg.content,
         created_at: msg.created_at,
