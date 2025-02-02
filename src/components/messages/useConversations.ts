@@ -58,12 +58,14 @@ export function useConversations(userId: string | undefined) {
       }
       console.log('Group messages response:', groupMessages);
 
-      // Transform group messages to match the expected type
+      // Transform group messages to match the Message type
       const transformedGroupMessages = (groupMessages || []).map((msg: any) => ({
         id: msg.id,
         content: msg.content,
         created_at: msg.created_at,
         sender: msg.sender,
+        sender_id: msg.sender.id,
+        receiver_id: msg.group_chat.id,
         receiver: {
           id: msg.group_chat.id,
           username: msg.group_chat.name,
