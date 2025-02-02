@@ -2,7 +2,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuthState } from "@/hooks/useAuthState";
 import { Card } from "@/components/ui/card";
-import { Mail, Loader2, Inbox } from "lucide-react";
+import { Mail, Loader2, Inbox, Users } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useMessageOperations } from "@/hooks/messages/useMessageOperations";
@@ -11,6 +11,8 @@ import { ConversationHeader } from "@/components/messages/conversation/Conversat
 import { ConversationContent } from "@/components/messages/conversation/ConversationContent";
 import { ConversationInput } from "@/components/messages/conversation/ConversationInput";
 import { DeleteConversationDialog } from "@/components/messages/DeleteConversationDialog";
+import { GroupChatDialog } from "@/components/messages/group/GroupChatDialog";
+import { Button } from "@/components/ui/button";
 import { Message } from "@/components/messages/types";
 import { ConversationType } from "@/components/messages/types/conversation";
 
@@ -107,10 +109,6 @@ export default function Messages() {
     }
   };
 
-  const handleEditMessage = (messageId: string, content: string) => {
-    editMessage({ messageId, content });
-  };
-
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -122,9 +120,12 @@ export default function Messages() {
   if (!messages?.length) {
     return (
       <div className="max-w-4xl mx-auto px-4 py-8 mb-12">
-        <div className="flex items-center gap-3 mb-8">
-          <Mail className="h-7 w-7" />
-          <h1 className="text-3xl font-bold">Messages</h1>
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center gap-3">
+            <Mail className="h-7 w-7" />
+            <h1 className="text-3xl font-bold">Messages</h1>
+          </div>
+          <GroupChatDialog groupId="default" groupName="General Chat" />
         </div>
         <Card className="p-8">
           <div className="flex flex-col items-center justify-center text-center space-y-4">
@@ -172,9 +173,12 @@ export default function Messages() {
   return (
     <div className="min-h-[calc(100vh-theme(spacing.16))] bg-gray-50/50">
       <div className="max-w-4xl mx-auto px-4 py-8 mb-12">
-        <div className="flex items-center gap-3 mb-8 bg-white p-6 rounded-lg shadow-sm">
-          <Mail className="h-7 w-7" />
-          <h1 className="text-3xl font-bold">Messages</h1>
+        <div className="flex items-center justify-between mb-8 bg-white p-6 rounded-lg shadow-sm">
+          <div className="flex items-center gap-3">
+            <Mail className="h-7 w-7" />
+            <h1 className="text-3xl font-bold">Messages</h1>
+          </div>
+          <GroupChatDialog groupId="default" groupName="General Chat" />
         </div>
 
         <div className="grid md:grid-cols-[350px,1fr] gap-4">
@@ -197,7 +201,7 @@ export default function Messages() {
               <ConversationContent
                 messages={selectedConversationData.messages}
                 currentUserId={user?.id || ''}
-                onEdit={handleEditMessage}
+                onEdit={editMessage}
                 onDelete={deleteMessage}
               />
               <ConversationInput
