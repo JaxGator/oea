@@ -35,7 +35,8 @@ export function useConversations(userId: string | undefined) {
             is_admin,
             is_approved,
             is_member,
-            email_notifications
+            email_notifications,
+            event_reminders_enabled
           ),
           group_chat:group_chats!inner(
             id,
@@ -62,7 +63,8 @@ export function useConversations(userId: string | undefined) {
           is_admin: msg.sender.is_admin,
           is_approved: msg.sender.is_approved,
           is_member: msg.sender.is_member,
-          email_notifications: msg.sender.email_notifications
+          email_notifications: msg.sender.email_notifications,
+          event_reminders_enabled: msg.sender.event_reminders_enabled
         } as Profile,
         group_chat: {
           id: msg.group_chat.id,
