@@ -15,6 +15,22 @@ import { CreateGroupChatDialog } from "@/components/messages/group/CreateGroupCh
 import { Message } from "@/components/messages/types";
 import { ConversationType } from "@/components/messages/types/conversation";
 
+interface GroupChat {
+  id: string;
+  name: string;
+  description: string | null;
+  messages: {
+    id: string;
+    content: string;
+    created_at: string;
+    sender: {
+      id: string;
+      username: string;
+      avatar_url: string;
+    };
+  }[];
+}
+
 export default function Messages() {
   const { user } = useAuthState();
   const { toast } = useToast();
@@ -39,7 +55,6 @@ export default function Messages() {
       const { data: groupParticipations, error: groupError } = await supabase
         .from('group_chat_participants')
         .select(`
-          group_chat_id,
           group_chat:group_chats(
             id,
             name,
@@ -54,17 +69,18 @@ export default function Messages() {
 
       if (groupError) throw groupError;
 
-      const formattedGroupMessages = groupParticipations?.flatMap(participation => 
-        participation.group_chat.messages.map(msg => ({
+      const formattedGroupMessages = groupParticipations?.map(participation => {
+        const groupChat = participation.group_chat as GroupChat;
+        return groupChat.messages.map(msg => ({
           ...msg,
           isGroupMessage: true,
           groupInfo: {
-            id: participation.group_chat.id,
-            name: participation.group_chat.name,
-            description: participation.group_chat.description
+            id: groupChat.id,
+            name: groupChat.name,
+            description: groupChat.description
           }
-        }))
-      ) || [];
+        }));
+      }).flat() || [];
 
       return [...directMessages, ...formattedGroupMessages].sort(
         (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
