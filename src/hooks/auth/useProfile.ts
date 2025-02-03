@@ -21,22 +21,22 @@ export function useProfile(userId: string | undefined) {
           return null;
         }
 
-        const result = await supabase
+        const { data, error } = await supabase
           .from('profiles')
           .select('*')
           .eq('id', userId)
           .maybeSingle();
         
-        if (result.error) {
+        if (error) {
           console.error('Profile fetch error:', {
-            error: result.error,
+            error,
             userId,
-            status: result.status,
-            statusText: result.statusText,
+            status: error.code,
+            message: error.message,
             timestamp: new Date().toISOString()
           });
           
-          if (result.error.message.includes('JWT expired')) {
+          if (error.message.includes('JWT expired')) {
             await supabase.auth.refreshSession();
             toast({
               title: "Session expired",
@@ -52,11 +52,11 @@ export function useProfile(userId: string | undefined) {
             variant: "destructive",
           });
           
-          throw result.error;
+          throw error;
         }
         
-        console.log('Profile fetch result:', result.data);
-        return result.data as Profile;
+        console.log('Profile fetch result:', data);
+        return data as Profile;
       } catch (error) {
         console.error('Profile fetch failed:', {
           error,
