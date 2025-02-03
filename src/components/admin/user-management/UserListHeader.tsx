@@ -2,7 +2,6 @@ import { Button } from "@/components/ui/button";
 import { UserSearch } from "./UserSearch";
 import { UserFilters } from "./UserFilters";
 import { CreateUserDialog } from "./CreateUserDialog";
-import { useState } from "react";
 import { UserFilters as UserFiltersType } from "../AdminUserList";
 
 interface UserListHeaderProps {
@@ -18,15 +17,11 @@ export function UserListHeader({
   onFilterChange,
   onUserCreated
 }: UserListHeaderProps) {
-  const [showCreateDialog, setShowCreateDialog] = useState(false);
-
   return (
     <div className="space-y-4">
       <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
         <UserSearch onSearch={onSearch} />
-        <Button onClick={() => setShowCreateDialog(true)}>
-          Add User
-        </Button>
+        <CreateUserDialog onUserCreated={onUserCreated} />
       </div>
       
       <div className="flex flex-wrap gap-2">
@@ -35,12 +30,6 @@ export function UserListHeader({
           onFilterChange={onFilterChange}
         />
       </div>
-
-      <CreateUserDialog
-        open={showCreateDialog}
-        onOpenChange={setShowCreateDialog}
-        onUserCreated={onUserCreated}
-      />
     </div>
   );
 }
