@@ -8,6 +8,36 @@ import { useAuthState } from "@/hooks/useAuthState";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
+interface PollVote {
+  id: string;
+  user_id: string;
+  option_id: string;
+  profiles: {
+    username: string;
+    avatar_url: string | null;
+  };
+}
+
+interface PollOption {
+  id: string;
+  option_text: string;
+  display_order: number;
+}
+
+interface Poll {
+  id: string;
+  title: string;
+  description: string | null;
+  created_by: string;
+  status: 'draft' | 'active' | 'closed';
+  start_date: string | null;
+  end_date: string | null;
+  allow_multiple_choices: boolean;
+  created_at: string;
+  poll_options: PollOption[];
+  poll_votes: PollVote[];
+}
+
 export function PollSection() {
   const { toast } = useToast();
   const [showCreateDialog, setShowCreateDialog] = useState(false);
@@ -47,7 +77,15 @@ export function PollSection() {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return data;
+      
+      // Transform the data to match the expected types
+      return (data as any[]).map((poll): Poll => ({
+        ...poll,
+        poll_votes: poll.poll_votes.map((vote: any) => ({
+          ...vote,
+          profiles: vote.profiles || { username: '', avatar_url: null }
+        }))
+      }));
     }
   });
 
