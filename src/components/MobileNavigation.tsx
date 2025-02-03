@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { SearchDialog } from "./search/SearchDialog";
 import { createNavigationItems } from "@/utils/navigation";
 import { useState } from "react";
+import { toast } from "sonner";
 
 export function MobileNavigation() {
   const location = useLocation();
@@ -14,7 +15,13 @@ export function MobileNavigation() {
   const [isOpen, setIsOpen] = useState(false);
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut();
+    try {
+      await supabase.auth.signOut();
+      toast.success("Signed out successfully");
+    } catch (error) {
+      console.error('Sign out error:', error);
+      toast.error("Error signing out");
+    }
   };
 
   const navigationItems = createNavigationItems(user, profile, handleSignOut);
@@ -39,7 +46,7 @@ export function MobileNavigation() {
           <div className="p-4">
             <SearchDialog />
           </div>
-          <nav className="flex flex-col p-4" role="navigation" aria-label="Mobile navigation">
+          <nav className="flex flex-col p-4 space-y-1" role="navigation" aria-label="Mobile navigation">
             {navigationItems
               .filter(item => !item.show || item.show(user, profile))
               .map(({ icon: Icon, label, path, external, onClick }) => 
@@ -59,7 +66,10 @@ export function MobileNavigation() {
                 ) : onClick ? (
                   <button
                     key={path}
-                    onClick={onClick}
+                    onClick={() => {
+                      onClick();
+                      setIsOpen(false);
+                    }}
                     className="flex items-center gap-3 rounded-lg px-3 py-2 transition-colors hover:bg-primary/10 w-full text-left"
                     role="menuitem"
                     tabIndex={isOpen ? 0 : -1}
@@ -71,6 +81,7 @@ export function MobileNavigation() {
                   <Link
                     key={path}
                     to={path}
+                    onClick={() => setIsOpen(false)}
                     className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-colors ${
                       location.pathname === path
                         ? "bg-primary text-primary-foreground"
@@ -84,6 +95,17 @@ export function MobileNavigation() {
                   </Link>
                 )
               )}
+            {!user && (
+              <Link
+                to="/auth"
+                onClick={() => setIsOpen(false)}
+                className="flex items-center gap-3 rounded-lg px-3 py-2 transition-colors hover:bg-primary/10"
+                role="menuitem"
+                tabIndex={isOpen ? 0 : -1}
+              >
+                <span className="font-medium">Sign In</span>
+              </Link>
+            )}
           </nav>
         </SheetContent>
       </Sheet>
