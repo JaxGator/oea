@@ -4,6 +4,18 @@ import { useEffect } from "react";
 import { Message, GroupMessage } from "./types";
 import { Profile } from "@/types/auth";
 
+interface GroupMessageResponse {
+  id: string;
+  content: string;
+  created_at: string;
+  sender: Profile;
+  group_chat: {
+    id: string;
+    name: string;
+    description: string;
+  };
+}
+
 export function useConversations(userId: string | undefined) {
   const queryClient = useQueryClient();
 
@@ -35,11 +47,11 @@ export function useConversations(userId: string | undefined) {
       if (groupError) throw groupError;
 
       // Transform group messages to match the expected type
-      const transformedGroupMessages = groupMessages?.map(msg => ({
+      const transformedGroupMessages = (groupMessages as GroupMessageResponse[])?.map(msg => ({
         id: msg.id,
         content: msg.content,
         created_at: msg.created_at,
-        sender: msg.sender as Profile,
+        sender: msg.sender,
         group_chat: {
           id: msg.group_chat.id,
           name: msg.group_chat.name,
