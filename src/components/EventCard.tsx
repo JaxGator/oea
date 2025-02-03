@@ -43,6 +43,7 @@ export function EventCard({
         onUpdate={onUpdate}
         isAuthChecking={isAuthChecking}
         requireAuth={requireAuth}
+        showDelete={true} // Always pass showDelete as true, let RLS handle permissions
       />
     </div>
   );

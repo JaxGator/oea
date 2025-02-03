@@ -11,6 +11,7 @@ interface EventCardContainerProps {
   isSelected?: boolean;
   isAuthChecking?: boolean;
   requireAuth?: boolean;
+  showDelete?: boolean;
 }
 
 export function EventCardContainer({
@@ -22,7 +23,8 @@ export function EventCardContainer({
   onSelect,
   isSelected = false,
   isAuthChecking = false,
-  requireAuth = false
+  requireAuth = false,
+  showDelete = false
 }: EventCardContainerProps) {
   if (!event) {
     console.error("Event object is undefined");
@@ -40,6 +42,7 @@ export function EventCardContainer({
       isSelected={isSelected}
       isAuthChecking={isAuthChecking}
       requireAuth={requireAuth}
+      showDelete={showDelete}
     />
   );
 }

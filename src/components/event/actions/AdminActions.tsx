@@ -1,5 +1,6 @@
 import { AdminDropdownMenu } from "@/components/admin/user-management/shared/AdminDropdownMenu";
 import { Edit2Icon, Trash2Icon, Eye, EyeOff } from "lucide-react";
+import { useAuthState } from "@/hooks/useAuthState";
 
 interface AdminActionsProps {
   onEdit?: () => void;
@@ -10,19 +11,26 @@ interface AdminActionsProps {
   isPublished?: boolean;
   showPublishToggle?: boolean;
   canManageEvents?: boolean;
+  event?: { id: string; created_by?: string };
 }
 
 export function AdminActions({ 
   onEdit, 
   onDelete, 
   onTogglePublish,
-  showDelete, 
-  isWixEvent,
+  showDelete = false, 
+  isWixEvent = false,
   isPublished = true,
   showPublishToggle = true,
-  canManageEvents = false
+  canManageEvents = false,
+  event
 }: AdminActionsProps) {
-  if (!canManageEvents) return null;
+  const { profile } = useAuthState();
+  
+  // Check if user can delete this event
+  const canDelete = profile?.is_admin || (profile?.is_member && event?.created_by === profile?.id);
+
+  if (!canManageEvents && !profile?.is_admin) return null;
 
   const actions = [
     ...((!isWixEvent && onEdit) ? [{
@@ -35,7 +43,7 @@ export function AdminActions({
       icon: isPublished ? <EyeOff className="h-4 w-4 mr-2" /> : <Eye className="h-4 w-4 mr-2" />,
       onClick: onTogglePublish
     }] : []),
-    ...(showDelete ? [{
+    ...(canDelete ? [{
       label: "Delete",
       icon: <Trash2Icon className="h-4 w-4 mr-2" />,
       onClick: onDelete,
