@@ -8,17 +8,17 @@ import {
 export function GuidesSection() {
   return (
     <div className="prose max-w-none">
-      <h2 className="text-2xl font-semibold mb-6">Guides</h2>
+      <h2 className="text-xl sm:text-2xl font-semibold mb-4">Guides</h2>
       
-      <Accordion type="single" collapsible className="space-y-4">
+      <Accordion type="single" collapsible className="space-y-3">
         {/* Event Management Guide */}
-        <AccordionItem value="events" className="border rounded-lg px-4">
-          <AccordionTrigger className="text-lg font-medium">
+        <AccordionItem value="events" className="border rounded-lg px-3 sm:px-4">
+          <AccordionTrigger className="text-base sm:text-lg font-medium">
             Event Management Guide
           </AccordionTrigger>
-          <AccordionContent className="pt-4 pb-2">
+          <AccordionContent className="pt-3 pb-2">
             <h4 className="font-semibold mb-2">Creating a New Event</h4>
-            <ol className="list-decimal pl-6 space-y-2 mb-4">
+            <ol className="list-decimal pl-4 sm:pl-6 space-y-2 mb-4 text-sm sm:text-base">
               <li>Click the "Create Event" button in the Events page</li>
               <li>Fill in required event details:
                 <ul className="list-disc pl-6 mt-1">
@@ -42,7 +42,7 @@ export function GuidesSection() {
             </ol>
 
             <h4 className="font-semibold mb-2">Managing Events</h4>
-            <ul className="list-disc pl-6 space-y-2">
+            <ul className="list-disc pl-4 sm:pl-6 space-y-2 text-sm sm:text-base">
               <li>View guest list in event details</li>
               <li>Monitor waitlist if enabled</li>
               <li>Update event details as needed</li>
@@ -52,11 +52,11 @@ export function GuidesSection() {
         </AccordionItem>
 
         {/* User Management Guide */}
-        <AccordionItem value="users" className="border rounded-lg px-4">
-          <AccordionTrigger className="text-lg font-medium">
+        <AccordionItem value="users" className="border rounded-lg px-3 sm:px-4">
+          <AccordionTrigger className="text-base sm:text-lg font-medium">
             User Management Guide
           </AccordionTrigger>
-          <AccordionContent className="pt-4 pb-2">
+          <AccordionContent className="pt-3 pb-2">
             <h4 className="font-semibold mb-2">Managing User Roles</h4>
             <ul className="list-disc pl-6 space-y-2 mb-4">
               <li>Admin roles control access to administrative features</li>
@@ -75,11 +75,11 @@ export function GuidesSection() {
         </AccordionItem>
 
         {/* Polls Management Guide */}
-        <AccordionItem value="polls" className="border rounded-lg px-4">
-          <AccordionTrigger className="text-lg font-medium">
+        <AccordionItem value="polls" className="border rounded-lg px-3 sm:px-4">
+          <AccordionTrigger className="text-base sm:text-lg font-medium">
             Polls Management Guide
           </AccordionTrigger>
-          <AccordionContent className="pt-4 pb-2">
+          <AccordionContent className="pt-3 pb-2">
             <h4 className="font-semibold mb-2">Creating Polls</h4>
             <ol className="list-decimal pl-6 space-y-2 mb-4">
               <li>Click "Create Poll" in the Polls section</li>
@@ -100,11 +100,11 @@ export function GuidesSection() {
         </AccordionItem>
 
         {/* Reports Management Guide */}
-        <AccordionItem value="reports" className="border rounded-lg px-4">
-          <AccordionTrigger className="text-lg font-medium">
+        <AccordionItem value="reports" className="border rounded-lg px-3 sm:px-4">
+          <AccordionTrigger className="text-base sm:text-lg font-medium">
             Reports Management Guide
           </AccordionTrigger>
-          <AccordionContent className="pt-4 pb-2">
+          <AccordionContent className="pt-3 pb-2">
             <h4 className="font-semibold mb-2">Available Reports</h4>
             <ul className="list-disc pl-6 space-y-2 mb-4">
               <li>Event Participation Reports

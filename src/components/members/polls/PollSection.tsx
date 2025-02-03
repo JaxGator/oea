@@ -47,26 +47,7 @@ export function PollSection() {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      
-      // Transform the data to match the expected types
-      return data.map(poll => ({
-        id: poll.id as string,
-        title: poll.title as string,
-        description: poll.description as string,
-        poll_options: poll.poll_options.map(option => ({
-          id: option.id as string,
-          option_text: option.option_text as string
-        })),
-        poll_votes: poll.poll_votes.map(vote => ({
-          id: vote.id as string,
-          option_id: vote.option_id as string,
-          user_id: vote.user_id as string,
-          profiles: {
-            username: vote.profiles?.[0]?.username as string,
-            avatar_url: vote.profiles?.[0]?.avatar_url as string
-          }
-        }))
-      }));
+      return data;
     }
   });
 
@@ -92,19 +73,18 @@ export function PollSection() {
     }
   };
 
-  // Now both members and admins can create polls
   const canManagePolls = profile?.is_member || profile?.is_admin;
 
   return (
-    <div className="space-y-6 mb-8">
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-semibold">Member Polls</h2>
+    <div className="space-y-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <h2 className="text-xl sm:text-2xl font-semibold">Member Polls</h2>
         {canManagePolls && (
           <Button
             onClick={() => setShowCreateDialog(true)}
-            className="gap-2"
+            className="w-full sm:w-auto"
           >
-            <Plus className="h-4 w-4" />
+            <Plus className="h-4 w-4 mr-2" />
             Create Poll
           </Button>
         )}
