@@ -6,6 +6,7 @@ import { EventsHeader } from "@/components/event/sections/EventsHeader";
 import { EventsContent } from "@/components/event/sections/EventsContent";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
+import { isEventPast } from "@/utils/dateTimeUtils";
 
 export default function Events() {
   const { isAuthenticated } = useAuthState();
@@ -28,12 +29,8 @@ export default function Events() {
 
   const filteredEvents = selectedDate ? events : events;
   
-  const now = new Date();
   const upcomingEvents = filteredEvents
-    .filter(event => {
-      const eventDate = new Date(event.date);
-      return eventDate >= now;
-    })
+    .filter(event => !isEventPast(event.date, event.time))
     .sort((a, b) => {
       if (a.is_featured && !b.is_featured) return -1;
       if (!a.is_featured && b.is_featured) return 1;
@@ -41,17 +38,13 @@ export default function Events() {
     });
 
   const pastEvents = filteredEvents
-    .filter(event => {
-      const eventDate = new Date(event.date);
-      return eventDate < now;
-    })
+    .filter(event => isEventPast(event.date, event.time))
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
   console.log('Events data:', {
     total: events.length,
     upcoming: upcomingEvents.length,
     past: pastEvents.length,
-    now: now.toISOString(),
     firstEventDate: events[0]?.date,
     pastDates: pastEvents.map(e => e.date),
     upcomingDates: upcomingEvents.map(e => e.date)
