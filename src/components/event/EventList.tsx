@@ -33,7 +33,7 @@ export function EventList({
 
   if (isLoading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {[...Array(6)].map((_, i) => (
           <div key={i} className="relative h-[400px] rounded-lg overflow-hidden border border-gray-200 animate-pulse">
             <div className="h-48 bg-gray-100" />
@@ -64,7 +64,7 @@ export function EventList({
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-fade-in">
+    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 animate-fade-in">
       {events.map((event) => {
         const userRSVP = event.rsvps?.find(
           rsvp => rsvp.user_id === event.created_by

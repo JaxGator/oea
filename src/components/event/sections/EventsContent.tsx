@@ -32,7 +32,7 @@ export function EventsContent({
   const canViewMap = isAuthenticated && profile?.is_approved;
 
   return (
-    <>
+    <div className="space-y-6 px-4 md:px-0">
       {upcomingEvents.length > 0 && canViewMap && (
         <div className="mb-8">
           <ErrorBoundary fallback={<div>Error loading map. Please try again later.</div>}>
@@ -47,7 +47,6 @@ export function EventsContent({
 
       <div className="space-y-8">
         <div>
-          <h2 className="text-2xl font-semibold mb-6">Upcoming Events</h2>
           <ErrorBoundary fallback={<div>Error loading events. Please try again later.</div>}>
             <EventList 
               events={upcomingEvents}
@@ -62,8 +61,8 @@ export function EventsContent({
 
         {pastEvents.length > 0 && (
           <div className="border-t pt-8">
-            <h2 className="text-2xl font-semibold mb-6 flex items-center gap-2">
-              <CalendarFold className="h-6 w-6" />
+            <h2 className="text-xl md:text-2xl font-semibold mb-6 flex items-center gap-2">
+              <CalendarFold className="h-5 w-5 md:h-6 md:w-6" />
               Past Events
             </h2>
             <ErrorBoundary fallback={<div>Error loading past events. Please try again later.</div>}>
@@ -78,6 +77,6 @@ export function EventsContent({
           </div>
         )}
       </div>
-    </>
+    </div>
   );
 }
