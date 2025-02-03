@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useEvents } from "@/hooks/useEvents";
 import { useRSVP } from "@/hooks/useRSVP";
 import { useAuthState } from "@/hooks/useAuthState";
@@ -32,8 +32,6 @@ export default function Events() {
   const upcomingEvents = filteredEvents
     .filter(event => {
       const eventDate = new Date(event.date);
-      // Set the event date to the end of the day for accurate comparison
-      eventDate.setHours(23, 59, 59, 999);
       return eventDate >= now;
     })
     .sort((a, b) => {
@@ -45,8 +43,6 @@ export default function Events() {
   const pastEvents = filteredEvents
     .filter(event => {
       const eventDate = new Date(event.date);
-      // Set the event date to the end of the day for accurate comparison
-      eventDate.setHours(23, 59, 59, 999);
       return eventDate < now;
     })
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
@@ -56,7 +52,9 @@ export default function Events() {
     upcoming: upcomingEvents.length,
     past: pastEvents.length,
     now: now.toISOString(),
-    firstEventDate: events[0]?.date
+    firstEventDate: events[0]?.date,
+    pastDates: pastEvents.map(e => e.date),
+    upcomingDates: upcomingEvents.map(e => e.date)
   });
 
   if (error) {

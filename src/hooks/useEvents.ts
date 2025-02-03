@@ -29,11 +29,10 @@ export function useEvents(selectedDate?: Date) {
           pageParam
         });
 
-        const today = new Date().toISOString().split('T')[0];
         const from = Number(pageParam) * EVENTS_PER_PAGE;
         const to = from + EVENTS_PER_PAGE - 1;
 
-        // First, get upcoming events
+        // Query all events, not just upcoming ones
         let query = supabase
           .from('events')
           .select(`
@@ -54,8 +53,7 @@ export function useEvents(selectedDate?: Date) {
               )
             )
           `)
-          .gte('date', today)
-          .order('date', { ascending: true });
+          .order('date', { ascending: false }); // Changed to descending to get recent events first
 
         // Apply auth filters
         if (!isAuthenticated) {
@@ -120,7 +118,8 @@ export function useEvents(selectedDate?: Date) {
 
         console.log('Successfully fetched events:', {
           count: transformedEvents.length,
-          firstEvent: transformedEvents[0]
+          firstEvent: transformedEvents[0],
+          dates: transformedEvents.map(e => e.date)
         });
 
         const nextPage = events.length === EVENTS_PER_PAGE ? Number(pageParam) + 1 : null;
