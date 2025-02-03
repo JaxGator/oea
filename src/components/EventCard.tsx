@@ -2,6 +2,7 @@ import { useAuthState } from "@/hooks/useAuthState";
 import { format } from "date-fns";
 import { isEventPast } from "@/utils/dateTimeUtils";
 import { Event } from "@/types/event";
+import { useAdminStatus } from "@/hooks/events/useAdminStatus";
 
 interface EventCardProps {
   event: Event;

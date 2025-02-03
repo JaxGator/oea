@@ -1,14 +1,14 @@
-import { zonedTimeToUtc, utcToZonedTime } from 'date-fns-tz';
+import { fromZonedTime, toZonedTime } from 'date-fns-tz';
 import { format, isAfter, isBefore, startOfDay } from 'date-fns';
 
 const TIMEZONE = 'America/New_York';
 
 export const toEasternTime = (date: Date): Date => {
-  return utcToZonedTime(date, TIMEZONE);
+  return toZonedTime(date, TIMEZONE);
 };
 
 export const fromEasternTime = (date: Date): Date => {
-  return zonedTimeToUtc(date, TIMEZONE);
+  return fromZonedTime(date, TIMEZONE);
 };
 
 export const combineDateAndTime = (date: string, time: string): Date => {

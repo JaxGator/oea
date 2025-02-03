@@ -9,7 +9,7 @@ import { useAuthState } from "@/hooks/useAuthState";
 interface UpcomingEventsSectionProps {
   events: Event[];
   userRSVPs: Record<string, string | null>;
-  handleRSVP: (eventId: string) => void;
+  handleRSVP: (eventId: string, guests?: { firstName: string }[]) => void;
   handleCancelRSVP: (eventId: string) => void;
   isLoading: boolean;
 }
@@ -62,8 +62,8 @@ export const UpcomingEventsSection = ({
             <div key={event.id}>
               <EventCard 
                 event={event} 
-                onRSVP={handleRSVP}
-                onCancelRSVP={handleCancelRSVP}
+                onRSVP={(guests) => handleRSVP(event.id, guests)}
+                onCancelRSVP={() => handleCancelRSVP(event.id)}
                 userRSVPStatus={userRSVPs[event.id]}
                 isAuthChecking={false}
                 requireAuth={!isAuthenticated}
