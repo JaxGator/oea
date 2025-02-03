@@ -19,12 +19,12 @@ export function EventsHeader({
   const [showCreateDialog, setShowCreateDialog] = useState(false);
 
   return (
-    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+    <div className="flex flex-col gap-4 mb-6">
       <h2 className="text-2xl font-semibold flex items-center gap-2">
         <CalendarDays className="h-6 w-6" />
         Upcoming Events
       </h2>
-      <div className="flex flex-wrap gap-4 w-full sm:w-auto">
+      <div className="flex flex-col sm:flex-row gap-4 w-full">
         <DateFilter
           selectedDate={selectedDate}
           onDateSelect={onDateSelect}

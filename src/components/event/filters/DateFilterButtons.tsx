@@ -14,12 +14,12 @@ export function DateFilterButtons({ onDateSelect, selectedDate }: DateFilterButt
   ];
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex flex-wrap items-center gap-2">
       {dates.map((date) => (
         <Button
           key={date.label}
           variant="outline"
-          className="gap-2"
+          className="gap-2 w-full sm:w-auto"
           onClick={() => onDateSelect(date.value)}
         >
           <CalendarDays className="h-4 w-4" />
@@ -29,7 +29,7 @@ export function DateFilterButtons({ onDateSelect, selectedDate }: DateFilterButt
       {selectedDate && (
         <Button
           variant="outline"
-          className="gap-2"
+          className="gap-2 w-full sm:w-auto"
           onClick={() => onDateSelect(undefined)}
         >
           Clear

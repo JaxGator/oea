@@ -32,7 +32,7 @@ export function EventsContent({
   const canViewMap = isAuthenticated && profile?.is_approved;
 
   return (
-    <div className="space-y-6 px-4 md:px-0">
+    <div className="space-y-6 px-2 sm:px-4 md:px-0">
       {upcomingEvents.length > 0 && canViewMap && (
         <div className="mb-8">
           <ErrorBoundary fallback={<div>Error loading map. Please try again later.</div>}>

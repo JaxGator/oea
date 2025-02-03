@@ -64,27 +64,28 @@ export function EventList({
   }
 
   return (
-    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 animate-fade-in">
+    <div className="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3 animate-fade-in">
       {events.map((event) => {
         const userRSVP = event.rsvps?.find(
           rsvp => rsvp.user_id === event.created_by
         );
         
         return (
-          <EventCard
-            key={event.id}
-            event={event}
-            onRSVP={onRSVP}
-            onCancelRSVP={() => onCancelRSVP(event.id)}
-            userRSVPStatus={userRSVP?.response || null}
-            onSelect={() => {
-              console.log('EventList - Card clicked:', event.id);
-              onEventSelect?.(event.id);
-            }}
-            isSelected={event.id === selectedEventId}
-            isAuthChecking={isAuthChecking}
-            requireAuth={true}
-          />
+          <div key={event.id} className="w-full">
+            <EventCard
+              event={event}
+              onRSVP={onRSVP}
+              onCancelRSVP={() => onCancelRSVP(event.id)}
+              userRSVPStatus={userRSVP?.response || null}
+              onSelect={() => {
+                console.log('EventList - Card clicked:', event.id);
+                onEventSelect?.(event.id);
+              }}
+              isSelected={event.id === selectedEventId}
+              isAuthChecking={isAuthChecking}
+              requireAuth={true}
+            />
+          </div>
         );
       })}
     </div>
