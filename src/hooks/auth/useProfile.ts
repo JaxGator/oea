@@ -18,12 +18,7 @@ export function useProfile(userId: string | undefined) {
       
       try {
         // First check if we have an active session
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-        if (sessionError) {
-          console.error('Session error:', sessionError);
-          throw sessionError;
-        }
-
+        const { data: { session } } = await supabase.auth.getSession();
         if (!session) {
           console.log('No active session found');
           return null;
