@@ -45,43 +45,45 @@ export function LeaderboardTable({
   const displayData = limit ? data.slice(0, limit) : data;
 
   return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead className="w-12">Rank</TableHead>
-          <TableHead>User</TableHead>
-          <TableHead className="text-right">Events Attended</TableHead>
-          <TableHead className="text-right">Current Streak</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {displayData.map((item, index) => (
-          <TableRow key={item.id}>
-            <TableCell>
-              <LeaderboardRank rank={index} />
-            </TableCell>
-            <TableCell>
-              <LeaderboardUserCell
-                user={{
-                  id: item.id,
-                  username: item.profiles?.username || 'Unknown User',
-                  full_name: item.profiles?.full_name,
-                  avatar_url: item.profiles?.avatar_url,
-                  is_admin: item.profiles?.is_admin || false,
-                  is_approved: item.profiles?.is_approved || false,
-                  is_member: item.profiles?.is_member || false,
-                  created_at: item.profiles?.created_at || new Date().toISOString(),
-                  event_reminders_enabled: item.profiles?.event_reminders_enabled || false
-                }}
-              />
-            </TableCell>
-            <LeaderboardMetrics
-              eventsAttended={getMetricValue(item)}
-              currentStreak={item.current_streak}
-            />
+    <div className="overflow-x-auto">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead className="w-12">Rank</TableHead>
+            <TableHead className="min-w-[200px]">User</TableHead>
+            <TableHead className="text-right">Events</TableHead>
+            <TableHead className="text-right hidden sm:table-cell">Streak</TableHead>
           </TableRow>
-        ))}
-      </TableBody>
-    </Table>
+        </TableHeader>
+        <TableBody>
+          {displayData.map((item, index) => (
+            <TableRow key={item.id} className="hover:bg-gray-50">
+              <TableCell className="font-medium">
+                <LeaderboardRank rank={index} />
+              </TableCell>
+              <TableCell>
+                <LeaderboardUserCell
+                  user={{
+                    id: item.id,
+                    username: item.profiles?.username || 'Unknown User',
+                    full_name: item.profiles?.full_name,
+                    avatar_url: item.profiles?.avatar_url,
+                    is_admin: item.profiles?.is_admin || false,
+                    is_approved: item.profiles?.is_approved || false,
+                    is_member: item.profiles?.is_member || false,
+                    created_at: item.profiles?.created_at || new Date().toISOString(),
+                    event_reminders_enabled: item.profiles?.event_reminders_enabled || false
+                  }}
+                />
+              </TableCell>
+              <LeaderboardMetrics
+                eventsAttended={getMetricValue(item)}
+                currentStreak={item.current_streak}
+              />
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
   );
 }
