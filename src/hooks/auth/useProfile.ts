@@ -1,9 +1,11 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import type { Profile } from '@/types/auth';
-import { toast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/use-toast';
 
 export function useProfile(userId: string | undefined) {
+  const { toast } = useToast();
+  
   return useQuery({
     queryKey: ['profile', userId],
     queryFn: async () => {
@@ -15,12 +17,19 @@ export function useProfile(userId: string | undefined) {
       console.log('Fetching profile for user:', userId);
       
       try {
-        const { data: session } = await supabase.auth.getSession();
-        if (!session.session) {
+        // First check if we have an active session
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        if (sessionError) {
+          console.error('Session error:', sessionError);
+          throw sessionError;
+        }
+
+        if (!session) {
           console.log('No active session found');
           return null;
         }
 
+        // Use proper Supabase query builder syntax
         const { data, error } = await supabase
           .from('profiles')
           .select('*')
@@ -36,6 +45,7 @@ export function useProfile(userId: string | undefined) {
             timestamp: new Date().toISOString()
           });
           
+          // Handle JWT expiration specifically
           if (error.message.includes('JWT expired')) {
             await supabase.auth.refreshSession();
             toast({
