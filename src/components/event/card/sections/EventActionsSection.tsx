@@ -21,6 +21,7 @@ interface EventActionsSectionProps {
   isWixEvent?: boolean;
   requireAuth?: boolean;
   event: { id: string; title: string };
+  showDelete?: boolean;
 }
 
 export function EventActionsSection({
@@ -43,7 +44,8 @@ export function EventActionsSection({
   canJoinWaitlist = false,
   isWixEvent = false,
   requireAuth = false,
-  event
+  event,
+  showDelete = false
 }: EventActionsSectionProps) {
   if (isAuthChecking) {
     return (
@@ -76,6 +78,7 @@ export function EventActionsSection({
         isWixEvent={isWixEvent}
         requireAuth={requireAuth}
         event={event}
+        showDelete={showDelete}
       />
     </div>
   );

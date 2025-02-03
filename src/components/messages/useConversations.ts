@@ -47,7 +47,7 @@ export function useConversations(userId: string | undefined) {
       if (groupError) throw groupError;
 
       // Transform group messages to match the expected type
-      const transformedGroupMessages = (groupMessages as GroupMessageResponse[])?.map(msg => ({
+      const transformedGroupMessages = (groupMessages as unknown as GroupMessageResponse[])?.map(msg => ({
         id: msg.id,
         content: msg.content,
         created_at: msg.created_at,
