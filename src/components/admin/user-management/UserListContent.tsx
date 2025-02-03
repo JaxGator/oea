@@ -1,6 +1,7 @@
 import { memo } from "react";
 import { Member } from "@/components/members/types";
-import { MemberTable } from "@/components/members/MemberTable";
+import { Table, TableBody, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { AdminUserTableRow } from "./AdminUserTableRow";
 import { AdminUserTableWrapper } from "./AdminUserTableWrapper";
 import { LoadingState } from "./LoadingState";
 import { ErrorState } from "./ErrorState";
@@ -42,21 +43,37 @@ export const UserListContent = memo(function UserListContent({
   return (
     <div className="space-y-4">
       <AdminUserTableWrapper>
-        <MemberTable 
-          members={members} 
-          currentUserIsAdmin={true} 
-          onViewMember={onViewMember}
-          onEditMember={onEditMember}
-          onDeleteMember={onDeleteMember}
-        />
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-[200px] sm:w-[300px]">User</TableHead>
+              <TableHead className="hidden md:table-cell">Status</TableHead>
+              <TableHead className="w-[100px] text-right">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {members.map((member) => (
+              <AdminUserTableRow
+                key={member.id}
+                profile={member}
+                onEdit={onEditMember}
+                onUpdateStatus={() => {}}
+                onDelete={onDeleteMember}
+                isUpdating={false}
+              />
+            ))}
+          </TableBody>
+        </Table>
       </AdminUserTableWrapper>
 
       {totalPages > 1 && (
-        <UserListPagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={onPageChange}
-        />
+        <div className="mt-4 flex justify-center">
+          <UserListPagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={onPageChange}
+          />
+        </div>
       )}
     </div>
   );

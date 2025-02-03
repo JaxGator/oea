@@ -1,7 +1,5 @@
-import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
-import { Card } from "@/components/ui/card";
-import type { UserFilters as UserFiltersType } from "../AdminUserList";
+import { Button } from "@/components/ui/button";
+import { UserFilters as UserFiltersType } from "../AdminUserList";
 
 interface UserFiltersProps {
   filters: UserFiltersType;
@@ -9,52 +7,39 @@ interface UserFiltersProps {
 }
 
 export function UserFilters({ filters, onFilterChange }: UserFiltersProps) {
-  const handleFilterChange = (key: keyof UserFiltersType) => {
+  const toggleFilter = (key: keyof UserFiltersType) => {
     onFilterChange({
       ...filters,
-      [key]: !filters[key],
+      [key]: !filters[key]
     });
   };
 
   return (
-    <Card className="p-4">
-      <div className="flex items-center gap-6">
-        <h3 className="font-medium whitespace-nowrap">Filter Members:</h3>
-        <div className="flex items-center gap-6">
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="admin-filter"
-              checked={filters.isAdmin}
-              onCheckedChange={() => handleFilterChange('isAdmin')}
-            />
-            <Label htmlFor="admin-filter" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-              Admins
-            </Label>
-          </div>
-          
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="approved-filter"
-              checked={filters.isApproved}
-              onCheckedChange={() => handleFilterChange('isApproved')}
-            />
-            <Label htmlFor="approved-filter" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-              Approved
-            </Label>
-          </div>
-          
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="member-filter"
-              checked={filters.isMember}
-              onCheckedChange={() => handleFilterChange('isMember')}
-            />
-            <Label htmlFor="member-filter" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-              Members
-            </Label>
-          </div>
-        </div>
-      </div>
-    </Card>
+    <div className="flex flex-wrap gap-2">
+      <Button
+        variant={filters.isAdmin ? "default" : "outline"}
+        size="sm"
+        onClick={() => toggleFilter("isAdmin")}
+        className="h-8"
+      >
+        Admins
+      </Button>
+      <Button
+        variant={filters.isApproved ? "default" : "outline"}
+        size="sm"
+        onClick={() => toggleFilter("isApproved")}
+        className="h-8"
+      >
+        Approved
+      </Button>
+      <Button
+        variant={filters.isMember ? "default" : "outline"}
+        size="sm"
+        onClick={() => toggleFilter("isMember")}
+        className="h-8"
+      >
+        Members
+      </Button>
+    </div>
   );
 }

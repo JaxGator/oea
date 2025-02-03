@@ -1,42 +1,46 @@
+import { Button } from "@/components/ui/button";
 import { UserSearch } from "./UserSearch";
 import { UserFilters } from "./UserFilters";
 import { CreateUserDialog } from "./CreateUserDialog";
-import { BulkUserCreation } from "./BulkUserCreation";
-import type { UserFilters as UserFiltersType } from "../AdminUserList";
+import { useState } from "react";
+import { UserFilters as UserFiltersType } from "../AdminUserList";
 
 interface UserListHeaderProps {
-  onUserCreated: () => void;
   onSearch: (term: string) => void;
-  onFilterChange: (filters: UserFiltersType) => void;
   filters: UserFiltersType;
+  onFilterChange: (filters: UserFiltersType) => void;
+  onUserCreated: () => void;
 }
 
-export function UserListHeader({ 
-  onUserCreated, 
-  onSearch, 
+export function UserListHeader({
+  onSearch,
+  filters,
   onFilterChange,
-  filters
+  onUserCreated
 }: UserListHeaderProps) {
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
+
   return (
     <div className="space-y-4">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">User Management</h2>
-        <div className="flex gap-2">
-          <CreateUserDialog onUserCreated={onUserCreated} />
-          <BulkUserCreation />
-        </div>
+      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+        <UserSearch onSearch={onSearch} />
+        <Button onClick={() => setShowCreateDialog(true)}>
+          Add User
+        </Button>
       </div>
       
-      <div className="grid gap-4 md:grid-cols-2">
-        <UserSearch 
-          onSearch={onSearch}
-          placeholder="Search users by username or email..."
-        />
-        <UserFilters 
+      <div className="flex flex-wrap gap-2">
+        <UserFilters
           filters={filters}
           onFilterChange={onFilterChange}
         />
       </div>
+
+      <CreateUserDialog
+        open={showCreateDialog}
+        onOpenChange={setShowCreateDialog}
+        onUserCreated={onUserCreated}
+      />
     </div>
   );
 }
