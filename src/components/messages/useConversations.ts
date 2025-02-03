@@ -36,21 +36,10 @@ export function useConversations(userId: string | undefined) {
 
       // Transform group messages to match the expected type
       const transformedGroupMessages = groupMessages?.map(msg => ({
-        id: msg.sender.id,
+        id: msg.id,
         content: msg.content,
         created_at: msg.created_at,
-        sender: {
-          id: msg.sender.id,
-          username: msg.sender.username,
-          full_name: msg.sender.full_name,
-          avatar_url: msg.sender.avatar_url,
-          created_at: msg.sender.created_at,
-          is_admin: msg.sender.is_admin,
-          is_approved: msg.sender.is_approved,
-          is_member: msg.sender.is_member,
-          email_notifications: msg.sender.email_notifications,
-          event_reminders_enabled: msg.sender.event_reminders_enabled
-        } as Profile,
+        sender: msg.sender as Profile,
         group_chat: {
           id: msg.group_chat.id,
           name: msg.group_chat.name,

@@ -30,6 +30,7 @@ interface EventCardInteractionsProps {
   isAuthChecking?: boolean;
   requireAuth?: boolean;
   onSelect?: () => void;
+  showDelete?: boolean;
 }
 
 export function EventCardInteractions({
@@ -58,14 +59,12 @@ export function EventCardInteractions({
   isAuthChecking = false,
   requireAuth = false,
   onSelect,
+  showDelete = false,
 }: EventCardInteractionsProps) {
   const { handleCardClick } = useEventInteractions(setShowDetailsDialog);
 
   const handleInteraction = (e: React.MouseEvent | React.KeyboardEvent) => {
-    // Prevent event bubbling
     e.stopPropagation();
-    
-    // Call onSelect if provided
     if (onSelect) {
       console.log('Card clicked, triggering selection for event:', event.id);
       onSelect();
@@ -109,6 +108,7 @@ export function EventCardInteractions({
         onRSVPCountChange={onRSVPCountChange}
         isAuthChecking={isAuthChecking}
         requireAuth={requireAuth}
+        showDelete={showDelete}
       />
     </EventCardWrapper>
   );
