@@ -60,7 +60,7 @@ export function MobileNavigation() {
                     role="menuitem"
                     tabIndex={isOpen ? 0 : -1}
                   >
-                    <Icon className="h-5 w-5" />
+                    {Icon && <Icon className="h-5 w-5" />}
                     <span className="font-medium">{label}</span>
                   </a>
                 ) : onClick ? (
@@ -74,7 +74,7 @@ export function MobileNavigation() {
                     role="menuitem"
                     tabIndex={isOpen ? 0 : -1}
                   >
-                    <Icon className="h-5 w-5" />
+                    {Icon && <Icon className="h-5 w-5" />}
                     <span className="font-medium">{label}</span>
                   </button>
                 ) : (
@@ -90,11 +90,24 @@ export function MobileNavigation() {
                     role="menuitem"
                     tabIndex={isOpen ? 0 : -1}
                   >
-                    <Icon className="h-5 w-5" />
+                    {Icon && <Icon className="h-5 w-5" />}
                     <span className="font-medium">{label}</span>
                   </Link>
                 )
               )}
+            {user && (
+              <button
+                onClick={() => {
+                  handleSignOut();
+                  setIsOpen(false);
+                }}
+                className="flex items-center gap-3 rounded-lg px-3 py-2 transition-colors hover:bg-primary/10 w-full text-left"
+                role="menuitem"
+                tabIndex={isOpen ? 0 : -1}
+              >
+                <span className="font-medium">Sign Out</span>
+              </button>
+            )}
             {!user && (
               <Link
                 to="/auth"
