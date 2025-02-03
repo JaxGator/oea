@@ -36,7 +36,7 @@ export function useConversations(userId: string | undefined) {
 
       // Transform group messages to match the expected type
       const transformedGroupMessages = groupMessages?.map(msg => ({
-        id: msg.id,
+        id: msg.sender.id,
         content: msg.content,
         created_at: msg.created_at,
         sender: {

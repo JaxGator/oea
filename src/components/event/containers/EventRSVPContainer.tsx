@@ -15,6 +15,7 @@ interface EventRSVPContainerProps {
   isSelected?: boolean;
   isAuthChecking?: boolean;
   requireAuth?: boolean;
+  showDelete?: boolean;
 }
 
 export function EventRSVPContainer({
@@ -26,7 +27,8 @@ export function EventRSVPContainer({
   onSelect,
   isSelected = false,
   isAuthChecking = false,
-  requireAuth = false
+  requireAuth = false,
+  showDelete = false
 }: EventRSVPContainerProps) {
   const handleCardClick = () => {
     if (onSelect && event.latitude && event.longitude) {
@@ -72,6 +74,7 @@ export function EventRSVPContainer({
                   onRSVPCountChange={stateProps.handleRSVPCountChange}
                   isAuthChecking={isAuthChecking}
                   requireAuth={requireAuth}
+                  showDelete={showDelete}
                 />
 
                 <EventDialogs
