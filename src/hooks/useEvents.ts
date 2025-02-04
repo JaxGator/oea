@@ -8,8 +8,6 @@ import { useAuthState } from './useAuthState';
 import { useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 
-const EVENTS_PER_PAGE = 9;
-
 interface EventsResponse {
   events: Event[];
   totalCount: number;
@@ -46,18 +44,14 @@ export function useEvents(selectedDate?: Date) {
 
   return useInfiniteQuery<EventsResponse, Error>({
     queryKey: ['events', selectedDate?.toISOString(), isAuthenticated, isApproved],
-    queryFn: async ({ pageParam = 0 }) => {
+    queryFn: async () => {
       try {
         console.log('Fetching events with auth state:', {
           isAuthenticated,
           isApproved,
           userId: profile?.id,
-          selectedDate: selectedDate?.toISOString(),
-          pageParam
+          selectedDate: selectedDate?.toISOString()
         });
-
-        const from = Number(pageParam) * EVENTS_PER_PAGE;
-        const to = from + EVENTS_PER_PAGE - 1;
 
         let query = supabase
           .from('events')
@@ -94,9 +88,6 @@ export function useEvents(selectedDate?: Date) {
           const dateStr = selectedDate.toISOString().split('T')[0];
           query = query.gte('date', dateStr);
         }
-
-        // Apply pagination
-        query = query.range(from, to);
 
         const { data: events, error, count } = await query;
 
@@ -149,12 +140,10 @@ export function useEvents(selectedDate?: Date) {
           dates: transformedEvents.map(e => e.date)
         });
 
-        const nextPage = events.length === EVENTS_PER_PAGE ? Number(pageParam) + 1 : null;
-
         return { 
           events: transformedEvents,
           totalCount: count || 0,
-          nextPage
+          nextPage: null // We're getting all events at once now
         };
       } catch (error) {
         console.error('Error in useEvents:', error);
@@ -162,8 +151,8 @@ export function useEvents(selectedDate?: Date) {
         throw error;
       }
     },
-    getNextPageParam: (lastPage) => lastPage.nextPage,
     initialPageParam: 0,
+    getNextPageParam: () => null, // Disable pagination as we're getting all events at once
     staleTime: 1000 * 60 * 5, // Cache for 5 minutes
     refetchOnWindowFocus: false,
   });

@@ -5,8 +5,6 @@ import { useRSVP } from "@/hooks/useRSVP";
 import { useAuthState } from "@/hooks/useAuthState";
 import { EventsHeader } from "@/components/event/sections/EventsHeader";
 import { EventsContent } from "@/components/event/sections/EventsContent";
-import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 
 export default function Events() {
@@ -19,9 +17,6 @@ export default function Events() {
     data, 
     isLoading: isEventsLoading, 
     error,
-    hasNextPage,
-    fetchNextPage,
-    isFetchingNextPage
   } = useEvents(selectedDate);
   
   const { handleRSVP, cancelRSVP } = useRSVP();
@@ -73,26 +68,6 @@ export default function Events() {
           isLoading={isEventsLoading}
           onUpdate={handleEventUpdate}
         />
-
-        {(hasNextPage || isFetchingNextPage) && (
-          <div className="flex justify-center mt-8 mb-4">
-            <Button
-              onClick={() => fetchNextPage()}
-              disabled={isFetchingNextPage}
-              variant="outline"
-              className="w-full max-w-xs"
-            >
-              {isFetchingNextPage ? (
-                <div className="flex items-center gap-2">
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  <span>Loading more events...</span>
-                </div>
-              ) : (
-                <span>Load More Events</span>
-              )}
-            </Button>
-          </div>
-        )}
       </div>
     </div>
   );
