@@ -26,10 +26,19 @@ serve(async (req) => {
   }
 
   try {
-    const supabaseAdmin = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    )
+    // Validate environment variables
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')
+    const supabaseServiceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+
+    if (!supabaseUrl || !supabaseServiceRoleKey) {
+      console.error('Missing required environment variables:', {
+        hasUrl: !!supabaseUrl,
+        hasServiceKey: !!supabaseServiceRoleKey
+      });
+      throw new Error('Server configuration error')
+    }
+
+    const supabaseAdmin = createClient(supabaseUrl, supabaseServiceRoleKey)
 
     const authHeader = req.headers.get('Authorization')?.split(' ')[1]
     if (!authHeader) {
@@ -66,6 +75,7 @@ serve(async (req) => {
 
     // Handle get_user action
     if (action === 'get_user') {
+      console.log('Fetching user data for:', userId)
       const { data: userData, error: userError } = await supabaseAdmin.auth.admin.getUserById(userId)
       
       if (userError) {
@@ -97,11 +107,17 @@ serve(async (req) => {
 
     // Update auth email/password if provided
     if (email || password) {
-      const authUpdate: any = {}
+      const authUpdate: { email?: string; password?: string } = {}
       if (email) authUpdate.email = email
       if (password) authUpdate.password = password
 
-      const { error: authUpdateError } = await supabaseAdmin.auth.admin.updateUserById(
+      console.log('Attempting auth update with:', {
+        userId,
+        hasEmail: !!email,
+        hasPassword: !!password
+      })
+
+      const { error: authUpdateError } = await supabaseAdmin.auth.admin.updateUser(
         userId,
         authUpdate
       )
