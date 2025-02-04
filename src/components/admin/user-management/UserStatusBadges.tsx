@@ -21,12 +21,12 @@ export function UserStatusBadges({ isAdmin, isApproved, isMember }: UserStatusBa
           <TooltipTrigger asChild>
             <Badge 
               variant="default" 
-              className="bg-red-500"
+              className="bg-red-500 hover:bg-red-600 transition-colors text-xs px-2 py-0.5"
               role="status"
               aria-label="User has admin status"
             >
               <Shield className="h-3 w-3 mr-1" aria-hidden="true" />
-              Admin
+              <span className="hidden sm:inline">Admin</span>
             </Badge>
           </TooltipTrigger>
           <TooltipContent>
@@ -39,12 +39,12 @@ export function UserStatusBadges({ isAdmin, isApproved, isMember }: UserStatusBa
           <TooltipTrigger asChild>
             <Badge 
               variant="default" 
-              className="bg-green-500"
+              className="bg-green-500 hover:bg-green-600 transition-colors text-xs px-2 py-0.5"
               role="status"
               aria-label="User is approved"
             >
               <UserCheck className="h-3 w-3 mr-1" aria-hidden="true" />
-              Approved
+              <span className="hidden sm:inline">Approved</span>
             </Badge>
           </TooltipTrigger>
           <TooltipContent>
@@ -57,12 +57,12 @@ export function UserStatusBadges({ isAdmin, isApproved, isMember }: UserStatusBa
           <TooltipTrigger asChild>
             <Badge 
               variant="default" 
-              className="bg-blue-500"
+              className="bg-blue-500 hover:bg-blue-600 transition-colors text-xs px-2 py-0.5"
               role="status"
               aria-label="User is a member"
             >
               <Users className="h-3 w-3 mr-1" aria-hidden="true" />
-              Member
+              <span className="hidden sm:inline">Member</span>
             </Badge>
           </TooltipTrigger>
           <TooltipContent>

@@ -7,7 +7,7 @@ interface AdminUserTableWrapperProps {
 export function AdminUserTableWrapper({ children }: AdminUserTableWrapperProps) {
   return (
     <div 
-      className="relative overflow-x-auto"
+      className="relative overflow-x-auto sm:overflow-visible"
       role="region"
       aria-label="User management table"
       tabIndex={0}

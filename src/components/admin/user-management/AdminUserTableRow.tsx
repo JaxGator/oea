@@ -33,13 +33,13 @@ export function AdminUserTableRow({
   };
 
   return (
-    <TableRow className="group">
+    <TableRow className="group hover:bg-muted/50">
       <TableCell className="py-4">
         <div className="flex flex-col gap-1">
-          <span className="font-medium truncate max-w-[200px] sm:max-w-none">
+          <span className="font-medium truncate max-w-[150px] sm:max-w-[200px] md:max-w-none">
             {profile.username}
           </span>
-          <span className="text-sm text-gray-500 truncate max-w-[200px] sm:max-w-none">
+          <span className="text-sm text-muted-foreground truncate max-w-[150px] sm:max-w-[200px] md:max-w-none">
             {profile.full_name || '-'}
           </span>
           <div className="flex flex-wrap gap-1 md:hidden mt-2">
