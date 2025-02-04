@@ -32,7 +32,14 @@ export function MemberListContent({
             </Avatar>
             <div className="flex-1 min-w-0">
               <div className="flex items-center justify-between gap-2">
-                <h3 className="font-medium truncate">{member.username}</h3>
+                <div className="min-w-0">
+                  <h3 className="font-medium truncate">{member.username}</h3>
+                  {member.full_name && (
+                    <p className="text-sm text-muted-foreground truncate">
+                      {member.full_name}
+                    </p>
+                  )}
+                </div>
                 <div className="flex gap-1">
                   {onView && (
                     <Button
