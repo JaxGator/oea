@@ -8,6 +8,7 @@ const corsHeaders = {
 }
 
 interface UpdateUserRequest {
+  action?: string;
   userId: string;
   username?: string;
   fullName?: string;
@@ -60,8 +61,28 @@ serve(async (req) => {
       )
     }
 
-    const { userId, username, fullName, isAdmin, isApproved, isMember, avatarUrl, email, password }: UpdateUserRequest = await req.json()
+    const requestData: UpdateUserRequest = await req.json()
+    const { action, userId, username, fullName, isAdmin, isApproved, isMember, avatarUrl, email, password } = requestData
 
+    // Handle get_user action
+    if (action === 'get_user') {
+      const { data: userData, error: userError } = await supabaseAdmin.auth.admin.getUserById(userId)
+      
+      if (userError) {
+        console.error('Error fetching user:', userError)
+        return new Response(
+          JSON.stringify({ error: userError.message }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
+
+      return new Response(
+        JSON.stringify({ email: userData.user.email }),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    // Handle update action (default)
     console.log('Updating user:', { 
       userId, 
       username, 

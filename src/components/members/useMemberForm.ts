@@ -34,9 +34,16 @@ export function useMemberForm(member: Member | null, onUpdate: () => void, onClo
   useEffect(() => {
     const fetchUserEmail = async () => {
       if (member?.id) {
-        const { data: authData, error } = await supabase.auth.admin.getUserById(member.id);
-        if (!error && authData?.user?.email) {
-          setEmail(authData.user.email);
+        // Use the admin-user-management function to get user data
+        const { data, error } = await supabase.functions.invoke('admin-user-management', {
+          body: { 
+            action: 'get_user',
+            userId: member.id
+          }
+        });
+
+        if (!error && data?.email) {
+          setEmail(data.email);
         }
       }
     };
