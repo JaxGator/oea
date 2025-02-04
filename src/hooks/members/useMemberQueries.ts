@@ -1,3 +1,4 @@
+
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -11,6 +12,7 @@ export function useMemberQueries(userId: string | undefined) {
       if (!userId) return null;
       
       try {
+        console.log('Fetching profile for user:', userId);
         const { data, error } = await supabase
           .from('profiles')
           .select('*')
@@ -26,9 +28,10 @@ export function useMemberQueries(userId: string | undefined) {
           throw error;
         }
         
+        console.log('Profile fetch result:', data);
         return data;
       } catch (error) {
-        console.error('Query error:', error);
+        console.error('Profile query error:', error);
         toast({
           title: "Error",
           description: "Failed to load profile. Please try again.",
@@ -46,6 +49,7 @@ export function useMemberQueries(userId: string | undefined) {
     queryKey: ['members'],
     queryFn: async () => {
       try {
+        console.log('Fetching all members...');
         const { data, error } = await supabase
           .from('profiles')
           .select('*')
@@ -59,9 +63,10 @@ export function useMemberQueries(userId: string | undefined) {
           throw error;
         }
 
+        console.log('Members fetch result:', data);
         return data || [];
       } catch (error) {
-        console.error('Query error:', error);
+        console.error('Members query error:', error);
         toast({
           title: "Error",
           description: "Failed to load members. Please try again.",
@@ -72,7 +77,7 @@ export function useMemberQueries(userId: string | undefined) {
     },
     retry: 3,
     retryDelay: (attemptIndex) => Math.min(1000 * Math.pow(2, attemptIndex), 10000),
-    staleTime: 1000 * 60 * 5,
+    staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
   return {
