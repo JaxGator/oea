@@ -45,12 +45,12 @@ export function LeaderboardTable({
   const displayData = limit ? data.slice(0, limit) : data;
 
   return (
-    <div className="overflow-x-auto">
+    <div className="w-full">
       <Table>
         <TableHeader>
           <TableRow>
             <TableHead className="w-12">Rank</TableHead>
-            <TableHead className="min-w-[200px]">User</TableHead>
+            <TableHead>User</TableHead>
             <TableHead className="text-right">Events</TableHead>
             <TableHead className="text-right hidden sm:table-cell">Streak</TableHead>
           </TableRow>
