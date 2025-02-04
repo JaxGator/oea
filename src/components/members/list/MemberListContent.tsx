@@ -1,9 +1,10 @@
+
 import { Member } from "../types";
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { MemberStatusBadges } from "../MemberStatusBadges";
 import { Button } from "@/components/ui/button";
-import { Eye, Edit, Trash } from "lucide-react";
+import { Eye, Edit } from "lucide-react";
 
 interface MemberListContentProps {
   members: Member[];
@@ -56,7 +57,11 @@ export function MemberListContent({
                 </div>
               </div>
               <div className="mt-1 flex flex-wrap gap-1">
-                <MemberStatusBadges member={member} />
+                <MemberStatusBadges 
+                  isAdmin={member.is_admin}
+                  isApproved={member.is_approved}
+                  isMember={member.is_member}
+                />
               </div>
             </div>
           </div>
