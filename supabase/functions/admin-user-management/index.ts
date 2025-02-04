@@ -105,74 +105,91 @@ serve(async (req) => {
       hasPassword: !!password 
     })
 
-    // Update auth email/password if provided
+    // Update auth user if email or password provided
     if (email || password) {
-      const authUpdate: { email?: string; password?: string } = {}
-      if (email) authUpdate.email = email
-      if (password) authUpdate.password = password
+      try {
+        const authUpdate: { email?: string; password?: string } = {}
+        if (email) authUpdate.email = email
+        if (password) authUpdate.password = password
 
-      console.log('Attempting auth update with:', {
-        userId,
-        hasEmail: !!email,
-        hasPassword: !!password
-      })
+        console.log('Attempting auth update with:', {
+          userId,
+          hasEmail: !!email,
+          hasPassword: !!password
+        })
 
-      const { error: authUpdateError } = await supabaseAdmin.auth.admin.updateUser(
-        userId,
-        authUpdate
-      )
+        const { error: authUpdateError } = await supabaseAdmin.auth.admin.updateUserById(
+          userId,
+          authUpdate
+        )
 
-      if (authUpdateError) {
-        console.error('Error updating auth user:', authUpdateError)
+        if (authUpdateError) {
+          console.error('Error updating auth user:', authUpdateError)
+          return new Response(
+            JSON.stringify({ error: authUpdateError.message }),
+            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          )
+        }
+      } catch (authError) {
+        console.error('Error in auth update:', authError)
         return new Response(
-          JSON.stringify({ error: authUpdateError.message }),
+          JSON.stringify({ error: 'Failed to update authentication details' }),
           { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         )
       }
     }
 
     // Update profile data
-    const updates: any = {}
-    if (username) updates.username = username
-    if (fullName !== undefined) updates.full_name = fullName
-    if (isAdmin !== undefined) updates.is_admin = isAdmin
-    if (isApproved !== undefined) updates.is_approved = isApproved
-    if (isMember !== undefined) updates.is_member = isMember
-    if (avatarUrl !== undefined) updates.avatar_url = avatarUrl
-    if (email !== undefined) updates.email = email
+    try {
+      const updates: any = {}
+      if (username !== undefined) updates.username = username
+      if (fullName !== undefined) updates.full_name = fullName
+      if (isAdmin !== undefined) updates.is_admin = isAdmin
+      if (isApproved !== undefined) updates.is_approved = isApproved
+      if (isMember !== undefined) updates.is_member = isMember
+      if (avatarUrl !== undefined) updates.avatar_url = avatarUrl
+      if (email !== undefined) updates.email = email
 
-    const { error: updateProfileError } = await supabaseAdmin
-      .from('profiles')
-      .update(updates)
-      .eq('id', userId)
+      const { error: updateProfileError } = await supabaseAdmin
+        .from('profiles')
+        .update(updates)
+        .eq('id', userId)
 
-    if (updateProfileError) {
-      console.error('Error updating profile:', updateProfileError)
+      if (updateProfileError) {
+        console.error('Error updating profile:', updateProfileError)
+        return new Response(
+          JSON.stringify({ error: updateProfileError.message }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
+
+      // Log the admin action
+      const { error: logError } = await supabaseAdmin
+        .from('admin_logs')
+        .insert({
+          admin_id: user.id,
+          action_type: 'update_user',
+          target_type: 'user',
+          target_id: userId,
+          details: updates
+        })
+
+      if (logError) {
+        console.error('Error creating admin log:', logError)
+      }
+
       return new Response(
-        JSON.stringify({ error: updateProfileError.message }),
+        JSON.stringify({ message: 'User updated successfully' }),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+
+    } catch (profileError) {
+      console.error('Error in profile update:', profileError)
+      return new Response(
+        JSON.stringify({ error: 'Failed to update user profile' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
-
-    // Log the admin action
-    const { error: logError } = await supabaseAdmin
-      .from('admin_logs')
-      .insert({
-        admin_id: user.id,
-        action_type: 'update_user',
-        target_type: 'user',
-        target_id: userId,
-        details: updates
-      })
-
-    if (logError) {
-      console.error('Error creating admin log:', logError)
-    }
-
-    return new Response(
-      JSON.stringify({ message: 'User updated successfully' }),
-      { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    )
 
   } catch (error) {
     console.error('Error in admin-user-management function:', error)
