@@ -1,6 +1,5 @@
-import { Profile } from "@/types/auth";
-import { MemberListContainer } from "./list/MemberListContainer";
 import { Member } from "./types";
+import { MemberListContainer } from "./list/MemberListContainer";
 
 interface MemberListProps {
   members: Member[];
@@ -18,12 +17,17 @@ export function MemberList({
   onEditMember
 }: MemberListProps) {
   return (
-    <MemberListContainer 
-      members={members}
-      currentUserIsAdmin={currentUserIsAdmin}
-      isMobile={isMobile}
-      onViewMember={onViewMember}
-      onEditMember={onEditMember}
-    />
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      {members.map((member) => (
+        <MemberCard
+          key={member.id}
+          member={member}
+          currentUserIsAdmin={currentUserIsAdmin}
+          onEdit={onEditMember}
+          onDelete={() => {}} // We'll implement this later if needed
+          onClick={() => onViewMember(member)}
+        />
+      ))}
+    </div>
   );
 }

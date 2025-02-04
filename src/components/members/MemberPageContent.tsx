@@ -82,9 +82,9 @@ export function MemberPageContent({
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 space-y-8">
       <div className="flex flex-col space-y-4">
-        <div className="flex justify-between items-center">
-          <div className="flex items-center gap-8">
-            <MemberHeader totalMembers={filteredMembers.length} />
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <MemberHeader totalMembers={filteredMembers.length} />
+          <div className="w-full md:w-auto">
             <MemberFilters 
               filters={filters}
               onFilterChange={handleFilterChange}
