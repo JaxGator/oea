@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -21,6 +22,8 @@ export function useMemberForm(member: Member | null, onUpdate: () => void, onClo
 
   const [username, setUsername] = useState(safeMember.username);
   const [fullName, setFullName] = useState(safeMember.full_name || '');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [isAdmin, setIsAdmin] = useState(safeMember.is_admin || false);
   const [isApproved, setIsApproved] = useState(safeMember.is_approved || false);
   const [isMember, setIsMember] = useState(safeMember.is_member || false);
@@ -40,7 +43,9 @@ export function useMemberForm(member: Member | null, onUpdate: () => void, onClo
           isAdmin,
           isApproved,
           isMember,
-          avatarUrl
+          avatarUrl,
+          hasEmail: !!email,
+          hasPassword: !!password
         }
       });
 
@@ -49,26 +54,28 @@ export function useMemberForm(member: Member | null, onUpdate: () => void, onClo
         throw new Error('No authenticated user found');
       }
 
-      console.log('useMemberForm: Calling admin_update_user function');
-      const { error } = await supabase.rpc('admin_update_user', {
-        admin_id: currentUser.user.id,
-        target_user_id: member.id,
-        new_username: username,
-        new_full_name: fullName,
-        new_avatar_url: avatarUrl,
-        new_is_admin: isAdmin,
-        new_is_approved: isApproved,
-        new_is_member: isMember
+      // Call admin-user-management function for full update
+      const { error } = await supabase.functions.invoke('admin-user-management', {
+        body: {
+          userId: member.id,
+          username,
+          fullName,
+          avatarUrl,
+          isAdmin,
+          isApproved,
+          isMember,
+          email: email || undefined,
+          password: password || undefined
+        }
       });
 
       if (error) {
-        console.error('useMemberForm: Error from admin_update_user:', error);
+        console.error('useMemberForm: Error from admin-user-management:', error);
         throw error;
       }
 
       console.log('useMemberForm: Update successful');
       
-      // Call onUpdate and wait for it to complete
       await onUpdate();
       
       toast({
@@ -93,6 +100,10 @@ export function useMemberForm(member: Member | null, onUpdate: () => void, onClo
     setUsername,
     fullName,
     setFullName,
+    email,
+    setEmail,
+    password,
+    setPassword,
     isAdmin,
     setIsAdmin,
     isApproved,

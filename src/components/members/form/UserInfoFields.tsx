@@ -1,3 +1,4 @@
+
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
@@ -31,6 +32,7 @@ export function UserInfoFields({
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
+          placeholder="Enter email address"
         />
       </div>
       <div className="space-y-2">
@@ -49,6 +51,7 @@ export function UserInfoFields({
           id="username"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
+          placeholder="Enter username"
         />
       </div>
       <div className="space-y-2">
@@ -57,6 +60,7 @@ export function UserInfoFields({
           id="fullName"
           value={fullName}
           onChange={(e) => setFullName(e.target.value)}
+          placeholder="Enter full name"
         />
       </div>
     </div>

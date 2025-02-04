@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
@@ -14,6 +15,8 @@ interface UpdateUserRequest {
   isApproved?: boolean;
   isMember?: boolean;
   avatarUrl?: string;
+  email?: string;
+  password?: string;
 }
 
 serve(async (req) => {
@@ -57,10 +60,31 @@ serve(async (req) => {
       )
     }
 
-    const { userId, username, fullName, isAdmin, isApproved, isMember, avatarUrl }: UpdateUserRequest = await req.json()
+    const { userId, username, fullName, isAdmin, isApproved, isMember, avatarUrl, email, password }: UpdateUserRequest = await req.json()
 
-    console.log('Updating user:', { userId, username, fullName, isAdmin, isApproved, isMember, avatarUrl })
+    console.log('Updating user:', { userId, username, fullName, isAdmin, isApproved, isMember, avatarUrl, hasEmail: !!email, hasPassword: !!password })
 
+    // Update auth email/password if provided
+    if (email || password) {
+      const authUpdate: any = {}
+      if (email) authUpdate.email = email
+      if (password) authUpdate.password = password
+
+      const { error: authUpdateError } = await supabaseAdmin.auth.admin.updateUserById(
+        userId,
+        authUpdate
+      )
+
+      if (authUpdateError) {
+        console.error('Error updating auth user:', authUpdateError)
+        return new Response(
+          JSON.stringify({ error: authUpdateError.message }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
+    }
+
+    // Update profile data
     const updates: any = {}
     if (username) updates.username = username
     if (fullName !== undefined) updates.full_name = fullName
@@ -68,6 +92,7 @@ serve(async (req) => {
     if (isApproved !== undefined) updates.is_approved = isApproved
     if (isMember !== undefined) updates.is_member = isMember
     if (avatarUrl !== undefined) updates.avatar_url = avatarUrl
+    if (email !== undefined) updates.email = email
 
     const { error: updateProfileError } = await supabaseAdmin
       .from('profiles')
@@ -82,6 +107,7 @@ serve(async (req) => {
       )
     }
 
+    // Log the admin action
     const { error: logError } = await supabaseAdmin
       .from('admin_logs')
       .insert({
