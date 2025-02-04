@@ -1,3 +1,4 @@
+
 import { Member } from "../types";
 import { MemberAvatarUpload } from "../MemberAvatarUpload";
 import { EditMemberForm } from "./EditMemberForm";
@@ -23,6 +24,10 @@ export function EditMemberContent({
     setUsername,
     fullName,
     setFullName,
+    email,
+    setEmail,
+    password,
+    setPassword,
     isAdmin,
     setIsAdmin,
     isApproved,
@@ -61,6 +66,10 @@ export function EditMemberContent({
         setUsername={setUsername}
         fullName={fullName}
         setFullName={setFullName}
+        email={email}
+        setEmail={setEmail}
+        password={password}
+        setPassword={setPassword}
         isAdmin={isAdmin}
         setIsAdmin={setIsAdmin}
         isApproved={isApproved}

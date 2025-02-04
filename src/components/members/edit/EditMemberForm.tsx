@@ -1,9 +1,10 @@
+
 import { Member } from "../types";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
+import { UserInfoFields } from "../form/UserInfoFields";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 
 interface EditMemberFormProps {
   member: Member;
@@ -14,6 +15,10 @@ interface EditMemberFormProps {
   setUsername: (value: string) => void;
   fullName: string;
   setFullName: (value: string) => void;
+  email: string;
+  setEmail: (value: string) => void;
+  password: string;
+  setPassword: (value: string) => void;
   isAdmin: boolean;
   setIsAdmin: (value: boolean) => void;
   isApproved: boolean;
@@ -31,6 +36,10 @@ export function EditMemberForm({
   setUsername,
   fullName,
   setFullName,
+  email,
+  setEmail,
+  password,
+  setPassword,
   isAdmin,
   setIsAdmin,
   isApproved,
@@ -41,23 +50,16 @@ export function EditMemberForm({
   return (
     <div className="space-y-6">
       <div className="space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="username">Username</Label>
-          <Input
-            id="username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-          />
-        </div>
-        
-        <div className="space-y-2">
-          <Label htmlFor="fullName">Full Name</Label>
-          <Input
-            id="fullName"
-            value={fullName}
-            onChange={(e) => setFullName(e.target.value)}
-          />
-        </div>
+        <UserInfoFields
+          username={username}
+          setUsername={setUsername}
+          fullName={fullName}
+          setFullName={setFullName}
+          email={email}
+          setEmail={setEmail}
+          password={password}
+          setPassword={setPassword}
+        />
 
         <div className="space-y-2">
           <div className="flex items-center space-x-2">
