@@ -1,3 +1,4 @@
+
 import { Event } from "@/types/event";
 import { EventCard } from "@/components/EventCard";
 import { useAuthState } from "@/hooks/useAuthState";
@@ -10,6 +11,7 @@ interface EventListProps {
   onEventSelect?: (eventId: string) => void;
   selectedEventId?: string | null;
   isLoading?: boolean;
+  onUpdate?: () => void;
 }
 
 export function EventList({ 
@@ -18,7 +20,8 @@ export function EventList({
   onCancelRSVP,
   onEventSelect,
   selectedEventId,
-  isLoading = false
+  isLoading = false,
+  onUpdate
 }: EventListProps) {
   const { isLoading: isAuthChecking } = useAuthState();
 
@@ -84,6 +87,7 @@ export function EventList({
               isSelected={event.id === selectedEventId}
               isAuthChecking={isAuthChecking}
               requireAuth={true}
+              onUpdate={onUpdate}
             />
           </div>
         );
