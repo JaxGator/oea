@@ -40,6 +40,7 @@ serve(async (req) => {
 
     const supabaseAdmin = createClient(supabaseUrl, supabaseServiceRoleKey)
 
+    // Validate auth token
     const authHeader = req.headers.get('Authorization')?.split(' ')[1]
     if (!authHeader) {
       return new Response(
@@ -48,6 +49,7 @@ serve(async (req) => {
       )
     }
 
+    // Verify user is authenticated
     const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(authHeader)
     if (authError || !user) {
       console.error('Auth error:', authError)
@@ -57,6 +59,7 @@ serve(async (req) => {
       )
     }
 
+    // Verify user is admin
     const { data: adminCheck } = await supabaseAdmin
       .from('profiles')
       .select('is_admin')
@@ -109,8 +112,18 @@ serve(async (req) => {
     if (email || password) {
       try {
         const authUpdate: { email?: string; password?: string } = {}
-        if (email) authUpdate.email = email
-        if (password) authUpdate.password = password
+        if (email) {
+          if (!email.includes('@')) {
+            throw new Error('Invalid email format')
+          }
+          authUpdate.email = email
+        }
+        if (password) {
+          if (password.length < 6) {
+            throw new Error('Password must be at least 6 characters')
+          }
+          authUpdate.password = password
+        }
 
         console.log('Attempting auth update with:', {
           userId,
@@ -125,15 +138,12 @@ serve(async (req) => {
 
         if (authUpdateError) {
           console.error('Error updating auth user:', authUpdateError)
-          return new Response(
-            JSON.stringify({ error: authUpdateError.message }),
-            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-          )
+          throw authUpdateError
         }
-      } catch (authError) {
-        console.error('Error in auth update:', authError)
+      } catch (error) {
+        console.error('Error in auth update:', error)
         return new Response(
-          JSON.stringify({ error: 'Failed to update authentication details' }),
+          JSON.stringify({ error: error instanceof Error ? error.message : 'Failed to update authentication details' }),
           { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         )
       }
@@ -148,7 +158,11 @@ serve(async (req) => {
       if (isApproved !== undefined) updates.is_approved = isApproved
       if (isMember !== undefined) updates.is_member = isMember
       if (avatarUrl !== undefined) updates.avatar_url = avatarUrl
+      
+      // Only update email in profiles if auth update was successful
       if (email !== undefined) updates.email = email
+
+      console.log('Attempting profile update with:', updates)
 
       const { error: updateProfileError } = await supabaseAdmin
         .from('profiles')
@@ -157,10 +171,7 @@ serve(async (req) => {
 
       if (updateProfileError) {
         console.error('Error updating profile:', updateProfileError)
-        return new Response(
-          JSON.stringify({ error: updateProfileError.message }),
-          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        )
+        throw updateProfileError
       }
 
       // Log the admin action
@@ -183,10 +194,12 @@ serve(async (req) => {
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
 
-    } catch (profileError) {
-      console.error('Error in profile update:', profileError)
+    } catch (error) {
+      console.error('Error in profile update:', error)
       return new Response(
-        JSON.stringify({ error: 'Failed to update user profile' }),
+        JSON.stringify({ 
+          error: error instanceof Error ? error.message : 'Failed to update user profile'
+        }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
@@ -194,7 +207,9 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error in admin-user-management function:', error)
     return new Response(
-      JSON.stringify({ error: 'An unexpected error occurred' }),
+      JSON.stringify({ 
+        error: error instanceof Error ? error.message : 'An unexpected error occurred'
+      }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   }
