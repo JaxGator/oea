@@ -28,17 +28,19 @@ export const UpcomingEventsSection = ({
 
   return (
     <div className="py-1">
-      <div className="flex justify-between items-center mb-4 gap-4">
-        <h3 id="upcoming-events-heading" className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-          <CalendarDays className="h-6 w-6" role="presentation" />
-          Upcoming Events
-        </h3>
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-2">
+          <CalendarDays className="h-6 w-6" />
+          <h3 id="upcoming-events-heading" className="text-2xl font-bold text-gray-900">
+            Upcoming Events
+          </h3>
+        </div>
         <Button 
           onClick={() => navigate("/events")}
           variant="outline"
-          className="bg-[#0d97d1] hover:bg-[#0d97d1]/90 text-white border-[#0d97d1] hover:border-[#0d97d1]/90"
+          className="bg-[#0d97d1] hover:bg-[#0d97d1]/90 text-white border-[#0d97d1] hover:border-[#0d97d1]/90 whitespace-nowrap"
         >
-          View All Events
+          View All
         </Button>
       </div>
       
