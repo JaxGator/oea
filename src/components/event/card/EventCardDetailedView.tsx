@@ -1,3 +1,4 @@
+
 import { Event } from "@/types/event";
 import { EventCardBasicInfo } from "./EventCardBasicInfo";
 import { WaitlistInfo } from "./WaitlistInfo";
@@ -53,6 +54,7 @@ export function EventCardDetailedView({
       <div className="px-6 space-y-6">
         <EventCardBasicInfo
           date={event.date}
+          time={event.time || '00:00:00'}
           location={event.location}
           rsvpCount={rsvpCount}
           maxGuests={event.max_guests}

@@ -1,3 +1,4 @@
+
 import { Event } from "@/types/event";
 import { EventCardBasicInfo } from "../EventCardBasicInfo";
 import { EventAdminEdit } from "../EventAdminEdit";
@@ -41,6 +42,7 @@ export function EventDetailsSection({
     <>
       <EventCardBasicInfo
         date={event.date}
+        time={event.time || '00:00:00'}
         location={event.location}
         rsvpCount={rsvpCount}
         maxGuests={event.max_guests}
