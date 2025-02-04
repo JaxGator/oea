@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Member } from "./types";
@@ -31,7 +31,7 @@ export function useMemberForm(member: Member | null, onUpdate: () => void, onClo
   const [avatarUrl, setAvatarUrl] = useState(safeMember.avatar_url || '');
 
   // Initialize email from auth data
-  useState(() => {
+  useEffect(() => {
     const fetchUserEmail = async () => {
       if (member?.id) {
         const { data: authData, error } = await supabase.auth.admin.getUserById(member.id);
