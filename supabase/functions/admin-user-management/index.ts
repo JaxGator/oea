@@ -26,7 +26,7 @@ serve(async (req) => {
   }
 
   try {
-    // Validate environment variables
+    // Get and validate environment variables
     const supabaseUrl = Deno.env.get('SUPABASE_URL')
     const supabaseServiceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
 
@@ -38,7 +38,17 @@ serve(async (req) => {
       throw new Error('Server configuration error')
     }
 
-    const supabaseAdmin = createClient(supabaseUrl, supabaseServiceRoleKey)
+    // Create Supabase admin client with explicit URL and key
+    const supabaseAdmin = createClient(
+      supabaseUrl.trim(),
+      supabaseServiceRoleKey.trim(),
+      {
+        auth: {
+          autoRefreshToken: false,
+          persistSession: false
+        }
+      }
+    )
 
     // Validate auth token
     const authHeader = req.headers.get('Authorization')?.split(' ')[1]
