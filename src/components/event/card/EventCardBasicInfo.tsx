@@ -1,5 +1,6 @@
+
 import { useAuthState } from "@/hooks/useAuthState";
-import { format } from "date-fns";
+import { formatInTimeZone } from "date-fns-tz";
 
 interface EventCardBasicInfoProps {
   date: string;
@@ -29,7 +30,12 @@ export function EventCardBasicInfo({
   const { profile, isAuthenticated } = useAuthState();
   const showDetails = canViewDetails || (isAuthenticated && profile?.is_approved);
 
-  const formattedDate = format(new Date(date), 'MMMM d, yyyy');
+  // Ensure proper timezone handling
+  const formattedDate = formatInTimeZone(
+    new Date(date),
+    Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
+    'MMMM d, yyyy'
+  );
 
   return (
     <div className="space-y-2">
