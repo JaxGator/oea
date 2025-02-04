@@ -32,23 +32,15 @@ export default function Events() {
   const filteredEvents = selectedDate ? events : events;
   
   const now = new Date();
-  const upcomingEvents = filteredEvents
-    .filter(event => {
-      const eventDate = new Date(event.date);
-      return eventDate >= now;
-    })
-    .sort((a, b) => {
-      if (a.is_featured && !b.is_featured) return -1;
-      if (!a.is_featured && b.is_featured) return 1;
-      return new Date(a.date).getTime() - new Date(b.date).getTime();
-    });
+  const upcomingEvents = filteredEvents.filter(event => {
+    const eventDate = new Date(event.date);
+    return eventDate >= now;
+  });
 
-  const pastEvents = filteredEvents
-    .filter(event => {
-      const eventDate = new Date(event.date);
-      return eventDate < now;
-    })
-    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  const pastEvents = filteredEvents.filter(event => {
+    const eventDate = new Date(event.date);
+    return eventDate < now;
+  }).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
   const handleEventUpdate = () => {
     queryClient.invalidateQueries({ queryKey: ['events'] });

@@ -59,7 +59,6 @@ export function useEvents(selectedDate?: Date) {
         const from = Number(pageParam) * EVENTS_PER_PAGE;
         const to = from + EVENTS_PER_PAGE - 1;
 
-        // Query all events, not just upcoming ones
         let query = supabase
           .from('events')
           .select(`
@@ -80,7 +79,8 @@ export function useEvents(selectedDate?: Date) {
               )
             )
           `)
-          .order('date', { ascending: false }); // Changed to descending to get recent events first
+          .order('is_featured', { ascending: false }) // Featured events first
+          .order('date', { ascending: true }); // Then by date ascending
 
         // Apply auth filters
         if (!isAuthenticated) {
