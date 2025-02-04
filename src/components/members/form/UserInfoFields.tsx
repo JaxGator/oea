@@ -26,24 +26,27 @@ export function UserInfoFields({
   return (
     <div className="space-y-4">
       <div className="space-y-2">
-        <Label htmlFor="email">Email</Label>
+        <Label htmlFor="email">Email Address</Label>
         <Input
           id="email"
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="Enter email address"
+          className="w-full"
         />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="password">New Password (leave empty to keep current)</Label>
+        <Label htmlFor="password">Password</Label>
         <Input
           id="password"
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          placeholder="Enter new password"
+          placeholder="Enter new password to change"
+          className="w-full"
         />
+        <p className="text-sm text-gray-500">Leave empty to keep current password</p>
       </div>
       <div className="space-y-2">
         <Label htmlFor="username">Username</Label>
@@ -52,6 +55,7 @@ export function UserInfoFields({
           value={username}
           onChange={(e) => setUsername(e.target.value)}
           placeholder="Enter username"
+          className="w-full"
         />
       </div>
       <div className="space-y-2">
@@ -61,6 +65,7 @@ export function UserInfoFields({
           value={fullName}
           onChange={(e) => setFullName(e.target.value)}
           placeholder="Enter full name"
+          className="w-full"
         />
       </div>
     </div>

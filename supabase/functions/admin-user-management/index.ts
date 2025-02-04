@@ -62,7 +62,17 @@ serve(async (req) => {
 
     const { userId, username, fullName, isAdmin, isApproved, isMember, avatarUrl, email, password }: UpdateUserRequest = await req.json()
 
-    console.log('Updating user:', { userId, username, fullName, isAdmin, isApproved, isMember, avatarUrl, hasEmail: !!email, hasPassword: !!password })
+    console.log('Updating user:', { 
+      userId, 
+      username, 
+      fullName, 
+      isAdmin, 
+      isApproved, 
+      isMember, 
+      avatarUrl, 
+      hasEmail: !!email, 
+      hasPassword: !!password 
+    })
 
     // Update auth email/password if provided
     if (email || password) {

@@ -20,6 +20,7 @@ export function useMemberForm(member: Member | null, onUpdate: () => void, onClo
   const { toast } = useToast();
   const safeMember = member ? { ...DEFAULT_MEMBER, ...member } : DEFAULT_MEMBER;
 
+  // Initialize state with member data
   const [username, setUsername] = useState(safeMember.username);
   const [fullName, setFullName] = useState(safeMember.full_name || '');
   const [email, setEmail] = useState('');
@@ -28,6 +29,19 @@ export function useMemberForm(member: Member | null, onUpdate: () => void, onClo
   const [isApproved, setIsApproved] = useState(safeMember.is_approved || false);
   const [isMember, setIsMember] = useState(safeMember.is_member || false);
   const [avatarUrl, setAvatarUrl] = useState(safeMember.avatar_url || '');
+
+  // Initialize email from auth data
+  useState(() => {
+    const fetchUserEmail = async () => {
+      if (member?.id) {
+        const { data: authData, error } = await supabase.auth.admin.getUserById(member.id);
+        if (!error && authData?.user?.email) {
+          setEmail(authData.user.email);
+        }
+      }
+    };
+    fetchUserEmail();
+  }, [member?.id]);
 
   const handleSubmit = async () => {
     try {
@@ -80,7 +94,9 @@ export function useMemberForm(member: Member | null, onUpdate: () => void, onClo
       
       toast({
         title: "Success",
-        description: "Member updated successfully",
+        description: password 
+          ? "Member updated successfully (including password)" 
+          : "Member updated successfully",
       });
 
       onClose();
