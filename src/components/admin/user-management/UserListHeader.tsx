@@ -18,9 +18,9 @@ export function UserListHeader({
   onUserCreated
 }: UserListHeaderProps) {
   return (
-    <div className="space-y-4">
-      <div className="flex flex-col w-full gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="w-full sm:max-w-sm">
+    <div className="space-y-6">
+      <div className="flex flex-col gap-4">
+        <div className="w-full">
           <UserSearch onSearch={onSearch} />
         </div>
         <div className="flex justify-end">
@@ -28,7 +28,7 @@ export function UserListHeader({
         </div>
       </div>
       
-      <div className="overflow-x-auto -mx-4 px-4 sm:overflow-visible sm:px-0">
+      <div className="w-full">
         <UserFilters
           filters={filters}
           onFilterChange={onFilterChange}

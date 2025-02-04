@@ -20,7 +20,7 @@ export function UserFilters({ filters, onFilterChange }: UserFiltersProps) {
         variant={filters.isAdmin ? "default" : "outline"}
         size="sm"
         onClick={() => toggleFilter("isAdmin")}
-        className="h-8 min-w-[80px]"
+        className="flex-1 min-w-[100px] max-w-[150px] h-8"
       >
         Admins
       </Button>
@@ -28,7 +28,7 @@ export function UserFilters({ filters, onFilterChange }: UserFiltersProps) {
         variant={filters.isApproved ? "default" : "outline"}
         size="sm"
         onClick={() => toggleFilter("isApproved")}
-        className="h-8 min-w-[80px]"
+        className="flex-1 min-w-[100px] max-w-[150px] h-8"
       >
         Approved
       </Button>
@@ -36,7 +36,7 @@ export function UserFilters({ filters, onFilterChange }: UserFiltersProps) {
         variant={filters.isMember ? "default" : "outline"}
         size="sm"
         onClick={() => toggleFilter("isMember")}
-        className="h-8 min-w-[80px]"
+        className="flex-1 min-w-[100px] max-w-[150px] h-8"
       >
         Members
       </Button>

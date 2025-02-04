@@ -33,7 +33,7 @@ export function AdminUserTableRow({
   };
 
   return (
-    <TableRow>
+    <TableRow className="group">
       <TableCell className="py-4">
         <div className="flex flex-col gap-1">
           <span className="font-medium truncate max-w-[200px] sm:max-w-none">
@@ -60,7 +60,7 @@ export function AdminUserTableRow({
           />
         </div>
       </TableCell>
-      <TableCell>
+      <TableCell className="w-[100px]">
         <div className="flex justify-end">
           <AdminUserActions
             profile={profile}

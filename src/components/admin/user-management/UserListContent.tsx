@@ -42,12 +42,12 @@ export const UserListContent = memo(function UserListContent({
 
   return (
     <div className="space-y-4">
-      <div className="overflow-x-auto -mx-4 px-4 sm:overflow-visible sm:px-0">
+      <div className="rounded-md border">
         <AdminUserTableWrapper>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-[200px] sm:w-[300px]">User</TableHead>
+                <TableHead className="w-[200px]">User</TableHead>
                 <TableHead className="hidden md:table-cell">Status</TableHead>
                 <TableHead className="w-[100px] text-right">Actions</TableHead>
               </TableRow>
