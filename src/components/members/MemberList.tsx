@@ -1,5 +1,5 @@
 import { Member } from "./types";
-import { MemberListContainer } from "./list/MemberListContainer";
+import { MemberCard } from "./MemberCard";
 
 interface MemberListProps {
   members: Member[];
