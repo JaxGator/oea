@@ -4,6 +4,7 @@ import { formatInTimeZone } from "date-fns-tz";
 
 interface EventCardBasicInfoProps {
   date: string;
+  time: string;
   location: string;
   rsvpCount: number;
   maxGuests: number;
@@ -17,6 +18,7 @@ interface EventCardBasicInfoProps {
 
 export function EventCardBasicInfo({ 
   date,
+  time,
   location,
   rsvpCount,
   maxGuests,
@@ -30,11 +32,21 @@ export function EventCardBasicInfo({
   const { profile, isAuthenticated } = useAuthState();
   const showDetails = canViewDetails || (isAuthenticated && profile?.is_approved);
 
-  // Ensure proper timezone handling
+  // Create a proper date-time string and handle timezone
+  const dateTimeStr = `${date}T${time}`;
+  const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+  
+  // Format the date in the user's timezone
   const formattedDate = formatInTimeZone(
-    new Date(date),
-    Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
+    new Date(dateTimeStr),
+    userTimeZone,
     'MMMM d, yyyy'
+  );
+
+  const formattedTime = formatInTimeZone(
+    new Date(dateTimeStr),
+    userTimeZone,
+    'h:mm a'
   );
 
   return (
@@ -42,7 +54,7 @@ export function EventCardBasicInfo({
       <div className="flex flex-col gap-1">
         <div className="flex items-center justify-between">
           <p className="text-sm text-muted-foreground">
-            {formattedDate}
+            {formattedDate} at {formattedTime}
           </p>
         </div>
         <p className="text-sm text-muted-foreground">

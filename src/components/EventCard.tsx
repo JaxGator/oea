@@ -1,3 +1,4 @@
+
 import { Event } from "@/types/event";
 import { EventCardContainer } from "./event/EventCardContainer";
 
@@ -29,12 +30,13 @@ export function EventCard({
     return null;
   }
 
-  console.log("Rendering event:", event.id, "isSelected:", isSelected); // Debug log
-
   return (
     <div className="h-full">
       <EventCardContainer 
-        event={event}
+        event={{
+          ...event,
+          time: event.time || '00:00:00' // Ensure time is always provided
+        }}
         onRSVP={onRSVP}
         onCancelRSVP={onCancelRSVP}
         userRSVPStatus={userRSVPStatus}
@@ -43,7 +45,7 @@ export function EventCard({
         onUpdate={onUpdate}
         isAuthChecking={isAuthChecking}
         requireAuth={requireAuth}
-        showDelete={true} // Always pass showDelete as true, let RLS handle permissions
+        showDelete={true}
       />
     </div>
   );
