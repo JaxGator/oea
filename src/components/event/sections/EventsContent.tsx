@@ -1,3 +1,4 @@
+
 import { Event } from "@/types/event";
 import { EventList } from "@/components/event/EventList";
 import { LazyMap } from "@/components/event/map/LazyMap";
@@ -12,6 +13,7 @@ interface EventsContentProps {
   onRSVP: (eventId: string, guests?: { firstName: string }[]) => Promise<void>;
   onCancelRSVP: (eventId: string) => Promise<void>;
   isLoading?: boolean;
+  onUpdate?: () => void;
 }
 
 export function EventsContent({
@@ -20,6 +22,7 @@ export function EventsContent({
   onRSVP,
   onCancelRSVP,
   isLoading = false,
+  onUpdate
 }: EventsContentProps) {
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const { profile, isAuthenticated } = useAuthState();
@@ -55,6 +58,7 @@ export function EventsContent({
               onEventSelect={handleEventSelect}
               selectedEventId={selectedEventId}
               isLoading={isLoading}
+              onUpdate={onUpdate}
             />
           </ErrorBoundary>
         </div>
@@ -72,6 +76,7 @@ export function EventsContent({
                 onCancelRSVP={onCancelRSVP}
                 onEventSelect={handleEventSelect}
                 selectedEventId={selectedEventId}
+                onUpdate={onUpdate}
               />
             </ErrorBoundary>
           </div>

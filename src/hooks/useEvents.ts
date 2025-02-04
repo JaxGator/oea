@@ -1,9 +1,12 @@
+
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { transformEventData } from './events/useEventTransform';
 import type { Event } from '@/types/event';
 import { toast } from 'sonner';
 import { useAuthState } from './useAuthState';
+import { useEffect } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 
 const EVENTS_PER_PAGE = 9;
 
@@ -16,6 +19,30 @@ interface EventsResponse {
 export function useEvents(selectedDate?: Date) {
   const { profile, isAuthenticated } = useAuthState();
   const isApproved = profile?.is_approved;
+  const queryClient = useQueryClient();
+
+  // Set up real-time subscription for events
+  useEffect(() => {
+    const channel = supabase
+      .channel('events-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'events'
+        },
+        () => {
+          console.log('Event change detected, invalidating query cache');
+          queryClient.invalidateQueries({ queryKey: ['events'] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [queryClient]);
 
   return useInfiniteQuery<EventsResponse, Error>({
     queryKey: ['events', selectedDate?.toISOString(), isAuthenticated, isApproved],

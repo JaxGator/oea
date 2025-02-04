@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useEvents } from "@/hooks/useEvents";
 import { useRSVP } from "@/hooks/useRSVP";
@@ -6,11 +7,13 @@ import { EventsHeader } from "@/components/event/sections/EventsHeader";
 import { EventsContent } from "@/components/event/sections/EventsContent";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
 
 export default function Events() {
   const { isAuthenticated } = useAuthState();
   const [isCreateEventOpen, setIsCreateEventOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
+  const queryClient = useQueryClient();
   
   const { 
     data, 
@@ -47,15 +50,9 @@ export default function Events() {
     })
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
-  console.log('Events data:', {
-    total: events.length,
-    upcoming: upcomingEvents.length,
-    past: pastEvents.length,
-    now: now.toISOString(),
-    firstEventDate: events[0]?.date,
-    pastDates: pastEvents.map(e => e.date),
-    upcomingDates: upcomingEvents.map(e => e.date)
-  });
+  const handleEventUpdate = () => {
+    queryClient.invalidateQueries({ queryKey: ['events'] });
+  };
 
   if (error) {
     console.error("Events loading error:", error);
@@ -82,6 +79,7 @@ export default function Events() {
           onRSVP={handleRSVP}
           onCancelRSVP={cancelRSVP}
           isLoading={isEventsLoading}
+          onUpdate={handleEventUpdate}
         />
 
         {(hasNextPage || isFetchingNextPage) && (
