@@ -19,12 +19,16 @@ export function UserListHeader({
 }: UserListHeaderProps) {
   return (
     <div className="space-y-4">
-      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-        <UserSearch onSearch={onSearch} />
-        <CreateUserDialog onUserCreated={onUserCreated} />
+      <div className="flex flex-col w-full gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="w-full sm:max-w-sm">
+          <UserSearch onSearch={onSearch} />
+        </div>
+        <div className="flex justify-end">
+          <CreateUserDialog onUserCreated={onUserCreated} />
+        </div>
       </div>
       
-      <div className="flex flex-wrap gap-2">
+      <div className="overflow-x-auto -mx-4 px-4 sm:overflow-visible sm:px-0">
         <UserFilters
           filters={filters}
           onFilterChange={onFilterChange}

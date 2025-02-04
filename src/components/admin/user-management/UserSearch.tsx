@@ -20,13 +20,13 @@ export function UserSearch({ onSearch, placeholder = "Search members..." }: User
   }, [debouncedSearch]);
 
   return (
-    <div className="relative w-full max-w-sm">
+    <div className="relative w-full">
       <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
       <Input
         placeholder={placeholder}
         value={searchTerm}
         onChange={(e) => handleSearch(e.target.value)}
-        className="pl-8"
+        className="pl-8 w-full"
       />
     </div>
   );

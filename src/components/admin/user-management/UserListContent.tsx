@@ -42,32 +42,34 @@ export const UserListContent = memo(function UserListContent({
 
   return (
     <div className="space-y-4">
-      <AdminUserTableWrapper>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-[200px] sm:w-[300px]">User</TableHead>
-              <TableHead className="hidden md:table-cell">Status</TableHead>
-              <TableHead className="w-[100px] text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {members.map((member) => (
-              <AdminUserTableRow
-                key={member.id}
-                profile={member}
-                onEdit={onEditMember}
-                onUpdateStatus={() => {}}
-                onDelete={onDeleteMember}
-                isUpdating={false}
-              />
-            ))}
-          </TableBody>
-        </Table>
-      </AdminUserTableWrapper>
+      <div className="overflow-x-auto -mx-4 px-4 sm:overflow-visible sm:px-0">
+        <AdminUserTableWrapper>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-[200px] sm:w-[300px]">User</TableHead>
+                <TableHead className="hidden md:table-cell">Status</TableHead>
+                <TableHead className="w-[100px] text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {members.map((member) => (
+                <AdminUserTableRow
+                  key={member.id}
+                  profile={member}
+                  onEdit={onEditMember}
+                  onUpdateStatus={() => {}}
+                  onDelete={onDeleteMember}
+                  isUpdating={false}
+                />
+              ))}
+            </TableBody>
+          </Table>
+        </AdminUserTableWrapper>
+      </div>
 
       {totalPages > 1 && (
-        <div className="mt-4 flex justify-center">
+        <div className="flex justify-center mt-4">
           <UserListPagination
             currentPage={currentPage}
             totalPages={totalPages}
