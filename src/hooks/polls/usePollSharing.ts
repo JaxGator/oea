@@ -1,8 +1,8 @@
 
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { pollSharingService } from "@/services/pollSharingService";
 
 export function usePollSharing(pollId: string) {
   const { toast } = useToast();
@@ -12,84 +12,40 @@ export function usePollSharing(pollId: string) {
   const { data: poll } = useQuery({
     queryKey: ['poll-share-token', pollId],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('polls')
-        .select('share_token')
-        .eq('id', pollId)
-        .single();
-
-      if (error) throw error;
-      if (data?.share_token) {
+      const shareToken = await pollSharingService.getPollShareToken(pollId);
+      if (shareToken) {
         const baseUrl = window.location.origin;
-        setShareUrl(`${baseUrl}/polls/share/${data.share_token}`);
+        setShareUrl(`${baseUrl}/polls/share/${shareToken}`);
       }
-      return data;
-    },
-    enabled: !!pollId
+      return { share_token: shareToken };
+    }
   });
 
   const { data: existingShares = [] } = useQuery({
     queryKey: ['poll-shares', pollId],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('poll_shares')
-        .select('shared_with')
-        .eq('poll_id', pollId);
-
-      if (error) throw error;
-      return data.map(share => share.shared_with);
-    },
-    enabled: !!pollId
+    queryFn: () => pollSharingService.getPollShares(pollId)
   });
 
   const handleShare = async () => {
     if (selectedUsers.length === 0) return;
 
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+    try {
+      await pollSharingService.sharePoll(pollId, selectedUsers, shareUrl);
+      
+      toast({
+        title: "Success",
+        description: "Poll shared successfully"
+      });
 
-    const { error } = await supabase
-      .from('poll_shares')
-      .insert(
-        selectedUsers.map(userId => ({
-          poll_id: pollId,
-          shared_with: userId,
-          shared_by: user.id
-        }))
-      );
-
-    if (error) {
+      setSelectedUsers([]);
+    } catch (error) {
       console.error('Error sharing poll:', error);
       toast({
         title: "Error",
         description: "Failed to share poll",
         variant: "destructive"
       });
-      return;
     }
-
-    const notifications = selectedUsers.map(userId => ({
-      user_id: userId,
-      type: 'poll_share',
-      title: 'New Poll Shared',
-      message: `A poll has been shared with you. Click to view: ${shareUrl}`,
-      related_entity_id: pollId
-    }));
-
-    const { error: notificationError } = await supabase
-      .from('notifications')
-      .insert(notifications);
-
-    if (notificationError) {
-      console.error('Error creating notifications:', notificationError);
-    }
-
-    toast({
-      title: "Success",
-      description: "Poll shared successfully"
-    });
-
-    setSelectedUsers([]);
   };
 
   const copyShareUrl = async () => {
