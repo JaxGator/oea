@@ -31,7 +31,7 @@ export const FeaturedEvents = () => {
       <div className="container mx-auto px-4">
         <h2 id="featured-events-heading" className="sr-only">Featured Events</h2>
         <UpcomingEventsSection 
-          key={upcomingEvents?.map(e => `${e.id}-${e.updated_at}`).join('-')} // Add key for proper re-renders
+          key={upcomingEvents?.map(e => `${e.id}-${e.date}-${e.time}`).join('-')} // Using guaranteed fields for the key
           events={upcomingEvents}
           userRSVPs={userRSVPs || {}}
           handleRSVP={handleRSVP}
