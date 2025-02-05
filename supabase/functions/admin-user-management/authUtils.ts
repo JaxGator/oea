@@ -14,7 +14,7 @@ export async function verifyAdminUser(supabaseAdmin: SupabaseClient, authHeader:
     throw new Error('Invalid token')
   }
 
-  // Verify user is admin
+  // Verify user is admin using service role client
   const { data: adminCheck } = await supabaseAdmin
     .from('profiles')
     .select('is_admin')
