@@ -3,6 +3,7 @@ import { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { UpdateUserRequest } from './types.ts'
 
 export async function getUserData(supabaseAdmin: SupabaseClient, userId: string) {
+  // Get auth user data
   const { data: userData, error: userError } = await supabaseAdmin.auth.admin.getUserById(userId)
   
   if (userError) {
@@ -10,7 +11,19 @@ export async function getUserData(supabaseAdmin: SupabaseClient, userId: string)
     throw userError
   }
 
-  return userData
+  // Get profile data
+  const { data: profileData, error: profileError } = await supabaseAdmin
+    .from('profiles')
+    .select('*')
+    .eq('id', userId)
+    .single()
+
+  if (profileError) {
+    console.error('Error fetching profile:', profileError)
+    throw profileError
+  }
+
+  return { user: userData.user, profile: profileData }
 }
 
 export async function updateUserData(
@@ -20,9 +33,20 @@ export async function updateUserData(
 ) {
   const { userId, username, fullName, isAdmin, isApproved, isMember, avatarUrl, email, password } = requestData
 
+  // Validate admin status
+  const { data: adminCheck, error: adminCheckError } = await supabaseAdmin
+    .from('profiles')
+    .select('is_admin')
+    .eq('id', adminId)
+    .single()
+
+  if (adminCheckError || !adminCheck?.is_admin) {
+    throw new Error('Unauthorized - Admin access required')
+  }
+
   // Update auth user if email or password provided
   if (email || password) {
-    console.log('Attempting auth update with:', {
+    console.log('Updating auth user:', {
       userId,
       hasEmail: !!email,
       hasPassword: !!password
@@ -61,18 +85,17 @@ export async function updateUserData(
   if (isApproved !== undefined) updates.is_approved = isApproved
   if (isMember !== undefined) updates.is_member = isMember
   if (avatarUrl !== undefined) updates.avatar_url = avatarUrl
-  if (email !== undefined) updates.email = email
 
-  console.log('Attempting profile update with:', updates)
+  console.log('Updating profile:', { userId, updates })
 
-  const { error: updateProfileError } = await supabaseAdmin
+  const { error: profileUpdateError } = await supabaseAdmin
     .from('profiles')
     .update(updates)
     .eq('id', userId)
 
-  if (updateProfileError) {
-    console.error('Error updating profile:', updateProfileError)
-    throw updateProfileError
+  if (profileUpdateError) {
+    console.error('Error updating profile:', profileUpdateError)
+    throw profileUpdateError
   }
 
   // Log the admin action
@@ -88,5 +111,6 @@ export async function updateUserData(
 
   if (logError) {
     console.error('Error creating admin log:', logError)
+    // Don't throw here as this is not critical
   }
 }
