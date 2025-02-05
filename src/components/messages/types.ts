@@ -1,3 +1,4 @@
+
 import { Profile } from "@/types/auth";
 
 export interface Message {
@@ -23,6 +24,15 @@ export interface GroupMessage {
   };
 }
 
+export interface GroupChat {
+  id: string;
+  name: string;
+  description: string | null;
+  participants: Profile[];
+  messages: GroupMessage[];
+  lastMessage: GroupMessage | null;
+}
+
 export interface ConversationType {
   user: Profile;
   messages: Message[];
@@ -33,5 +43,6 @@ export interface ConversationType {
     id: string;
     name: string;
     description: string | null;
+    participants: Profile[];
   };
 }

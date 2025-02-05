@@ -1,3 +1,4 @@
+
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Trash2, Users } from "lucide-react";
@@ -20,6 +21,14 @@ export function ConversationCard({
   onDelete,
   isDeleting
 }: ConversationCardProps) {
+  const displayName = conversation.isGroup 
+    ? conversation.groupInfo?.name 
+    : conversation.user.username;
+
+  const participantCount = conversation.isGroup 
+    ? conversation.groupInfo?.participants.length 
+    : null;
+
   return (
     <Card
       className={`cursor-pointer hover:bg-accent/50 transition-colors ${
@@ -41,14 +50,18 @@ export function ConversationCard({
               </AvatarFallback>
             </Avatar>
             <div>
-              <h3 className="font-medium">
-                {conversation.isGroup ? conversation.groupInfo?.name : conversation.user.username}
-              </h3>
+              <h3 className="font-medium">{displayName}</h3>
+              {conversation.isGroup && participantCount && (
+                <p className="text-xs text-muted-foreground">
+                  {participantCount} participants
+                </p>
+              )}
               <p className="text-sm text-muted-foreground">
-                {format(new Date(conversation.lastMessage.created_at), 'MMM d, yyyy')}
+                {conversation.lastMessage && format(new Date(conversation.lastMessage.created_at), 'MMM d, yyyy')}
               </p>
             </div>
           </div>
+
           <div className="flex items-center gap-2">
             {conversation.unreadCount > 0 && (
               <div className="flex items-center gap-2 bg-primary/10 text-primary px-2 py-1 rounded-full">
