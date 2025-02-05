@@ -24,13 +24,14 @@ export const FeaturedEvents = () => {
       // Then sort by date
       return new Date(a.date).getTime() - new Date(b.date).getTime();
     })
-    .slice(0, 3) || []; // Changed from 4 to 3
+    .slice(0, 3);
 
   return (
     <section className="py-4 bg-[#F1F0FB]" aria-labelledby="featured-events-heading">
       <div className="container mx-auto px-4">
         <h2 id="featured-events-heading" className="sr-only">Featured Events</h2>
         <UpcomingEventsSection 
+          key={upcomingEvents?.map(e => `${e.id}-${e.updated_at}`).join('-')} // Add key for proper re-renders
           events={upcomingEvents}
           userRSVPs={userRSVPs || {}}
           handleRSVP={handleRSVP}

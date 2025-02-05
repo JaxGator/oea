@@ -1,3 +1,4 @@
+
 import { Event } from "@/types/event";
 import { EventDetailsSection } from "./sections/EventDetailsSection";
 import { EventActionsSection } from "./sections/EventActionsSection";

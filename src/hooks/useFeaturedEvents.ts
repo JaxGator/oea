@@ -1,3 +1,4 @@
+
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useRSVPManagement } from "@/hooks/events/useRSVPManagement";
@@ -52,10 +53,11 @@ export const useFeaturedEvents = () => {
       }
     },
     staleTime: 1000 * 60 * 5, // Cache for 5 minutes
-    refetchOnWindowFocus: false
+    refetchOnWindowFocus: false,
+    retry: 1 // Limit retries to prevent infinite loops
   });
 
-  // Set up real-time subscription for events
+  // Set up real-time subscription for events with proper cleanup
   useEffect(() => {
     const channel = supabase
       .channel('events-changes')
@@ -66,13 +68,16 @@ export const useFeaturedEvents = () => {
           schema: 'public',
           table: 'events'
         },
-        () => {
+        (payload) => {
+          console.log('Event change detected:', payload);
+          // Invalidate and refetch instead of just invalidating
           queryClient.invalidateQueries({ queryKey: ['featuredEvents'] });
         }
       )
       .subscribe();
 
     return () => {
+      console.log('Cleaning up event subscription');
       supabase.removeChannel(channel);
     };
   }, [queryClient]);
