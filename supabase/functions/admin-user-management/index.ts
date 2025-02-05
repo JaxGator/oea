@@ -27,7 +27,7 @@ serve(async (req) => {
 
   try {
     // Get and validate environment variables
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')?.replace(/\/$/, '') // Remove trailing slash
     const supabaseServiceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
 
     if (!supabaseUrl || !supabaseServiceRoleKey) {
@@ -38,10 +38,15 @@ serve(async (req) => {
       throw new Error('Server configuration error')
     }
 
-    // Create Supabase admin client with explicit URL and key
+    console.log('Creating Supabase admin client with URL:', {
+      url: supabaseUrl,
+      hasServiceKey: !!supabaseServiceRoleKey
+    });
+
+    // Create Supabase admin client with sanitized URL
     const supabaseAdmin = createClient(
-      supabaseUrl.trim(),
-      supabaseServiceRoleKey.trim(),
+      supabaseUrl,
+      supabaseServiceRoleKey,
       {
         auth: {
           autoRefreshToken: false,
@@ -218,7 +223,8 @@ serve(async (req) => {
     console.error('Error in admin-user-management function:', error)
     return new Response(
       JSON.stringify({ 
-        error: error instanceof Error ? error.message : 'An unexpected error occurred'
+        error: error instanceof Error ? error.message : 'An unexpected error occurred',
+        details: error
       }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
