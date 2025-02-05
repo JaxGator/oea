@@ -35,6 +35,7 @@ interface Poll {
   end_date: string | null;
   allow_multiple_choices: boolean;
   created_at: string;
+  share_token: string;
   poll_options: PollOption[];
   poll_votes: PollVote[];
 }
@@ -59,6 +60,7 @@ export function PollSection() {
           end_date,
           allow_multiple_choices,
           created_at,
+          share_token,
           poll_options (
             id,
             option_text,

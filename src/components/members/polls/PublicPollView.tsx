@@ -36,7 +36,16 @@ export function PublicPollView() {
         .single();
 
       if (error) throw error;
-      return data;
+
+      return {
+        ...data,
+        poll_votes: data.poll_votes.map((vote: any) => ({
+          id: vote.id,
+          option_id: vote.option_id,
+          user_id: vote.user_id,
+          profiles: vote.profiles || { username: '', avatar_url: null }
+        }))
+      };
     },
     enabled: !!token
   });
