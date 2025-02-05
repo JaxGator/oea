@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface SharePollDialogProps {
   pollId: string;
@@ -26,6 +27,7 @@ export function SharePollDialog({ pollId, open, onOpenChange }: SharePollDialogP
   const { toast } = useToast();
   const [search, setSearch] = useState("");
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
+  const [shareUrl, setShareUrl] = useState<string>("");
 
   const { data: members = [] } = useQuery({
     queryKey: ['members-for-sharing'],
@@ -39,6 +41,27 @@ export function SharePollDialog({ pollId, open, onOpenChange }: SharePollDialogP
 
       if (error) throw error;
       return members as Member[];
+    }
+  });
+
+  const { data: poll } = useQuery({
+    queryKey: ['poll-share-token', pollId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('polls')
+        .select('share_token')
+        .eq('id', pollId)
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!pollId,
+    onSuccess: (data) => {
+      if (data?.share_token) {
+        const baseUrl = window.location.origin;
+        setShareUrl(`${baseUrl}/polls/share/${data.share_token}`);
+      }
     }
   });
 
@@ -70,7 +93,7 @@ export function SharePollDialog({ pollId, open, onOpenChange }: SharePollDialogP
         selectedUsers.map(userId => ({
           poll_id: pollId,
           shared_with: userId,
-          shared_by: supabase.auth.getUser().then(({ data }) => data.user?.id)
+          shared_by: (await supabase.auth.getUser()).data.user?.id
         }))
       );
 
@@ -84,6 +107,23 @@ export function SharePollDialog({ pollId, open, onOpenChange }: SharePollDialogP
       return;
     }
 
+    // Create notifications for shared users
+    const notifications = selectedUsers.map(userId => ({
+      user_id: userId,
+      type: 'poll_share',
+      title: 'New Poll Shared',
+      message: `A poll has been shared with you. Click to view: ${shareUrl}`,
+      related_entity_id: pollId
+    }));
+
+    const { error: notificationError } = await supabase
+      .from('notifications')
+      .insert(notifications);
+
+    if (notificationError) {
+      console.error('Error creating notifications:', notificationError);
+    }
+
     toast({
       title: "Success",
       description: "Poll shared successfully"
@@ -91,6 +131,16 @@ export function SharePollDialog({ pollId, open, onOpenChange }: SharePollDialogP
 
     setSelectedUsers([]);
     onOpenChange(false);
+  };
+
+  const copyShareUrl = async () => {
+    if (shareUrl) {
+      await navigator.clipboard.writeText(shareUrl);
+      toast({
+        title: "Success",
+        description: "Share URL copied to clipboard"
+      });
+    }
   };
 
   return (
@@ -101,6 +151,22 @@ export function SharePollDialog({ pollId, open, onOpenChange }: SharePollDialogP
         </DialogHeader>
 
         <div className="space-y-4">
+          {shareUrl && (
+            <Alert>
+              <AlertDescription className="break-all text-sm">
+                {shareUrl}
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="ml-2"
+                  onClick={copyShareUrl}
+                >
+                  Copy
+                </Button>
+              </AlertDescription>
+            </Alert>
+          )}
+
           <div className="relative">
             <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
