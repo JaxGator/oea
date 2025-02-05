@@ -12,6 +12,7 @@ interface AdminUserTableRowProps {
   onUpdateStatus: (username: string) => void;
   onDelete: (userId: string) => void;
   isUpdating: boolean;
+  isMobile?: boolean;
 }
 
 export function AdminUserTableRow({
@@ -19,7 +20,8 @@ export function AdminUserTableRow({
   onEdit,
   onUpdateStatus,
   onDelete,
-  isUpdating
+  isUpdating,
+  isMobile = false
 }: AdminUserTableRowProps) {
   console.log('AdminUserTableRow render:', { profile });
 
@@ -40,7 +42,7 @@ export function AdminUserTableRow({
 
   return (
     <TableRow className="group hover:bg-muted/50">
-      <TableCell className="py-4">
+      <TableCell className="py-2 sm:py-4">
         <div className="flex flex-col gap-1">
           <span className="font-medium truncate max-w-[150px] sm:max-w-[200px] md:max-w-none">
             {profile.username}
@@ -48,24 +50,28 @@ export function AdminUserTableRow({
           <span className="text-sm text-muted-foreground truncate max-w-[150px] sm:max-w-[200px] md:max-w-none">
             {profile.full_name || '-'}
           </span>
-          <div className="flex flex-wrap gap-1 md:hidden mt-2">
+          {isMobile && (
+            <div className="flex flex-wrap gap-1 mt-1">
+              <UserStatusBadges 
+                isAdmin={profile.is_admin}
+                isApproved={profile.is_approved}
+                isMember={profile.is_member}
+              />
+            </div>
+          )}
+        </div>
+      </TableCell>
+      {!isMobile && (
+        <TableCell>
+          <div className="flex flex-wrap gap-1">
             <UserStatusBadges 
               isAdmin={profile.is_admin}
               isApproved={profile.is_approved}
               isMember={profile.is_member}
             />
           </div>
-        </div>
-      </TableCell>
-      <TableCell className="hidden md:table-cell">
-        <div className="flex flex-wrap gap-1">
-          <UserStatusBadges 
-            isAdmin={profile.is_admin}
-            isApproved={profile.is_approved}
-            isMember={profile.is_member}
-          />
-        </div>
-      </TableCell>
+        </TableCell>
+      )}
       <TableCell className="w-[100px]">
         <div className="flex justify-end">
           <AdminUserActions

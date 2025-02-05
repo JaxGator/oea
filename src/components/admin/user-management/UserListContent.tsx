@@ -7,6 +7,7 @@ import { AdminUserTableWrapper } from "./AdminUserTableWrapper";
 import { LoadingState } from "./LoadingState";
 import { ErrorState } from "./ErrorState";
 import { UserListPagination } from "./UserListPagination";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface UserListContentProps {
   members: Member[];
@@ -33,6 +34,8 @@ export const UserListContent = memo(function UserListContent({
   onPageChange,
   isUpdatingUser = false,
 }: UserListContentProps) {
+  const isMobile = useIsMobile();
+
   if (isLoading) return <LoadingState />;
   
   if (error) {
@@ -45,13 +48,13 @@ export const UserListContent = memo(function UserListContent({
 
   return (
     <div className="space-y-4">
-      <div className="rounded-md border">
+      <div className="rounded-md border overflow-hidden">
         <AdminUserTableWrapper>
           <Table>
             <TableHeader>
               <TableRow>
                 <TableHead className="w-[200px]">User</TableHead>
-                <TableHead className="hidden md:table-cell">Status</TableHead>
+                {!isMobile && <TableHead>Status</TableHead>}
                 <TableHead className="w-[100px] text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -64,6 +67,7 @@ export const UserListContent = memo(function UserListContent({
                   onUpdateStatus={() => {}}
                   onDelete={onDeleteMember}
                   isUpdating={isUpdatingUser}
+                  isMobile={isMobile}
                 />
               ))}
             </TableBody>
