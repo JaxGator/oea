@@ -35,7 +35,7 @@ export function useUserActions(refetchUsers: () => void) {
         description: "User status updated successfully",
       });
       
-      refetchUsers();
+      await refetchUsers();
     } catch (error) {
       console.error('Error updating user status:', error);
       toast({
@@ -58,24 +58,14 @@ export function useUserActions(refetchUsers: () => void) {
         throw new Error('No active session found');
       }
 
-      console.log('Got session, making delete request');
-      const { data, error } = await supabase.functions.invoke('delete-user', {
+      const { error } = await supabase.functions.invoke('delete-user', {
         body: { userId },
         headers: {
           Authorization: `Bearer ${session.access_token}`
         }
       });
 
-      if (error) {
-        console.error('Delete function error:', error);
-        throw error;
-      }
-
-      if (!data) {
-        throw new Error('No response from delete function');
-      }
-
-      console.log('Delete user response:', data);
+      if (error) throw error;
 
       toast({
         title: "Success",
