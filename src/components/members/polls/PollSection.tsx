@@ -1,4 +1,4 @@
-```typescript
+
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Plus } from "lucide-react";
@@ -153,4 +153,3 @@ export function PollSection() {
     </div>
   );
 }
-```
