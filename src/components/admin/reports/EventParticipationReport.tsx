@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { DateRange } from "react-day-picker";
@@ -8,6 +9,8 @@ import { EventParticipationChart } from "./participation/EventParticipationChart
 import { EventParticipationTable } from "./participation/EventParticipationTable";
 import type { EventStats } from "./participation/types";
 import { toast } from "sonner";
+import { Card } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export function EventParticipationReport() {
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
@@ -27,7 +30,6 @@ export function EventParticipationReport() {
           `)
           .order('date', { ascending: false });
 
-        // Add date range filter if provided
         if (dateRange?.from) {
           query = query.gte('date', format(dateRange.from, 'yyyy-MM-dd'));
         }
@@ -73,7 +75,6 @@ export function EventParticipationReport() {
   const handleExport = () => {
     if (!eventStats?.events) return;
     
-    // Convert data to CSV format
     const headers = ['Event Name', 'Date', 'Attendees'];
     const csvData = eventStats.events.map(event => [
       event.name,
@@ -81,14 +82,11 @@ export function EventParticipationReport() {
       event.attending
     ]);
     
-    // Add headers to beginning of data
     csvData.unshift(headers);
     
-    // Convert to CSV string
     const csvString = csvData
       .map(row => row
         .map(cell => {
-          // Handle cells that contain commas by wrapping in quotes
           if (cell && cell.toString().includes(',')) {
             return `"${cell}"`;
           }
@@ -98,7 +96,6 @@ export function EventParticipationReport() {
       )
       .join('\n');
     
-    // Create blob and download
     const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     const url = URL.createObjectURL(blob);
@@ -111,18 +108,33 @@ export function EventParticipationReport() {
   };
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="space-y-6">
+        <Card className="p-4">
+          <Skeleton className="h-[40px] w-full mb-4" />
+          <Skeleton className="h-[40px] w-3/4" />
+        </Card>
+        <Card className="p-4">
+          <Skeleton className="h-[250px] w-full" />
+        </Card>
+        <Card className="p-4">
+          <Skeleton className="h-[200px] w-full" />
+        </Card>
+      </div>
+    );
   }
 
   return (
     <div className="space-y-6">
-      <EventParticipationFilters
-        dateRange={dateRange}
-        eventType={eventType}
-        onDateRangeChange={setDateRange}
-        onEventTypeChange={setEventType}
-        onExport={handleExport}
-      />
+      <Card className="p-4">
+        <EventParticipationFilters
+          dateRange={dateRange}
+          eventType={eventType}
+          onDateRangeChange={setDateRange}
+          onEventTypeChange={setEventType}
+          onExport={handleExport}
+        />
+      </Card>
       
       {eventStats && (
         <>
