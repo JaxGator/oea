@@ -6,6 +6,13 @@ export interface ConversationType {
   messages: Message[];
   lastMessage: Message;
   unreadCount: number;
+  isGroup?: boolean;
+  groupInfo?: {
+    id: string;
+    name: string;
+    description: string | null;
+    participants: Profile[];
+  };
 }
 
 export interface ConversationListProps {

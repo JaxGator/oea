@@ -46,3 +46,4 @@ export interface ConversationType {
     participants: Profile[];
   };
 }
+

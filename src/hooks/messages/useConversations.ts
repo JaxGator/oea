@@ -1,8 +1,7 @@
-
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect } from "react";
-import { Message, GroupMessage } from "./types";
+import { Message, GroupMessage } from "@/components/messages/types";
 import { Profile } from "@/types/auth";
 
 interface GroupMessageResponse {
@@ -14,7 +13,6 @@ interface GroupMessageResponse {
     id: string;
     name: string;
     description: string;
-    participants: Profile[];
   };
 }
 
