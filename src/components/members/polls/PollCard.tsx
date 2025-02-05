@@ -10,18 +10,18 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
-import { PollHeader } from "./components/PollHeader";
-import { PollChartView } from "./components/PollChartView";
 import { PollOption } from "./components/PollOption";
 import { PollVoterList } from "./PollVoterList";
 import { Button } from "@/components/ui/button";
 import { PollShareButton } from "./components/PollShareButton";
+import { PollChartView } from "./components/PollChartView";
 
 interface PollCardProps {
   poll: {
     id: string;
     title: string;
     description: string | null;
+    share_token: string;
     poll_options: Array<{
       id: string;
       option_text: string;
@@ -105,9 +105,9 @@ export function PollCard({ poll, canEdit, onDelete }: PollCardProps) {
             )}
           </div>
           <div className="flex items-center space-x-2">
+            <PollShareButton pollId={poll.id} shareToken={poll.share_token} />
             {canEdit && (
               <>
-                <PollShareButton pollId={poll.id} />
                 <Button
                   variant="ghost"
                   size="sm"

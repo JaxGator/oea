@@ -1,4 +1,5 @@
-export const publicRoutes = ['/', '/about', '/privacy', '/terms', '/resources', '/events'];
+
+export const publicRoutes = ['/', '/about', '/privacy', '/terms', '/resources', '/events', '/polls/share/:token'];
 export const protectedRoutes = ['/profile', '/admin', '/users', '/store'];
 
 export const isProtectedRoute = (pathname: string): boolean => {

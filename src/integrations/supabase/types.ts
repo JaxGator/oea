@@ -1022,6 +1022,7 @@ export type Database = {
           description: string | null
           end_date: string | null
           id: string
+          share_token: string | null
           start_date: string | null
           status: Database["public"]["Enums"]["poll_status"] | null
           title: string
@@ -1035,6 +1036,7 @@ export type Database = {
           description?: string | null
           end_date?: string | null
           id?: string
+          share_token?: string | null
           start_date?: string | null
           status?: Database["public"]["Enums"]["poll_status"] | null
           title: string
@@ -1048,6 +1050,7 @@ export type Database = {
           description?: string | null
           end_date?: string | null
           id?: string
+          share_token?: string | null
           start_date?: string | null
           status?: Database["public"]["Enums"]["poll_status"] | null
           title?: string
