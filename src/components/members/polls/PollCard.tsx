@@ -1,4 +1,4 @@
-```typescript
+
 import { useState } from "react";
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { useAuthState } from "@/hooks/useAuthState";
@@ -167,4 +167,3 @@ export function PollCard({ poll, canEdit, onDelete }: PollCardProps) {
     </Card>
   );
 }
-```
