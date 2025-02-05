@@ -1,3 +1,4 @@
+
 import { SocialLinksManager } from "./social/SocialLinksManager";
 import { SocialFeedManager } from "./social/SocialFeedManager";
 import { useState } from "react";
@@ -27,7 +28,9 @@ export function SocialSettings({ configs, setConfigs, updateConfig }: SocialSett
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
-              <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
+              <button className="touch-none focus:outline-none">
+                <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
+              </button>
             </TooltipTrigger>
             <TooltipContent>
               <p>Configure your social media profiles and feed integrations</p>
@@ -39,14 +42,20 @@ export function SocialSettings({ configs, setConfigs, updateConfig }: SocialSett
         Configure your social media links and feeds
       </p>
 
-      <SocialLinksManager
-        socialLinks={socialLinks}
-        setSocialLinks={setSocialLinks}
-      />
+      <div className="space-y-8">
+        <div className="bg-card rounded-lg p-4 space-y-6">
+          <SocialLinksManager
+            socialLinks={socialLinks}
+            setSocialLinks={setSocialLinks}
+          />
+        </div>
 
-      <Separator className="my-6" />
+        <Separator className="my-6" />
 
-      <SocialFeedManager />
+        <div className="bg-card rounded-lg p-4 space-y-6">
+          <SocialFeedManager />
+        </div>
+      </div>
     </div>
   );
 }

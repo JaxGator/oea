@@ -1,16 +1,17 @@
+
 import { TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Settings, Share2, Scale, Wrench, Globe } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 export function ConfigTabs() {
   return (
-    <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 gap-2">
-      <TooltipProvider>
+    <TabsList className="grid w-full grid-cols-3 sm:grid-cols-5 gap-2">
+      <TooltipProvider delayDuration={700}>
         <Tooltip>
           <TooltipTrigger asChild>
-            <TabsTrigger value="general" className="flex items-center gap-2 w-full">
+            <TabsTrigger value="general" className="flex items-center justify-center gap-2 w-full p-3 sm:p-2">
               <Settings className="h-4 w-4" />
-              <span className="hidden sm:inline">General</span>
+              <span className="text-xs sm:text-sm">General</span>
             </TabsTrigger>
           </TooltipTrigger>
           <TooltipContent>
@@ -20,9 +21,9 @@ export function ConfigTabs() {
 
         <Tooltip>
           <TooltipTrigger asChild>
-            <TabsTrigger value="social" className="flex items-center gap-2 w-full">
+            <TabsTrigger value="social" className="flex items-center justify-center gap-2 w-full p-3 sm:p-2">
               <Share2 className="h-4 w-4" />
-              <span className="hidden sm:inline">Social</span>
+              <span className="text-xs sm:text-sm">Social</span>
             </TabsTrigger>
           </TooltipTrigger>
           <TooltipContent>
@@ -32,9 +33,9 @@ export function ConfigTabs() {
 
         <Tooltip>
           <TooltipTrigger asChild>
-            <TabsTrigger value="integrations" className="flex items-center gap-2 w-full">
+            <TabsTrigger value="integrations" className="flex items-center justify-center gap-2 w-full p-3 sm:p-2">
               <Globe className="h-4 w-4" />
-              <span className="hidden sm:inline">Integrations</span>
+              <span className="text-xs sm:text-sm">API</span>
             </TabsTrigger>
           </TooltipTrigger>
           <TooltipContent>
@@ -44,9 +45,9 @@ export function ConfigTabs() {
 
         <Tooltip>
           <TooltipTrigger asChild>
-            <TabsTrigger value="legal" className="flex items-center gap-2 w-full">
+            <TabsTrigger value="legal" className="flex items-center justify-center gap-2 w-full p-3 sm:p-2">
               <Scale className="h-4 w-4" />
-              <span className="hidden sm:inline">Legal</span>
+              <span className="text-xs sm:text-sm">Legal</span>
             </TabsTrigger>
           </TooltipTrigger>
           <TooltipContent>
@@ -56,9 +57,9 @@ export function ConfigTabs() {
 
         <Tooltip>
           <TooltipTrigger asChild>
-            <TabsTrigger value="technical" className="flex items-center gap-2 w-full">
+            <TabsTrigger value="technical" className="flex items-center justify-center gap-2 w-full p-3 sm:p-2">
               <Wrench className="h-4 w-4" />
-              <span className="hidden sm:inline">Technical</span>
+              <span className="text-xs sm:text-sm">Tech</span>
             </TabsTrigger>
           </TooltipTrigger>
           <TooltipContent>

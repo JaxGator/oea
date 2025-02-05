@@ -1,3 +1,4 @@
+
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { ConfigTabs } from "./site-config/ConfigTabs";
 import { GeneralSettings } from "./site-config/GeneralSettings";
@@ -13,17 +14,24 @@ export default function SiteConfigManager() {
   const { configs, setConfigs, updateConfig, isLoading } = useConfigManager();
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="p-4 space-y-4 animate-pulse">
+        <div className="h-8 w-48 bg-muted rounded-lg"></div>
+        <div className="h-32 bg-muted rounded-lg"></div>
+      </div>
+    );
   }
 
   return (
-    <div className="space-y-6 p-4 max-w-full overflow-x-hidden">
+    <div className="space-y-6 p-4 pb-24 sm:pb-6 max-w-full overflow-x-hidden">
       <div className="flex items-center gap-2">
         <h2 className="text-lg font-semibold">Site Configuration</h2>
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
-              <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
+              <button className="touch-none focus:outline-none">
+                <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
+              </button>
             </TooltipTrigger>
             <TooltipContent>
               <p className="max-w-[250px]">Manage all aspects of your site including general settings, social media, legal documents, and technical configurations</p>
