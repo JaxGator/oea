@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useFeaturedEvents } from "@/hooks/useFeaturedEvents";
 import { UpcomingEventsSection } from "./UpcomingEventsSection";
@@ -8,7 +9,7 @@ export const FeaturedEvents = () => {
 
   console.log('FeaturedEvents render:', { events, isLoading, error, userRSVPs });
 
-  // Filter out past events and limit to 4 upcoming events
+  // Filter out past events and limit to 3 upcoming events
   const upcomingEvents = events
     ?.filter(event => {
       const eventDate = new Date(event.date);
@@ -23,7 +24,7 @@ export const FeaturedEvents = () => {
       // Then sort by date
       return new Date(a.date).getTime() - new Date(b.date).getTime();
     })
-    .slice(0, 4) || [];
+    .slice(0, 3) || []; // Changed from 4 to 3
 
   return (
     <section className="py-4 bg-[#F1F0FB]" aria-labelledby="featured-events-heading">
