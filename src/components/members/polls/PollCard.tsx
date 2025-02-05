@@ -1,3 +1,4 @@
+```typescript
 import { useState } from "react";
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { useAuthState } from "@/hooks/useAuthState";
@@ -13,6 +14,8 @@ import { PollHeader } from "./components/PollHeader";
 import { PollChartView } from "./components/PollChartView";
 import { PollOption } from "./components/PollOption";
 import { PollVoterList } from "./PollVoterList";
+import { Button } from "@/components/ui/button";
+import { PollShareButton } from "./components/PollShareButton";
 
 interface PollCardProps {
   poll: {
@@ -92,15 +95,41 @@ export function PollCard({ poll, canEdit, onDelete }: PollCardProps) {
   return (
     <Card>
       <CardHeader>
-        <PollHeader
-          title={poll.title}
-          description={poll.description}
-          totalVotes={totalVotes}
-          canEdit={canEdit}
-          showPieChart={showPieChart}
-          onDelete={onDelete}
-          onToggleChart={() => setShowPieChart(!showPieChart)}
-        />
+        <div className="flex justify-between items-start">
+          <div className="space-y-1">
+            <h3 className="text-lg font-semibold leading-none tracking-tight">
+              {poll.title}
+            </h3>
+            {poll.description && (
+              <p className="text-sm text-muted-foreground">{poll.description}</p>
+            )}
+          </div>
+          <div className="flex items-center space-x-2">
+            {canEdit && (
+              <>
+                <PollShareButton pollId={poll.id} />
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowPieChart(!showPieChart)}
+                >
+                  {showPieChart ? "Show Bars" : "Show Chart"}
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={onDelete}
+                  className="text-destructive"
+                >
+                  Delete
+                </Button>
+              </>
+            )}
+          </div>
+        </div>
+        <div className="text-sm text-muted-foreground">
+          {totalVotes} {totalVotes === 1 ? "vote" : "votes"}
+        </div>
       </CardHeader>
       <CardContent className="space-y-4">
         {showPieChart ? (
@@ -138,3 +167,4 @@ export function PollCard({ poll, canEdit, onDelete }: PollCardProps) {
     </Card>
   );
 }
+```

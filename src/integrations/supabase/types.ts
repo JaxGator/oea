@@ -922,6 +922,52 @@ export type Database = {
           },
         ]
       }
+      poll_shares: {
+        Row: {
+          id: string
+          poll_id: string | null
+          shared_at: string | null
+          shared_by: string | null
+          shared_with: string | null
+        }
+        Insert: {
+          id?: string
+          poll_id?: string | null
+          shared_at?: string | null
+          shared_by?: string | null
+          shared_with?: string | null
+        }
+        Update: {
+          id?: string
+          poll_id?: string | null
+          shared_at?: string | null
+          shared_by?: string | null
+          shared_with?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "poll_shares_poll_id_fkey"
+            columns: ["poll_id"]
+            isOneToOne: false
+            referencedRelation: "polls"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "poll_shares_shared_by_fkey"
+            columns: ["shared_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "poll_shares_shared_with_fkey"
+            columns: ["shared_with"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       poll_votes: {
         Row: {
           created_at: string
@@ -980,6 +1026,7 @@ export type Database = {
           status: Database["public"]["Enums"]["poll_status"] | null
           title: string
           updated_at: string
+          visibility: Database["public"]["Enums"]["poll_visibility"] | null
         }
         Insert: {
           allow_multiple_choices?: boolean | null
@@ -992,6 +1039,7 @@ export type Database = {
           status?: Database["public"]["Enums"]["poll_status"] | null
           title: string
           updated_at?: string
+          visibility?: Database["public"]["Enums"]["poll_visibility"] | null
         }
         Update: {
           allow_multiple_choices?: boolean | null
@@ -1004,6 +1052,7 @@ export type Database = {
           status?: Database["public"]["Enums"]["poll_status"] | null
           title?: string
           updated_at?: string
+          visibility?: Database["public"]["Enums"]["poll_visibility"] | null
         }
         Relationships: [
           {
@@ -1481,6 +1530,7 @@ export type Database = {
       message_status: "draft" | "scheduled" | "sent" | "failed"
       notification_type: "message" | "event_reminder"
       poll_status: "draft" | "active" | "closed"
+      poll_visibility: "private" | "shared" | "public"
       recipient_type: "individual" | "group" | "all" | "event" | "custom_list"
       rsvp_response: "attending" | "not_attending" | "maybe"
       social_media_platform: "instagram" | "facebook" | "twitter"

@@ -1,3 +1,4 @@
+```typescript
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Plus } from "lucide-react";
@@ -46,7 +47,7 @@ export function PollSection() {
   const { data: polls = [], isLoading, refetch } = useQuery({
     queryKey: ['active-polls'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data: ownAndSharedPolls, error: pollsError } = await supabase
         .from('polls')
         .select(`
           id,
@@ -76,17 +77,17 @@ export function PollSection() {
         .eq('status', 'active')
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (pollsError) throw pollsError;
       
-      // Transform the data to match the expected types
-      return (data as any[]).map((poll): Poll => ({
+      return (ownAndSharedPolls as any[]).map((poll): Poll => ({
         ...poll,
         poll_votes: poll.poll_votes.map((vote: any) => ({
           ...vote,
           profiles: vote.profiles || { username: '', avatar_url: null }
         }))
       }));
-    }
+    },
+    enabled: !!profile?.id
   });
 
   const handleDeletePoll = async (pollId: string) => {
@@ -152,3 +153,4 @@ export function PollSection() {
     </div>
   );
 }
+```
