@@ -1,64 +1,71 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-import { corsHeaders } from '../admin-user-management/types.ts'
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+}
 
 serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
 
   try {
+    console.log('Delete user function started');
+    
     // Initialize Supabase admin client
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
-    // Verify the request is from an admin
+    // Get auth header
     const authHeader = req.headers.get('Authorization')?.split(' ')[1]
+    console.log('Auth header present:', !!authHeader);
+
     if (!authHeader) {
-      return new Response(
-        JSON.stringify({ error: 'No authorization header' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
+      throw new Error('No authorization header')
     }
 
+    // Verify the request is from an admin
     const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(authHeader)
     if (authError || !user) {
       console.error('Auth error:', authError)
-      return new Response(
-        JSON.stringify({ error: 'Invalid token' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
+      throw new Error('Invalid token')
     }
 
+    console.log('Authenticated as user:', user.id);
+
     // Verify admin status
-    const { data: adminCheck } = await supabaseAdmin
+    const { data: adminCheck, error: adminCheckError } = await supabaseAdmin
       .from('profiles')
       .select('is_admin')
       .eq('id', user.id)
       .single()
 
-    if (!adminCheck?.is_admin) {
-      return new Response(
-        JSON.stringify({ error: 'Unauthorized - Admin access required' }),
-        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
+    if (adminCheckError) {
+      console.error('Admin check error:', adminCheckError);
+      throw new Error('Failed to verify admin status');
     }
 
-    // Get the user ID from request body
+    if (!adminCheck?.is_admin) {
+      throw new Error('Unauthorized - Admin access required')
+    }
+
+    console.log('Admin status verified');
+
+    // Get and validate userId from request body
     const { userId } = await req.json()
     if (!userId) {
-      return new Response(
-        JSON.stringify({ error: 'User ID is required' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
+      throw new Error('User ID is required')
     }
 
     console.log('Starting deletion process for user:', userId);
 
-    // Begin deletion process - using transactions
+    // Delete auth user - this will trigger cascading deletes in the database
     const { error: deleteError } = await supabaseAdmin.auth.admin.deleteUser(userId)
 
     if (deleteError) {
@@ -66,7 +73,6 @@ serve(async (req) => {
       throw deleteError
     }
 
-    // Log the successful deletion
     console.log('Successfully deleted user:', userId);
 
     // Log the admin action
@@ -103,8 +109,8 @@ serve(async (req) => {
     console.error('Error in delete-user function:', error)
     return new Response(
       JSON.stringify({ 
-        error: 'Failed to delete user',
-        details: error.message 
+        error: error instanceof Error ? error.message : 'Failed to delete user',
+        details: error
       }),
       { 
         status: 500, 

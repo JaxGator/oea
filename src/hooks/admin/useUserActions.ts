@@ -50,29 +50,24 @@ export function useUserActions(refetchUsers: () => void) {
   const handleDeleteUser = useCallback(async (userId: string) => {
     try {
       setIsUpdating(true);
-      console.log('Deleting user:', userId);
-      
+      console.log('Attempting to delete user:', userId);
+
       const { data, error } = await supabase.functions.invoke('delete-user', {
         body: { userId }
       });
 
-      if (error) {
-        console.error('Delete user function error:', error);
-        throw error;
-      }
+      console.log('Delete user response:', { data, error });
 
-      if (!data) {
-        throw new Error('No response from delete user function');
-      }
+      if (error) throw error;
+      if (!data) throw new Error('No response from delete user function');
 
       toast({
         title: "Success",
         description: "User deleted successfully",
       });
       
-      // Ensure we refetch the user list to update the UI
       await refetchUsers();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error deleting user:', error);
       toast({
         title: "Error",
