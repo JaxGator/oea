@@ -1,3 +1,4 @@
+
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect } from "react";
@@ -14,8 +15,43 @@ interface GroupMessage {
   };
 }
 
+interface GroupChat {
+  id: string;
+  name: string;
+  description: string | null;
+}
+
 export function useGroupChat(groupId: string) {
   const queryClient = useQueryClient();
+
+  const { data: groupInfo } = useQuery({
+    queryKey: ['group-chat', groupId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('group_chats')
+        .select('*')
+        .eq('id', groupId)
+        .single();
+
+      if (error) throw error;
+      return data as GroupChat;
+    },
+    enabled: !!groupId,
+  });
+
+  const { data: participantCount } = useQuery({
+    queryKey: ['group-participants-count', groupId],
+    queryFn: async () => {
+      const { count, error } = await supabase
+        .from('group_chat_participants')
+        .select('*', { count: 'exact', head: true })
+        .eq('group_chat_id', groupId);
+
+      if (error) throw error;
+      return count || 0;
+    },
+    enabled: !!groupId,
+  });
 
   const { data: messages, isLoading } = useQuery({
     queryKey: ['group-messages', groupId],
@@ -56,5 +92,10 @@ export function useGroupChat(groupId: string) {
     };
   }, [groupId, queryClient]);
 
-  return { messages, isLoading };
+  return { 
+    messages, 
+    isLoading,
+    groupInfo,
+    participantCount 
+  };
 }

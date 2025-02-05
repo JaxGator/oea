@@ -55,3 +55,23 @@ export interface ListMember {
   member_id: string;
   added_at: string | null;
 }
+
+export interface GroupChat {
+  id: string;
+  name: string;
+  description: string | null;
+  created_at: string;
+  created_by: string;
+}
+
+export interface GroupChatMessage {
+  id: string;
+  content: string;
+  created_at: string;
+  sender_id: string;
+  group_chat_id: string;
+  sender: {
+    username: string;
+    avatar_url: string;
+  };
+}
