@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -11,23 +12,36 @@ export function useMembers() {
 
   const handleDeleteMember = async (memberId: string) => {
     try {
-      const { error } = await supabase.functions.invoke('delete-user', {
+      console.log('Attempting to delete member:', memberId);
+      
+      const { data, error } = await supabase.functions.invoke('delete-user', {
         body: { userId: memberId }
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Delete function error:', error);
+        throw error;
+      }
+
+      if (!data) {
+        throw new Error('No response from delete function');
+      }
+
+      console.log('Delete response:', data);
 
       toast({
         title: "Success",
         description: "Member deleted successfully",
       });
 
-      queryClient.invalidateQueries({ queryKey: ['members'] });
+      // Invalidate all relevant queries
+      await queryClient.invalidateQueries({ queryKey: ['members'] });
+      await queryClient.invalidateQueries({ queryKey: ['profiles'] });
     } catch (error) {
       console.error('Error deleting member:', error);
       toast({
         title: "Error",
-        description: "Failed to delete member",
+        description: error.message || "Failed to delete member",
         variant: "destructive",
       });
     }

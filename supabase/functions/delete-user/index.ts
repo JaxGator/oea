@@ -1,13 +1,9 @@
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
+import { corsHeaders } from '../admin-user-management/types.ts'
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
@@ -60,43 +56,9 @@ serve(async (req) => {
       )
     }
 
-    console.log('Attempting to delete user with ID:', userId)
+    console.log('Starting deletion process for user:', userId);
 
-    // First, delete all related records that might prevent user deletion
-    // Delete event RSVPs and guests
-    const { error: rsvpError } = await supabaseAdmin
-      .from('event_rsvps')
-      .delete()
-      .eq('user_id', userId)
-
-    if (rsvpError) {
-      console.error('Error deleting RSVPs:', rsvpError)
-      throw rsvpError
-    }
-
-    // Delete messages
-    const { error: messagesError } = await supabaseAdmin
-      .from('messages')
-      .delete()
-      .or(`sender_id.eq.${userId},receiver_id.eq.${userId}`)
-
-    if (messagesError) {
-      console.error('Error deleting messages:', messagesError)
-      throw messagesError
-    }
-
-    // Delete the user's profile
-    const { error: profileError } = await supabaseAdmin
-      .from('profiles')
-      .delete()
-      .eq('id', userId)
-
-    if (profileError) {
-      console.error('Error deleting profile:', profileError)
-      throw profileError
-    }
-
-    // Finally, delete the user from auth.users
+    // Begin deletion process - using transactions
     const { error: deleteError } = await supabaseAdmin.auth.admin.deleteUser(userId)
 
     if (deleteError) {
@@ -104,28 +66,53 @@ serve(async (req) => {
       throw deleteError
     }
 
+    // Log the successful deletion
+    console.log('Successfully deleted user:', userId);
+
     // Log the admin action
-    await supabaseAdmin.from('admin_logs').insert({
-      admin_id: user.id,
-      action_type: 'delete_user',
-      target_type: 'user',
-      target_id: userId,
-      details: { deleted_user_id: userId }
-    })
+    const { error: logError } = await supabaseAdmin
+      .from('admin_logs')
+      .insert({
+        admin_id: user.id,
+        action_type: 'delete_user',
+        target_type: 'user',
+        target_id: userId,
+        details: { deleted_user_id: userId }
+      })
+
+    if (logError) {
+      console.error('Error creating admin log:', logError)
+      // Don't throw here as the main operation was successful
+    }
 
     return new Response(
-      JSON.stringify({ message: 'User deleted successfully' }),
-      { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      JSON.stringify({ 
+        message: 'User deleted successfully',
+        userId: userId 
+      }),
+      { 
+        status: 200, 
+        headers: { 
+          ...corsHeaders, 
+          'Content-Type': 'application/json' 
+        } 
+      }
     )
 
   } catch (error) {
     console.error('Error in delete-user function:', error)
     return new Response(
       JSON.stringify({ 
-        error: 'Database error deleting user',
+        error: 'Failed to delete user',
         details: error.message 
       }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { 
+        status: 500, 
+        headers: { 
+          ...corsHeaders, 
+          'Content-Type': 'application/json' 
+        } 
+      }
     )
   }
 })

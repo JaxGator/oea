@@ -1,5 +1,5 @@
+
 import { useState, useCallback } from "react";
-import { Member } from "@/components/members/types";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -52,23 +52,31 @@ export function useUserActions(refetchUsers: () => void) {
       setIsUpdating(true);
       console.log('Deleting user:', userId);
       
-      const { error } = await supabase.functions.invoke('delete-user', {
+      const { data, error } = await supabase.functions.invoke('delete-user', {
         body: { userId }
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Delete user function error:', error);
+        throw error;
+      }
+
+      if (!data) {
+        throw new Error('No response from delete user function');
+      }
 
       toast({
         title: "Success",
         description: "User deleted successfully",
       });
       
-      refetchUsers();
+      // Ensure we refetch the user list to update the UI
+      await refetchUsers();
     } catch (error) {
       console.error('Error deleting user:', error);
       toast({
         title: "Error",
-        description: "Failed to delete user",
+        description: error.message || "Failed to delete user",
         variant: "destructive",
       });
     } finally {
