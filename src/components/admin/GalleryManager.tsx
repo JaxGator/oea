@@ -1,3 +1,4 @@
+
 import { ImageUploadForm } from "./gallery/ImageUploadForm";
 import { ImageGrid } from "./gallery/ImageGrid";
 import { CarouselToggle } from "./gallery/CarouselToggle";
@@ -15,7 +16,7 @@ export default function GalleryManager() {
 
   if (!user) {
     return (
-      <div className="flex items-center justify-center p-8">
+      <div className="flex items-center justify-center p-4 sm:p-8">
         <div className="text-center space-y-4">
           <p className="text-muted-foreground">Please sign in to view the gallery manager.</p>
         </div>
@@ -25,7 +26,7 @@ export default function GalleryManager() {
 
   if (!profile?.is_admin) {
     return (
-      <div className="flex items-center justify-center p-8">
+      <div className="flex items-center justify-center p-4 sm:p-8">
         <div className="text-center space-y-4">
           <p className="text-muted-foreground">Only administrators can manage the gallery.</p>
         </div>
@@ -38,14 +39,16 @@ export default function GalleryManager() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-4 sm:space-y-6 p-4 sm:p-0">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-2">
           <h2 className="text-lg font-semibold">Gallery Management</h2>
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
+                <button className="touch-none focus:outline-none">
+                  <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
+                </button>
               </TooltipTrigger>
               <TooltipContent>
                 <p>Upload and manage images for your site's gallery. Enable carousel mode for automatic image rotation.</p>

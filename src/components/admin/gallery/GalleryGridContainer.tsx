@@ -1,9 +1,9 @@
+
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { GalleryItem } from "./GalleryItem";
 import { toast } from "@/hooks/use-toast";
 import { useSession } from "@/hooks/auth/useSession";
-import { GalleryLoadingState } from "./GalleryLoadingState";
 
 interface GalleryGridContainerProps {
   images: Array<{ url: string; id: string }>;
@@ -41,7 +41,6 @@ export function GalleryGridContainer({ images, onImageDelete }: GalleryGridConta
 
       if (storageError) {
         console.warn('Storage deletion error:', storageError);
-        // Continue anyway as the database record is already deleted
       }
 
       onImageDelete();
@@ -67,22 +66,23 @@ export function GalleryGridContainer({ images, onImageDelete }: GalleryGridConta
 
   if (!user) {
     return (
-      <div className="text-center py-8 text-muted-foreground border-2 border-dashed rounded-lg">
+      <div className="text-center py-6 sm:py-8 text-muted-foreground border-2 border-dashed rounded-lg">
         <p>Please sign in to view the gallery.</p>
       </div>
     );
   }
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
       {images.map((image) => (
-        <GalleryItem
-          key={image.id}
-          imageUrl={image.url}
-          imageId={image.id}
-          onDelete={() => handleImageDelete(image.url, image.id)}
-          isDeleting={deletingImages.has(image.id)}
-        />
+        <div key={image.id} className="group">
+          <GalleryItem
+            imageUrl={image.url}
+            imageId={image.id}
+            onDelete={() => handleImageDelete(image.url, image.id)}
+            isDeleting={deletingImages.has(image.id)}
+          />
+        </div>
       ))}
     </div>
   );
