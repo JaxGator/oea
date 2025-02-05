@@ -54,15 +54,13 @@ export function SharePollDialog({ pollId, open, onOpenChange }: SharePollDialogP
         .single();
 
       if (error) throw error;
-      return data;
-    },
-    enabled: !!pollId,
-    onSuccess: (data) => {
       if (data?.share_token) {
         const baseUrl = window.location.origin;
         setShareUrl(`${baseUrl}/polls/share/${data.share_token}`);
       }
-    }
+      return data;
+    },
+    enabled: !!pollId
   });
 
   const { data: existingShares = [] } = useQuery({
