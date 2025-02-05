@@ -1,3 +1,4 @@
+
 import { TableRow, TableCell } from "@/components/ui/table";
 import { UserStatusBadges } from "./UserStatusBadges";
 import { AdminUserActions } from "../AdminUserActions";
@@ -27,8 +28,13 @@ export function AdminUserTableRow({
     return null;
   }
 
+  const handleDelete = () => {
+    console.log('AdminUserTableRow: Delete clicked for user:', profile.id);
+    onDelete(profile.id);
+  };
+
   const handleEdit = () => {
-    console.log('Handling edit for profile:', profile);
+    console.log('AdminUserTableRow: Edit clicked for profile:', profile);
     onEdit(profile);
   };
 
@@ -66,7 +72,7 @@ export function AdminUserTableRow({
             profile={profile}
             onEdit={handleEdit}
             onUpdateStatus={onUpdateStatus}
-            onDelete={onDelete}
+            onDelete={handleDelete}
             isUpdating={isUpdating}
           />
         </div>

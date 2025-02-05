@@ -1,3 +1,4 @@
+
 import { Member } from "@/components/members/types";
 import { ViewMemberDialog } from "@/components/members/ViewMemberDialog";
 import { EditMemberHandler } from "./EditMemberHandler";
@@ -40,7 +41,7 @@ export function UserListContainer() {
     handleCloseView
   } = useViewMemberDialog();
 
-  const { handleDeleteUser } = useUserActions(refetch);
+  const { handleDeleteUser, isUpdating } = useUserActions(refetch);
 
   const memoizedHandleEdit = useCallback((member: Member) => {
     if (!member?.id || !member?.username) {
@@ -80,6 +81,7 @@ export function UserListContainer() {
         currentPage={page}
         totalPages={data?.totalPages ?? 1}
         onPageChange={handlePageChange}
+        isUpdatingUser={isUpdating}
       />
 
       {viewingMember && (

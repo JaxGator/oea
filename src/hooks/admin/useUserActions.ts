@@ -2,6 +2,7 @@
 import { useState, useCallback } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { getSession } from "@/utils/sessionUtils";
 
 export function useUserActions(refetchUsers: () => void) {
   const [isUpdating, setIsUpdating] = useState(false);
@@ -52,8 +53,7 @@ export function useUserActions(refetchUsers: () => void) {
       setIsUpdating(true);
       console.log('Attempting to delete user:', userId);
 
-      // Get the current session
-      const { data: { session } } = await supabase.auth.getSession();
+      const session = await getSession();
       if (!session) {
         throw new Error('No active session found');
       }

@@ -18,6 +18,7 @@ interface UserListContentProps {
   currentPage: number;
   totalPages: number;
   onPageChange: (page: number) => void;
+  isUpdatingUser?: boolean;
 }
 
 export const UserListContent = memo(function UserListContent({
@@ -30,6 +31,7 @@ export const UserListContent = memo(function UserListContent({
   currentPage,
   totalPages,
   onPageChange,
+  isUpdatingUser = false,
 }: UserListContentProps) {
   if (isLoading) return <LoadingState />;
   
@@ -61,7 +63,7 @@ export const UserListContent = memo(function UserListContent({
                   onEdit={onEditMember}
                   onUpdateStatus={() => {}}
                   onDelete={onDeleteMember}
-                  isUpdating={false}
+                  isUpdating={isUpdatingUser}
                 />
               ))}
             </TableBody>
@@ -69,7 +71,7 @@ export const UserListContent = memo(function UserListContent({
         </AdminUserTableWrapper>
       </div>
 
-      {totalPages > 1 && (
+      {totalPages > 0 && (
         <div className="flex justify-center mt-4">
           <UserListPagination
             currentPage={currentPage}
