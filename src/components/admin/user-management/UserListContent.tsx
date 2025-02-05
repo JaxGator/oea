@@ -48,32 +48,40 @@ export const UserListContent = memo(function UserListContent({
 
   return (
     <div className="space-y-4">
-      <div className="rounded-md border overflow-hidden">
-        <AdminUserTableWrapper>
-          <Table>
-            <TableHeader>
+      <AdminUserTableWrapper>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-[200px] sm:w-[250px]">User</TableHead>
+              {!isMobile && <TableHead>Status</TableHead>}
+              <TableHead className="w-[100px] text-right">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {members.map((member) => (
+              <AdminUserTableRow
+                key={member.id}
+                profile={member}
+                onEdit={onEditMember}
+                onUpdateStatus={() => {}}
+                onDelete={onDeleteMember}
+                isUpdating={isUpdatingUser}
+                isMobile={isMobile}
+              />
+            ))}
+            {members.length === 0 && (
               <TableRow>
-                <TableHead className="w-[200px]">User</TableHead>
-                {!isMobile && <TableHead>Status</TableHead>}
-                <TableHead className="w-[100px] text-right">Actions</TableHead>
+                <TableCell 
+                  colSpan={isMobile ? 2 : 3} 
+                  className="h-24 text-center text-muted-foreground"
+                >
+                  No members found
+                </TableCell>
               </TableRow>
-            </TableHeader>
-            <TableBody>
-              {members.map((member) => (
-                <AdminUserTableRow
-                  key={member.id}
-                  profile={member}
-                  onEdit={onEditMember}
-                  onUpdateStatus={() => {}}
-                  onDelete={onDeleteMember}
-                  isUpdating={isUpdatingUser}
-                  isMobile={isMobile}
-                />
-              ))}
-            </TableBody>
-          </Table>
-        </AdminUserTableWrapper>
-      </div>
+            )}
+          </TableBody>
+        </Table>
+      </AdminUserTableWrapper>
 
       {totalPages > 0 && (
         <div className="flex justify-center mt-4">

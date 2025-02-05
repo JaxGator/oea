@@ -12,7 +12,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useIsMobile } from "@/hooks/use-mobile";
-
 import { cn } from "@/lib/utils";
 
 export function AdminTabs() {
@@ -48,11 +47,14 @@ export function AdminTabs() {
     <TabsTrigger 
       value={value} 
       className={cn(
-        "relative whitespace-nowrap group px-2 sm:px-4",
+        "relative whitespace-nowrap group",
+        "px-2.5 py-1.5 sm:px-4 sm:py-2",
+        "transition-all duration-200",
+        "data-[state=active]:bg-background/95",
         "data-[state=active]:text-primary-foreground"
       )}
     >
-      <span className="flex items-center gap-1 sm:gap-2 text-sm sm:text-base">
+      <span className="flex items-center gap-1 sm:gap-2">
         {isMobile ? label.slice(0, 3) : label}
         {isLoading ? (
           <Skeleton className="h-4 w-4 rounded-full" />
@@ -61,7 +63,8 @@ export function AdminTabs() {
             variant="secondary" 
             className={cn(
               "transition-all group-hover:bg-primary/20",
-              "h-5 w-5 sm:h-6 sm:w-6 rounded-full p-0 flex items-center justify-center"
+              "h-5 w-5 sm:h-6 sm:w-6 rounded-full p-0",
+              "flex items-center justify-center text-xs sm:text-sm"
             )}
           >
             {count}
@@ -73,8 +76,9 @@ export function AdminTabs() {
 
   return (
     <Tabs defaultValue="users" className="w-full">
-      <div className="overflow-x-auto scrollbar-hide pb-2">
-        <TabsList className="w-full flex-nowrap min-w-max bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="relative overflow-x-auto scrollbar-hide">
+        <div className="absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-gray-100 to-transparent pointer-events-none sm:hidden" />
+        <TabsList className="w-full flex-nowrap min-w-max bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 p-1">
           {renderTabTrigger("users", "Users", userCount, isLoadingUsers)}
           {renderTabTrigger("payments", "Payments")}
           {renderTabTrigger("gallery", "Gallery")}
@@ -85,7 +89,7 @@ export function AdminTabs() {
         </TabsList>
       </div>
 
-      <div className="mt-4 sm:mt-6">
+      <div className="mt-3 sm:mt-6">
         <TabsContent value="users" className="animate-fade-in m-0">
           <AdminUserList />
         </TabsContent>

@@ -44,10 +44,10 @@ export function AdminUserTableRow({
     <TableRow className="group hover:bg-muted/50">
       <TableCell className="py-2 sm:py-4">
         <div className="flex flex-col gap-1">
-          <span className="font-medium truncate max-w-[150px] sm:max-w-[200px] md:max-w-none">
+          <span className="font-medium truncate max-w-[120px] sm:max-w-[200px] md:max-w-none">
             {profile.username}
           </span>
-          <span className="text-sm text-muted-foreground truncate max-w-[150px] sm:max-w-[200px] md:max-w-none">
+          <span className="text-xs sm:text-sm text-muted-foreground truncate max-w-[120px] sm:max-w-[200px] md:max-w-none">
             {profile.full_name || '-'}
           </span>
           {isMobile && (
