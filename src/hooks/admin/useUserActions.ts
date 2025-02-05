@@ -52,12 +52,13 @@ export function useUserActions(refetchUsers: () => void) {
       setIsUpdating(true);
       console.log('Attempting to delete user:', userId);
 
-      // Get the current session to ensure we have fresh auth headers
+      // Get the current session
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
-        throw new Error('No active session');
+        throw new Error('No active session found');
       }
 
+      console.log('Got session, making delete request');
       const { data, error } = await supabase.functions.invoke('delete-user', {
         body: { userId },
         headers: {

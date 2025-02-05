@@ -1,3 +1,4 @@
+
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Member } from "@/components/members/types";
@@ -10,13 +11,6 @@ interface MemberQueryResult {
 }
 
 const ITEMS_PER_PAGE = 10;
-
-// Map filter keys to database column names
-const filterToColumnMap = {
-  isAdmin: 'is_admin',
-  isApproved: 'is_approved',
-  isMember: 'is_member'
-};
 
 export function useMemberManagement(
   searchTerm: string = "", 
@@ -52,7 +46,11 @@ export function useMemberManagement(
           // Build filter conditions using the correct column names
           activeFilters.forEach(([key, value]) => {
             if (value === true) {
-              const columnName = filterToColumnMap[key as keyof typeof filterToColumnMap];
+              const columnName = {
+                isAdmin: 'is_admin',
+                isApproved: 'is_approved',
+                isMember: 'is_member'
+              }[key as keyof typeof filters];
               query = query.eq(columnName, true);
             }
           });
