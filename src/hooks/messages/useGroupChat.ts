@@ -2,24 +2,7 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect } from "react";
-
-interface GroupMessage {
-  id: string;
-  content: string;
-  created_at: string;
-  sender_id: string;
-  group_chat_id: string;
-  sender: {
-    username: string;
-    avatar_url: string;
-  };
-}
-
-interface GroupChat {
-  id: string;
-  name: string;
-  description: string | null;
-}
+import { GroupChat, GroupChatMessage } from "@/types/communications";
 
 export function useGroupChat(groupId: string) {
   const queryClient = useQueryClient();
@@ -63,7 +46,7 @@ export function useGroupChat(groupId: string) {
         .order('created_at', { ascending: true });
 
       if (error) throw error;
-      return data as GroupMessage[];
+      return data as GroupChatMessage[];
     },
     enabled: !!groupId,
   });

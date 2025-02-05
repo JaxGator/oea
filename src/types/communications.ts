@@ -1,3 +1,4 @@
+
 import { Json } from "./database.types";
 
 export type MessageStatus = 'draft' | 'scheduled' | 'sent' | 'failed';
