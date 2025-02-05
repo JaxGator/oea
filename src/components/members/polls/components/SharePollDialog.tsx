@@ -85,13 +85,16 @@ export function SharePollDialog({ pollId, open, onOpenChange }: SharePollDialogP
   const handleShare = async () => {
     if (selectedUsers.length === 0) return;
 
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
     const { error } = await supabase
       .from('poll_shares')
       .insert(
         selectedUsers.map(userId => ({
           poll_id: pollId,
           shared_with: userId,
-          shared_by: (await supabase.auth.getUser()).data.user?.id
+          shared_by: user.id
         }))
       );
 
@@ -223,3 +226,4 @@ export function SharePollDialog({ pollId, open, onOpenChange }: SharePollDialogP
     </Dialog>
   );
 }
+
