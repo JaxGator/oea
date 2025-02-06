@@ -1,8 +1,8 @@
+
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect } from "react";
-import { Message, GroupMessage } from "./types";
-import { Profile } from "@/types/auth";
+import { Message, GroupMessage, Profile } from "./types";
 
 interface GroupMessageResponse {
   id: string;
@@ -25,7 +25,11 @@ export function useConversations(userId: string | undefined) {
       // Fetch direct messages
       const { data: directMessages, error: directError } = await supabase
         .from('messages')
-        .select('*, sender:profiles!sender_id(*), receiver:profiles!receiver_id(*)')
+        .select(`
+          *,
+          sender:profiles!sender_id(id, username, full_name, avatar_url, created_at, is_admin, is_approved, is_member, email_notifications, in_app_notifications, event_reminders_enabled),
+          receiver:profiles!receiver_id(id, username, full_name, avatar_url, created_at, is_admin, is_approved, is_member, email_notifications, in_app_notifications, event_reminders_enabled)
+        `)
         .or(`sender_id.eq.${userId},receiver_id.eq.${userId}`)
         .order('created_at', { ascending: false });
 
@@ -38,8 +42,16 @@ export function useConversations(userId: string | undefined) {
           id,
           content,
           created_at,
-          sender:profiles!inner(*),
-          group_chat:group_chats!inner(*)
+          sender:profiles!inner(
+            id, username, full_name, avatar_url, created_at, is_admin, 
+            is_approved, is_member, email_notifications, in_app_notifications, 
+            event_reminders_enabled
+          ),
+          group_chat:group_chats!inner(
+            id,
+            name,
+            description
+          )
         `)
         .eq('group_chat.group_chat_participants.user_id', userId)
         .order('created_at', { ascending: false });
@@ -51,7 +63,7 @@ export function useConversations(userId: string | undefined) {
         id: msg.id,
         content: msg.content,
         created_at: msg.created_at,
-        sender: msg.sender,
+        sender: msg.sender as Profile,
         group_chat: {
           id: msg.group_chat.id,
           name: msg.group_chat.name,

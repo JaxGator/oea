@@ -2,7 +2,7 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect } from "react";
-import { Message, GroupChatRaw } from "@/components/messages/types";
+import { Message, GroupChatRaw, Profile } from "@/components/messages/types";
 
 export function useConversations(userId: string | undefined) {
   const queryClient = useQueryClient();
@@ -17,8 +17,8 @@ export function useConversations(userId: string | undefined) {
         .from('messages')
         .select(`
           *,
-          sender:profiles!sender_id(*),
-          receiver:profiles!receiver_id(*)
+          sender:profiles!sender_id(id, username, full_name, avatar_url, created_at, is_admin, is_approved, is_member, email_notifications, in_app_notifications, event_reminders_enabled),
+          receiver:profiles!receiver_id(id, username, full_name, avatar_url, created_at, is_admin, is_approved, is_member, email_notifications, in_app_notifications, event_reminders_enabled)
         `)
         .or(`sender_id.eq.${userId},receiver_id.eq.${userId}`)
         .order('created_at', { ascending: false });
@@ -39,10 +39,18 @@ export function useConversations(userId: string | undefined) {
             id,
             content,
             created_at,
-            sender:profiles!inner(*)
+            sender:profiles!inner(
+              id, username, full_name, avatar_url, created_at, is_admin, 
+              is_approved, is_member, email_notifications, in_app_notifications, 
+              event_reminders_enabled
+            )
           ),
           participants:group_chat_participants(
-            user:profiles(*)
+            user:profiles(
+              id, username, full_name, avatar_url, created_at, is_admin, 
+              is_approved, is_member, email_notifications, in_app_notifications, 
+              event_reminders_enabled
+            )
           )
         `)
         .eq('group_chat_participants.user_id', userId);
@@ -61,10 +69,12 @@ export function useConversations(userId: string | undefined) {
           id: msg.id,
           content: msg.content,
           created_at: msg.created_at,
-          sender: msg.sender,
+          sender: msg.sender as Profile,
           group_chat_id: chat.id
         })),
-        participants: chat.participants
+        participants: chat.participants.map(participant => ({
+          user: participant.user as Profile
+        }))
       }));
 
       return {
