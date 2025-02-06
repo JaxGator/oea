@@ -3,7 +3,6 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import type { Profile } from '@/types/auth';
 import { useToast } from '@/hooks/use-toast';
-import { isSupabaseError } from '@/integrations/supabase/types/helpers';
 
 export function useProfile(userId: string | undefined) {
   const { toast } = useToast();
@@ -16,19 +15,13 @@ export function useProfile(userId: string | undefined) {
         return null;
       }
       
+      console.log('Fetching profile for user:', userId);
+      
       try {
         // First check if we have an active session
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         if (sessionError) {
           console.error('Session error:', sessionError);
-          // Only show toast for non-network errors to avoid spamming
-          if (!sessionError.message.includes('NetworkError')) {
-            toast({
-              title: "Session Error",
-              description: "Please try signing in again",
-              variant: "destructive",
-            });
-          }
           throw sessionError;
         }
         
@@ -37,7 +30,7 @@ export function useProfile(userId: string | undefined) {
           return null;
         }
 
-        // Use proper Supabase query builder syntax with error handling
+        // Use proper Supabase query builder syntax
         const { data, error } = await supabase
           .from('profiles')
           .select('*')
@@ -53,11 +46,22 @@ export function useProfile(userId: string | undefined) {
             timestamp: new Date().toISOString()
           });
           
-          // Handle JWT expiration with automatic refresh
+          // Handle JWT expiration specifically
           if (error.message.includes('JWT expired')) {
-            console.log('JWT expired, attempting refresh...');
-            const { error: refreshError } = await supabase.auth.refreshSession();
-            if (refreshError) {
+            try {
+              const { error: refreshError } = await supabase.auth.refreshSession();
+              if (refreshError) throw refreshError;
+              
+              // Retry the query after refresh
+              const { data: retryData, error: retryError } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('id', userId)
+                .maybeSingle();
+              
+              if (retryError) throw retryError;
+              return retryData as Profile;
+            } catch (refreshError) {
               console.error('Session refresh failed:', refreshError);
               toast({
                 title: "Session expired",
@@ -67,40 +71,18 @@ export function useProfile(userId: string | undefined) {
               await supabase.auth.signOut();
               return null;
             }
-            
-            // Retry the query after refresh
-            const { data: retryData, error: retryError } = await supabase
-              .from('profiles')
-              .select('*')
-              .eq('id', userId)
-              .maybeSingle();
-            
-            if (retryError) {
-              console.error('Profile retry error:', retryError);
-              throw retryError;
-            }
-            
-            return retryData as Profile;
           }
           
-          // Only show toast for server errors, not network issues
-          if (!error.message.includes('NetworkError')) {
-            toast({
-              title: "Error loading profile",
-              description: "Please try refreshing the page",
-              variant: "destructive",
-            });
-          }
+          toast({
+            title: "Error loading profile",
+            description: "Please try refreshing the page",
+            variant: "destructive",
+          });
           
           throw error;
         }
         
-        if (!data) {
-          console.log('No profile found for user:', userId);
-          return null;
-        }
-        
-        console.log('Profile fetch successful:', data);
+        console.log('Profile fetch result:', data);
         return data as Profile;
       } catch (error) {
         console.error('Profile fetch failed:', {
@@ -112,16 +94,8 @@ export function useProfile(userId: string | undefined) {
       }
     },
     enabled: !!userId,
-    retry: (failureCount, error) => {
-      // Don't retry on auth errors or if profile doesn't exist
-      if (error instanceof Error) {
-        if (error.message.includes('JWT expired')) return false;
-        if (isSupabaseError(error) && error.code === '404') return false;
-      }
-      // Retry up to 3 times for other errors
-      return failureCount < 3;
-    },
-    retryDelay: (attemptIndex) => Math.min(1000 * (2 ** attemptIndex), 30000), // Exponential backoff
+    retry: 3,
+    retryDelay: (attemptIndex) => Math.min(1000 * (2 ** attemptIndex), 30000),
     staleTime: 1000 * 60 * 5, // Cache for 5 minutes
     gcTime: 1000 * 60 * 10, // Keep unused data for 10 minutes
   });
