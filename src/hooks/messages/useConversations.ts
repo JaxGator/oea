@@ -2,20 +2,7 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect } from "react";
-import { Message, GroupMessage } from "@/components/messages/types";
-import { Profile } from "@/types/auth";
-
-interface GroupMessageResponse {
-  id: string;
-  content: string;
-  created_at: string;
-  sender: Profile;
-  group_chat: {
-    id: string;
-    name: string;
-    description: string;
-  };
-}
+import { Message, GroupChatRaw } from "@/components/messages/types";
 
 export function useConversations(userId: string | undefined) {
   const queryClient = useQueryClient();
@@ -25,7 +12,7 @@ export function useConversations(userId: string | undefined) {
     queryFn: async () => {
       if (!userId) return null;
 
-      // Fetch direct messages where user is either sender or receiver
+      // Fetch direct messages
       const { data: directMessages, error: directError } = await supabase
         .from('messages')
         .select(`
@@ -41,7 +28,7 @@ export function useConversations(userId: string | undefined) {
         throw directError;
       }
 
-      // Fetch group messages for groups the user is part of
+      // Fetch group messages
       const { data: groupMessages, error: groupError } = await supabase
         .from('group_chats')
         .select(`
@@ -66,8 +53,8 @@ export function useConversations(userId: string | undefined) {
       }
 
       return {
-        directMessages: directMessages as Message[],
-        groupMessages: groupMessages || []
+        directMessages: (directMessages || []) as Message[],
+        groupMessages: (groupMessages || []) as GroupChatRaw[]
       };
     },
     enabled: !!userId,
@@ -76,13 +63,13 @@ export function useConversations(userId: string | undefined) {
   useEffect(() => {
     if (!userId) return;
 
-    // Listen for message changes (both sent and received)
+    // Listen for message changes
     const messageChannel = supabase
       .channel('messages-channel')
       .on(
         'postgres_changes',
         {
-          event: '*', // Listen for all events (INSERT, UPDATE, DELETE)
+          event: '*',
           schema: 'public',
           table: 'messages',
           filter: `or(sender_id.eq.${userId},receiver_id.eq.${userId})`,

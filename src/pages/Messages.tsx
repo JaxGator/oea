@@ -1,7 +1,7 @@
 
 import { useAuthState } from "@/hooks/useAuthState";
 import { Loader2 } from "lucide-react";
-import { Message } from "@/components/messages/types";
+import { Message, GroupChatRaw, GroupMessage } from "@/components/messages/types";
 import { ConversationType } from "@/components/messages/types/conversation";
 import { MessagesProvider } from "@/components/messages/context/MessagesContext";
 import { MessagesHeader } from "@/components/messages/MessagesHeader";
@@ -14,26 +14,6 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useConversations } from "@/hooks/messages/useConversations";
 import { supabase } from "@/integrations/supabase/client";
 import { Profile } from "@/types/auth";
-
-interface GroupMessage {
-  id: string;
-  content: string;
-  created_at: string;
-  sender: Profile;
-  group_chat: {
-    id: string;
-    name: string;
-    description: string | null;
-  };
-}
-
-interface GroupChat {
-  id: string;
-  name: string;
-  description: string | null;
-  messages: GroupMessage[];
-  participants: { user: Profile }[];
-}
 
 function MessagesPage() {
   const { user } = useAuthState();
@@ -98,7 +78,7 @@ function MessagesPage() {
   }
 
   // Transform direct messages into conversations
-  const conversations = messages.directMessages.reduce((acc: Record<string, ConversationType>, message: Message) => {
+  const conversations = messages.directMessages.reduce<Record<string, ConversationType>>((acc, message) => {
     const otherUser = message.sender_id === user?.id ? message.receiver : message.sender;
     const conversationId = otherUser.id;
     
@@ -125,20 +105,7 @@ function MessagesPage() {
   }, {});
 
   // Transform and add group conversations
-  messages.groupMessages.forEach((group: { 
-    id: string; 
-    name: string; 
-    description: string | null; 
-    messages: Array<{
-      id: string;
-      content: string;
-      created_at: string;
-      sender: Profile;
-    }>;
-    participants: Array<{
-      user: Profile;
-    }>;
-  }) => {
+  messages.groupMessages.forEach((group: GroupChatRaw) => {
     const groupMessages = group.messages.map(gm => ({
       id: gm.id,
       content: gm.content,
@@ -153,7 +120,7 @@ function MessagesPage() {
         name: group.name,
         description: group.description
       }
-    } as Message));
+    } satisfies Message));
 
     conversations[group.id] = {
       user: group.participants[0].user,

@@ -10,6 +10,19 @@ export interface Message {
   is_read: boolean;
   sender: Profile;
   receiver: Profile;
+  group_chat?: {
+    id: string;
+    name: string;
+    description: string | null;
+  };
+}
+
+export interface GroupMessageRaw {
+  id: string;
+  content: string;
+  created_at: string;
+  sender: Profile;
+  group_chat_id: string;
 }
 
 export interface GroupMessage {
@@ -22,6 +35,16 @@ export interface GroupMessage {
     name: string;
     description: string | null;
   };
+}
+
+export interface GroupChatRaw {
+  id: string;
+  name: string;
+  description: string | null;
+  messages: GroupMessageRaw[];
+  participants: {
+    user: Profile;
+  }[];
 }
 
 export interface GroupChat {
@@ -46,4 +69,3 @@ export interface ConversationType {
     participants: Profile[];
   };
 }
-
