@@ -134,7 +134,12 @@ function MessagesPage() {
       sender_id: gm.sender.id,
       receiver_id: group.id,
       is_read: true,
-      receiver: group.participants[0].user
+      receiver: group.participants[0].user,
+      group_chat: {
+        id: group.id,
+        name: group.name,
+        description: group.description
+      }
     }));
 
     conversations[group.id] = {
