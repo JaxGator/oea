@@ -20,19 +20,22 @@ export function useProfile(userId: string | undefined) {
       try {
         // First check if we have an active session
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-        if (sessionError) throw sessionError;
+        if (sessionError) {
+          console.error('Session error:', sessionError);
+          throw sessionError;
+        }
         
         if (!session) {
           console.log('No active session found');
           return null;
         }
 
-        // Use proper Supabase query builder syntax with match
+        // Use proper Supabase query builder syntax
         const { data, error } = await supabase
           .from('profiles')
           .select('*')
-          .match({ id: userId })
-          .maybeSingle();
+          .eq('id', userId)
+          .single();
         
         if (error) {
           console.error('Profile fetch error:', {
@@ -45,13 +48,28 @@ export function useProfile(userId: string | undefined) {
           
           // Handle JWT expiration specifically
           if (error.message.includes('JWT expired')) {
-            await supabase.auth.refreshSession();
-            toast({
-              title: "Session expired",
-              description: "Please sign in again",
-              variant: "destructive",
-            });
-            return null;
+            try {
+              const { error: refreshError } = await supabase.auth.refreshSession();
+              if (refreshError) throw refreshError;
+              
+              // Retry the query after refresh
+              const { data: retryData, error: retryError } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('id', userId)
+                .single();
+              
+              if (retryError) throw retryError;
+              return retryData as Profile;
+            } catch (refreshError) {
+              toast({
+                title: "Session expired",
+                description: "Please sign in again",
+                variant: "destructive",
+              });
+              await supabase.auth.signOut();
+              return null;
+            }
           }
           
           toast({
@@ -75,8 +93,8 @@ export function useProfile(userId: string | undefined) {
       }
     },
     enabled: !!userId,
-    retry: 1,
-    retryDelay: 1000,
+    retry: 2,
+    retryDelay: (attemptIndex) => Math.min(1000 * (2 ** attemptIndex), 30000),
     staleTime: 1000 * 60 * 5, // Cache for 5 minutes
     gcTime: 1000 * 60 * 10, // Keep unused data for 10 minutes
   });
