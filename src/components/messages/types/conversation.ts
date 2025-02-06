@@ -1,10 +1,13 @@
+
 import { Profile } from "@/types/auth";
-import { Message } from "../types";
+import { Message as MessageType } from "../types";
+
+export type { MessageType as Message };
 
 export interface ConversationType {
   user: Profile;
-  messages: Message[];
-  lastMessage: Message;
+  messages: MessageType[];
+  lastMessage: MessageType;
   unreadCount: number;
   isGroup?: boolean;
   groupInfo?: {
@@ -29,7 +32,7 @@ export interface ConversationHeaderProps {
 }
 
 export interface ConversationContentProps {
-  messages: Message[];
+  messages: MessageType[];
   currentUserId: string;
   onEdit: (messageId: string, content: string) => void;
   onDelete: (messageId: string) => void;

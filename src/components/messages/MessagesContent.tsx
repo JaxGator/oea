@@ -22,7 +22,7 @@ export function MessagesContent({ conversations }: MessagesContentProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const isMobile = useIsMobile();
-  const { deleteMessage, editMessage } = useMessageOperations();
+  const { deleteMessage, editMessage: editMessageMutation } = useMessageOperations();
   const {
     selectedConversation,
     setSelectedConversation,
@@ -67,6 +67,11 @@ export function MessagesContent({ conversations }: MessagesContentProps) {
     }
   };
 
+  // Wrapper function to match the expected interface
+  const handleEditMessage = (messageId: string, content: string) => {
+    editMessageMutation({ messageId, content });
+  };
+
   return (
     <div className={`grid gap-4 ${isMobile ? 'grid-cols-1' : 'md:grid-cols-[350px,1fr]'}`}>
       {(!isMobile || !selectedConversation) && (
@@ -90,7 +95,7 @@ export function MessagesContent({ conversations }: MessagesContentProps) {
           <ConversationContent
             messages={selectedConversationData.messages}
             currentUserId={user?.id || ''}
-            onEdit={editMessage}
+            onEdit={handleEditMessage}
             onDelete={deleteMessage}
           />
           <ConversationInput

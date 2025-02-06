@@ -1,6 +1,7 @@
 
 import { createContext, useContext, useState } from "react";
-import { Message, ConversationType } from "../types/conversation";
+import type { Message } from "../types";
+import type { ConversationType } from "../types/conversation";
 
 interface MessagesContextType {
   selectedConversation: string | null;
