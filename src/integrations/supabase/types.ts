@@ -674,6 +674,91 @@ export type Database = {
           },
         ]
       }
+      message_edits: {
+        Row: {
+          edited_at: string | null
+          edited_by: string
+          id: string
+          message_id: string
+          previous_content: string
+        }
+        Insert: {
+          edited_at?: string | null
+          edited_by: string
+          id?: string
+          message_id: string
+          previous_content: string
+        }
+        Update: {
+          edited_at?: string | null
+          edited_by?: string
+          id?: string
+          message_id?: string
+          previous_content?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_message_edits_profiles"
+            columns: ["edited_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "message_edits_edited_by_fkey"
+            columns: ["edited_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "message_edits_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      message_reactions: {
+        Row: {
+          created_at: string | null
+          id: string
+          message_id: string
+          reaction: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          message_id: string
+          reaction: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          message_id?: string
+          reaction?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "message_reactions_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "messages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "message_reactions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       message_templates: {
         Row: {
           content: string
@@ -712,12 +797,49 @@ export type Database = {
           },
         ]
       }
+      message_threads: {
+        Row: {
+          created_at: string | null
+          id: string
+          parent_message_id: string
+          thread_message_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          parent_message_id: string
+          thread_message_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          parent_message_id?: string
+          thread_message_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "message_threads_parent_message_id_fkey"
+            columns: ["parent_message_id"]
+            isOneToOne: false
+            referencedRelation: "messages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "message_threads_thread_message_id_fkey"
+            columns: ["thread_message_id"]
+            isOneToOne: false
+            referencedRelation: "messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       messages: {
         Row: {
           content: string
           created_at: string | null
           id: string
           is_read: boolean | null
+          read_at: string | null
           receiver_id: string
           sender_id: string
           updated_at: string | null
@@ -727,6 +849,7 @@ export type Database = {
           created_at?: string | null
           id?: string
           is_read?: boolean | null
+          read_at?: string | null
           receiver_id: string
           sender_id: string
           updated_at?: string | null
@@ -736,6 +859,7 @@ export type Database = {
           created_at?: string | null
           id?: string
           is_read?: boolean | null
+          read_at?: string | null
           receiver_id?: string
           sender_id?: string
           updated_at?: string | null
@@ -1241,6 +1365,38 @@ export type Database = {
         }
         Relationships: []
       }
+      typing_indicators: {
+        Row: {
+          chat_id: string
+          chat_type: string
+          id: string
+          started_at: string | null
+          user_id: string
+        }
+        Insert: {
+          chat_id: string
+          chat_type: string
+          id?: string
+          started_at?: string | null
+          user_id: string
+        }
+        Update: {
+          chat_id?: string
+          chat_type?: string
+          id?: string
+          started_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "typing_indicators_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_badges: {
         Row: {
           badge_id: string | null
@@ -1489,6 +1645,12 @@ export type Database = {
             }
             Returns: string
           }
+      mark_message_as_read: {
+        Args: {
+          message_id: string
+        }
+        Returns: undefined
+      }
       mark_messages_as_read: {
         Args: {
           p_receiver_id: string
