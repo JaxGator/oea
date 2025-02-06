@@ -20,17 +20,19 @@ export function ConversationContent({
   }, [messages]);
 
   return (
-    <div className="flex-1 overflow-y-auto p-4 space-y-4">
-      {messages.map((message) => (
-        <ConversationMessage
-          key={message.id}
-          message={message}
-          isCurrentUser={message.sender_id === currentUserId}
-          onEdit={onEdit}
-          onDelete={onDelete}
-        />
-      ))}
-      <div ref={messagesEndRef} />
+    <div className="flex-1 overflow-y-auto">
+      <div className="p-4 space-y-4">
+        {messages.map((message) => (
+          <ConversationMessage
+            key={message.id}
+            message={message}
+            isCurrentUser={message.sender_id === currentUserId}
+            onEdit={onEdit}
+            onDelete={onDelete}
+          />
+        ))}
+        <div ref={messagesEndRef} />
+      </div>
     </div>
   );
 }

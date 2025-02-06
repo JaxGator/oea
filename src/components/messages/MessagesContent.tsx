@@ -72,39 +72,41 @@ export function MessagesContent({ conversations }: MessagesContentProps) {
   };
 
   return (
-    <div className={`grid gap-4 h-[calc(100dvh-16rem)] ${isMobile ? 'grid-cols-1' : 'md:grid-cols-[350px,1fr]'}`}>
-      {(!isMobile || !selectedConversation) && (
-        <Card className="flex flex-col overflow-hidden">
-          <div className="flex-1 overflow-y-auto p-4">
-            <ConversationList
-              conversations={conversations}
-              selectedConversation={selectedConversation}
-              onSelect={setSelectedConversation}
-            />
-          </div>
-        </Card>
-      )}
+    <div className="flex flex-col h-[100dvh] -mt-16 -mb-12">
+      <div className={`grid gap-4 flex-1 overflow-hidden p-4 ${isMobile ? 'grid-cols-1' : 'md:grid-cols-[350px,1fr]'}`}>
+        {(!isMobile || !selectedConversation) && (
+          <Card className="flex flex-col overflow-hidden">
+            <div className="flex-1 overflow-y-auto">
+              <ConversationList
+                conversations={conversations}
+                selectedConversation={selectedConversation}
+                onSelect={setSelectedConversation}
+              />
+            </div>
+          </Card>
+        )}
 
-      {(!isMobile || selectedConversation) && selectedConversationData && (
-        <Card className="flex flex-col overflow-hidden">
-          <ConversationHeader
-            conversation={selectedConversationData}
-            onBack={() => setSelectedConversation(null)}
-            onDelete={() => setShowDeleteDialog(true)}
-            isDeleting={isDeleting}
-          />
-          <ConversationContent
-            messages={selectedConversationData.messages}
-            currentUserId={user?.id || ''}
-            onEdit={handleEditMessage}
-            onDelete={deleteMessage}
-          />
-          <ConversationInput
-            onSend={handleSendMessage}
-            isSending={isSending}
-          />
-        </Card>
-      )}
+        {(!isMobile || selectedConversation) && selectedConversationData && (
+          <Card className="flex flex-col overflow-hidden">
+            <ConversationHeader
+              conversation={selectedConversationData}
+              onBack={() => setSelectedConversation(null)}
+              onDelete={() => setShowDeleteDialog(true)}
+              isDeleting={isDeleting}
+            />
+            <ConversationContent
+              messages={selectedConversationData.messages}
+              currentUserId={user?.id || ''}
+              onEdit={handleEditMessage}
+              onDelete={deleteMessage}
+            />
+            <ConversationInput
+              onSend={handleSendMessage}
+              isSending={isSending}
+            />
+          </Card>
+        )}
+      </div>
     </div>
   );
 }

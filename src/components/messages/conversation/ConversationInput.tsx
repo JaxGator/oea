@@ -21,7 +21,7 @@ export function ConversationInput({ onSend, isSending }: ConversationInputProps)
   };
 
   return (
-    <form onSubmit={handleSubmit} className="border-t p-4 bg-background">
+    <form onSubmit={handleSubmit} className="border-t bg-background p-4">
       <div className="flex gap-2">
         <Textarea
           value={message}
