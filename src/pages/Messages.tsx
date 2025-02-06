@@ -11,7 +11,6 @@ import { DeleteConversationDialog } from "@/components/messages/DeleteConversati
 import { useMessages } from "@/components/messages/context/MessagesContext";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
-import { useConversations } from "@/hooks/messages/useConversations";
 import { supabase } from "@/integrations/supabase/client";
 import { Profile } from "@/types/auth";
 
@@ -35,8 +34,8 @@ function MessagesPage() {
     
     setIsDeleting(true);
     try {
-      // Delete all messages between the two users or in the group chat
-      const { error } = await supabase
+      // Delete all messages between the two users
+      const { error: deleteError } = await supabase
         .from('messages')
         .delete()
         .or(
@@ -44,7 +43,9 @@ function MessagesPage() {
           `and(sender_id.eq.${selectedConversation},receiver_id.eq.${user.id})`
         );
 
-      if (error) throw error;
+      if (deleteError) {
+        throw deleteError;
+      }
 
       toast({
         title: "Conversation deleted",
