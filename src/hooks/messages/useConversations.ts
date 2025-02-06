@@ -84,11 +84,11 @@ export function useConversations(userId: string | undefined) {
           id: msg.id,
           content: msg.content,
           created_at: msg.created_at,
-          sender: msg.sender as Profile, // Ensure sender is treated as a single Profile object
+          sender: Array.isArray(msg.sender) ? msg.sender[0] : msg.sender as Profile,
           group_chat_id: chat.id
         })),
         participants: chat.participants.map(p => ({
-          user: p.user as Profile // Ensure user is treated as a single Profile object
+          user: Array.isArray(p.user) ? p.user[0] : p.user as Profile
         }))
       })) as GroupChatRaw[];
 
