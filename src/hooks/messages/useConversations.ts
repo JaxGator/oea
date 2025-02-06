@@ -52,9 +52,24 @@ export function useConversations(userId: string | undefined) {
         throw groupError;
       }
 
+      // Transform the group messages data to match our types
+      const transformedGroupMessages = (groupMessages || []).map((chat): GroupChatRaw => ({
+        id: chat.id,
+        name: chat.name,
+        description: chat.description,
+        messages: chat.messages.map(msg => ({
+          id: msg.id,
+          content: msg.content,
+          created_at: msg.created_at,
+          sender: msg.sender,
+          group_chat_id: chat.id
+        })),
+        participants: chat.participants
+      }));
+
       return {
         directMessages: (directMessages || []) as Message[],
-        groupMessages: (groupMessages || []) as GroupChatRaw[]
+        groupMessages: transformedGroupMessages
       };
     },
     enabled: !!userId,

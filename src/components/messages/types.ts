@@ -25,6 +25,21 @@ export interface GroupMessageRaw {
   group_chat_id: string;
 }
 
+export interface GroupChatRaw {
+  id: string;
+  name: string;
+  description: string | null;
+  messages: {
+    id: string;
+    content: string;
+    created_at: string;
+    sender: Profile;
+  }[];
+  participants: {
+    user: Profile;
+  }[];
+}
+
 export interface GroupMessage {
   id: string;
   content: string;
@@ -35,16 +50,6 @@ export interface GroupMessage {
     name: string;
     description: string | null;
   };
-}
-
-export interface GroupChatRaw {
-  id: string;
-  name: string;
-  description: string | null;
-  messages: GroupMessageRaw[];
-  participants: {
-    user: Profile;
-  }[];
 }
 
 export interface GroupChat {
