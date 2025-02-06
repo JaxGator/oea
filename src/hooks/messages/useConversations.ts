@@ -75,22 +75,26 @@ export function useConversations(userId: string | undefined) {
 
       console.log('Group messages fetched:', groupMessages?.length);
 
-      // Transform group messages to include group_chat_id and handle sender properly
-      const transformedGroupChats = groupMessages?.map(chat => ({
-        ...chat,
+      // Transform group messages to match the expected GroupChatRaw type
+      const transformedGroupChats = (groupMessages || []).map(chat => ({
+        id: chat.id,
+        name: chat.name,
+        description: chat.description,
         messages: chat.messages.map(msg => ({
-          ...msg,
-          sender: msg.sender,
+          id: msg.id,
+          content: msg.content,
+          created_at: msg.created_at,
+          sender: msg.sender as Profile, // Ensure sender is treated as a single Profile object
           group_chat_id: chat.id
         })),
         participants: chat.participants.map(p => ({
-          user: p.user
+          user: p.user as Profile // Ensure user is treated as a single Profile object
         }))
       })) as GroupChatRaw[];
 
       return {
         directMessages: (directMessages || []) as Message[],
-        groupMessages: transformedGroupChats || []
+        groupMessages: transformedGroupChats
       };
     },
     enabled: !!userId,
