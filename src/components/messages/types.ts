@@ -34,6 +34,7 @@ export interface GroupChatRaw {
     content: string;
     created_at: string;
     sender: Profile;
+    group_chat_id: string;
   }[];
   participants: {
     user: Profile;
