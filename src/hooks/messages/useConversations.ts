@@ -1,3 +1,4 @@
+
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect } from "react";
@@ -17,8 +18,16 @@ export function useConversations(userId: string | undefined) {
         .from('messages')
         .select(`
           *,
-          sender:profiles!sender_id(id, username, full_name, avatar_url, created_at, is_admin, is_approved, is_member, email_notifications, in_app_notifications, event_reminders_enabled),
-          receiver:profiles!receiver_id(id, username, full_name, avatar_url, created_at, is_admin, is_approved, is_member, email_notifications, in_app_notifications, event_reminders_enabled)
+          sender:profiles!sender_id(
+            id, username, full_name, avatar_url, created_at, is_admin, 
+            is_approved, is_member, email_notifications, in_app_notifications, 
+            event_reminders_enabled
+          ),
+          receiver:profiles!receiver_id(
+            id, username, full_name, avatar_url, created_at, is_admin, 
+            is_approved, is_member, email_notifications, in_app_notifications, 
+            event_reminders_enabled
+          )
         `)
         .or(`sender_id.eq.${userId},receiver_id.eq.${userId}`)
         .order('created_at', { ascending: false });
@@ -53,33 +62,17 @@ export function useConversations(userId: string | undefined) {
             )
           )
         `)
-        .eq('group_chat_participants.user_id', userId);
+        .eq('group_chat_participants.user_id', userId)
+        .single();
 
-      if (groupError) {
+      if (groupError && groupError.code !== 'PGRST116') {
         console.error('Error fetching group messages:', groupError);
         throw groupError;
       }
 
-      // Transform the group messages data to match our types
-      const transformedGroupMessages = (groupMessages || []).map((chat): GroupChatRaw => ({
-        id: chat.id,
-        name: chat.name,
-        description: chat.description,
-        messages: chat.messages.map(msg => ({
-          id: msg.id,
-          content: msg.content,
-          created_at: msg.created_at,
-          sender: msg.sender as Profile,
-          group_chat_id: chat.id
-        })),
-        participants: chat.participants.map(participant => ({
-          user: participant.user as Profile
-        }))
-      }));
-
       return {
         directMessages: (directMessages || []) as Message[],
-        groupMessages: transformedGroupMessages
+        groupMessages: groupMessages ? [groupMessages as GroupChatRaw] : []
       };
     },
     enabled: !!userId,
@@ -88,7 +81,6 @@ export function useConversations(userId: string | undefined) {
   useEffect(() => {
     if (!userId) return;
 
-    // Listen for message changes
     const messageChannel = supabase
       .channel('messages-channel')
       .on(
@@ -106,7 +98,6 @@ export function useConversations(userId: string | undefined) {
       )
       .subscribe();
 
-    // Listen for group message changes
     const groupChannel = supabase
       .channel('group-messages-channel')
       .on(

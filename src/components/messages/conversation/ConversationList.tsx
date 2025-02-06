@@ -9,13 +9,12 @@ export function ConversationList({
   selectedConversation,
   onSelect,
 }: ConversationListProps) {
-  // Separate direct messages and group chats
   const directMessages = Object.entries(conversations).filter(([_, conv]) => !conv.isGroup);
   const groupChats = Object.entries(conversations).filter(([_, conv]) => conv.isGroup);
 
   return (
-    <ScrollArea className="h-[calc(100vh-10rem)]">
-      <div className="flex flex-col space-y-6 p-4">
+    <ScrollArea className="h-full">
+      <div className="flex flex-col space-y-4 p-4">
         {groupChats.length > 0 && (
           <div>
             <h3 className="font-semibold mb-3 text-sm text-muted-foreground">
@@ -37,7 +36,7 @@ export function ConversationList({
         )}
 
         {groupChats.length > 0 && directMessages.length > 0 && (
-          <Separator className="my-4" />
+          <Separator className="my-2" />
         )}
 
         {directMessages.length > 0 && (

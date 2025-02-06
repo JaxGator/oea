@@ -72,8 +72,8 @@ export function MessagesContent({ conversations }: MessagesContentProps) {
   };
 
   return (
-    <div className="h-[calc(100vh-12rem)] bg-background">
-      <div className="container mx-auto h-full">
+    <div className="h-[100dvh] bg-background pt-16 pb-4 px-4 md:px-8">
+      <div className="container mx-auto h-full max-w-6xl">
         <div className={`grid h-full gap-4 ${
           isMobile ? 'grid-cols-1' : 'md:grid-cols-[350px,1fr]'
         }`}>
