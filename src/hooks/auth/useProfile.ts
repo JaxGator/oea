@@ -35,7 +35,7 @@ export function useProfile(userId: string | undefined) {
           .from('profiles')
           .select('*')
           .eq('id', userId)
-          .single();
+          .maybeSingle();
         
         if (error) {
           console.error('Profile fetch error:', {
@@ -57,11 +57,12 @@ export function useProfile(userId: string | undefined) {
                 .from('profiles')
                 .select('*')
                 .eq('id', userId)
-                .single();
+                .maybeSingle();
               
               if (retryError) throw retryError;
               return retryData as Profile;
             } catch (refreshError) {
+              console.error('Session refresh failed:', refreshError);
               toast({
                 title: "Session expired",
                 description: "Please sign in again",
@@ -93,7 +94,7 @@ export function useProfile(userId: string | undefined) {
       }
     },
     enabled: !!userId,
-    retry: 2,
+    retry: 3,
     retryDelay: (attemptIndex) => Math.min(1000 * (2 ** attemptIndex), 30000),
     staleTime: 1000 * 60 * 5, // Cache for 5 minutes
     gcTime: 1000 * 60 * 10, // Keep unused data for 10 minutes
