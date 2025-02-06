@@ -13,6 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Profile } from "@/types/auth";
+import { useConversations } from "@/hooks/messages/useConversations";
 
 function MessagesPage() {
   const { user } = useAuthState();
@@ -162,3 +163,4 @@ export default function Messages() {
     </MessagesProvider>
   );
 }
+
