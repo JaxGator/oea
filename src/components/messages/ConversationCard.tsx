@@ -31,61 +31,65 @@ export function ConversationCard({
 
   return (
     <Card
-      className={`cursor-pointer hover:bg-accent/50 transition-colors ${
-        isSelected ? "bg-accent" : ""
+      className={`cursor-pointer transition-colors hover:bg-accent/50 ${
+        isSelected ? "bg-accent" : "bg-card"
       }`}
       onClick={onSelect}
     >
-      <div className="p-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Avatar>
-              <AvatarImage src={conversation.user.avatar_url || ''} />
-              <AvatarFallback>
-                {conversation.isGroup ? (
-                  <Users className="h-4 w-4" />
-                ) : (
-                  conversation.user.username?.[0]?.toUpperCase()
-                )}
-              </AvatarFallback>
-            </Avatar>
-            <div>
-              <h3 className="font-medium">{displayName}</h3>
-              {conversation.isGroup && participantCount && (
-                <p className="text-xs text-muted-foreground">
-                  {participantCount} participants
-                </p>
+      <div className="p-3">
+        <div className="flex items-start gap-3">
+          <Avatar className="h-10 w-10 flex-shrink-0">
+            <AvatarImage src={conversation.user.avatar_url || ''} />
+            <AvatarFallback>
+              {conversation.isGroup ? (
+                <Users className="h-4 w-4" />
+              ) : (
+                conversation.user.username?.[0]?.toUpperCase()
               )}
-              <p className="text-sm text-muted-foreground">
-                {conversation.lastMessage && format(new Date(conversation.lastMessage.created_at), 'MMM d, yyyy')}
-              </p>
+            </AvatarFallback>
+          </Avatar>
+          
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center justify-between gap-2">
+              <h3 className="font-medium truncate">{displayName}</h3>
+              {conversation.unreadCount > 0 && (
+                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary text-xs font-medium text-primary-foreground">
+                  {conversation.unreadCount}
+                </span>
+              )}
             </div>
+            
+            {conversation.isGroup && participantCount && (
+              <p className="text-xs text-muted-foreground">
+                {participantCount} participants
+              </p>
+            )}
+            
+            {conversation.lastMessage && (
+              <p className="text-sm text-muted-foreground truncate mt-1">
+                {conversation.lastMessage.content}
+              </p>
+            )}
+            
+            <p className="text-xs text-muted-foreground mt-1">
+              {conversation.lastMessage && format(new Date(conversation.lastMessage.created_at), 'MMM d, h:mm a')}
+            </p>
           </div>
 
-          <div className="flex items-center gap-2">
-            {conversation.unreadCount > 0 && (
-              <div className="flex items-center gap-2 bg-primary/10 text-primary px-2 py-1 rounded-full">
-                <div className="bg-primary w-2 h-2 rounded-full animate-pulse" />
-                <span className="text-sm font-medium">
-                  {conversation.unreadCount} unread
-                </span>
-              </div>
-            )}
-            {isSelected && (
-              <Button
-                variant="ghost"
-                size="icon"
-                className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onDelete();
-                }}
-                disabled={isDeleting}
-              >
-                <Trash2 className="h-5 w-5" />
-              </Button>
-            )}
-          </div>
+          {isSelected && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 flex-shrink-0 text-destructive hover:bg-destructive/10 hover:text-destructive"
+              onClick={(e) => {
+                e.stopPropagation();
+                onDelete();
+              }}
+              disabled={isDeleting}
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          )}
         </div>
       </div>
     </Card>

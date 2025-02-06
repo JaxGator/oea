@@ -1,8 +1,8 @@
-
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect } from "react";
-import { Message, GroupChatRaw, Profile } from "@/components/messages/types";
+import { Message, GroupChatRaw } from "@/components/messages/types";
+import { Profile } from "@/types/auth";
 
 export function useConversations(userId: string | undefined) {
   const queryClient = useQueryClient();
