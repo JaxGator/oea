@@ -35,6 +35,7 @@ function MessagesPage() {
     
     setIsDeleting(true);
     try {
+      // Delete all messages between the two users or in the group chat
       const { error } = await supabase
         .from('messages')
         .delete()
@@ -50,6 +51,7 @@ function MessagesPage() {
         description: "The conversation has been permanently deleted.",
       });
       
+      // Invalidate the messages query to refresh the list
       queryClient.invalidateQueries({ queryKey: ['messages', user.id] });
       setSelectedConversation(null);
     } catch (error) {
