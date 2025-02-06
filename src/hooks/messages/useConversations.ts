@@ -70,9 +70,21 @@ export function useConversations(userId: string | undefined) {
         throw groupError;
       }
 
+      // Transform group messages to include group_chat_id
+      const transformedGroupChat = groupMessages ? {
+        ...groupMessages,
+        messages: groupMessages.messages.map(msg => ({
+          ...msg,
+          group_chat_id: groupMessages.id // Add the missing group_chat_id field
+        })),
+        participants: groupMessages.participants.map(p => ({
+          user: p.user as Profile
+        }))
+      } as GroupChatRaw : null;
+
       return {
         directMessages: (directMessages || []) as Message[],
-        groupMessages: groupMessages ? [groupMessages as GroupChatRaw] : []
+        groupMessages: transformedGroupChat ? [transformedGroupChat] : []
       };
     },
     enabled: !!userId,
