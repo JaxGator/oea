@@ -20,6 +20,11 @@ interface GroupMessage {
   content: string;
   created_at: string;
   sender: Profile;
+  group_chat: {
+    id: string;
+    name: string;
+    description: string | null;
+  };
 }
 
 interface GroupChat {
@@ -121,10 +126,21 @@ function MessagesPage() {
 
   // Add group conversations
   messages.groupMessages.forEach((group: GroupChat) => {
+    const groupMessages: Message[] = group.messages.map(gm => ({
+      id: gm.id,
+      content: gm.content,
+      created_at: gm.created_at,
+      sender: gm.sender,
+      sender_id: gm.sender.id,
+      receiver_id: group.id,
+      is_read: true,
+      receiver: group.participants[0].user
+    }));
+
     conversations[group.id] = {
       user: group.participants[0].user,
-      messages: group.messages,
-      lastMessage: group.messages[0] || null,
+      messages: groupMessages,
+      lastMessage: groupMessages[0] || null,
       unreadCount: 0,
       isGroup: true,
       groupInfo: {
