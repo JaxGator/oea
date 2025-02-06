@@ -63,22 +63,25 @@ export function useConversations(userId: string | undefined) {
           )
         `)
         .eq('group_chat_participants.user_id', userId)
-        .single();
+        .maybeSingle();
 
       if (groupError && groupError.code !== 'PGRST116') {
         console.error('Error fetching group messages:', groupError);
         throw groupError;
       }
 
-      // Transform group messages to include group_chat_id
+      // Transform group messages to include group_chat_id and handle sender properly
       const transformedGroupChat = groupMessages ? {
         ...groupMessages,
         messages: groupMessages.messages.map(msg => ({
-          ...msg,
-          group_chat_id: groupMessages.id // Add the missing group_chat_id field
+          id: msg.id,
+          content: msg.content,
+          created_at: msg.created_at,
+          sender: Array.isArray(msg.sender) ? msg.sender[0] : msg.sender as Profile,
+          group_chat_id: groupMessages.id
         })),
         participants: groupMessages.participants.map(p => ({
-          user: p.user as Profile
+          user: Array.isArray(p.user) ? p.user[0] : p.user as Profile
         }))
       } as GroupChatRaw : null;
 
