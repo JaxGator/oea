@@ -125,8 +125,20 @@ function MessagesPage() {
   }, {});
 
   // Transform and add group conversations
-  messages.groupMessages.forEach((group: GroupChat) => {
-    // Transform group messages to match Message type
+  messages.groupMessages.forEach((group: { 
+    id: string; 
+    name: string; 
+    description: string | null; 
+    messages: Array<{
+      id: string;
+      content: string;
+      created_at: string;
+      sender: Profile;
+    }>;
+    participants: Array<{
+      user: Profile;
+    }>;
+  }) => {
     const groupMessages = group.messages.map(gm => ({
       id: gm.id,
       content: gm.content,
@@ -180,4 +192,3 @@ export default function Messages() {
     </MessagesProvider>
   );
 }
-
