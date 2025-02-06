@@ -17,7 +17,7 @@ export function ConversationInput({ onSend, isSending, receiverId }: Conversatio
 
     try {
       if (isTyping) {
-        await supabase
+        const { error } = await supabase
           .from('typing_indicators')
           .upsert({
             user_id: user.id,
@@ -27,8 +27,12 @@ export function ConversationInput({ onSend, isSending, receiverId }: Conversatio
           }, {
             onConflict: 'user_id, chat_id, chat_type'
           });
+
+        if (error) {
+          console.error('Error updating typing status:', error);
+        }
       } else {
-        await supabase
+        const { error } = await supabase
           .from('typing_indicators')
           .delete()
           .match({
@@ -36,6 +40,10 @@ export function ConversationInput({ onSend, isSending, receiverId }: Conversatio
             chat_id: receiverId,
             chat_type: 'direct'
           });
+
+        if (error) {
+          console.error('Error clearing typing status:', error);
+        }
       }
     } catch (error) {
       console.error('Error updating typing status:', error);
@@ -45,7 +53,6 @@ export function ConversationInput({ onSend, isSending, receiverId }: Conversatio
   const handleMessageChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setMessage(e.target.value);
     
-    // Handle typing indicator
     if (typingTimeout) {
       clearTimeout(typingTimeout);
     }
@@ -90,7 +97,11 @@ export function ConversationInput({ onSend, isSending, receiverId }: Conversatio
           placeholder="Type a message..."
           className="min-h-[80px] max-h-[160px] resize-none"
         />
-        <Button type="submit" disabled={!message.trim() || isSending}>
+        <Button 
+          type="submit" 
+          disabled={!message.trim() || isSending}
+          className="flex-shrink-0"
+        >
           <Send className="h-4 w-4" />
         </Button>
       </div>

@@ -35,9 +35,18 @@ export function MessagesContent({ conversations }: MessagesContentProps) {
   const selectedConversationData = selectedConversation ? conversations[selectedConversation] : null;
 
   const handleSendMessage = async (content: string) => {
-    if (!selectedConversation || !user) return;
+    if (!selectedConversation || !user) {
+      toast({
+        title: "Error",
+        description: "Unable to send message. Please try again.",
+        variant: "destructive",
+      });
+      return;
+    }
 
+    console.log('Sending message:', { sender: user.id, receiver: selectedConversation, content });
     setIsSending(true);
+
     try {
       const { error } = await supabase
         .from('messages')
@@ -47,13 +56,17 @@ export function MessagesContent({ conversations }: MessagesContentProps) {
           content,
         });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error sending message:', error);
+        throw error;
+      }
 
       toast({
         title: "Message sent",
         description: "Your message has been sent successfully.",
       });
       
+      console.log('Message sent successfully');
       queryClient.invalidateQueries({ queryKey: ['messages', user.id] });
     } catch (error) {
       console.error('Error sending message:', error);
@@ -68,6 +81,7 @@ export function MessagesContent({ conversations }: MessagesContentProps) {
   };
 
   const handleEditMessage = (messageId: string, content: string) => {
+    console.log('Editing message:', { messageId, content });
     editMessageMutation({ messageId, content });
   };
 

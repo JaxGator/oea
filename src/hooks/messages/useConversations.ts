@@ -13,17 +13,19 @@ export function useConversations(userId: string | undefined) {
     queryFn: async () => {
       if (!userId) return null;
 
+      console.log('Fetching messages for user:', userId);
+
       // Fetch direct messages
       const { data: directMessages, error: directError } = await supabase
         .from('messages')
         .select(`
           *,
-          sender:profiles!sender_id(
+          sender:profiles!messages_sender_id_fkey(
             id, username, full_name, avatar_url, created_at, is_admin, 
             is_approved, is_member, email_notifications, in_app_notifications, 
             event_reminders_enabled
           ),
-          receiver:profiles!receiver_id(
+          receiver:profiles!messages_receiver_id_fkey(
             id, username, full_name, avatar_url, created_at, is_admin, 
             is_approved, is_member, email_notifications, in_app_notifications, 
             event_reminders_enabled
@@ -37,6 +39,8 @@ export function useConversations(userId: string | undefined) {
         throw directError;
       }
 
+      console.log('Direct messages fetched:', directMessages?.length);
+
       // Fetch group messages
       const { data: groupMessages, error: groupError } = await supabase
         .from('group_chats')
@@ -48,7 +52,7 @@ export function useConversations(userId: string | undefined) {
             id,
             content,
             created_at,
-            sender:profiles!inner(
+            sender:profiles!group_chat_messages_sender_id_fkey(
               id, username, full_name, avatar_url, created_at, is_admin, 
               is_approved, is_member, email_notifications, in_app_notifications, 
               event_reminders_enabled
@@ -62,32 +66,31 @@ export function useConversations(userId: string | undefined) {
             )
           )
         `)
-        .eq('group_chat_participants.user_id', userId)
-        .maybeSingle();
+        .eq('group_chat_participants.user_id', userId);
 
-      if (groupError && groupError.code !== 'PGRST116') {
+      if (groupError) {
         console.error('Error fetching group messages:', groupError);
         throw groupError;
       }
 
+      console.log('Group messages fetched:', groupMessages?.length);
+
       // Transform group messages to include group_chat_id and handle sender properly
-      const transformedGroupChat = groupMessages ? {
-        ...groupMessages,
-        messages: groupMessages.messages.map(msg => ({
-          id: msg.id,
-          content: msg.content,
-          created_at: msg.created_at,
-          sender: Array.isArray(msg.sender) ? msg.sender[0] : msg.sender as Profile,
-          group_chat_id: groupMessages.id
+      const transformedGroupChats = groupMessages?.map(chat => ({
+        ...chat,
+        messages: chat.messages.map(msg => ({
+          ...msg,
+          sender: msg.sender,
+          group_chat_id: chat.id
         })),
-        participants: groupMessages.participants.map(p => ({
-          user: Array.isArray(p.user) ? p.user[0] : p.user as Profile
+        participants: chat.participants.map(p => ({
+          user: p.user
         }))
-      } as GroupChatRaw : null;
+      })) as GroupChatRaw[];
 
       return {
         directMessages: (directMessages || []) as Message[],
-        groupMessages: transformedGroupChat ? [transformedGroupChat] : []
+        groupMessages: transformedGroupChats || []
       };
     },
     enabled: !!userId,
@@ -96,8 +99,9 @@ export function useConversations(userId: string | undefined) {
   useEffect(() => {
     if (!userId) return;
 
+    // Subscribe to direct messages
     const messageChannel = supabase
-      .channel('messages-channel')
+      .channel('direct-messages')
       .on(
         'postgres_changes',
         {
@@ -106,15 +110,16 @@ export function useConversations(userId: string | undefined) {
           table: 'messages',
           filter: `or(sender_id.eq.${userId},receiver_id.eq.${userId})`,
         },
-        () => {
-          console.log('Message change detected, invalidating query');
+        (payload) => {
+          console.log('Direct message change detected:', payload);
           queryClient.invalidateQueries({ queryKey: ['messages', userId] });
         }
       )
       .subscribe();
 
+    // Subscribe to group messages
     const groupChannel = supabase
-      .channel('group-messages-channel')
+      .channel('group-messages')
       .on(
         'postgres_changes',
         {
@@ -122,8 +127,8 @@ export function useConversations(userId: string | undefined) {
           schema: 'public',
           table: 'group_chat_messages',
         },
-        () => {
-          console.log('Group message change detected, invalidating query');
+        (payload) => {
+          console.log('Group message change detected:', payload);
           queryClient.invalidateQueries({ queryKey: ['messages', userId] });
         }
       )
