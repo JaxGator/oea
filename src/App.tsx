@@ -22,6 +22,7 @@ import { PrivacyPolicy } from "./components/legal/PrivacyPolicy";
 import { TermsAndConditions } from "./components/legal/TermsAndConditions";
 import { ErrorBoundary } from "./components/error/ErrorBoundary";
 import { PublicPollView } from "./components/members/polls/PublicPollView";
+import { PublicEventView } from "./components/event/public/PublicEventView";
 
 const ErrorFallback = () => (
   <div className="min-h-screen flex items-center justify-center">
@@ -47,6 +48,7 @@ const App = () => {
             <Route path="terms" element={<TermsAndConditions />} />
             <Route path="resources" element={<Resources />} />
             <Route path="polls/share/:token" element={<PublicPollView />} />
+            <Route path="events/share/:id" element={<PublicEventView />} />
             
             {/* Protected Routes */}
             <Route path="events/:id" element={<RequireAuth><EventDetails /></RequireAuth>} />

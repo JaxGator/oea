@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,7 +19,7 @@ export function EventShareMenu({ eventId, title }: EventShareMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
   
   const baseUrl = window.location.origin;
-  const eventUrl = `${baseUrl}/events/${eventId}`;
+  const eventUrl = `${baseUrl}/events/share/${eventId}`;
   
   const handleCopyLink = async () => {
     try {
