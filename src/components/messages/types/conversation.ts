@@ -41,4 +41,5 @@ export interface ConversationContentProps {
 export interface ConversationInputProps {
   onSend: (content: string) => Promise<void>;
   isSending: boolean;
+  receiverId: string;
 }
