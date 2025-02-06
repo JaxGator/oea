@@ -67,25 +67,26 @@ export function MessagesContent({ conversations }: MessagesContentProps) {
     }
   };
 
-  // Wrapper function to match the expected interface
   const handleEditMessage = (messageId: string, content: string) => {
     editMessageMutation({ messageId, content });
   };
 
   return (
-    <div className={`grid gap-4 ${isMobile ? 'grid-cols-1' : 'md:grid-cols-[350px,1fr]'}`}>
+    <div className={`grid gap-4 h-[calc(100dvh-16rem)] ${isMobile ? 'grid-cols-1' : 'md:grid-cols-[350px,1fr]'}`}>
       {(!isMobile || !selectedConversation) && (
-        <Card className="p-4 h-[calc(100vh-16rem)]">
-          <ConversationList
-            conversations={conversations}
-            selectedConversation={selectedConversation}
-            onSelect={setSelectedConversation}
-          />
+        <Card className="flex flex-col overflow-hidden">
+          <div className="flex-1 overflow-y-auto p-4">
+            <ConversationList
+              conversations={conversations}
+              selectedConversation={selectedConversation}
+              onSelect={setSelectedConversation}
+            />
+          </div>
         </Card>
       )}
 
       {(!isMobile || selectedConversation) && selectedConversationData && (
-        <Card className="flex flex-col h-[calc(100vh-16rem)]">
+        <Card className="flex flex-col overflow-hidden">
           <ConversationHeader
             conversation={selectedConversationData}
             onBack={() => setSelectedConversation(null)}

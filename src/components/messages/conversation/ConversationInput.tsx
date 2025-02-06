@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Send } from "lucide-react";
@@ -20,13 +21,13 @@ export function ConversationInput({ onSend, isSending }: ConversationInputProps)
   };
 
   return (
-    <form onSubmit={handleSubmit} className="border-t p-4">
+    <form onSubmit={handleSubmit} className="border-t p-4 bg-background">
       <div className="flex gap-2">
         <Textarea
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           placeholder="Type a message..."
-          className="min-h-[80px] resize-none"
+          className="min-h-[80px] max-h-[160px] resize-none"
         />
         <Button type="submit" disabled={!message.trim() || isSending}>
           <Send className="h-4 w-4" />
