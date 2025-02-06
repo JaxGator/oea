@@ -54,7 +54,7 @@ export function MessagesContent({ conversations }: MessagesContentProps) {
         description: "Your message has been sent successfully.",
       });
       
-      queryClient.invalidateQueries({ queryKey: ['messages'] });
+      queryClient.invalidateQueries({ queryKey: ['messages', user.id] });
     } catch (error) {
       console.error('Error sending message:', error);
       toast({
@@ -103,7 +103,7 @@ export function MessagesContent({ conversations }: MessagesContentProps) {
             <ConversationInput
               onSend={handleSendMessage}
               isSending={isSending}
-              receiverId={selectedConversation || ''}
+              receiverId={selectedConversation}
             />
           </Card>
         )}

@@ -1,6 +1,4 @@
 
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuthState } from "@/hooks/useAuthState";
 import { Loader2 } from "lucide-react";
 import { Message } from "@/components/messages/types";
@@ -13,28 +11,8 @@ import { DeleteConversationDialog } from "@/components/messages/DeleteConversati
 import { useMessages } from "@/components/messages/context/MessagesContext";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
-
-interface GroupMessage {
-  id: string;
-  content: string;
-  created_at: string;
-  sender: {
-    id: string;
-    username: string;
-    avatar_url: string;
-  };
-}
-
-interface GroupChat {
-  id: string;
-  name: string;
-  description: string | null;
-  messages: GroupMessage[];
-}
-
-interface GroupParticipation {
-  group_chat: GroupChat;
-}
+import { useConversations } from "@/hooks/messages/useConversations";
+import { supabase } from "@/integrations/supabase/client";
 
 function MessagesPage() {
   const { user } = useAuthState();
@@ -49,61 +27,7 @@ function MessagesPage() {
     setIsDeleting
   } = useMessages();
 
-  const { data: messages, isLoading } = useQuery({
-    queryKey: ['messages'],
-    queryFn: async () => {
-      const { data: directMessages, error: directError } = await supabase
-        .from('messages')
-        .select('*, sender:profiles!sender_id(*), receiver:profiles!receiver_id(*)')
-        .or(`sender_id.eq.${user?.id},receiver_id.eq.${user?.id}`)
-        .order('created_at', { ascending: false });
-
-      if (directError) throw directError;
-
-      const { data: groupParticipations, error: groupError } = await supabase
-        .from('group_chat_participants')
-        .select(`
-          group_chat:group_chats!inner(
-            id,
-            name,
-            description,
-            messages:group_chat_messages(
-              id,
-              content,
-              created_at,
-              sender:profiles!inner(
-                id,
-                username,
-                avatar_url
-              )
-            )
-          )
-        `)
-        .eq('user_id', user?.id);
-
-      if (groupError) throw groupError;
-
-      const typedGroupParticipations = groupParticipations as unknown as GroupParticipation[];
-      
-      const formattedGroupMessages = typedGroupParticipations?.map(participation => {
-        const groupChat = participation.group_chat;
-        return groupChat.messages.map(msg => ({
-          ...msg,
-          isGroupMessage: true,
-          groupInfo: {
-            id: groupChat.id,
-            name: groupChat.name,
-            description: groupChat.description
-          }
-        }));
-      }).flat() || [];
-
-      return [...directMessages, ...formattedGroupMessages].sort(
-        (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-      );
-    },
-    enabled: !!user,
-  });
+  const { messages, isLoading } = useConversations(user?.id);
 
   const handleDeleteConversation = async () => {
     if (!selectedConversation || !user) return;
@@ -125,7 +49,7 @@ function MessagesPage() {
         description: "The conversation has been permanently deleted.",
       });
       
-      queryClient.invalidateQueries({ queryKey: ['messages'] });
+      queryClient.invalidateQueries({ queryKey: ['messages', user.id] });
       setSelectedConversation(null);
     } catch (error) {
       console.error('Error deleting conversation:', error);
@@ -148,11 +72,12 @@ function MessagesPage() {
     );
   }
 
-  if (!messages?.length) {
+  if (!messages?.directMessages.length && !messages?.groupMessages.length) {
     return <MessagesEmptyState />;
   }
 
-  const conversations = messages?.reduce((acc: Record<string, ConversationType>, message: Message) => {
+  // Transform messages into conversations
+  const conversations = messages.directMessages.reduce((acc: Record<string, ConversationType>, message: Message) => {
     const otherUser = message.sender_id === user?.id ? message.receiver : message.sender;
     const conversationId = otherUser.id;
     
@@ -177,6 +102,23 @@ function MessagesPage() {
     
     return acc;
   }, {});
+
+  // Add group conversations
+  messages.groupMessages.forEach(group => {
+    conversations[group.id] = {
+      user: group.participants[0].user,
+      messages: group.messages,
+      lastMessage: group.messages[0] || null,
+      unreadCount: 0,
+      isGroup: true,
+      groupInfo: {
+        id: group.id,
+        name: group.name,
+        description: group.description,
+        participants: group.participants.map(p => p.user)
+      }
+    };
+  });
 
   return (
     <div className="min-h-[calc(100vh-theme(spacing.16))] bg-gray-50/50">
