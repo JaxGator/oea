@@ -1042,24 +1042,24 @@ export type Database = {
       poll_shares: {
         Row: {
           id: string
-          poll_id: string | null
+          poll_id: string
           shared_at: string | null
-          shared_by: string | null
-          shared_with: string | null
+          shared_by: string
+          shared_with: string
         }
         Insert: {
           id?: string
-          poll_id?: string | null
+          poll_id: string
           shared_at?: string | null
-          shared_by?: string | null
-          shared_with?: string | null
+          shared_by: string
+          shared_with: string
         }
         Update: {
           id?: string
-          poll_id?: string | null
+          poll_id?: string
           shared_at?: string | null
-          shared_by?: string | null
-          shared_with?: string | null
+          shared_by?: string
+          shared_with?: string
         }
         Relationships: [
           {
