@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { PollCard } from "./PollCard";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export function PublicPollView() {
   const { token } = useParams();
@@ -16,10 +17,18 @@ export function PublicPollView() {
           id,
           title,
           description,
+          created_by,
+          status,
+          start_date,
+          end_date,
+          allow_multiple_choices,
+          created_at,
           share_token,
+          visibility,
           poll_options (
             id,
-            option_text
+            option_text,
+            display_order
           ),
           poll_votes (
             id,
@@ -33,9 +42,12 @@ export function PublicPollView() {
         `)
         .eq('share_token', token)
         .eq('status', 'active')
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
+      if (!data) {
+        throw new Error('Poll not found');
+      }
 
       return {
         ...data,
@@ -51,11 +63,25 @@ export function PublicPollView() {
   });
 
   if (isLoading) {
-    return <div className="p-8 text-center">Loading poll...</div>;
+    return (
+      <div className="container mx-auto px-4 py-8 max-w-3xl">
+        <Alert>
+          <AlertDescription>Loading poll...</AlertDescription>
+        </Alert>
+      </div>
+    );
   }
 
   if (error || !poll) {
-    return <div className="p-8 text-center text-red-500">Poll not found or no longer active</div>;
+    return (
+      <div className="container mx-auto px-4 py-8 max-w-3xl">
+        <Alert variant="destructive">
+          <AlertDescription>
+            {error ? 'Error loading poll' : 'Poll not found or no longer active'}
+          </AlertDescription>
+        </Alert>
+      </div>
+    );
   }
 
   return (

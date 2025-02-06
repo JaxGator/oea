@@ -18,12 +18,14 @@ export function usePollSharing(pollId: string) {
         setShareUrl(`${baseUrl}/polls/share/${shareToken}`);
       }
       return { share_token: shareToken };
-    }
+    },
+    retry: 1
   });
 
   const { data: existingShares = [] } = useQuery({
     queryKey: ['poll-shares', pollId],
-    queryFn: () => pollSharingService.getPollShares(pollId)
+    queryFn: () => pollSharingService.getPollShares(pollId),
+    retry: 1
   });
 
   const handleShare = async () => {
@@ -50,11 +52,20 @@ export function usePollSharing(pollId: string) {
 
   const copyShareUrl = async () => {
     if (shareUrl) {
-      await navigator.clipboard.writeText(shareUrl);
-      toast({
-        title: "Success",
-        description: "Share URL copied to clipboard"
-      });
+      try {
+        await navigator.clipboard.writeText(shareUrl);
+        toast({
+          title: "Success",
+          description: "Share URL copied to clipboard"
+        });
+      } catch (error) {
+        console.error('Error copying share URL:', error);
+        toast({
+          title: "Error",
+          description: "Failed to copy share URL",
+          variant: "destructive"
+        });
+      }
     }
   };
 

@@ -12,9 +12,12 @@ export const pollSharingService = {
       .from('polls')
       .select('share_token')
       .eq('id', pollId)
-      .single();
+      .maybeSingle();
 
-    if (error) throw error;
+    if (error) {
+      console.error('Error fetching share token:', error);
+      throw error;
+    }
     return data?.share_token ?? null;
   },
 
@@ -24,7 +27,10 @@ export const pollSharingService = {
       .select('shared_with')
       .eq('poll_id', pollId);
 
-    if (error) throw error;
+    if (error) {
+      console.error('Error fetching poll shares:', error);
+      throw error;
+    }
     return data.map(share => share.shared_with);
   },
 
@@ -43,7 +49,10 @@ export const pollSharingService = {
         }))
       );
 
-    if (shareError) throw shareError;
+    if (shareError) {
+      console.error('Error sharing poll:', shareError);
+      throw shareError;
+    }
 
     // Create notifications for shared users
     const notifications = selectedUsers.map(userId => ({
@@ -58,6 +67,9 @@ export const pollSharingService = {
       .from('notifications')
       .insert(notifications);
 
-    if (notificationError) throw notificationError;
+    if (notificationError) {
+      console.error('Error creating notifications:', notificationError);
+      throw notificationError;
+    }
   }
 };
