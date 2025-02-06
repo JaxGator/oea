@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import type { Profile } from '@/types/auth';
 import { useToast } from '@/hooks/use-toast';
+import { isSupabaseError } from '@/integrations/supabase/types/helpers';
 
 export function useProfile(userId: string | undefined) {
   const { toast } = useToast();
@@ -113,8 +114,9 @@ export function useProfile(userId: string | undefined) {
     enabled: !!userId,
     retry: (failureCount, error) => {
       // Don't retry on auth errors or if profile doesn't exist
-      if (error?.message?.includes('JWT expired') || error?.code === '404') {
-        return false;
+      if (error instanceof Error) {
+        if (error.message.includes('JWT expired')) return false;
+        if (isSupabaseError(error) && error.code === '404') return false;
       }
       // Retry up to 3 times for other errors
       return failureCount < 3;
