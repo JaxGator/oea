@@ -13,6 +13,22 @@ import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
 import { useConversations } from "@/hooks/messages/useConversations";
 import { supabase } from "@/integrations/supabase/client";
+import { Profile } from "@/types/auth";
+
+interface GroupMessage {
+  id: string;
+  content: string;
+  created_at: string;
+  sender: Profile;
+}
+
+interface GroupChat {
+  id: string;
+  name: string;
+  description: string | null;
+  messages: GroupMessage[];
+  participants: { user: Profile }[];
+}
 
 function MessagesPage() {
   const { user } = useAuthState();
@@ -104,7 +120,7 @@ function MessagesPage() {
   }, {});
 
   // Add group conversations
-  messages.groupMessages.forEach(group => {
+  messages.groupMessages.forEach((group: GroupChat) => {
     conversations[group.id] = {
       user: group.participants[0].user,
       messages: group.messages,
