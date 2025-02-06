@@ -103,6 +103,7 @@ export function MessagesContent({ conversations }: MessagesContentProps) {
             <ConversationInput
               onSend={handleSendMessage}
               isSending={isSending}
+              receiverId={selectedConversation || ''}
             />
           </Card>
         )}
