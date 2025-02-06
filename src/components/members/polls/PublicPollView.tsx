@@ -4,9 +4,15 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { PollCard } from "./PollCard";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { useAuthState } from "@/hooks/useAuthState";
+import { LogIn } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 export function PublicPollView() {
   const { token } = useParams();
+  const { user } = useAuthState();
+  const navigate = useNavigate();
 
   const { data: poll, isLoading, error } = useQuery({
     queryKey: ['shared-poll', token],
@@ -62,6 +68,10 @@ export function PublicPollView() {
     enabled: !!token
   });
 
+  const handleAuthClick = () => {
+    navigate('/auth', { state: { returnPath: `/polls/share/${token}` } });
+  };
+
   if (isLoading) {
     return (
       <div className="container mx-auto px-4 py-8 max-w-3xl">
@@ -85,11 +95,20 @@ export function PublicPollView() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-3xl">
+    <div className="container mx-auto px-4 py-8 max-w-3xl space-y-4">
+      {!user && (
+        <div className="flex justify-center mb-4">
+          <Button onClick={handleAuthClick} className="gap-2">
+            <LogIn className="w-4 h-4" />
+            Sign in to vote
+          </Button>
+        </div>
+      )}
       <PollCard 
         poll={poll}
         canEdit={false}
         onDelete={() => {}}
+        isPublicView={!user}
       />
     </div>
   );

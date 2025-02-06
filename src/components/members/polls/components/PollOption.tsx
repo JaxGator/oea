@@ -1,7 +1,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Check } from "lucide-react";
+import { Check, Lock } from "lucide-react";
 
 interface PollOptionProps {
   optionText: string;
@@ -10,6 +10,7 @@ interface PollOptionProps {
   votesCount: number;
   disabled: boolean;
   onVote: () => void;
+  showLockIcon?: boolean;
 }
 
 export function PollOption({
@@ -18,7 +19,8 @@ export function PollOption({
   percentage,
   votesCount,
   disabled,
-  onVote
+  onVote,
+  showLockIcon = false
 }: PollOptionProps) {
   return (
     <div className="space-y-2">
@@ -30,6 +32,7 @@ export function PollOption({
           onClick={onVote}
         >
           {isSelected && <Check className="h-4 w-4 flex-shrink-0" />}
+          {showLockIcon && <Lock className="h-4 w-4 flex-shrink-0" />}
           <span className="line-clamp-2">{optionText}</span>
         </Button>
       </div>

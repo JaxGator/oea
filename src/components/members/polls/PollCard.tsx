@@ -23,6 +23,7 @@ import { PollVoterList } from "./PollVoterList";
 import { Button } from "@/components/ui/button";
 import { PollShareButton } from "./components/PollShareButton";
 import { PollChartView } from "./components/PollChartView";
+import { Lock } from "lucide-react";
 
 interface PollCardProps {
   poll: {
@@ -46,9 +47,10 @@ interface PollCardProps {
   };
   canEdit: boolean;
   onDelete: () => void;
+  isPublicView?: boolean;
 }
 
-export function PollCard({ poll, canEdit, onDelete }: PollCardProps) {
+export function PollCard({ poll, canEdit, onDelete, isPublicView = false }: PollCardProps) {
   const { user } = useAuthState();
   const queryClient = useQueryClient();
   const [isVoting, setIsVoting] = useState(false);
@@ -59,7 +61,7 @@ export function PollCard({ poll, canEdit, onDelete }: PollCardProps) {
   const totalVotes = poll.poll_votes.length;
 
   const handleVote = async (optionId: string) => {
-    if (!user) {
+    if (!user || isPublicView) {
       toast.error("Please sign in to vote");
       return;
     }
@@ -78,6 +80,7 @@ export function PollCard({ poll, canEdit, onDelete }: PollCardProps) {
 
       toast.success("Vote recorded successfully!");
       queryClient.invalidateQueries({ queryKey: ['active-polls'] });
+      queryClient.invalidateQueries({ queryKey: ['shared-poll'] });
     } catch (error) {
       console.error('Error voting:', error);
       toast.error("Failed to record vote");
@@ -151,6 +154,7 @@ export function PollCard({ poll, canEdit, onDelete }: PollCardProps) {
             const percentage = getVotePercentage(option.id);
             const isSelected = userVote?.option_id === option.id;
             const voters = getVotersForOption(option.id);
+            const isDisabled = isPublicView || !!userVote || isVoting;
 
             return (
               <div key={option.id}>
@@ -163,8 +167,9 @@ export function PollCard({ poll, canEdit, onDelete }: PollCardProps) {
                           isSelected={isSelected}
                           percentage={percentage}
                           votesCount={voters.length}
-                          disabled={!!userVote || isVoting}
+                          disabled={isDisabled}
                           onVote={() => handleVote(option.id)}
+                          showLockIcon={isPublicView}
                         />
                       </div>
                     </SheetTrigger>
@@ -186,8 +191,9 @@ export function PollCard({ poll, canEdit, onDelete }: PollCardProps) {
                           isSelected={isSelected}
                           percentage={percentage}
                           votesCount={voters.length}
-                          disabled={!!userVote || isVoting}
+                          disabled={isDisabled}
                           onVote={() => handleVote(option.id)}
+                          showLockIcon={isPublicView}
                         />
                       </div>
                     </HoverCardTrigger>
