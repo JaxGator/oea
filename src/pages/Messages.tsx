@@ -1,3 +1,4 @@
+
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuthState } from "@/hooks/useAuthState";
@@ -12,6 +13,7 @@ import { ConversationContent } from "@/components/messages/conversation/Conversa
 import { ConversationInput } from "@/components/messages/conversation/ConversationInput";
 import { DeleteConversationDialog } from "@/components/messages/DeleteConversationDialog";
 import { CreateGroupChatDialog } from "@/components/messages/group/CreateGroupChatDialog";
+import { NewDirectMessageDialog } from "@/components/messages/direct/NewDirectMessageDialog";
 import { Message } from "@/components/messages/types";
 import { ConversationType } from "@/components/messages/types/conversation";
 
@@ -192,7 +194,10 @@ export default function Messages() {
             <Mail className="h-7 w-7" />
             <h1 className="text-3xl font-bold">Messages</h1>
           </div>
-          <CreateGroupChatDialog />
+          <div className="flex gap-2">
+            <NewDirectMessageDialog />
+            <CreateGroupChatDialog />
+          </div>
         </div>
         <Card className="p-8">
           <div className="flex flex-col items-center justify-center text-center space-y-4">
@@ -245,7 +250,10 @@ export default function Messages() {
             <Mail className="h-7 w-7" />
             <h1 className="text-3xl font-bold">Messages</h1>
           </div>
-          <CreateGroupChatDialog />
+          <div className="flex gap-2">
+            <NewDirectMessageDialog />
+            <CreateGroupChatDialog />
+          </div>
         </div>
 
         <div className="grid md:grid-cols-[350px,1fr] gap-4">
