@@ -1,3 +1,4 @@
+
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import type { Profile } from '@/types/auth';
@@ -18,17 +19,19 @@ export function useProfile(userId: string | undefined) {
       
       try {
         // First check if we have an active session
-        const { data: { session } } = await supabase.auth.getSession();
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        if (sessionError) throw sessionError;
+        
         if (!session) {
           console.log('No active session found');
           return null;
         }
 
-        // Use proper Supabase query builder syntax
+        // Use proper Supabase query builder syntax with match
         const { data, error } = await supabase
           .from('profiles')
           .select('*')
-          .eq('id', userId)
+          .match({ id: userId })
           .maybeSingle();
         
         if (error) {
