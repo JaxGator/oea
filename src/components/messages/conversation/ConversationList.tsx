@@ -13,9 +13,9 @@ export function ConversationList({
   const groupChats = Object.entries(conversations).filter(([_, conv]) => conv.isGroup);
 
   return (
-    <div className="space-y-4">
+    <div className="h-full flex flex-col">
       {groupChats.length > 0 && (
-        <div>
+        <div className="flex-shrink-0">
           <h3 className="font-semibold mb-2 text-sm text-muted-foreground">Group Chats</h3>
           <div className="space-y-2">
             {groupChats.map(([id, conversation]) => (
@@ -37,7 +37,7 @@ export function ConversationList({
       )}
 
       {directMessages.length > 0 && (
-        <div>
+        <div className="flex-1 overflow-y-auto">
           <h3 className="font-semibold mb-2 text-sm text-muted-foreground">Direct Messages</h3>
           <div className="space-y-2">
             {directMessages.map(([userId, conversation]) => (

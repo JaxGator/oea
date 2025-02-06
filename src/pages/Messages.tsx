@@ -1,4 +1,3 @@
-
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuthState } from "@/hooks/useAuthState";
@@ -16,6 +15,7 @@ import { CreateGroupChatDialog } from "@/components/messages/group/CreateGroupCh
 import { NewDirectMessageDialog } from "@/components/messages/direct/NewDirectMessageDialog";
 import { Message } from "@/components/messages/types";
 import { ConversationType } from "@/components/messages/types/conversation";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface GroupMessage {
   id: string;
@@ -48,6 +48,7 @@ export default function Messages() {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const { deleteMessage, editMessage } = useMessageOperations();
+  const isMobile = useIsMobile();
 
   const { data: messages, isLoading } = useQuery({
     queryKey: ['messages'],
@@ -256,17 +257,19 @@ export default function Messages() {
           </div>
         </div>
 
-        <div className="grid md:grid-cols-[350px,1fr] gap-4">
-          <Card className="p-4">
-            <ConversationList
-              conversations={conversations}
-              selectedConversation={selectedConversation}
-              onSelect={setSelectedConversation}
-            />
-          </Card>
+        <div className={`grid gap-4 ${isMobile ? 'grid-cols-1' : 'md:grid-cols-[350px,1fr]'}`}>
+          {(!isMobile || !selectedConversation) && (
+            <Card className="p-4 h-[calc(100vh-16rem)]">
+              <ConversationList
+                conversations={conversations}
+                selectedConversation={selectedConversation}
+                onSelect={setSelectedConversation}
+              />
+            </Card>
+          )}
 
-          {selectedConversationData && (
-            <Card className="flex flex-col h-[600px]">
+          {(!isMobile || selectedConversation) && selectedConversationData && (
+            <Card className="flex flex-col h-[calc(100vh-16rem)]">
               <ConversationHeader
                 conversation={selectedConversationData}
                 onBack={() => setSelectedConversation(null)}
