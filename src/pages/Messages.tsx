@@ -97,7 +97,7 @@ function MessagesPage() {
     return <MessagesEmptyState />;
   }
 
-  // Transform messages into conversations
+  // Transform direct messages into conversations
   const conversations = messages.directMessages.reduce((acc: Record<string, ConversationType>, message: Message) => {
     const otherUser = message.sender_id === user?.id ? message.receiver : message.sender;
     const conversationId = otherUser.id;
@@ -124,9 +124,10 @@ function MessagesPage() {
     return acc;
   }, {});
 
-  // Add group conversations
+  // Transform and add group conversations
   messages.groupMessages.forEach((group: GroupChat) => {
-    const groupMessages: Message[] = group.messages.map(gm => ({
+    // Transform group messages to match Message type
+    const groupMessages = group.messages.map(gm => ({
       id: gm.id,
       content: gm.content,
       created_at: gm.created_at,
@@ -140,7 +141,7 @@ function MessagesPage() {
         name: group.name,
         description: group.description
       }
-    }));
+    } as Message));
 
     conversations[group.id] = {
       user: group.participants[0].user,
