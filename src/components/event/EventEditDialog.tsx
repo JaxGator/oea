@@ -1,6 +1,8 @@
+
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { EventForm } from "@/components/event/EventForm";
 import type { Event } from "@/types/event";
+import { useEffect } from "react";
 
 interface EventEditDialogProps {
   initialData: Event;
@@ -25,6 +27,15 @@ export function EventEditDialog({
     }
     setShowDialog(false);
   };
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (showDialog) {
+        setShowDialog(false);
+      }
+    };
+  }, [showDialog, setShowDialog]);
 
   return (
     <Dialog 

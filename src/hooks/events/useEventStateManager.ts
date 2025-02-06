@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Event } from "@/types/event";
@@ -10,10 +10,17 @@ export function useEventStateManager(event: Event, onUpdate?: () => void) {
   const [editedRSVPCount, setEditedRSVPCount] = useState("");
   const [isEditingRSVP, setIsEditingRSVP] = useState(false);
 
-  const handleEditSuccess = () => {
+  const cleanupModals = useCallback(() => {
+    setShowEditDialog(false);
+    setShowDetailsDialog(false);
+    setIsEditingRSVP(false);
+    setEditedRSVPCount("");
+  }, []);
+
+  const handleEditSuccess = useCallback(() => {
     setShowEditDialog(false);
     if (onUpdate) onUpdate();
-  };
+  }, [onUpdate]);
 
   const handleDelete = async () => {
     try {
@@ -25,6 +32,7 @@ export function useEventStateManager(event: Event, onUpdate?: () => void) {
       if (error) throw error;
 
       toast.success("Event deleted successfully");
+      cleanupModals();
       if (onUpdate) onUpdate();
     } catch (error: any) {
       console.error('Error deleting event:', error);
@@ -101,5 +109,6 @@ export function useEventStateManager(event: Event, onUpdate?: () => void) {
     handleSaveRSVP,
     handleCancelEdit,
     handleRSVPCountChange,
+    cleanupModals
   };
 }

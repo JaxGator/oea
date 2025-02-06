@@ -1,9 +1,11 @@
+
 import { Event } from "@/types/event";
 import { useEventRSVPData } from "@/hooks/events/useEventRSVPData";
 import { useEventGuestData } from "@/hooks/events/useEventGuestData";
 import { useAdminStatus } from "@/hooks/events/useAdminStatus";
 import { useEventStateManager } from "@/hooks/events/useEventStateManager";
 import { useGuestListUpdates } from "@/hooks/events/useGuestListUpdates";
+import { useEffect } from "react";
 
 interface EventCardStateProps {
   event: Event;
@@ -44,7 +46,6 @@ export function EventCardState({
   const { data: attendees = [] } = useEventRSVPData(event.id);
   const { data: guests = [], refetch: refetchGuests } = useEventGuestData(event.id, userRSVPStatus);
   
-  // Use the new hooks
   useGuestListUpdates(event.id, refetchGuests);
   
   const {
@@ -61,11 +62,19 @@ export function EventCardState({
     handleSaveRSVP,
     handleCancelEdit,
     handleRSVPCountChange,
+    cleanupModals
   } = useEventStateManager(event, onUpdate);
+
+  // Cleanup modals when component unmounts or event changes
+  useEffect(() => {
+    return () => {
+      cleanupModals();
+    };
+  }, [event.id, cleanupModals]);
 
   const rsvpData = {
     confirmedCount: attendees.length,
-    waitlistCount: 0 // You might want to implement this in the future
+    waitlistCount: 0
   };
 
   const isPastEvent = new Date(event.date) < new Date(new Date().setHours(0, 0, 0, 0));
