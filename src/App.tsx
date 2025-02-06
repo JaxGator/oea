@@ -1,3 +1,4 @@
+
 import { Routes, Route } from "react-router-dom";
 import { AppProviders } from "./components/providers/AppProviders";
 import { AppLayout } from "./components/layout/AppLayout";
@@ -20,6 +21,7 @@ import Messages from "./pages/Messages";
 import { PrivacyPolicy } from "./components/legal/PrivacyPolicy";
 import { TermsAndConditions } from "./components/legal/TermsAndConditions";
 import { ErrorBoundary } from "./components/error/ErrorBoundary";
+import { PublicPollView } from "./components/members/polls/PublicPollView";
 
 const ErrorFallback = () => (
   <div className="min-h-screen flex items-center justify-center">
@@ -44,6 +46,7 @@ const App = () => {
             <Route path="privacy" element={<PrivacyPolicy />} />
             <Route path="terms" element={<TermsAndConditions />} />
             <Route path="resources" element={<Resources />} />
+            <Route path="polls/share/:token" element={<PublicPollView />} />
             
             {/* Protected Routes */}
             <Route path="events/:id" element={<RequireAuth><EventDetails /></RequireAuth>} />
