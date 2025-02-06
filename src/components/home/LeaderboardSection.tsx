@@ -1,3 +1,4 @@
+
 import { Link } from "react-router-dom";
 import { LeaderboardTable } from "@/components/members/leaderboard/LeaderboardTable";
 import { Card } from "@/components/ui/card";
@@ -5,8 +6,10 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Trophy } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
 
 export function LeaderboardSection() {
+  const { toast } = useToast();
   const { data: leaderboardData, isLoading, error } = useQuery({
     queryKey: ["leaderboard-preview"],
     queryFn: async () => {
@@ -27,6 +30,11 @@ export function LeaderboardSection() {
 
       if (error) {
         console.error('Error fetching leaderboard:', error);
+        toast({
+          title: "Error loading leaderboard",
+          description: "Please try refreshing the page",
+          variant: "destructive",
+        });
         throw error;
       }
       
@@ -34,8 +42,15 @@ export function LeaderboardSection() {
       return data || [];
     },
     staleTime: 1000 * 60 * 5, // Cache for 5 minutes
-    refetchOnWindowFocus: false
+    refetchOnWindowFocus: false,
+    retry: 2,
+    retryDelay: (attemptIndex) => Math.min(1000 * (2 ** attemptIndex), 30000)
   });
+
+  if (error) {
+    console.error('Leaderboard error:', error);
+    return null;
+  }
 
   return (
     <section className="py-8 sm:py-12 bg-gray-50">

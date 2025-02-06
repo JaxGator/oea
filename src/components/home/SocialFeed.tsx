@@ -1,10 +1,11 @@
+
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Rss } from "lucide-react";
 import { useEffect } from "react";
 
 export function SocialFeed() {
-  const { data: feeds = [] } = useQuery({
+  const { data: feeds = [], isError } = useQuery({
     queryKey: ['social-feeds'],
     queryFn: async () => {
       console.log('Fetching social feeds...');
@@ -30,6 +31,10 @@ export function SocialFeed() {
   useEffect(() => {
     const loadFeedScript = () => {
       if (!feeds?.[0]?.feed_url) return;
+
+      // Clean up any existing scripts first
+      const existingScripts = document.querySelectorAll('script[data-feed-script]');
+      existingScripts.forEach(script => script.remove());
 
       const scriptMatch = feeds[0].feed_url.match(/<script[^>]*>([\s\S]*?)<\/script>/);
       if (scriptMatch && scriptMatch[1]) {
@@ -57,7 +62,13 @@ export function SocialFeed() {
     };
   }, [feeds]);
 
+  if (isError) {
+    console.log('Error state in social feed');
+    return null;
+  }
+
   if (!feeds || feeds.length === 0) {
+    console.log('No feeds available');
     return null;
   }
 

@@ -35,7 +35,7 @@ export function useProfile(userId: string | undefined) {
           .from('profiles')
           .select('*')
           .eq('id', userId)
-          .single();
+          .maybeSingle();
         
         if (error) {
           console.error('Profile fetch error:', {
@@ -57,11 +57,12 @@ export function useProfile(userId: string | undefined) {
                 .from('profiles')
                 .select('*')
                 .eq('id', userId)
-                .single();
+                .maybeSingle();
               
               if (retryError) throw retryError;
               return retryData as Profile;
             } catch (refreshError) {
+              console.error('Session refresh failed:', refreshError);
               toast({
                 title: "Session expired",
                 description: "Please sign in again",
