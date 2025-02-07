@@ -57,17 +57,13 @@ export function MessagesContent({ conversations }: MessagesContentProps) {
           content,
         });
 
-      if (error) {
-        console.error('Error sending message:', error);
-        throw error;
-      }
+      if (error) throw error;
 
       toast({
-        title: "Message sent",
-        description: "Your message has been sent successfully.",
+        title: "Success",
+        description: "Message sent successfully.",
       });
       
-      console.log('Message sent successfully');
       queryClient.invalidateQueries({ queryKey: ['messages', user.id] });
     } catch (error) {
       console.error('Error sending message:', error);

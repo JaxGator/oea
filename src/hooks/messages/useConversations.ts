@@ -4,15 +4,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { useEffect } from "react";
 import { Message, GroupChatRaw } from "@/components/messages/types";
 import { Profile } from "@/types/auth";
-import { useToast } from "@/hooks/use-toast";
 
 export function useConversations(userId: string | undefined) {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
 
   const { data: messages, isLoading } = useQuery({
     queryKey: ['messages', userId],
-    queryFn: async () => {
+    queryFn: async ({ signal }) => {
       if (!userId) return null;
 
       console.log('Fetching messages for user:', userId);
@@ -39,11 +37,6 @@ export function useConversations(userId: string | undefined) {
 
         if (directError) {
           console.error('Error fetching direct messages:', directError);
-          toast({
-            title: "Error",
-            description: "Failed to load messages. Please try again.",
-            variant: "destructive",
-          });
           throw directError;
         }
 
@@ -78,11 +71,6 @@ export function useConversations(userId: string | undefined) {
 
         if (groupError) {
           console.error('Error fetching group messages:', groupError);
-          toast({
-            title: "Error",
-            description: "Failed to load group messages. Please try again.",
-            variant: "destructive",
-          });
           throw groupError;
         }
 
@@ -111,11 +99,6 @@ export function useConversations(userId: string | undefined) {
         };
       } catch (error) {
         console.error('Error in useConversations:', error);
-        toast({
-          title: "Error",
-          description: "Failed to load conversations. Please try again.",
-          variant: "destructive",
-        });
         throw error;
       }
     },
