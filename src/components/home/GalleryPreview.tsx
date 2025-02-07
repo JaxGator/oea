@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { ImagePreviewDialog } from "./gallery/ImagePreviewDialog";
 import { FullGalleryDialog } from "./gallery/FullGalleryDialog";
@@ -6,14 +7,17 @@ import { Button } from "@/components/ui/button";
 import { Camera } from "lucide-react";
 import { useGalleryPreview } from "@/hooks/gallery/useGalleryPreview";
 import { GalleryPreviewModal } from "./gallery/GalleryPreviewModal";
+import { useCarouselConfig } from "@/hooks/gallery/useCarouselConfig";
+import { GalleryCarousel } from "./gallery/GalleryCarousel";
 
 export function GalleryPreview() {
   const [showFullGallery, setShowFullGallery] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   const { data: images = [], isError, isLoading } = useGalleryPreview(6);
+  const { carouselEnabled } = useCarouselConfig();
 
-  console.log('GalleryPreview render:', { images, isError, isLoading });
+  console.log('GalleryPreview render:', { images, isError, isLoading, carouselEnabled });
 
   const handleImageSelect = (imageUrl: string) => {
     setSelectedImage(imageUrl);
@@ -28,6 +32,12 @@ export function GalleryPreview() {
       : (currentIndex - 1 + images.length) % images.length;
 
     setSelectedImage(images[newIndex]);
+  };
+
+  const handleKeyPress = (imageUrl: string) => (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      setSelectedImage(imageUrl);
+    }
   };
 
   const isFirstImage = selectedImage === images[0];
@@ -49,12 +59,21 @@ export function GalleryPreview() {
           </Button>
         </div>
 
-        <GalleryGrid 
-          images={images} 
-          onImageSelect={handleImageSelect}
-          isPreview={true}
-          isLoading={isLoading}
-        />
+        {carouselEnabled ? (
+          <GalleryCarousel 
+            images={images}
+            onImageSelect={handleImageSelect}
+            onKeyPress={handleKeyPress}
+            isLoading={isLoading}
+          />
+        ) : (
+          <GalleryGrid 
+            images={images} 
+            onImageSelect={handleImageSelect}
+            isPreview={true}
+            isLoading={isLoading}
+          />
+        )}
 
         <FullGalleryDialog
           open={showFullGallery}
