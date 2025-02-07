@@ -1,25 +1,54 @@
+
 import { Card, CardContent } from "@/components/ui/card";
+import { useGalleryPreview } from "@/hooks/gallery/useGalleryPreview";
+import { Loader2 } from "lucide-react";
 
 export const PhotoGallery = () => {
-  // Convert the sharing URL to an embedded format
-  const folderId = "1at3FHbzf32luuL07mKGFwfMBpFJOwTHc";
-  const embedUrl = `https://drive.google.com/embeddedfolder?id=${folderId}#grid`;
+  const { data: images = [], isLoading, error } = useGalleryPreview();
 
-  console.log('Embedding Google Drive folder with URL:', embedUrl);
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center min-h-[400px]">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center text-red-500 py-8">
+        Failed to load gallery images. Please try again later.
+      </div>
+    );
+  }
 
   return (
-    <div className="space-y-4 border-2 border-blue-500 p-4 rounded-lg">
+    <div className="space-y-4">
       <h2 className="text-2xl font-bold">Photo Gallery</h2>
       
       <Card>
         <CardContent className="p-4">
-          <iframe 
-            src={embedUrl}
-            className="w-full min-h-[600px] border-0"
-            title="Photo Gallery"
-            allow="autoplay"
-            sandbox="allow-same-origin allow-scripts allow-popups allow-forms allow-downloads"
-          />
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {images.map((imageUrl, index) => (
+              <div 
+                key={index} 
+                className="aspect-square overflow-hidden rounded-lg"
+              >
+                <img
+                  src={imageUrl}
+                  alt={`Gallery image ${index + 1}`}
+                  className="w-full h-full object-cover"
+                  loading="lazy"
+                />
+              </div>
+            ))}
+          </div>
+
+          {images.length === 0 && (
+            <div className="text-center py-8 text-gray-500">
+              No images available in the gallery.
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

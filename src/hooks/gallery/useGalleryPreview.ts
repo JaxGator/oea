@@ -1,3 +1,4 @@
+
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -7,30 +8,34 @@ export function useGalleryPreview(limit: number = 6) {
     queryKey: ['gallery-preview', limit],
     queryFn: async () => {
       try {
-        console.log('Fetching gallery preview images...');
-        const { data, error } = await supabase
-          .from('gallery_images')
-          .select('*')
-          .order('display_order', { ascending: true })
-          .limit(limit);
+        console.log('Fetching files from gallery bucket...');
+        
+        // List all files in the gallery bucket
+        const { data: files, error: listError } = await supabase.storage
+          .from('gallery')
+          .list();
 
-        if (error) {
-          console.error('Error fetching gallery images:', error);
-          throw error;
+        if (listError) {
+          console.error('Error listing gallery files:', listError);
+          throw listError;
         }
 
-        console.log('Fetched gallery data:', data);
+        console.log('Found files in gallery:', files);
 
-        if (!data) return [];
+        if (!files) return [];
 
-        const imageUrls = data.map(image => {
-          const { data: urlData } = supabase.storage
-            .from('gallery')
-            .getPublicUrl(image.file_name);
-          
-          console.log('Generated URL for image:', image.file_name, urlData.publicUrl);
-          return urlData.publicUrl;
-        });
+        // Get public URLs for each file
+        const imageUrls = files
+          .filter(file => file.name.match(/\.(jpg|jpeg|png|gif|webp)$/i)) // Only include image files
+          .slice(0, limit) // Limit the number of images
+          .map(file => {
+            const { data: urlData } = supabase.storage
+              .from('gallery')
+              .getPublicUrl(file.name);
+            
+            console.log('Generated URL for image:', file.name, urlData.publicUrl);
+            return urlData.publicUrl;
+          });
 
         console.log('Final image URLs:', imageUrls);
         return imageUrls;
