@@ -1,10 +1,15 @@
 
 import { Card, CardContent } from "@/components/ui/card";
 import { useGalleryPreview } from "@/hooks/gallery/useGalleryPreview";
-import { Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Loader2, RefreshCw } from "lucide-react";
 
 export const PhotoGallery = () => {
-  const { data: images = [], isLoading, error } = useGalleryPreview();
+  const { data: images = [], isLoading, error, refetch } = useGalleryPreview();
+
+  const handleRefresh = async () => {
+    await refetch();
+  };
 
   if (isLoading) {
     return (
@@ -24,7 +29,19 @@ export const PhotoGallery = () => {
 
   return (
     <div className="space-y-4">
-      <h2 className="text-2xl font-bold">Photo Gallery</h2>
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold">Photo Gallery</h2>
+        <Button 
+          onClick={handleRefresh} 
+          variant="outline"
+          size="sm"
+          className="gap-2"
+          disabled={isLoading}
+        >
+          <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+          Refresh
+        </Button>
+      </div>
       
       <Card>
         <CardContent className="p-4">
