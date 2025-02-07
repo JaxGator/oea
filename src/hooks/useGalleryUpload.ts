@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useSession } from "@/hooks/auth/useSession";
 import { supabase } from "@/integrations/supabase/client";
@@ -9,13 +10,20 @@ export function useGalleryUpload(onUploadComplete?: () => void) {
 
   const uploadImage = async (file: File) => {
     if (!user) {
+      console.error('Upload attempted without authentication');
       toast({
-        title: "Error",
+        title: "Authentication Required",
         description: "You must be logged in to upload images",
         variant: "destructive",
       });
       return;
     }
+
+    console.log('Starting upload process:', {
+      fileName: file.name,
+      fileSize: file.size,
+      fileType: file.type
+    });
 
     setIsUploading(true);
     try {
@@ -24,6 +32,8 @@ export function useGalleryUpload(onUploadComplete?: () => void) {
       const randomString = Math.random().toString(36).substring(2, 8);
       const fileExt = file.name.split('.').pop();
       const fileName = `${timestamp}-${randomString}.${fileExt}`;
+
+      console.log('Generated filename:', fileName);
 
       // First create the database record
       const { error: dbError } = await supabase
@@ -35,27 +45,51 @@ export function useGalleryUpload(onUploadComplete?: () => void) {
         });
 
       if (dbError) {
-        console.error('Database error:', dbError);
+        console.error('Database error during record creation:', {
+          error: dbError,
+          context: {
+            fileName,
+            userId: user.id
+          }
+        });
         throw dbError;
       }
+
+      console.log('Database record created successfully');
 
       // Then upload file to storage
       const { error: uploadError } = await supabase.storage
         .from('gallery')
         .upload(fileName, file, {
           cacheControl: '3600',
-          upsert: false
+          upsert: false,
+          contentType: file.type
         });
 
       if (uploadError) {
-        console.error('Storage upload error:', uploadError);
+        console.error('Storage upload error:', {
+          error: uploadError,
+          context: {
+            fileName,
+            fileType: file.type,
+            bucketName: 'gallery'
+          }
+        });
+
         // Clean up the database record if storage upload fails
-        await supabase
+        const { error: cleanupError } = await supabase
           .from('gallery_images')
           .delete()
           .eq('file_name', fileName);
+
+        if (cleanupError) {
+          console.error('Failed to cleanup database record after failed upload:', cleanupError);
+        }
+
         throw uploadError;
       }
+
+      console.log('File uploaded successfully to storage');
 
       toast({
         title: "Success",
@@ -64,10 +98,22 @@ export function useGalleryUpload(onUploadComplete?: () => void) {
 
       onUploadComplete?.();
     } catch (error) {
-      console.error('Upload error:', error);
+      console.error('Upload process failed:', {
+        error,
+        context: {
+          fileName: file.name,
+          fileType: file.type,
+          userId: user.id
+        }
+      });
+
+      const errorMessage = error instanceof Error 
+        ? error.message 
+        : 'Failed to upload image. Please try again.';
+
       toast({
-        title: "Error",
-        description: "Failed to upload image. Please try again.",
+        title: "Upload Error",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
