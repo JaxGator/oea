@@ -65,7 +65,10 @@ export function useGalleryUpload(onUploadComplete?: () => void) {
           cacheControl: '3600',
           upsert: false,
           contentType: file.type,
-          duplex: 'half'
+          duplex: 'half',
+          metadata: {
+            owner: user.id // Set the owner metadata to match auth.uid()
+          }
         });
 
       if (uploadError) {
