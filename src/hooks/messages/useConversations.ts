@@ -4,9 +4,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { useEffect } from "react";
 import { Message, GroupChatRaw } from "@/components/messages/types";
 import { Profile } from "@/types/auth";
+import { useToast } from "@/hooks/use-toast";
 
 export function useConversations(userId: string | undefined) {
   const queryClient = useQueryClient();
+  const { toast } = useToast();
 
   const { data: messages, isLoading } = useQuery({
     queryKey: ['messages', userId],
@@ -15,87 +17,107 @@ export function useConversations(userId: string | undefined) {
 
       console.log('Fetching messages for user:', userId);
 
-      // Fetch direct messages
-      const { data: directMessages, error: directError } = await supabase
-        .from('messages')
-        .select(`
-          *,
-          sender:profiles!messages_sender_id_fkey(
-            id, username, full_name, avatar_url, created_at, is_admin, 
-            is_approved, is_member, email_notifications, in_app_notifications, 
-            event_reminders_enabled
-          ),
-          receiver:profiles!messages_receiver_id_fkey(
-            id, username, full_name, avatar_url, created_at, is_admin, 
-            is_approved, is_member, email_notifications, in_app_notifications, 
-            event_reminders_enabled
-          )
-        `)
-        .or(`sender_id.eq.${userId},receiver_id.eq.${userId}`)
-        .order('created_at', { ascending: false });
+      try {
+        // Fetch direct messages
+        const { data: directMessages, error: directError } = await supabase
+          .from('messages')
+          .select(`
+            *,
+            sender:profiles!messages_sender_id_fkey(
+              id, username, full_name, avatar_url, created_at, is_admin, 
+              is_approved, is_member, email_notifications, in_app_notifications, 
+              event_reminders_enabled
+            ),
+            receiver:profiles!messages_receiver_id_fkey(
+              id, username, full_name, avatar_url, created_at, is_admin, 
+              is_approved, is_member, email_notifications, in_app_notifications, 
+              event_reminders_enabled
+            )
+          `)
+          .or(`sender_id.eq.${userId},receiver_id.eq.${userId}`)
+          .order('created_at', { ascending: false });
 
-      if (directError) {
-        console.error('Error fetching direct messages:', directError);
-        throw directError;
-      }
+        if (directError) {
+          console.error('Error fetching direct messages:', directError);
+          toast({
+            title: "Error",
+            description: "Failed to load messages. Please try again.",
+            variant: "destructive",
+          });
+          throw directError;
+        }
 
-      console.log('Direct messages fetched:', directMessages?.length);
+        console.log('Direct messages fetched:', directMessages?.length);
 
-      // Fetch group messages
-      const { data: groupMessages, error: groupError } = await supabase
-        .from('group_chats')
-        .select(`
-          id,
-          name,
-          description,
-          messages:group_chat_messages(
+        // Fetch group messages
+        const { data: groupMessages, error: groupError } = await supabase
+          .from('group_chats')
+          .select(`
             id,
-            content,
-            created_at,
-            sender:profiles!group_chat_messages_sender_id_fkey(
-              id, username, full_name, avatar_url, created_at, is_admin, 
-              is_approved, is_member, email_notifications, in_app_notifications, 
-              event_reminders_enabled
+            name,
+            description,
+            messages:group_chat_messages(
+              id,
+              content,
+              created_at,
+              sender:profiles!group_chat_messages_sender_id_fkey(
+                id, username, full_name, avatar_url, created_at, is_admin, 
+                is_approved, is_member, email_notifications, in_app_notifications, 
+                event_reminders_enabled
+              )
+            ),
+            participants:group_chat_participants(
+              user:profiles(
+                id, username, full_name, avatar_url, created_at, is_admin, 
+                is_approved, is_member, email_notifications, in_app_notifications, 
+                event_reminders_enabled
+              )
             )
-          ),
-          participants:group_chat_participants(
-            user:profiles(
-              id, username, full_name, avatar_url, created_at, is_admin, 
-              is_approved, is_member, email_notifications, in_app_notifications, 
-              event_reminders_enabled
-            )
-          )
-        `)
-        .eq('group_chat_participants.user_id', userId);
+          `)
+          .eq('group_chat_participants.user_id', userId);
 
-      if (groupError) {
-        console.error('Error fetching group messages:', groupError);
-        throw groupError;
+        if (groupError) {
+          console.error('Error fetching group messages:', groupError);
+          toast({
+            title: "Error",
+            description: "Failed to load group messages. Please try again.",
+            variant: "destructive",
+          });
+          throw groupError;
+        }
+
+        console.log('Group messages fetched:', groupMessages?.length);
+
+        // Transform group messages to match the expected GroupChatRaw type
+        const transformedGroupChats = (groupMessages || []).map(chat => ({
+          id: chat.id,
+          name: chat.name,
+          description: chat.description,
+          messages: chat.messages.map(msg => ({
+            id: msg.id,
+            content: msg.content,
+            created_at: msg.created_at,
+            sender: Array.isArray(msg.sender) ? msg.sender[0] : msg.sender as Profile,
+            group_chat_id: chat.id
+          })),
+          participants: chat.participants.map(p => ({
+            user: Array.isArray(p.user) ? p.user[0] : p.user as Profile
+          }))
+        })) as GroupChatRaw[];
+
+        return {
+          directMessages: (directMessages || []) as Message[],
+          groupMessages: transformedGroupChats
+        };
+      } catch (error) {
+        console.error('Error in useConversations:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load conversations. Please try again.",
+          variant: "destructive",
+        });
+        throw error;
       }
-
-      console.log('Group messages fetched:', groupMessages?.length);
-
-      // Transform group messages to match the expected GroupChatRaw type
-      const transformedGroupChats = (groupMessages || []).map(chat => ({
-        id: chat.id,
-        name: chat.name,
-        description: chat.description,
-        messages: chat.messages.map(msg => ({
-          id: msg.id,
-          content: msg.content,
-          created_at: msg.created_at,
-          sender: Array.isArray(msg.sender) ? msg.sender[0] : msg.sender as Profile,
-          group_chat_id: chat.id
-        })),
-        participants: chat.participants.map(p => ({
-          user: Array.isArray(p.user) ? p.user[0] : p.user as Profile
-        }))
-      })) as GroupChatRaw[];
-
-      return {
-        directMessages: (directMessages || []) as Message[],
-        groupMessages: transformedGroupChats
-      };
     },
     enabled: !!userId,
   });
@@ -103,9 +125,9 @@ export function useConversations(userId: string | undefined) {
   useEffect(() => {
     if (!userId) return;
 
-    // Subscribe to direct messages
+    // Subscribe to messages changes
     const messageChannel = supabase
-      .channel('direct-messages')
+      .channel('messages-changes')
       .on(
         'postgres_changes',
         {
@@ -115,7 +137,7 @@ export function useConversations(userId: string | undefined) {
           filter: `or(sender_id.eq.${userId},receiver_id.eq.${userId})`,
         },
         (payload) => {
-          console.log('Direct message change detected:', payload);
+          console.log('Message change detected:', payload);
           queryClient.invalidateQueries({ queryKey: ['messages', userId] });
         }
       )

@@ -12,6 +12,7 @@ import { useAuthState } from "@/hooks/useAuthState";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { Loader2 } from "lucide-react";
 
 interface MessagesContentProps {
   conversations: Record<string, ConversationType>;
@@ -85,6 +86,11 @@ export function MessagesContent({ conversations }: MessagesContentProps) {
     editMessageMutation({ messageId, content });
   };
 
+  const handleDeleteConversation = () => {
+    if (!selectedConversation || !user) return;
+    setShowDeleteDialog(true);
+  };
+
   return (
     <div className="h-[100dvh] bg-background pt-16 pb-4 px-4 md:px-8">
       <div className="container mx-auto h-full max-w-6xl">
@@ -101,25 +107,33 @@ export function MessagesContent({ conversations }: MessagesContentProps) {
             </Card>
           )}
 
-          {(!isMobile || selectedConversation) && selectedConversationData && (
+          {(!isMobile || selectedConversation) && (
             <Card className="flex h-full flex-col overflow-hidden border">
-              <ConversationHeader
-                conversation={selectedConversationData}
-                onBack={() => setSelectedConversation(null)}
-                onDelete={() => setShowDeleteDialog(true)}
-                isDeleting={isDeleting}
-              />
-              <ConversationContent
-                messages={selectedConversationData.messages}
-                currentUserId={user?.id || ''}
-                onEdit={handleEditMessage}
-                onDelete={deleteMessage}
-              />
-              <ConversationInput
-                onSend={handleSendMessage}
-                isSending={isSending}
-                receiverId={selectedConversation}
-              />
+              {selectedConversationData ? (
+                <>
+                  <ConversationHeader
+                    conversation={selectedConversationData}
+                    onBack={() => setSelectedConversation(null)}
+                    onDelete={handleDeleteConversation}
+                    isDeleting={isDeleting}
+                  />
+                  <ConversationContent
+                    messages={selectedConversationData.messages}
+                    currentUserId={user?.id || ''}
+                    onEdit={handleEditMessage}
+                    onDelete={deleteMessage}
+                  />
+                  <ConversationInput
+                    onSend={handleSendMessage}
+                    isSending={isSending}
+                    receiverId={selectedConversation}
+                  />
+                </>
+              ) : (
+                <div className="flex flex-1 items-center justify-center">
+                  <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                </div>
+              )}
             </Card>
           )}
         </div>
