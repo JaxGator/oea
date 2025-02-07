@@ -28,11 +28,11 @@ export function useGalleryUpload(onUploadComplete?: () => void) {
 
     setIsUploading(true);
     try {
-      // Generate unique filename with gallery/ prefix
+      // Generate unique filename
       const timestamp = Date.now();
       const randomString = Math.random().toString(36).substring(2, 8);
       const fileExt = file.name.split('.').pop();
-      const fileName = `gallery/${timestamp}-${randomString}.${fileExt}`;
+      const fileName = `${timestamp}-${randomString}.${fileExt}`;
 
       console.log('Generated filename:', fileName);
 
