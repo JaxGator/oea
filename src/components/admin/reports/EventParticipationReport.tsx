@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { DateRange } from "react-day-picker";
-import { format } from "date-fns";
+import { format, subDays } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { EventParticipationFilters } from "./participation/EventParticipationFilters";
 import { EventParticipationChart } from "./participation/EventParticipationChart";
@@ -13,7 +13,10 @@ import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export function EventParticipationReport() {
-  const [dateRange, setDateRange] = useState<DateRange | undefined>();
+  const [dateRange, setDateRange] = useState<DateRange | undefined>({
+    from: subDays(new Date(), 90),
+    to: new Date()
+  });
   const [eventType, setEventType] = useState<string>("all");
 
   const { data: eventStats, isLoading } = useQuery({
