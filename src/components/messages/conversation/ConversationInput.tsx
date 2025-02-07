@@ -6,10 +6,12 @@ import { useState, useEffect } from "react";
 import { ConversationInputProps } from "../types/conversation";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuthState } from "@/hooks/useAuthState";
+import { useToast } from "@/hooks/use-toast";
 
 export function ConversationInput({ onSend, isSending, receiverId }: ConversationInputProps) {
   const [message, setMessage] = useState("");
   const { user } = useAuthState();
+  const { toast } = useToast();
   const [typingTimeout, setTypingTimeout] = useState<NodeJS.Timeout | null>(null);
 
   const updateTypingStatus = async (isTyping: boolean) => {
@@ -41,7 +43,7 @@ export function ConversationInput({ onSend, isSending, receiverId }: Conversatio
             chat_type: 'direct'
           });
 
-        if (error) {
+        if (error && error.code !== '42501') { // Ignore RLS policy violations on delete
           console.error('Error clearing typing status:', error);
         }
       }
@@ -57,13 +59,17 @@ export function ConversationInput({ onSend, isSending, receiverId }: Conversatio
       clearTimeout(typingTimeout);
     }
     
-    updateTypingStatus(true);
-    
-    const timeout = setTimeout(() => {
+    if (e.target.value.trim()) {
+      updateTypingStatus(true);
+      
+      const timeout = setTimeout(() => {
+        updateTypingStatus(false);
+      }, 3000);
+      
+      setTypingTimeout(timeout);
+    } else {
       updateTypingStatus(false);
-    }, 3000);
-    
-    setTypingTimeout(timeout);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -71,11 +77,16 @@ export function ConversationInput({ onSend, isSending, receiverId }: Conversatio
     if (!message.trim() || isSending) return;
 
     try {
+      await updateTypingStatus(false);
       await onSend(message);
       setMessage("");
-      updateTypingStatus(false);
     } catch (error) {
       console.error("Error sending message:", error);
+      toast({
+        title: "Error",
+        description: "Failed to send message. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
