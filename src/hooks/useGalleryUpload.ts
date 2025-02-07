@@ -22,16 +22,17 @@ export function useGalleryUpload(onUploadComplete?: () => void) {
     console.log('Starting upload process:', {
       fileName: file.name,
       fileSize: file.size,
-      fileType: file.type
+      fileType: file.type,
+      userId: user.id
     });
 
     setIsUploading(true);
     try {
-      // Generate unique filename
+      // Generate unique filename with gallery/ prefix
       const timestamp = Date.now();
       const randomString = Math.random().toString(36).substring(2, 8);
       const fileExt = file.name.split('.').pop();
-      const fileName = `${timestamp}-${randomString}.${fileExt}`;
+      const fileName = `gallery/${timestamp}-${randomString}.${fileExt}`;
 
       console.log('Generated filename:', fileName);
 
