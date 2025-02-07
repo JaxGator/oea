@@ -58,13 +58,14 @@ export function useGalleryUpload(onUploadComplete?: () => void) {
 
       console.log('Database record created successfully');
 
-      // Then upload file to storage
+      // Then upload file to storage with owner metadata
       const { error: uploadError } = await supabase.storage
         .from('gallery')
         .upload(fileName, file, {
           cacheControl: '3600',
           upsert: false,
-          contentType: file.type
+          contentType: file.type,
+          duplex: 'half'
         });
 
       if (uploadError) {
@@ -127,4 +128,3 @@ export function useGalleryUpload(onUploadComplete?: () => void) {
     uploadImage,
   };
 }
-
