@@ -13,21 +13,26 @@ export function useGalleryPreview(limit: number = 6) {
         // List all files in the gallery bucket
         const { data: files, error: listError } = await supabase.storage
           .from('gallery')
-          .list();
+          .list('', {
+            limit: limit,
+            sortBy: { column: 'name', order: 'desc' }
+          });
 
         if (listError) {
           console.error('Error listing gallery files:', listError);
           throw listError;
         }
 
-        console.log('Found files in gallery:', files);
+        if (!files || files.length === 0) {
+          console.log('No files found in gallery');
+          return [];
+        }
 
-        if (!files) return [];
+        console.log('Found files in gallery:', files);
 
         // Get public URLs for each file
         const imageUrls = files
           .filter(file => file.name.match(/\.(jpg|jpeg|png|gif|webp)$/i)) // Only include image files
-          .slice(0, limit) // Limit the number of images
           .map(file => {
             const { data: urlData } = supabase.storage
               .from('gallery')
