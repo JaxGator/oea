@@ -1,5 +1,4 @@
-
-import { useEffect, useState } from 'react';
+import React from 'react';
 import {
   Carousel,
   CarouselContent,
@@ -10,7 +9,6 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { Image, ZoomIn } from "lucide-react";
 import { cn } from "@/lib/utils";
-import Autoplay from "embla-carousel-autoplay";
 
 interface GalleryCarouselProps {
   images: string[];
@@ -27,16 +25,6 @@ export const GalleryCarousel: React.FC<GalleryCarouselProps> = ({
   isLoading = false,
   isAdmin = false
 }) => {
-  const [api, setApi] = useState<any>(null);
-
-  const plugins = [
-    Autoplay({
-      delay: 4000,
-      stopOnInteraction: true,
-      stopOnMouseEnter: true,
-    }),
-  ];
-
   if (isLoading) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4" role="status" aria-label="Loading gallery">
@@ -62,12 +50,7 @@ export const GalleryCarousel: React.FC<GalleryCarouselProps> = ({
   }
 
   return (
-    <Carousel 
-      className="w-full" 
-      plugins={plugins}
-      setApi={setApi}
-      aria-label="Gallery carousel"
-    >
+    <Carousel className="w-full" aria-label="Gallery carousel">
       <CarouselContent>
         {images.map((imageUrl, index) => (
           <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/4">
