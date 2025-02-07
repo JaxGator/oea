@@ -63,8 +63,7 @@ export function useGalleryUpload(onUploadComplete?: () => void) {
         .from('gallery')
         .upload(fileName, file, {
           cacheControl: '3600',
-          upsert: false,
-          contentType: file.type
+          upsert: false
         });
 
       if (uploadError) {
