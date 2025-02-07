@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
@@ -26,7 +27,6 @@ export function UserActivityReport() {
 
       if (error) throw error;
 
-      // Process data for charts
       const userTypes = {
         admin: data.filter(u => u.is_admin).length,
         member: data.filter(u => u.is_member && !u.is_admin).length,
@@ -53,7 +53,6 @@ export function UserActivityReport() {
   });
 
   const handleExport = () => {
-    // Implementation for CSV export
     console.log("Exporting data...");
   };
 
@@ -92,14 +91,21 @@ export function UserActivityReport() {
       </div>
 
       <div className="grid md:grid-cols-2 gap-6">
-        <Card className="p-4">
-          <h3 className="text-lg font-semibold mb-4">User Registrations Over Time</h3>
+        <Card className="p-6">
+          <h3 className="text-lg font-semibold mb-6">User Registrations Over Time</h3>
           <div className="h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={userStats?.registrationData}>
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="date" />
-                <YAxis />
+                <XAxis 
+                  dataKey="date" 
+                  angle={-45}
+                  textAnchor="end"
+                  height={60}
+                  interval={0}
+                  tick={{ fontSize: 12 }}
+                />
+                <YAxis width={40} />
                 <Tooltip />
                 <Bar dataKey="count" fill="#8884d8" />
               </BarChart>
@@ -107,8 +113,8 @@ export function UserActivityReport() {
           </div>
         </Card>
 
-        <Card className="p-4">
-          <h3 className="text-lg font-semibold mb-4">User Type Distribution</h3>
+        <Card className="p-6">
+          <h3 className="text-lg font-semibold mb-6">User Type Distribution</h3>
           <div className="h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
@@ -118,7 +124,7 @@ export function UserActivityReport() {
                   cy="50%"
                   labelLine={false}
                   label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                  outerRadius={80}
+                  outerRadius={100}
                   fill="#8884d8"
                   dataKey="value"
                 >
@@ -133,25 +139,25 @@ export function UserActivityReport() {
         </Card>
       </div>
 
-      <Card className="p-4">
+      <Card className="p-6">
         <h3 className="text-lg font-semibold mb-4">Recently Active Users</h3>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
               <tr className="border-b">
-                <th className="text-left p-2">Username</th>
-                <th className="text-left p-2">Type</th>
-                <th className="text-left p-2">Joined</th>
+                <th className="text-left py-3 px-4">Username</th>
+                <th className="text-left py-3 px-4">Type</th>
+                <th className="text-left py-3 px-4">Joined</th>
               </tr>
             </thead>
             <tbody>
               {userStats?.recentUsers.map((user: any) => (
                 <tr key={user.id} className="border-b">
-                  <td className="p-2">{user.username}</td>
-                  <td className="p-2">
+                  <td className="py-3 px-4 truncate max-w-[200px]">{user.username}</td>
+                  <td className="py-3 px-4">
                     {user.is_admin ? 'Admin' : user.is_member ? 'Member' : 'Regular'}
                   </td>
-                  <td className="p-2">{format(new Date(user.created_at), 'MMM dd, yyyy')}</td>
+                  <td className="py-3 px-4">{format(new Date(user.created_at), 'MMM dd, yyyy')}</td>
                 </tr>
               ))}
             </tbody>
