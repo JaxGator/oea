@@ -19,7 +19,7 @@ export const useFeaturedEvents = () => {
       try {
         const today = new Date().toISOString().split('T')[0];
         
-        const { data, error } = await supabase
+        const { data: eventsData, error: eventsError } = await supabase
           .from('events')
           .select(`
             *,
@@ -29,10 +29,7 @@ export const useFeaturedEvents = () => {
               user_id,
               response,
               created_at,
-              profiles (
-                full_name,
-                username
-              )
+              status
             )
           `)
           .eq('is_published', true)
@@ -40,13 +37,23 @@ export const useFeaturedEvents = () => {
           .order('is_featured', { ascending: false })
           .order('date', { ascending: true });
 
-        if (error) {
-          console.error('Error fetching events:', error);
-          throw error;
+        if (eventsError) {
+          console.error('Error fetching events:', eventsError);
+          throw eventsError;
         }
 
-        console.log('Fetched events:', data);
-        return data as Event[];
+        // Transform the data to match our Event type
+        const transformedEvents = eventsData.map((event): Event => ({
+          ...event,
+          rsvps: event.event_rsvps || [],
+          attendees: event.event_rsvps?.filter(rsvp => 
+            rsvp.response === 'attending' && rsvp.status === 'confirmed'
+          ) || [],
+          guests: []
+        }));
+
+        console.log('Fetched and transformed events:', transformedEvents);
+        return transformedEvents;
       } catch (error) {
         console.error('Query error:', error);
         throw error;
@@ -54,10 +61,11 @@ export const useFeaturedEvents = () => {
     },
     staleTime: 1000 * 60 * 5, // Cache for 5 minutes
     refetchOnWindowFocus: false,
-    retry: 1 // Limit retries to prevent infinite loops
+    retry: 1, // Limit retries to prevent infinite loops
+    gcTime: 1000 * 60 * 10, // Keep unused data for 10 minutes
   });
 
-  // Set up real-time subscription for events with proper cleanup
+  // Set up real-time subscription for events
   useEffect(() => {
     const channel = supabase
       .channel('events-changes')
@@ -70,7 +78,6 @@ export const useFeaturedEvents = () => {
         },
         (payload) => {
           console.log('Event change detected:', payload);
-          // Invalidate and refetch instead of just invalidating
           queryClient.invalidateQueries({ queryKey: ['featuredEvents'] });
         }
       )

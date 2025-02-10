@@ -49,6 +49,100 @@ export interface Database {
           interests?: string[] | null;
         };
       };
+      events: {
+        Row: {
+          id: string;
+          title: string;
+          description: string | null;
+          date: string;
+          time: string;
+          location: string;
+          max_guests: number;
+          created_by: string;
+          created_at: string;
+          image_url: string;
+          is_featured: boolean;
+          is_published: boolean;
+          imported_rsvp_count: number | null;
+          waitlist_enabled: boolean;
+          waitlist_capacity: number | null;
+          end_time: string | null;
+          latitude: number | null;
+          longitude: number | null;
+          reminder_enabled: boolean;
+          reminder_intervals: string[];
+        };
+        Insert: {
+          id?: string;
+          title: string;
+          description?: string | null;
+          date: string;
+          time: string;
+          location: string;
+          max_guests: number;
+          created_by: string;
+          created_at?: string;
+          image_url: string;
+          is_featured?: boolean;
+          is_published?: boolean;
+          imported_rsvp_count?: number | null;
+          waitlist_enabled?: boolean;
+          waitlist_capacity?: number | null;
+          end_time?: string | null;
+          latitude?: number | null;
+          longitude?: number | null;
+          reminder_enabled?: boolean;
+          reminder_intervals?: string[];
+        };
+        Update: {
+          id?: string;
+          title?: string;
+          description?: string | null;
+          date?: string;
+          time?: string;
+          location?: string;
+          max_guests?: number;
+          created_by?: string;
+          created_at?: string;
+          image_url?: string;
+          is_featured?: boolean;
+          is_published?: boolean;
+          imported_rsvp_count?: number | null;
+          waitlist_enabled?: boolean;
+          waitlist_capacity?: number | null;
+          end_time?: string | null;
+          latitude?: number | null;
+          longitude?: number | null;
+          reminder_enabled?: boolean;
+          reminder_intervals?: string[];
+        };
+      };
+      event_rsvps: {
+        Row: {
+          id: string;
+          event_id: string;
+          user_id: string;
+          response: string;
+          created_at: string;
+          status: string;
+        };
+        Insert: {
+          id?: string;
+          event_id: string;
+          user_id: string;
+          response: string;
+          created_at?: string;
+          status?: string;
+        };
+        Update: {
+          id?: string;
+          event_id?: string;
+          user_id?: string;
+          response?: string;
+          created_at?: string;
+          status?: string;
+        };
+      };
     };
     Views: {
       [_ in never]: never;
