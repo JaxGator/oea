@@ -1332,7 +1332,7 @@ export type Database = {
           key: string
           updated_at: string | null
           updated_by: string | null
-          value: string | null
+          value: string
           verification_status: boolean | null
         }
         Insert: {
@@ -1341,7 +1341,7 @@ export type Database = {
           key: string
           updated_at?: string | null
           updated_by?: string | null
-          value?: string | null
+          value: string
           verification_status?: boolean | null
         }
         Update: {
@@ -1350,7 +1350,7 @@ export type Database = {
           key?: string
           updated_at?: string | null
           updated_by?: string | null
-          value?: string | null
+          value?: string
           verification_status?: boolean | null
         }
         Relationships: [

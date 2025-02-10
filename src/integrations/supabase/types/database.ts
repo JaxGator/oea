@@ -16,7 +16,7 @@ export interface Database {
           event_reminders_enabled: boolean;
           email_notifications: boolean;
           in_app_notifications: boolean;
-          interests: string[];
+          interests: string[] | null;
         };
         Insert: {
           id: string;
@@ -31,7 +31,7 @@ export interface Database {
           event_reminders_enabled?: boolean;
           email_notifications?: boolean;
           in_app_notifications?: boolean;
-          interests?: string[];
+          interests?: string[] | null;
         };
         Update: {
           id?: string;
@@ -46,7 +46,7 @@ export interface Database {
           event_reminders_enabled?: boolean;
           email_notifications?: boolean;
           in_app_notifications?: boolean;
-          interests?: string[];
+          interests?: string[] | null;
         };
       };
     };

@@ -8,11 +8,11 @@ export interface Profile {
   is_admin: boolean;
   is_approved: boolean;
   is_member: boolean;
-  email?: string | null;
+  email: string | null;
   event_reminders_enabled: boolean;
-  email_notifications?: boolean;
-  in_app_notifications?: boolean;
-  interests?: string[];
+  email_notifications: boolean;
+  in_app_notifications: boolean;
+  interests: string[] | null;
 }
 
 export interface AuthState {
