@@ -1,3 +1,4 @@
+
 import { useEffect, useCallback, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from "@/integrations/supabase/client";
@@ -18,21 +19,23 @@ export const useSessionManager = (queryClient: any) => {
   const handleSessionError = useCallback(async (error: AuthError) => {
     console.error('Session error:', error);
     
-    // Clear session data on any auth error
-    await clearSessionData();
-    
-    // Only show toast for non-refresh token errors
-    if (!isRefreshTokenError(error)) {
-      toast({
-        title: "Session Error",
-        description: "Your session has expired. Please sign in again.",
-        variant: "destructive",
-      });
-    }
-    
-    // Redirect to auth page if on protected route
-    if (isProtectedRoute(location.pathname)) {
-      navigate('/auth', { state: { from: location } });
+    // Only clear session data for auth errors
+    if (error.message.includes('Invalid Refresh Token') || error.message.includes('JWT expired')) {
+      await clearSessionData();
+      
+      // Only show toast for non-refresh token errors
+      if (!isRefreshTokenError(error)) {
+        toast({
+          title: "Session Error",
+          description: "Your session has expired. Please sign in again.",
+          variant: "destructive",
+        });
+      }
+      
+      // Redirect to auth page if on protected route
+      if (isProtectedRoute(location.pathname)) {
+        navigate('/auth', { state: { from: location } });
+      }
     }
   }, [navigate, location, toast]);
 
