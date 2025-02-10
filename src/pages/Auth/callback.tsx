@@ -13,7 +13,7 @@ const AuthCallback = () => {
   useEffect(() => {
     const handleCallback = async () => {
       try {
-        // Get URL parameters (both query and hash)
+        // Get both query parameters and hash parameters
         const queryParams = new URLSearchParams(window.location.search);
         const hashParams = new URLSearchParams(window.location.hash.substring(1));
         
@@ -26,6 +26,7 @@ const AuthCallback = () => {
         const hashErrorDescription = hashParams.get("error_description");
         const errorDescription = queryErrorDescription || hashErrorDescription;
 
+        // Handle errors first
         if (error) {
           console.error("Auth callback error:", {
             error,
@@ -36,8 +37,7 @@ const AuthCallback = () => {
 
           let userMessage = "Authentication error occurred";
           
-          // Handle specific error cases
-          if (error === "access_denied" && queryParams.get("error_code") === "otp_expired") {
+          if (error === 'access_denied' && queryParams.get('error_code') === 'otp_expired') {
             userMessage = "The password reset link has expired. Please request a new one.";
           } else if (errorDescription) {
             userMessage = errorDescription;
@@ -52,16 +52,15 @@ const AuthCallback = () => {
         }
 
         // Handle password reset flow
-        const type = queryParams.get("type");
+        const type = queryParams.get("type") || hashParams.get("type");
         if (type === "recovery") {
-          // User came from password reset email
           console.log("Password reset flow detected");
           navigate("/auth", { 
             state: { 
               mode: "reset_password",
               // Pass any additional parameters needed for the reset
-              access_token: queryParams.get("access_token"),
-              refresh_token: queryParams.get("refresh_token")
+              access_token: queryParams.get("access_token") || hashParams.get("access_token"),
+              refresh_token: queryParams.get("refresh_token") || hashParams.get("refresh_token")
             }
           });
           return;
@@ -83,7 +82,6 @@ const AuthCallback = () => {
           toast.success("Authentication successful!");
           navigate("/");
         } else {
-          // If no session and no error, something went wrong
           console.error("No session established:", {
             query: Object.fromEntries(queryParams.entries()),
             hash: Object.fromEntries(hashParams.entries())

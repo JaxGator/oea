@@ -19,7 +19,8 @@ export const supabase = createClient<Database>(
       flowType: 'pkce',
       storage: localStorage,
       storageKey: 'oea-auth-token',
-      debug: true // Enable debug logs for troubleshooting
+      debug: true,
+      redirect_to: window.location.origin + '/auth/callback'
     },
     global: {
       headers: {

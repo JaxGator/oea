@@ -5,10 +5,54 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useEffect, useState } from "react";
 import { AuthError, AuthApiError } from "@supabase/supabase-js";
+import { useLocation } from "react-router-dom";
 
 export function AuthForm() {
   const { toast } = useToast();
   const [authError, setAuthError] = useState<string | null>(null);
+  const location = useLocation();
+
+  useEffect(() => {
+    // Handle password reset state from location
+    const searchParams = new URLSearchParams(location.search);
+    const hashParams = new URLSearchParams(location.hash.substring(1));
+    
+    const type = searchParams.get('type') || hashParams.get('type');
+    const error = searchParams.get('error') || hashParams.get('error');
+    const errorDescription = searchParams.get('error_description') || hashParams.get('error_description');
+
+    if (error) {
+      console.error('Auth error:', { error, errorDescription });
+      if (error === 'access_denied' && searchParams.get('error_code') === 'otp_expired') {
+        setAuthError('The password reset link has expired. Please request a new one.');
+        toast({
+          title: "Link Expired",
+          description: "The password reset link has expired. Please request a new one.",
+          variant: "destructive",
+        });
+      } else {
+        setAuthError(errorDescription || 'An authentication error occurred');
+      }
+    }
+
+    const handleAuthState = async () => {
+      try {
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        if (sessionError) throw sessionError;
+        
+        if (session) {
+          toast({
+            title: "Authentication Successful",
+            description: "You have been signed in successfully.",
+          });
+        }
+      } catch (err) {
+        console.error('Session check error:', err);
+      }
+    };
+
+    handleAuthState();
+  }, [location, toast]);
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
@@ -37,49 +81,10 @@ export function AuthForm() {
       }
     });
 
-    // Set up error handling for auth state changes
-    const handleAuthError = async () => {
-      try {
-        const { error } = await supabase.auth.getSession();
-        if (error) {
-          console.error('Auth error:', error);
-          setAuthError(getErrorMessage(error));
-        }
-      } catch (err) {
-        console.error('Error checking auth session:', err);
-      }
-    };
-
-    handleAuthError();
-
     return () => {
       subscription.unsubscribe();
     };
   }, [toast]);
-
-  const getErrorMessage = (error: AuthError): string => {
-    console.error('Authentication error details:', {
-      code: error instanceof AuthApiError ? error.status : 'unknown',
-      message: error.message,
-      details: error
-    });
-
-    if (error instanceof AuthApiError) {
-      switch (error.message) {
-        case 'Invalid login credentials':
-          return 'Invalid email or password. Please check your credentials and try again.';
-        case 'Email not confirmed':
-          return 'Please verify your email address before signing in.';
-        case 'User not found':
-          return 'No account found with these credentials.';
-        case 'Invalid grant':
-          return 'Invalid login credentials. Please check your email and password.';
-        default:
-          return `Authentication error: ${error.message}`;
-      }
-    }
-    return error.message || 'An unexpected error occurred. Please try again.';
-  };
 
   return (
     <div className="w-full max-w-md">
