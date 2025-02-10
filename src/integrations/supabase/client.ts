@@ -18,8 +18,8 @@ export const supabase = createClient<Database>(
       detectSessionInUrl: true,
       flowType: 'pkce',
       storage: localStorage,
-      storageKey: 'my-app-auth-token',
-      debug: true // Enable debug logs
+      storageKey: 'oea-auth-token',
+      debug: true // Enable debug logs for troubleshooting
     },
     global: {
       headers: {
@@ -37,15 +37,21 @@ export const supabase = createClient<Database>(
   }
 );
 
-// Test connection and log detailed errors
+// Enhanced connection test with detailed logging
 export const testSupabaseConnection = async () => {
   try {
-    console.log('Testing Supabase connection...');
+    console.log('Testing Supabase connection...', {
+      url: SUPABASE_URL,
+      timestamp: new Date().toISOString()
+    });
+    
     const { data: { session }, error } = await supabase.auth.getSession();
     
     if (error) {
       console.error('Supabase connection test error:', {
         error,
+        errorCode: error.code,
+        errorMessage: error.message,
         url: SUPABASE_URL,
         timestamp: new Date().toISOString()
       });
@@ -68,7 +74,7 @@ export const testSupabaseConnection = async () => {
   }
 };
 
-// Call test connection on init
+// Test connection on init
 if (typeof window !== 'undefined') {
   testSupabaseConnection().then(isConnected => {
     if (!isConnected) {
