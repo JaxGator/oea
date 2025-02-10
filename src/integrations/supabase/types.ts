@@ -129,6 +129,13 @@ export type Database = {
             referencedRelation: "event_rsvps"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "fk_rsvp_id"
+            columns: ["rsvp_id"]
+            isOneToOne: false
+            referencedRelation: "event_rsvps"
+            referencedColumns: ["id"]
+          },
         ]
       }
       event_reminders: {
@@ -188,7 +195,7 @@ export type Database = {
           created_at: string
           event_id: string
           id: string
-          response: Database["public"]["Enums"]["rsvp_response"]
+          response: string
           send_confirmation_email: boolean | null
           status: string | null
           user_id: string
@@ -197,7 +204,7 @@ export type Database = {
           created_at?: string
           event_id: string
           id?: string
-          response: Database["public"]["Enums"]["rsvp_response"]
+          response: string
           send_confirmation_email?: boolean | null
           status?: string | null
           user_id: string
@@ -206,7 +213,7 @@ export type Database = {
           created_at?: string
           event_id?: string
           id?: string
-          response?: Database["public"]["Enums"]["rsvp_response"]
+          response?: string
           send_confirmation_email?: boolean | null
           status?: string | null
           user_id?: string
@@ -228,6 +235,27 @@ export type Database = {
           },
           {
             foreignKeyName: "event_rsvps_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_event_id"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "event_public_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_event_id"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_user_id"
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"

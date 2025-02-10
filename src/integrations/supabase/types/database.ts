@@ -1,118 +1,66 @@
-import { AdminLog, Json } from './admin';
-import { Profile } from './auth';
-import { Event, EventRSVP, EventGuest } from './events';
-import { GalleryAlbum, GalleryImage } from './gallery';
-import { PageContent, SiteConfig } from './site';
-import { UserBlock } from './user';
 
-export type Database = {
+export interface Database {
   public: {
     Tables: {
-      admin_logs: {
-        Row: AdminLog;
-        Insert: Omit<AdminLog, 'id' | 'created_at'> & {
-          id?: string;
-          created_at?: string;
-        };
-        Update: Partial<AdminLog>;
-      };
       profiles: {
-        Row: Profile;
-        Insert: Omit<Profile, 'created_at'> & {
+        Row: {
+          id: string;
+          username: string;
+          full_name: string | null;
+          avatar_url: string | null;
+          created_at: string;
+          is_admin: boolean;
+          is_approved: boolean;
+          is_member: boolean;
+          email: string | null;
+          event_reminders_enabled: boolean;
+          email_notifications: boolean;
+          in_app_notifications: boolean;
+          interests: string[];
+        };
+        Insert: {
+          id: string;
+          username: string;
+          full_name?: string | null;
+          avatar_url?: string | null;
           created_at?: string;
+          is_admin?: boolean;
+          is_approved?: boolean;
+          is_member?: boolean;
+          email?: string | null;
+          event_reminders_enabled?: boolean;
+          email_notifications?: boolean;
+          in_app_notifications?: boolean;
+          interests?: string[];
         };
-        Update: Partial<Profile>;
-      };
-      events: {
-        Row: Event;
-        Insert: Omit<Event, 'id' | 'created_at'> & {
+        Update: {
           id?: string;
+          username?: string;
+          full_name?: string | null;
+          avatar_url?: string | null;
           created_at?: string;
+          is_admin?: boolean;
+          is_approved?: boolean;
+          is_member?: boolean;
+          email?: string | null;
+          event_reminders_enabled?: boolean;
+          email_notifications?: boolean;
+          in_app_notifications?: boolean;
+          interests?: string[];
         };
-        Update: Partial<Event>;
-      };
-      event_rsvps: {
-        Row: EventRSVP;
-        Insert: Omit<EventRSVP, 'id' | 'created_at'> & {
-          id?: string;
-          created_at?: string;
-        };
-        Update: Partial<EventRSVP>;
-      };
-      event_guests: {
-        Row: EventGuest;
-        Insert: Omit<EventGuest, 'id' | 'created_at'> & {
-          id?: string;
-          created_at?: string;
-        };
-        Update: Partial<EventGuest>;
-      };
-      gallery_albums: {
-        Row: GalleryAlbum;
-        Insert: Omit<GalleryAlbum, 'id' | 'created_at'> & {
-          id?: string;
-          created_at?: string;
-        };
-        Update: Partial<GalleryAlbum>;
-      };
-      gallery_images: {
-        Row: GalleryImage;
-        Insert: Omit<GalleryImage, 'id' | 'created_at'> & {
-          id?: string;
-          created_at?: string;
-        };
-        Update: Partial<GalleryImage>;
-      };
-      page_content: {
-        Row: PageContent;
-        Insert: Omit<PageContent, 'id' | 'created_at' | 'updated_at'> & {
-          id?: string;
-          created_at?: string | null;
-          updated_at?: string | null;
-        };
-        Update: Partial<PageContent>;
-      };
-      site_config: {
-        Row: SiteConfig;
-        Insert: Omit<SiteConfig, 'id' | 'created_at' | 'updated_at'> & {
-          id?: string;
-          created_at?: string | null;
-          updated_at?: string | null;
-        };
-        Update: Partial<SiteConfig>;
-      };
-      user_blocks: {
-        Row: UserBlock;
-        Insert: Omit<UserBlock, 'id' | 'created_at'> & {
-          id?: string;
-          created_at?: string;
-        };
-        Update: Partial<UserBlock>;
       };
     };
     Views: {
       [_ in never]: never;
     };
     Functions: {
-      create_profile: {
-        Args: {
-          user_id: string;
-          user_username: string;
-          user_full_name?: string;
-          user_avatar_url?: string;
-          user_is_admin?: boolean;
-        };
-        Returns: undefined;
-      };
+      [_ in never]: never;
     };
     Enums: {
       [_ in never]: never;
     };
-    CompositeTypes: {
-      [_ in never]: never;
-    };
   };
-};
+}
 
 export type Tables<T extends keyof Database['public']['Tables']> = Database['public']['Tables'][T];
 export type DbResult<T> = T extends PromiseLike<infer U> ? U : never;
