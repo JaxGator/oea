@@ -1,3 +1,4 @@
+
 export interface Event {
   id: string;
   title: string;
@@ -10,19 +11,20 @@ export interface Event {
   created_at: string;
   image_url: string;
   imported_rsvp_count?: number | null;
-  is_featured?: boolean | null;
+  is_featured?: boolean;
   waitlist_enabled?: boolean;
   waitlist_capacity?: number | null;
-  display_order?: number | null;
   is_published?: boolean;
   latitude?: number | null;
   longitude?: number | null;
-  rsvps?: EventRSVP[];
-  attendees?: EventRSVP[];
-  guests?: EventGuest[];
   end_time?: string | null;
   reminder_enabled?: boolean;
   reminder_intervals?: string[];
+  requires_payment?: boolean;
+  ticket_price?: number | null;
+  rsvps?: EventRSVP[];
+  attendees?: EventRSVP[];
+  guests?: EventGuest[];
 }
 
 export interface EventRSVP {
@@ -32,7 +34,8 @@ export interface EventRSVP {
   response: 'attending' | 'not_attending' | 'maybe';
   status: 'confirmed' | 'waitlisted';
   created_at: string;
-  profiles: {
+  send_confirmation_email?: boolean;
+  profiles?: {
     full_name: string | null;
     username: string;
   };
@@ -54,4 +57,14 @@ export interface EventFormData {
   max_guests: number;
   image_url: string;
   created_by?: string;
+  is_featured?: boolean;
+  waitlist_enabled?: boolean;
+  waitlist_capacity?: number | null;
+  reminder_enabled?: boolean;
+  reminder_intervals?: string[];
+  end_time?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  requires_payment?: boolean;
+  ticket_price?: number | null;
 }
