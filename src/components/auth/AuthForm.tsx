@@ -34,12 +34,6 @@ export function AuthForm() {
           title: "Password Recovery",
           description: "Check your email for password reset instructions",
         });
-      } else if (event === 'PASSWORD_RESET') {
-        setAuthError(null);
-        toast({
-          title: "Password Reset",
-          description: "Your password has been successfully reset",
-        });
       }
     });
 
