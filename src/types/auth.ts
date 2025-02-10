@@ -1,3 +1,4 @@
+
 import { User } from "@supabase/supabase-js";
 
 export interface Profile {
@@ -18,3 +19,4 @@ export interface AuthState {
   user: User | null;
   profile: Profile | null;
 }
+
