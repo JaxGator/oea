@@ -1,3 +1,4 @@
+
 import { Auth as SupabaseAuth } from "@supabase/auth-ui-react";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { supabase } from "@/integrations/supabase/client";
@@ -32,6 +33,12 @@ export function AuthForm() {
         toast({
           title: "Password Recovery",
           description: "Check your email for password reset instructions",
+        });
+      } else if (event === 'PASSWORD_RESET') {
+        setAuthError(null);
+        toast({
+          title: "Password Reset",
+          description: "Your password has been successfully reset",
         });
       }
     });
@@ -128,6 +135,13 @@ export function AuthForm() {
               loading_button_label: 'Signing up...',
               social_provider_text: 'Sign up with {{provider}}',
               link_text: "Don't have an account? Sign up",
+            },
+            forgotten_password: {
+              email_label: 'Email',
+              password_label: 'Password',
+              button_label: 'Send reset instructions',
+              loading_button_label: 'Sending reset instructions...',
+              link_text: "Forgot your password?",
             },
           },
         }}
