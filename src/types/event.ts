@@ -27,12 +27,15 @@ export interface Event {
   guests?: EventGuest[];
 }
 
+export type RSVPResponse = 'attending' | 'not_attending' | 'maybe';
+export type RSVPStatus = 'confirmed' | 'waitlisted';
+
 export interface EventRSVP {
   id: string;
   event_id: string;
   user_id: string;
-  response: 'attending' | 'not_attending' | 'maybe';
-  status: 'confirmed' | 'waitlisted';
+  response: RSVPResponse;
+  status: RSVPStatus;
   created_at: string;
   send_confirmation_email?: boolean;
   profiles?: {

@@ -6,7 +6,7 @@ import { Event } from "@/types/event";
 import { useEffect } from "react";
 import { toast } from "sonner";
 import { useAuthState } from "./useAuthState";
-import { EventWithRSVPs, isEventWithRSVPs, isQueryError } from "@/integrations/supabase/types/database-types";
+import { EventWithRSVPs, isEventWithRSVPs, isQueryError, transformEventData } from "@/integrations/supabase/types/database-types";
 
 export const useFeaturedEvents = () => {
   const queryClient = useQueryClient();
@@ -53,7 +53,9 @@ export const useFeaturedEvents = () => {
         }
 
         // Validate and transform the data
-        const validatedEvents = eventsData.filter(isEventWithRSVPs);
+        const validatedEvents = eventsData
+          .filter(isEventWithRSVPs)
+          .map(transformEventData);
         
         // Transform the data to match our Event type
         const transformedEvents = validatedEvents.map((event): Event => ({
