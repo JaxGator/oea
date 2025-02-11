@@ -1,3 +1,4 @@
+
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -9,7 +10,7 @@ export function useEventRSVPData(eventId: string) {
         .from('event_rsvps')
         .select(`
           id,
-          profiles (
+          profiles!event_rsvps_user_id_fkey (
             full_name,
             username
           ),
