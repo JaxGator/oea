@@ -26,7 +26,9 @@ export function EventCard({
   isAuthChecking = false,
   requireAuth = false
 }: EventCardProps) {
-  const { hasUser } = useAuthState();
+  const { isAuthenticated } = useAuthState();
+
+  console.log('EventCard - Authentication state:', { isAuthenticated });
 
   if (!event) {
     console.error("Event object is undefined");
@@ -49,7 +51,7 @@ export function EventCard({
         isAuthChecking={isAuthChecking}
         requireAuth={requireAuth}
         showDelete={true}
-        isAuthenticated={hasUser}
+        isAuthenticated={isAuthenticated}
       />
     </div>
   );

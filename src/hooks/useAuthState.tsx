@@ -59,7 +59,7 @@ export function useAuthState(): AuthState {
 
   // Enhanced logging for authentication state
   console.log('useAuthState - Current state:', {
-    hasUser: !!user,
+    isAuthenticated: !!user,
     userId: user?.id,
     hasProfile: !!profile,
     isAdmin: profile?.is_admin,

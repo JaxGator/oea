@@ -1,3 +1,4 @@
+
 import { Event } from "@/types/event";
 import { EventRSVPHandler } from "../rsvp/EventRSVPHandler";
 import { EventCardState } from "../card/EventCardState";
@@ -16,6 +17,7 @@ interface EventRSVPContainerProps {
   isAuthChecking?: boolean;
   requireAuth?: boolean;
   showDelete?: boolean;
+  isAuthenticated?: boolean;
 }
 
 export function EventRSVPContainer({
@@ -28,8 +30,11 @@ export function EventRSVPContainer({
   isSelected = false,
   isAuthChecking = false,
   requireAuth = false,
-  showDelete = false
+  showDelete = false,
+  isAuthenticated = false
 }: EventRSVPContainerProps) {
+  console.log('EventRSVPContainer - Auth state:', { isAuthenticated, userRSVPStatus });
+
   const handleCardClick = () => {
     if (onSelect && event.latitude && event.longitude) {
       onSelect();
@@ -43,6 +48,7 @@ export function EventRSVPContainer({
           event={event}
           userRSVPStatus={userRSVPStatus}
           onUpdate={onUpdate}
+          isAuthenticated={isAuthenticated}
         >
           {(stateProps) => {
             const attendeeNames = processAttendeeNames(stateProps.attendees);
@@ -75,6 +81,7 @@ export function EventRSVPContainer({
                   isAuthChecking={isAuthChecking}
                   requireAuth={requireAuth}
                   showDelete={showDelete}
+                  isAuthenticated={isAuthenticated}
                 />
 
                 <EventDialogs
@@ -96,6 +103,7 @@ export function EventRSVPContainer({
                   onCancelRSVP={() => onCancelRSVP(event.id)}
                   onDelete={stateProps.handleDelete}
                   handleEditSuccess={stateProps.handleEditSuccess}
+                  isAuthenticated={isAuthenticated}
                 />
               </div>
             );
