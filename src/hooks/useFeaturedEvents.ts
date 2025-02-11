@@ -19,8 +19,8 @@ export const useFeaturedEvents = () => {
       try {
         const today = new Date().toISOString().split('T')[0];
         
-        // First, get the events
-        const { data: eventsData, error: eventsError } = await supabase
+        // Fetch events with proper error handling
+        const eventsResult = await supabase
           .from('events')
           .select('*')
           .eq('is_published', true)
@@ -28,11 +28,15 @@ export const useFeaturedEvents = () => {
           .order('is_featured', { ascending: false })
           .order('date', { ascending: true });
 
-        if (eventsError) throw eventsError;
-        if (!eventsData) return [];
+        if (eventsResult.error) {
+          console.error('Events query error:', eventsResult.error);
+          throw eventsResult.error;
+        }
 
-        // Then, get RSVPs for these events
-        const { data: rsvpsData, error: rsvpsError } = await supabase
+        const eventsData = eventsResult.data || [];
+
+        // Fetch RSVPs separately with error handling
+        const rsvpsResult = await supabase
           .from('event_rsvps')
           .select(`
             *,
@@ -43,15 +47,20 @@ export const useFeaturedEvents = () => {
           `)
           .in('event_id', eventsData.map(e => e.id));
 
-        if (rsvpsError) throw rsvpsError;
+        if (rsvpsResult.error) {
+          console.error('RSVPs query error:', rsvpsResult.error);
+          throw rsvpsResult.error;
+        }
 
-        // Combine the data
+        const rsvpsData = rsvpsResult.data || [];
+
+        // Combine the data safely
         const eventsWithRSVPs = eventsData.map(event => ({
           ...event,
-          event_rsvps: rsvpsData?.filter(rsvp => rsvp.event_id === event.id) || []
+          event_rsvps: rsvpsData.filter(rsvp => rsvp.event_id === event.id) || []
         }));
 
-        // Transform to Event type
+        // Transform to Event type with proper type checking
         return eventsWithRSVPs.map((event): Event => ({
           ...event,
           rsvps: event.event_rsvps || [],
@@ -61,7 +70,7 @@ export const useFeaturedEvents = () => {
           guests: []
         }));
       } catch (error) {
-        console.error('Query error:', error);
+        console.error('Featured events query error:', error);
         if (isQueryError(error)) {
           toast.error(`Database error: ${error.message}`);
         } else {
@@ -76,7 +85,7 @@ export const useFeaturedEvents = () => {
     gcTime: 1000 * 60 * 10, // Keep unused data for 10 minutes
   });
 
-  // Set up real-time subscription for events
+  // Set up real-time subscription with error handling
   useEffect(() => {
     const channel = supabase
       .channel('events-changes')
