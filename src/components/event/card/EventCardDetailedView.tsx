@@ -4,7 +4,6 @@ import { EventCardBasicInfo } from "./EventCardBasicInfo";
 import { WaitlistInfo } from "./WaitlistInfo";
 import { AttendeeList } from "../details/AttendeeList";
 import { EventImageSection } from "./sections/EventImageSection";
-import { EventDetailsSection } from "./sections/EventDetailsSection";
 import { EventActionsSection } from "./sections/EventActionsSection";
 import { EventDetails } from "../EventDetails";
 
@@ -52,10 +51,10 @@ export function EventCardDetailedView({
       <EventImageSection imageUrl={event.image_url} title={event.title} />
 
       <div className="px-6 space-y-6">
+        {/* Summary information - date, time, and RSVP counts */}
         <EventCardBasicInfo
           date={event.date}
           time={event.time || '00:00:00'}
-          location={event.location}
           rsvpCount={rsvpCount}
           maxGuests={event.max_guests}
           isWixEvent={isWixEvent}
@@ -65,18 +64,10 @@ export function EventCardDetailedView({
           isPastEvent={isPastEvent}
         />
         
-        <EventDetailsSection
-          event={event}
-          rsvpCount={rsvpCount}
-          maxGuests={event.max_guests}
-          attendeeNames={attendeeNames}
-          isPastEvent={isPastEvent}
-          isAdmin={isAdmin}
-          canManageEvents={canManageEvents}
-        />
-
+        {/* Location with map */}
         <EventDetails event={event} />
 
+        {/* Attendee list - only shown when user has permission */}
         {canViewRSVPs && (
           <div className="border rounded-lg p-4 bg-gray-50">
             <h3 className="text-lg font-semibold mb-4">Event Attendees</h3>
@@ -86,12 +77,14 @@ export function EventCardDetailedView({
           </div>
         )}
 
+        {/* Event description */}
         {event.description && (
           <div className="prose max-w-none">
             <div dangerouslySetInnerHTML={{ __html: event.description }} />
           </div>
         )}
 
+        {/* Action buttons */}
         <EventActionsSection
           isAdmin={isAdmin}
           canManageEvents={canManageEvents}
@@ -112,6 +105,7 @@ export function EventCardDetailedView({
           event={{ id: event.id, title: event.title }}
         />
 
+        {/* Waitlist information if enabled */}
         {event.waitlist_enabled && (
           <WaitlistInfo
             waitlistEnabled={event.waitlist_enabled}
