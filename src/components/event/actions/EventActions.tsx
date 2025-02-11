@@ -58,6 +58,8 @@ export function EventActions({
 }: EventActionsProps) {
   const showViewDetails = isAdmin || canManageEvents || userRSVPStatus === "attending";
 
+  console.log('EventActions - Authentication state:', { isAuthenticated });
+
   if (isAuthChecking) {
     return (
       <div className="flex flex-wrap gap-1">
@@ -84,7 +86,7 @@ export function EventActions({
         requireAuth={requireAuth}
       />
 
-      {isAuthenticated && (
+      {!isAuthenticated && (
         <EventShareMenu eventId={event.id} title={event.title} />
       )}
 
