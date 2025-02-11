@@ -9,6 +9,7 @@ import { PollCardHeader } from "./components/PollCardHeader";
 import { PollOptionsList } from "./components/PollOptionsList";
 import { PollChartView } from "./components/PollChartView";
 import type { PollWithDetails, VoteResult } from "@/types/database.types";
+import { executeQuery } from "@/utils/database";
 
 interface PollCardProps {
   poll: PollWithDetails;
@@ -33,16 +34,17 @@ export function PollCard({ poll, canEdit, onDelete, isPublicView = false }: Poll
 
     setIsVoting(true);
     try {
-      const { data: result, error } = await supabase
-        .rpc('handle_poll_vote', {
+      const { data: result, error } = await executeQuery<VoteResult>(() =>
+        supabase.rpc('handle_poll_vote', {
           p_poll_id: poll.id,
           p_option_id: optionId,
           p_user_id: user.id
-        });
+        })
+      );
 
       if (error) throw error;
 
-      switch (result as VoteResult) {
+      switch (result) {
         case 'success':
           toast.success("Vote recorded successfully!");
           break;
@@ -59,7 +61,6 @@ export function PollCard({ poll, canEdit, onDelete, isPublicView = false }: Poll
           toast.error("An unexpected error occurred");
       }
 
-      // Refresh poll data
       queryClient.invalidateQueries({ queryKey: ['active-polls'] });
       queryClient.invalidateQueries({ queryKey: ['shared-poll'] });
     } catch (error) {
