@@ -2,10 +2,11 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useRSVPManagement } from "@/hooks/events/useRSVPManagement";
-import { Event } from "@/types/event";
+import { Event, EventRSVP } from "@/types/event";
 import { useEffect } from "react";
 import { toast } from "sonner";
 import { useAuthState } from "./useAuthState";
+import { EventWithRSVPs } from "@/integrations/supabase/types/database-types";
 
 export const useFeaturedEvents = () => {
   const queryClient = useQueryClient();
@@ -29,7 +30,11 @@ export const useFeaturedEvents = () => {
               user_id,
               response,
               created_at,
-              status
+              status,
+              profiles (
+                full_name,
+                username
+              )
             )
           `)
           .eq('is_published', true)
@@ -48,7 +53,7 @@ export const useFeaturedEvents = () => {
         }
 
         // Transform the data to match our Event type
-        const transformedEvents = eventsData.map((event): Event => ({
+        const transformedEvents = (eventsData as EventWithRSVPs[]).map((event): Event => ({
           ...event,
           rsvps: event.event_rsvps || [],
           attendees: event.event_rsvps?.filter(rsvp => 

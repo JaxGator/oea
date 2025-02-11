@@ -38,7 +38,7 @@ export interface EventRSVP {
   profiles?: {
     full_name: string | null;
     username: string;
-  };
+  } | null;
   event_guests?: EventGuest[];
 }
 
