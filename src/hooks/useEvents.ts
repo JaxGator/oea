@@ -57,13 +57,13 @@ export function useEvents(selectedDate?: Date) {
           .from('events')
           .select(`
             *,
-            event_rsvps (
+            event_rsvps!event_rsvps_event_id_fkey (
               id,
               user_id,
               response,
               status,
               created_at,
-              profiles (
+              profiles!event_rsvps_user_id_fkey (
                 full_name,
                 username
               ),
@@ -73,8 +73,8 @@ export function useEvents(selectedDate?: Date) {
               )
             )
           `)
-          .order('is_featured', { ascending: false }) // Featured events first
-          .order('date', { ascending: true }); // Then by date ascending
+          .order('is_featured', { ascending: false })
+          .order('date', { ascending: true });
 
         // Apply auth filters
         if (!isAuthenticated) {
