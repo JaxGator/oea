@@ -19,8 +19,9 @@ export function assertQueryResult<T>(result: T | null | undefined): asserts resu
   }
 }
 
+// Strongly typed event with RSVP relationship
 export type EventWithRSVPs = TablesRow<'events'> & {
-  event_rsvps?: {
+  event_rsvps?: Array<{
     id: string;
     event_id: string;
     user_id: string;
@@ -31,6 +32,5 @@ export type EventWithRSVPs = TablesRow<'events'> & {
       full_name: string | null;
       username: string;
     } | null;
-  }[];
+  }>;
 };
-
