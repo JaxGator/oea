@@ -109,7 +109,7 @@ export function useEvents(selectedDate?: Date) {
         const { data: events, error, count } = await query;
 
         if (error) {
-          console.error('Error fetching events:', {
+          console.error('Events query error:', {
             error,
             context: {
               isAuthenticated,
