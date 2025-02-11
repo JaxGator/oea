@@ -80,12 +80,15 @@ export function SocialFeed() {
           Social Feed
         </h2>
       </div>
-      <div className="w-full">
-        <div 
-          dangerouslySetInnerHTML={{ 
-            __html: feeds[0].feed_url.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
-          }} 
-        />
+      <div className="w-full h-[480px] relative">
+        <div className="absolute inset-0 overflow-y-auto scrollbar-thin hover:scrollbar-thumb-gray-300 rounded-lg border shadow-sm">
+          <div 
+            dangerouslySetInnerHTML={{ 
+              __html: feeds[0].feed_url.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+            }} 
+          />
+        </div>
+        <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-white to-transparent pointer-events-none rounded-b-lg" />
       </div>
     </div>
   );
