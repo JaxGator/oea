@@ -20,17 +20,31 @@ export function assertQueryResult<T>(result: T | null | undefined): asserts resu
 }
 
 // Strongly typed event with RSVP relationship
-export type EventWithRSVPs = TablesRow<'events'> & {
-  event_rsvps?: Array<{
-    id: string;
-    event_id: string;
-    user_id: string;
-    response: string;
-    created_at: string;
-    status: string;
-    profiles?: {
-      full_name: string | null;
-      username: string;
-    } | null;
-  }>;
+export type EventRSVPWithProfile = {
+  id: string;
+  event_id: string;
+  user_id: string;
+  response: string;
+  created_at: string;
+  status: string;
+  profiles?: {
+    full_name: string | null;
+    username: string;
+  } | null;
 };
+
+export type EventWithRSVPs = TablesRow<'events'> & {
+  event_rsvps?: EventRSVPWithProfile[];
+};
+
+// Type guard for EventWithRSVPs
+export function isEventWithRSVPs(data: unknown): data is EventWithRSVPs {
+  return (
+    typeof data === 'object' &&
+    data !== null &&
+    'id' in data &&
+    'title' in data &&
+    'date' in data
+  );
+}
+

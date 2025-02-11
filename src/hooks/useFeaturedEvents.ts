@@ -2,11 +2,11 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useRSVPManagement } from "@/hooks/events/useRSVPManagement";
-import { Event, EventRSVP } from "@/types/event";
+import { Event } from "@/types/event";
 import { useEffect } from "react";
 import { toast } from "sonner";
 import { useAuthState } from "./useAuthState";
-import { EventWithRSVPs } from "@/integrations/supabase/types/database-types";
+import { EventWithRSVPs, isEventWithRSVPs, isQueryError } from "@/integrations/supabase/types/database-types";
 
 export const useFeaturedEvents = () => {
   const queryClient = useQueryClient();
@@ -52,8 +52,11 @@ export const useFeaturedEvents = () => {
           return [];
         }
 
+        // Validate and transform the data
+        const validatedEvents = eventsData.filter(isEventWithRSVPs);
+        
         // Transform the data to match our Event type
-        const transformedEvents = (eventsData as EventWithRSVPs[]).map((event): Event => ({
+        const transformedEvents = validatedEvents.map((event): Event => ({
           ...event,
           rsvps: event.event_rsvps || [],
           attendees: event.event_rsvps?.filter(rsvp => 
@@ -66,6 +69,11 @@ export const useFeaturedEvents = () => {
         return transformedEvents;
       } catch (error) {
         console.error('Query error:', error);
+        if (isQueryError(error)) {
+          toast.error(`Database error: ${error.message}`);
+        } else {
+          toast.error('Failed to fetch events');
+        }
         throw error;
       }
     },
@@ -98,11 +106,6 @@ export const useFeaturedEvents = () => {
       supabase.removeChannel(channel);
     };
   }, [queryClient]);
-
-  if (error) {
-    console.error('Error in useFeaturedEvents:', error);
-    toast.error('Failed to load events');
-  }
 
   return {
     events: events || [],
