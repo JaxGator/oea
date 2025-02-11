@@ -23,7 +23,7 @@ export const useFeaturedEvents = () => {
           .from('events')
           .select(`
             *,
-            event_rsvps (
+            event_rsvps!event_rsvps_event_id_fkey (
               id,
               event_id,
               user_id,
@@ -40,6 +40,11 @@ export const useFeaturedEvents = () => {
         if (eventsError) {
           console.error('Error fetching events:', eventsError);
           throw eventsError;
+        }
+
+        if (!eventsData) {
+          console.log('No events found');
+          return [];
         }
 
         // Transform the data to match our Event type
@@ -61,7 +66,7 @@ export const useFeaturedEvents = () => {
     },
     staleTime: 1000 * 60 * 5, // Cache for 5 minutes
     refetchOnWindowFocus: false,
-    retry: 1, // Limit retries to prevent infinite loops
+    retry: 1,
     gcTime: 1000 * 60 * 10, // Keep unused data for 10 minutes
   });
 
