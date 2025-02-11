@@ -35,12 +35,12 @@ export const useFeaturedEvents = () => {
 
         const eventsData = eventsResult.data || [];
 
-        // Fetch RSVPs separately with error handling
+        // Fetch RSVPs separately with error handling, using the specific foreign key
         const rsvpsResult = await supabase
           .from('event_rsvps')
           .select(`
             *,
-            profiles (
+            profiles!event_rsvps_user_id_fkey (
               full_name,
               username
             )
