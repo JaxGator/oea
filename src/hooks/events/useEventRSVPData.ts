@@ -1,6 +1,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { EventRSVPWithProfile } from "@/types/database.types";
 
 export function useEventRSVPData(eventId: string) {
   return useQuery({
@@ -28,11 +29,7 @@ export function useEventRSVPData(eventId: string) {
         return [];
       }
 
-      // Transform the data to match the expected format
-      return rsvps?.map(rsvp => ({
-        profile: rsvp.profiles,
-        event_guests: rsvp.event_guests
-      })) || [];
+      return (rsvps || []) as EventRSVPWithProfile[];
     },
     staleTime: 1000 * 60 * 5 // Cache for 5 minutes
   });

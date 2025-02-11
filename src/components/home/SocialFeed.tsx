@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Rss } from "lucide-react";
 import { useEffect } from "react";
+import { SocialMediaFeed } from "@/types/database.types";
 
 export function SocialFeed() {
   const { data: feeds = [], isError } = useQuery({
@@ -21,7 +22,7 @@ export function SocialFeed() {
         throw error;
       }
       console.log('Fetched social feeds:', data);
-      return data;
+      return data as SocialMediaFeed[];
     },
     retry: 1,
     staleTime: 1000 * 60 * 5, // Cache for 5 minutes
