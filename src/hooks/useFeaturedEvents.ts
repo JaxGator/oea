@@ -16,49 +16,43 @@ export const useFeaturedEvents = () => {
   const { data: events = [], isLoading, error } = useQuery({
     queryKey: ['featuredEvents'],
     queryFn: async () => {
-      console.log('Fetching featured events...');
       try {
         const today = new Date().toISOString().split('T')[0];
         
+        // First, get the events
         const { data: eventsData, error: eventsError } = await supabase
           .from('events')
-          .select(`
-            *,
-            event_rsvps (
-              id,
-              event_id,
-              user_id,
-              response,
-              created_at,
-              status,
-              profiles!event_rsvps_user_id_fkey (
-                full_name,
-                username
-              )
-            )
-          `)
+          .select('*')
           .eq('is_published', true)
           .gte('date', today)
           .order('is_featured', { ascending: false })
           .order('date', { ascending: true });
 
-        if (eventsError) {
-          console.error('Error fetching events:', eventsError);
-          throw eventsError;
-        }
+        if (eventsError) throw eventsError;
+        if (!eventsData) return [];
 
-        if (!eventsData) {
-          console.log('No events found');
-          return [];
-        }
+        // Then, get RSVPs for these events
+        const { data: rsvpsData, error: rsvpsError } = await supabase
+          .from('event_rsvps')
+          .select(`
+            *,
+            profiles (
+              full_name,
+              username
+            )
+          `)
+          .in('event_id', eventsData.map(e => e.id));
 
-        // Validate and transform the data
-        const validatedEvents = eventsData
-          .filter(isEventWithRSVPs)
-          .map(transformEventData);
-        
-        // Transform the data to match our Event type
-        const transformedEvents = validatedEvents.map((event): Event => ({
+        if (rsvpsError) throw rsvpsError;
+
+        // Combine the data
+        const eventsWithRSVPs = eventsData.map(event => ({
+          ...event,
+          event_rsvps: rsvpsData?.filter(rsvp => rsvp.event_id === event.id) || []
+        }));
+
+        // Transform to Event type
+        return eventsWithRSVPs.map((event): Event => ({
           ...event,
           rsvps: event.event_rsvps || [],
           attendees: event.event_rsvps?.filter(rsvp => 
@@ -66,9 +60,6 @@ export const useFeaturedEvents = () => {
           ) || [],
           guests: []
         }));
-
-        console.log('Fetched and transformed events:', transformedEvents);
-        return transformedEvents;
       } catch (error) {
         console.error('Query error:', error);
         if (isQueryError(error)) {
@@ -104,7 +95,6 @@ export const useFeaturedEvents = () => {
       .subscribe();
 
     return () => {
-      console.log('Cleaning up event subscription');
       supabase.removeChannel(channel);
     };
   }, [queryClient]);

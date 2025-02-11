@@ -6,28 +6,31 @@ export type TablesInsert<T extends keyof Database['public']['Tables']> = Databas
 export type TablesUpdate<T extends keyof Database['public']['Tables']> = Database['public']['Tables'][T]['Update']
 export type TablesRow<T extends keyof Database['public']['Tables']> = Database['public']['Tables'][T]['Row']
 
-export type SchemaName = 'public' extends keyof Database ? 'public' : string & keyof Database;
-
-// Improved type guards for database operations
+// Better type guards for database operations
 export function isQueryError(error: unknown): error is PostgrestError {
   return error instanceof Error && 'code' in error;
 }
 
 export function assertQueryResult<T>(result: PostgrestResponse<T>): asserts result is PostgrestResponse<T> & { data: T[] } {
-  if (!result.data) {
-    throw new Error('Query result is null or undefined');
-  }
+  if (result.error) throw result.error;
+  if (!result.data) throw new Error('Query returned no data');
 }
 
+// Base event type
+export type EventRow = TablesRow<'events'>;
+
+// Base RSVP type
+export type RSVPRow = TablesRow<'event_rsvps'>;
+
+// Base profile type
+export type ProfileRow = TablesRow<'profiles'>;
+
 // Strong typing for event with RSVP relationship
-export type EventRSVPWithProfile = TablesRow<'event_rsvps'> & {
-  profiles?: {
-    full_name: string | null;
-    username: string;
-  } | null;
+export type EventRSVPWithProfile = RSVPRow & {
+  profiles?: ProfileRow | null;
 };
 
-export type EventWithRSVPs = TablesRow<'events'> & {
+export type EventWithRSVPs = EventRow & {
   event_rsvps?: EventRSVPWithProfile[];
 };
 
@@ -35,7 +38,7 @@ export type EventWithRSVPs = TablesRow<'events'> & {
 export function isEventWithRSVPs(data: unknown): data is EventWithRSVPs {
   if (!data || typeof data !== 'object') return false;
   
-  const event = data as EventWithRSVPs;
+  const event = data as EventRow;
   return (
     'id' in event &&
     'title' in event &&
