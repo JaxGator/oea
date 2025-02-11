@@ -12,130 +12,179 @@ export interface Database {
     Tables: {
       profiles: {
         Row: {
-          id: string;
-          username: string;
-          full_name: string | null;
-          avatar_url: string | null;
-          created_at: string;
-          is_admin: boolean;
-          is_approved: boolean;
-          is_member: boolean;
-          email: string | null;
-          event_reminders_enabled: boolean;
-          email_notifications: boolean;
-          in_app_notifications: boolean;
-          interests: string[] | null;
-          updated_at: string | null;
-          leaderboard_opt_out: boolean;
+          id: string
+          username: string
+          full_name: string | null
+          avatar_url: string | null
+          created_at: string
+          is_admin: boolean
+          is_approved: boolean
+          is_member: boolean
+          email: string | null
+          event_reminders_enabled: boolean
+          email_notifications: boolean
+          in_app_notifications: boolean
+          interests: string[] | null
+          updated_at: string | null
+          leaderboard_opt_out: boolean
         }
         Insert: {
-          id: string;
-          username: string;
-          full_name?: string | null;
-          avatar_url?: string | null;
-          created_at?: string;
-          is_admin?: boolean;
-          is_approved?: boolean;
-          is_member?: boolean;
-          email?: string | null;
-          event_reminders_enabled?: boolean;
-          email_notifications?: boolean;
-          in_app_notifications?: boolean;
-          interests?: string[] | null;
-          updated_at?: string | null;
-          leaderboard_opt_out?: boolean;
+          id: string
+          username: string
+          full_name?: string | null
+          avatar_url?: string | null
+          created_at?: string
+          is_admin?: boolean
+          is_approved?: boolean
+          is_member?: boolean
+          email?: string | null
+          event_reminders_enabled?: boolean
+          email_notifications?: boolean
+          in_app_notifications?: boolean
+          interests?: string[] | null
+          updated_at?: string | null
+          leaderboard_opt_out?: boolean
         }
         Update: {
-          id?: string;
-          username?: string;
-          full_name?: string | null;
-          avatar_url?: string | null;
-          created_at?: string;
-          is_admin?: boolean;
-          is_approved?: boolean;
-          is_member?: boolean;
-          email?: string | null;
-          event_reminders_enabled?: boolean;
-          email_notifications?: boolean;
-          in_app_notifications?: boolean;
-          interests?: string[] | null;
-          updated_at?: string | null;
-          leaderboard_opt_out?: boolean;
+          id?: string
+          username?: string
+          full_name?: string | null
+          avatar_url?: string | null
+          created_at?: string
+          is_admin?: boolean
+          is_approved?: boolean
+          is_member?: boolean
+          email?: string | null
+          event_reminders_enabled?: boolean
+          email_notifications?: boolean
+          in_app_notifications?: boolean
+          interests?: string[] | null
+          updated_at?: string | null
+          leaderboard_opt_out?: boolean
+        }
+      }
+      events: {
+        Row: {
+          id: string
+          title: string
+          description: string | null
+          date: string
+          time: string
+          location: string
+          max_guests: number
+          created_by: string
+          created_at: string
+          image_url: string
+          latitude: number | null
+          longitude: number | null
+          is_featured: boolean
+          is_published: boolean
+          imported_rsvp_count: number | null
+          waitlist_enabled: boolean
+          waitlist_capacity: number | null
+          end_time: string | null
+          reminder_enabled: boolean
+          reminder_intervals: string[]
+          requires_payment: boolean
+          ticket_price: number | null
+        }
+        Insert: {
+          id?: string
+          title: string
+          description?: string | null
+          date: string
+          time: string
+          location: string
+          max_guests: number
+          created_by: string
+          created_at?: string
+          image_url: string
+          latitude?: number | null
+          longitude?: number | null
+          is_featured?: boolean
+          is_published?: boolean
+          imported_rsvp_count?: number | null
+          waitlist_enabled?: boolean
+          waitlist_capacity?: number | null
+          end_time?: string | null
+          reminder_enabled?: boolean
+          reminder_intervals?: string[]
+          requires_payment?: boolean
+          ticket_price?: number | null
+        }
+        Update: {
+          id?: string
+          title?: string
+          description?: string | null
+          date?: string
+          time?: string
+          location?: string
+          max_guests?: number
+          created_by?: string
+          created_at?: string
+          image_url?: string
+          latitude?: number | null
+          longitude?: number | null
+          is_featured?: boolean
+          is_published?: boolean
+          imported_rsvp_count?: number | null
+          waitlist_enabled?: boolean
+          waitlist_capacity?: number | null
+          end_time?: string | null
+          reminder_enabled?: boolean
+          reminder_intervals?: string[]
+          requires_payment?: boolean
+          ticket_price?: number | null
         }
       }
       event_rsvps: {
         Row: {
-          id: string;
-          event_id: string;
-          user_id: string;
-          response: 'attending' | 'not_attending' | 'maybe';
-          status: 'confirmed' | 'waitlisted';
-          created_at: string;
-          send_confirmation_email: boolean;
+          id: string
+          event_id: string
+          user_id: string
+          response: 'attending' | 'not_attending' | 'maybe'
+          status: 'confirmed' | 'waitlisted'
+          created_at: string
+          send_confirmation_email: boolean
         }
         Insert: {
-          id?: string;
-          event_id: string;
-          user_id: string;
-          response: 'attending' | 'not_attending' | 'maybe';
-          status?: 'confirmed' | 'waitlisted';
-          created_at?: string;
-          send_confirmation_email?: boolean;
+          id?: string
+          event_id: string
+          user_id: string
+          response: 'attending' | 'not_attending' | 'maybe'
+          status?: 'confirmed' | 'waitlisted'
+          created_at?: string
+          send_confirmation_email?: boolean
         }
         Update: {
-          id?: string;
-          event_id?: string;
-          user_id?: string;
-          response?: 'attending' | 'not_attending' | 'maybe';
-          status?: 'confirmed' | 'waitlisted';
-          created_at?: string;
-          send_confirmation_email?: boolean;
+          id?: string
+          event_id?: string
+          user_id?: string
+          response?: 'attending' | 'not_attending' | 'maybe'
+          status?: 'confirmed' | 'waitlisted'
+          created_at?: string
+          send_confirmation_email?: boolean
         }
-        Relationships: [
-          {
-            foreignKeyName: "event_rsvps_event_id_fkey"
-            columns: ["event_id"]
-            isOneToOne: false
-            referencedRelation: "events"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "event_rsvps_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          }
-        ]
       }
       event_guests: {
         Row: {
-          id: string;
-          rsvp_id: string;
-          first_name: string | null;
-          created_at: string;
+          id: string
+          rsvp_id: string
+          first_name: string | null
+          created_at: string
         }
         Insert: {
-          id?: string;
-          rsvp_id: string;
-          first_name?: string | null;
-          created_at?: string;
+          id?: string
+          rsvp_id: string
+          first_name?: string | null
+          created_at?: string
         }
         Update: {
-          id?: string;
-          rsvp_id?: string;
-          first_name?: string | null;
-          created_at?: string;
+          id?: string
+          rsvp_id?: string
+          first_name?: string | null
+          created_at?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "event_guests_rsvp_id_fkey"
-            columns: ["rsvp_id"]
-            isOneToOne: false
-            referencedRelation: "event_rsvps"
-            referencedColumns: ["id"]
-          }
-        ]
       }
     }
     Views: {
