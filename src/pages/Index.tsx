@@ -1,3 +1,4 @@
+
 import { ErrorBoundary } from '@/components/error/ErrorBoundary';
 import { Hero } from '@/components/home/Hero';
 import { FeaturedEvents } from "@/components/home/FeaturedEvents";
@@ -6,6 +7,7 @@ import { SocialFeed } from "@/components/home/SocialFeed";
 import { HomeLayout, HomeSection } from '@/components/home/HomeLayout';
 import { LeaderboardSection } from '@/components/home/LeaderboardSection';
 import { NotificationProvider } from "@/components/providers/NotificationProvider";
+import { TacoTracker } from "@/components/home/TacoTracker";
 import { Suspense } from 'react';
 import { Loader2 } from 'lucide-react';
 
@@ -38,9 +40,14 @@ export default function Index() {
         </Suspense>
 
         <Suspense fallback={<LoadingSection />}>
-          <HomeSection title="Social Feed">
-            <SocialFeed />
-          </HomeSection>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <HomeSection>
+              <TacoTracker />
+            </HomeSection>
+            <HomeSection>
+              <SocialFeed />
+            </HomeSection>
+          </div>
         </Suspense>
       </HomeLayout>
     </NotificationProvider>
