@@ -68,4 +68,3 @@ export interface EventFormData {
   requires_payment?: boolean;
   ticket_price?: number | null;
 }
-

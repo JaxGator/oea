@@ -8,7 +8,7 @@ export type TablesRow<T extends keyof Database['public']['Tables']> = Database['
 
 export type SchemaName = 'public' extends keyof Database ? 'public' : string & keyof Database;
 
-// Type guards for database operations
+// Improved type guards for database operations
 export function isQueryError(error: unknown): error is PostgrestError {
   return error instanceof Error && 'code' in error;
 }
@@ -19,7 +19,7 @@ export function assertQueryResult<T>(result: T | null | undefined): asserts resu
   }
 }
 
-// Strongly typed event with RSVP relationship
+// Strong typing for event with RSVP relationship
 export type EventRSVPWithProfile = {
   id: string;
   event_id: string;
@@ -47,4 +47,3 @@ export function isEventWithRSVPs(data: unknown): data is EventWithRSVPs {
     'date' in data
   );
 }
-
