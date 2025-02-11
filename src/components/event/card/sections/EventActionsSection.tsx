@@ -1,3 +1,4 @@
+
 import { EventCardActions } from "../EventCardActions";
 
 interface EventActionsSectionProps {
@@ -13,7 +14,7 @@ interface EventActionsSectionProps {
   onDelete: () => void;
   showPublishToggle?: boolean;
   isPublished?: boolean;
-  onViewDetails?: () => void;  // Made optional with ?
+  onViewDetails?: () => void;
   onTogglePublish?: () => void;
   isAuthChecking?: boolean;
   isFullyBooked?: boolean;
@@ -22,6 +23,7 @@ interface EventActionsSectionProps {
   requireAuth?: boolean;
   event: { id: string; title: string };
   showDelete?: boolean;
+  isAuthenticated?: boolean;
 }
 
 export function EventActionsSection({
@@ -45,7 +47,8 @@ export function EventActionsSection({
   isWixEvent = false,
   requireAuth = false,
   event,
-  showDelete = false
+  showDelete = false,
+  isAuthenticated = false
 }: EventActionsSectionProps) {
   if (isAuthChecking) {
     return (
@@ -79,6 +82,7 @@ export function EventActionsSection({
         requireAuth={requireAuth}
         event={event}
         showDelete={showDelete}
+        isAuthenticated={isAuthenticated}
       />
     </div>
   );

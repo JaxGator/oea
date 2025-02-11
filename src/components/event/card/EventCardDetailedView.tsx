@@ -4,9 +4,9 @@ import { EventCardBasicInfo } from "./EventCardBasicInfo";
 import { WaitlistInfo } from "./WaitlistInfo";
 import { AttendeeList } from "../details/AttendeeList";
 import { EventImageSection } from "./sections/EventImageSection";
-import { EventDetailsSection } from "./sections/EventDetailsSection";
 import { EventActionsSection } from "./sections/EventActionsSection";
 import { EventDetails } from "../EventDetails";
+import { useAuthState } from "@/hooks/useAuthState";
 
 interface EventCardDetailedViewProps {
   event: Event;
@@ -43,6 +43,7 @@ export function EventCardDetailedView({
   onDelete,
   onTogglePublish,
 }: EventCardDetailedViewProps) {
+  const { isAuthenticated } = useAuthState();
   const isFullyBooked = rsvpCount >= event.max_guests;
   const canJoinWaitlist = event.waitlist_enabled && isFullyBooked;
   const canViewRSVPs = isAdmin || canManageEvents || userRSVPStatus === "attending";
@@ -55,7 +56,6 @@ export function EventCardDetailedView({
         <EventCardBasicInfo
           date={event.date}
           time={event.time || '00:00:00'}
-          location={event.location}
           rsvpCount={rsvpCount}
           maxGuests={event.max_guests}
           isWixEvent={isWixEvent}
@@ -65,16 +65,6 @@ export function EventCardDetailedView({
           isPastEvent={isPastEvent}
         />
         
-        <EventDetailsSection
-          event={event}
-          rsvpCount={rsvpCount}
-          maxGuests={event.max_guests}
-          attendeeNames={attendeeNames}
-          isPastEvent={isPastEvent}
-          isAdmin={isAdmin}
-          canManageEvents={canManageEvents}
-        />
-
         <EventDetails event={event} />
 
         {canViewRSVPs && (
@@ -110,6 +100,7 @@ export function EventCardDetailedView({
           canAddGuests={canAddGuests}
           currentGuests={currentGuests}
           event={{ id: event.id, title: event.title }}
+          isAuthenticated={isAuthenticated}
         />
 
         {event.waitlist_enabled && (
