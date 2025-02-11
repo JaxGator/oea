@@ -1,3 +1,4 @@
+
 import { Event } from "@/types/event";
 import { EventRSVPContainer } from "./containers/EventRSVPContainer";
 
@@ -12,6 +13,7 @@ interface EventCardContainerProps {
   isAuthChecking?: boolean;
   requireAuth?: boolean;
   showDelete?: boolean;
+  isAuthenticated?: boolean;
 }
 
 export function EventCardContainer({
@@ -24,7 +26,8 @@ export function EventCardContainer({
   isSelected = false,
   isAuthChecking = false,
   requireAuth = false,
-  showDelete = false
+  showDelete = false,
+  isAuthenticated = false
 }: EventCardContainerProps) {
   if (!event) {
     console.error("Event object is undefined");
@@ -43,6 +46,7 @@ export function EventCardContainer({
       isAuthChecking={isAuthChecking}
       requireAuth={requireAuth}
       showDelete={showDelete}
+      isAuthenticated={isAuthenticated}
     />
   );
 }

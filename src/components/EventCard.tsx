@@ -1,6 +1,7 @@
 
 import { Event } from "@/types/event";
 import { EventCardContainer } from "./event/EventCardContainer";
+import { useAuthState } from "@/hooks/useAuthState";
 
 interface EventCardProps {
   event: Event;
@@ -25,6 +26,8 @@ export function EventCard({
   isAuthChecking = false,
   requireAuth = false
 }: EventCardProps) {
+  const { hasUser } = useAuthState();
+
   if (!event) {
     console.error("Event object is undefined");
     return null;
@@ -46,6 +49,7 @@ export function EventCard({
         isAuthChecking={isAuthChecking}
         requireAuth={requireAuth}
         showDelete={true}
+        isAuthenticated={hasUser}
       />
     </div>
   );
