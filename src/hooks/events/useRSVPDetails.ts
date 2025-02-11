@@ -6,8 +6,9 @@ import { Database } from "@/integrations/supabase/types/database";
 
 type Profile = Database['public']['Tables']['profiles']['Row'];
 type EventGuest = Database['public']['Tables']['event_guests']['Row'];
+type EventRSVP = Database['public']['Tables']['event_rsvps']['Row'];
 
-interface RSVPWithProfile {
+interface RSVPDetails {
   id: string;
   user_id: string;
   response: string;
@@ -23,8 +24,13 @@ interface Attendee {
   };
 }
 
+interface RSVPQueryResult {
+  rsvpCount: number;
+  attendees: Attendee[];
+}
+
 export function useRSVPDetails(eventId: string) {
-  const { data: rsvpData, error } = useQuery({
+  const { data: rsvpData, error } = useQuery<RSVPQueryResult, Error>({
     queryKey: ['event-rsvps', eventId],
     queryFn: async () => {
       try {
@@ -37,7 +43,7 @@ export function useRSVPDetails(eventId: string) {
             user_id,
             response,
             status,
-            profiles!event_rsvps_user_id_fkey (
+            profiles:profiles!event_rsvps_user_id_fkey (
               full_name,
               username
             ),
@@ -65,7 +71,7 @@ export function useRSVPDetails(eventId: string) {
 
         console.log('Fetched RSVPs:', rsvps);
 
-        const transformedRsvps = rsvps as RSVPWithProfile[];
+        const transformedRsvps = rsvps as RSVPDetails[];
 
         const rsvpCount = transformedRsvps.reduce((total, rsvp) => {
           return total + 1 + (rsvp.event_guests?.length || 0);

@@ -1,3 +1,4 @@
+
 export type Json =
   | string
   | number
@@ -9,6 +10,80 @@ export type Json =
 export interface Database {
   public: {
     Tables: {
+      event_rsvps: {
+        Row: {
+          id: string
+          event_id: string
+          user_id: string
+          response: string
+          status: string
+          created_at: string
+          send_confirmation_email: boolean
+        }
+        Insert: {
+          id?: string
+          event_id: string
+          user_id: string
+          response: string
+          status?: string
+          created_at?: string
+          send_confirmation_email?: boolean
+        }
+        Update: {
+          id?: string
+          event_id?: string
+          user_id?: string
+          response?: string
+          status?: string
+          created_at?: string
+          send_confirmation_email?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_rsvps_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_rsvps_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      event_guests: {
+        Row: {
+          id: string
+          rsvp_id: string
+          first_name: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          rsvp_id: string
+          first_name?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          rsvp_id?: string
+          first_name?: string | null
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_guests_rsvp_id_fkey"
+            columns: ["rsvp_id"]
+            isOneToOne: false
+            referencedRelation: "event_rsvps"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
       profiles: {
         Row: {
           id: string
@@ -16,9 +91,16 @@ export interface Database {
           full_name: string | null
           avatar_url: string | null
           created_at: string
-          is_admin: boolean | null
-          is_approved: boolean | null
-          is_member: boolean | null
+          is_admin: boolean
+          is_approved: boolean
+          is_member: boolean
+          email: string | null
+          event_reminders_enabled: boolean
+          email_notifications: boolean
+          in_app_notifications: boolean
+          interests: string[] | null
+          updated_at: string | null
+          leaderboard_opt_out: boolean
         }
         Insert: {
           id: string
@@ -26,9 +108,16 @@ export interface Database {
           full_name?: string | null
           avatar_url?: string | null
           created_at?: string
-          is_admin?: boolean | null
-          is_approved?: boolean | null
-          is_member?: boolean | null
+          is_admin?: boolean
+          is_approved?: boolean
+          is_member?: boolean
+          email?: string | null
+          event_reminders_enabled?: boolean
+          email_notifications?: boolean
+          in_app_notifications?: boolean
+          interests?: string[] | null
+          updated_at?: string | null
+          leaderboard_opt_out?: boolean
         }
         Update: {
           id?: string
@@ -36,56 +125,35 @@ export interface Database {
           full_name?: string | null
           avatar_url?: string | null
           created_at?: string
-          is_admin?: boolean | null
-          is_approved?: boolean | null
-          is_member?: boolean | null
+          is_admin?: boolean
+          is_approved?: boolean
+          is_member?: boolean
+          email?: string | null
+          event_reminders_enabled?: boolean
+          email_notifications?: boolean
+          in_app_notifications?: boolean
+          interests?: string[] | null
+          updated_at?: string | null
+          leaderboard_opt_out?: boolean
         }
       }
-      events: {
-        Row: {
-          id: string
-          title: string
-          description: string | null
-          date: string
-          time: string
-          location: string
-          max_guests: number
-          created_by: string
-          created_at: string
-          image_url: string
-        }
-        Insert: {
-          id?: string
-          title: string
-          description?: string | null
-          date: string
-          time: string
-          location: string
-          max_guests: number
-          created_by: string
-          created_at?: string
-          image_url: string
-        }
-        Update: {
-          id?: string
-          title?: string
-          description?: string | null
-          date?: string
-          time?: string
-          location?: string
-          max_guests?: number
-          created_by?: string
-          created_at?: string
-          image_url?: string
-        }
-      }
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      [_ in never]: never
+    }
+    Enums: {
+      [_ in never]: never
     }
   }
 }
 
+// Helper types
 export type Tables<T extends keyof Database['public']['Tables']> = Database['public']['Tables'][T]
 export type DbResult<T> = T extends PromiseLike<infer U> ? U : never
 export type DbResultOk<T> = T extends PromiseLike<{ data: infer U }> ? Exclude<U, null> : never
-export type Row<T extends keyof Database['public']['Tables']> = Database['public']['Tables'][T]['Row']
+export type TableRow<T extends keyof Database['public']['Tables']> = Database['public']['Tables'][T]['Row']
 export type InsertRow<T extends keyof Database['public']['Tables']> = Database['public']['Tables'][T]['Insert']
 export type UpdateRow<T extends keyof Database['public']['Tables']> = Database['public']['Tables'][T]['Update']
