@@ -39,10 +39,18 @@ export const useFeaturedEvents = () => {
         const rsvpsResult = await supabase
           .from('event_rsvps')
           .select(`
-            *,
+            id,
+            user_id,
+            response,
+            status,
+            created_at,
             profiles!event_rsvps_user_id_fkey (
               full_name,
               username
+            ),
+            event_guests (
+              id,
+              first_name
             )
           `)
           .in('event_id', eventsData.map(e => e.id));
