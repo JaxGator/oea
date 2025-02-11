@@ -7,48 +7,17 @@ import { PollCard } from "./PollCard";
 import { CreatePollDialog } from "./CreatePollDialog";
 import { useAuthState } from "@/hooks/useAuthState";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
-
-interface PollVote {
-  id: string;
-  user_id: string;
-  option_id: string;
-  profiles: {
-    username: string;
-    avatar_url: string | null;
-  };
-}
-
-interface PollOption {
-  id: string;
-  option_text: string;
-  display_order: number;
-}
-
-interface Poll {
-  id: string;
-  title: string;
-  description: string | null;
-  created_by: string;
-  status: 'draft' | 'active' | 'closed';
-  start_date: string | null;
-  end_date: string | null;
-  allow_multiple_choices: boolean;
-  created_at: string;
-  share_token: string;
-  poll_options: PollOption[];
-  poll_votes: PollVote[];
-}
+import { toast } from "sonner";
+import type { PollWithDetails } from "@/types/database.types";
 
 export function PollSection() {
-  const { toast } = useToast();
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const { profile } = useAuthState();
 
   const { data: polls = [], isLoading, refetch } = useQuery({
     queryKey: ['active-polls'],
     queryFn: async () => {
-      const { data: ownAndSharedPolls, error: pollsError } = await supabase
+      const { data: pollsData, error: pollsError } = await supabase
         .from('polls')
         .select(`
           id,
@@ -65,29 +34,43 @@ export function PollSection() {
             id,
             option_text,
             display_order
-          ),
-          poll_votes (
-            id,
-            user_id,
-            option_id,
-            profiles:user_id (
-              username,
-              avatar_url
-            )
           )
         `)
         .eq('status', 'active')
         .order('created_at', { ascending: false });
 
       if (pollsError) throw pollsError;
-      
-      return (ownAndSharedPolls as any[]).map((poll): Poll => ({
-        ...poll,
-        poll_votes: poll.poll_votes.map((vote: any) => ({
-          ...vote,
-          profiles: vote.profiles || { username: '', avatar_url: null }
-        }))
-      }));
+
+      // Get vote counts from our view
+      const { data: voteCounts, error: voteCountError } = await supabase
+        .from('poll_vote_counts')
+        .select('*');
+
+      if (voteCountError) throw voteCountError;
+
+      // Get user's votes if authenticated
+      const { data: userVotes, error: userVotesError } = profile?.id ? await supabase
+        .from('poll_votes')
+        .select('poll_id, option_id')
+        .eq('user_id', profile.id) : { data: [], error: null };
+
+      if (userVotesError) throw userVotesError;
+
+      // Transform the data
+      return (pollsData || []).map((poll): PollWithDetails => {
+        const pollVoteCounts = voteCounts?.filter(vc => vc.poll_id === poll.id) || [];
+        const totalVotes = pollVoteCounts.reduce((sum, vc) => sum + Number(vc.vote_count), 0);
+        
+        return {
+          ...poll,
+          poll_options: poll.poll_options.map(option => ({
+            ...option,
+            vote_count: pollVoteCounts.find(vc => vc.option_id === option.id)?.vote_count || 0,
+            has_voted: userVotes?.some(uv => uv.option_id === option.id) || false
+          })),
+          total_votes: totalVotes
+        };
+      });
     },
     enabled: !!profile?.id
   });
@@ -100,17 +83,11 @@ export function PollSection() {
         .eq('id', pollId);
 
       if (error) throw error;
-      toast({
-        title: "Poll deleted successfully",
-        variant: "default"
-      });
+      toast.success("Poll deleted successfully");
       refetch();
     } catch (error) {
       console.error('Error deleting poll:', error);
-      toast({
-        title: "Failed to delete poll",
-        variant: "destructive"
-      });
+      toast.error("Failed to delete poll");
     }
   };
 

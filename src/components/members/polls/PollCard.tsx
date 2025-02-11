@@ -8,27 +8,10 @@ import { useQueryClient } from "@tanstack/react-query";
 import { PollCardHeader } from "./components/PollCardHeader";
 import { PollOptionsList } from "./components/PollOptionsList";
 import { PollChartView } from "./components/PollChartView";
+import type { PollWithDetails, VoteResult } from "@/types/database.types";
 
 interface PollCardProps {
-  poll: {
-    id: string;
-    title: string;
-    description: string | null;
-    share_token: string;
-    poll_options: Array<{
-      id: string;
-      option_text: string;
-    }>;
-    poll_votes: Array<{
-      id: string;
-      option_id: string;
-      user_id: string;
-      profiles: {
-        username: string;
-        avatar_url: string | null;
-      } | null;
-    }>;
-  };
+  poll: PollWithDetails;
   canEdit: boolean;
   onDelete: () => void;
   isPublicView?: boolean;
@@ -40,8 +23,7 @@ export function PollCard({ poll, canEdit, onDelete, isPublicView = false }: Poll
   const [isVoting, setIsVoting] = useState(false);
   const [showPieChart, setShowPieChart] = useState(false);
 
-  const userVote = poll.poll_votes.find(vote => vote.user_id === user?.id)?.option_id;
-  const totalVotes = poll.poll_votes.length;
+  const userVote = poll.poll_options.find(option => option.has_voted)?.id;
 
   const handleVote = async (optionId: string) => {
     if (!user || isPublicView) {
@@ -51,17 +33,33 @@ export function PollCard({ poll, canEdit, onDelete, isPublicView = false }: Poll
 
     setIsVoting(true);
     try {
-      const { error } = await supabase
-        .from('poll_votes')
-        .insert({
-          poll_id: poll.id,
-          option_id: optionId,
-          user_id: user.id
+      const { data: result, error } = await supabase
+        .rpc('handle_poll_vote', {
+          p_poll_id: poll.id,
+          p_option_id: optionId,
+          p_user_id: user.id
         });
 
       if (error) throw error;
 
-      toast.success("Vote recorded successfully!");
+      switch (result as VoteResult) {
+        case 'success':
+          toast.success("Vote recorded successfully!");
+          break;
+        case 'already_voted':
+          toast.error("You have already voted in this poll");
+          break;
+        case 'poll_closed':
+          toast.error("This poll is closed");
+          break;
+        case 'not_found':
+          toast.error("Poll not found");
+          break;
+        default:
+          toast.error("An unexpected error occurred");
+      }
+
+      // Refresh poll data
       queryClient.invalidateQueries({ queryKey: ['active-polls'] });
       queryClient.invalidateQueries({ queryKey: ['shared-poll'] });
     } catch (error) {
@@ -74,7 +72,7 @@ export function PollCard({ poll, canEdit, onDelete, isPublicView = false }: Poll
 
   const pieChartData = poll.poll_options.map((option) => ({
     name: option.option_text,
-    value: poll.poll_votes.filter(vote => vote.option_id === option.id).length
+    value: option.vote_count || 0
   }));
 
   return (
@@ -83,7 +81,7 @@ export function PollCard({ poll, canEdit, onDelete, isPublicView = false }: Poll
         <PollCardHeader
           title={poll.title}
           description={poll.description}
-          totalVotes={totalVotes}
+          totalVotes={poll.total_votes || 0}
           canEdit={canEdit}
           showPieChart={showPieChart}
           shareToken={poll.share_token}
@@ -101,7 +99,7 @@ export function PollCard({ poll, canEdit, onDelete, isPublicView = false }: Poll
             userVote={userVote}
             isVoting={isVoting}
             isPublicView={isPublicView}
-            voters={poll.poll_votes}
+            voters={[]} // We'll implement this in the next phase
             onVote={handleVote}
           />
         )}

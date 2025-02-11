@@ -1577,6 +1577,29 @@ export type Database = {
         }
         Relationships: []
       }
+      poll_vote_counts: {
+        Row: {
+          option_id: string | null
+          poll_id: string | null
+          vote_count: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "poll_votes_option_id_fkey"
+            columns: ["option_id"]
+            isOneToOne: false
+            referencedRelation: "poll_options"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "poll_votes_poll_id_fkey"
+            columns: ["poll_id"]
+            isOneToOne: false
+            referencedRelation: "polls"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       admin_update_user: {
@@ -1607,6 +1630,14 @@ export type Database = {
           user_is_admin?: boolean
         }
         Returns: undefined
+      }
+      handle_poll_vote: {
+        Args: {
+          p_poll_id: string
+          p_option_id: string
+          p_user_id: string
+        }
+        Returns: Database["public"]["Enums"]["vote_result"]
       }
       has_user_voted: {
         Args: {
@@ -1692,6 +1723,7 @@ export type Database = {
       recipient_type: "individual" | "group" | "all" | "event" | "custom_list"
       rsvp_response: "attending" | "not_attending" | "maybe"
       social_media_platform: "instagram" | "facebook" | "twitter"
+      vote_result: "success" | "already_voted" | "poll_closed" | "not_found"
     }
     CompositeTypes: {
       [_ in never]: never
