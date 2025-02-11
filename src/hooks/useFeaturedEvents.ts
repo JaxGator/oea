@@ -6,6 +6,16 @@ import { Event } from "@/types/event";
 import { useEffect } from "react";
 import { toast } from "sonner";
 import { useAuthState } from "./useAuthState";
+import { Database } from "@/integrations/supabase/types/database";
+
+type ProfileRow = Database['public']['Tables']['profiles']['Row'];
+type EventGuestRow = Database['public']['Tables']['event_guests']['Row'];
+type EventRSVPRow = Database['public']['Tables']['event_rsvps']['Row'];
+
+interface RSVPWithDetails extends EventRSVPRow {
+  profiles: ProfileRow;
+  event_guests: EventGuestRow[];
+}
 
 export const useFeaturedEvents = () => {
   const queryClient = useQueryClient();
@@ -19,7 +29,6 @@ export const useFeaturedEvents = () => {
         console.log('Fetching featured events');
         const today = new Date().toISOString().split('T')[0];
         
-        // Fetch events with proper error handling
         const eventsResult = await supabase
           .from('events')
           .select('*')
@@ -36,7 +45,6 @@ export const useFeaturedEvents = () => {
         const eventsData = eventsResult.data || [];
         console.log('Fetched events:', eventsData);
 
-        // Fetch RSVPs separately with error handling
         const rsvpsResult = await supabase
           .from('event_rsvps')
           .select(`
@@ -44,7 +52,6 @@ export const useFeaturedEvents = () => {
             user_id,
             response,
             status,
-            created_at,
             profiles!event_rsvps_user_id_fkey (
               full_name,
               username
@@ -61,10 +68,9 @@ export const useFeaturedEvents = () => {
           throw rsvpsResult.error;
         }
 
-        const rsvpsData = rsvpsResult.data || [];
+        const rsvpsData = (rsvpsResult.data || []) as RSVPWithDetails[];
         console.log('Fetched RSVPs:', rsvpsData);
 
-        // Combine the data safely
         const eventsWithRSVPs = eventsData.map(event => ({
           ...event,
           rsvps: rsvpsData.filter(rsvp => rsvp.event_id === event.id) || [],
@@ -74,7 +80,7 @@ export const useFeaturedEvents = () => {
             rsvp.status === 'confirmed'
           ) || [],
           guests: []
-        }));
+        })) satisfies Event[];
 
         return eventsWithRSVPs;
       } catch (error) {
@@ -83,13 +89,12 @@ export const useFeaturedEvents = () => {
         throw error;
       }
     },
-    staleTime: 1000 * 60 * 5, // Cache for 5 minutes
+    staleTime: 1000 * 60 * 5,
     refetchOnWindowFocus: false,
     retry: 3,
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
   });
 
-  // Set up real-time subscription with error handling
   useEffect(() => {
     console.log('Setting up real-time subscription for events');
     const channel = supabase
@@ -117,7 +122,7 @@ export const useFeaturedEvents = () => {
   }, [queryClient]);
 
   return {
-    events: events || [],
+    events: events as Event[],
     isLoading,
     error,
     userRSVPs: isAuthenticated ? userRSVPs : {},

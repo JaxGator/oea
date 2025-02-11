@@ -2,19 +2,15 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { Database } from "@/integrations/supabase/types/database";
 
-interface RSVPProfile {
-  full_name: string | null;
-  username: string;
-}
+type Profile = Database['public']['Tables']['profiles']['Row'];
+type EventGuest = Database['public']['Tables']['event_guests']['Row'];
+type EventRSVP = Database['public']['Tables']['event_rsvps']['Row'];
 
-interface RSVPWithProfile {
-  id: string;
-  profiles: RSVPProfile;
-  event_guests: {
-    id: string;
-    first_name: string;
-  }[];
+interface RSVPWithProfile extends EventRSVP {
+  profiles: Profile;
+  event_guests: EventGuest[];
 }
 
 interface Attendee {
@@ -31,11 +27,13 @@ export function useRSVPDetails(eventId: string) {
       try {
         console.log('Fetching RSVPs for event:', eventId);
         
-        // Get RSVPs with profiles and guests, using explicit foreign key relationships
         const { data: rsvps, error: rsvpError } = await supabase
           .from('event_rsvps')
           .select(`
             id,
+            user_id,
+            response,
+            status,
             profiles!event_rsvps_user_id_fkey (
               full_name,
               username
@@ -64,34 +62,30 @@ export function useRSVPDetails(eventId: string) {
 
         console.log('Fetched RSVPs:', rsvps);
 
-        // Transform the data to match our expected types
         const typedRsvps = rsvps.map(rsvp => ({
           ...rsvp,
           profiles: rsvp.profiles,
           event_guests: rsvp.event_guests || []
         })) as RSVPWithProfile[];
 
-        // Calculate total attendees (RSVPs + guests)
         const rsvpCount = typedRsvps.reduce((total, rsvp) => {
-          const guestCount = rsvp.event_guests?.length || 0;
-          return total + 1 + guestCount; // Add 1 for the RSVP itself
+          return total + 1 + (rsvp.event_guests?.length || 0);
         }, 0);
 
-        // Get attendee names (both RSVP users and their guests)
         const attendees = typedRsvps.flatMap(rsvp => {
           const attendee: Attendee = {
             profile: {
-              full_name: rsvp.profiles.full_name,
-              username: rsvp.profiles.username
+              full_name: rsvp.profiles?.full_name ?? null,
+              username: rsvp.profiles?.username ?? ''
             }
           };
           
-          const guestAttendees = rsvp.event_guests.map(guest => ({
+          const guestAttendees = rsvp.event_guests?.map(guest => ({
             profile: {
               full_name: guest.first_name,
-              username: guest.first_name
+              username: guest.first_name ?? ''
             }
-          }));
+          })) ?? [];
 
           return [attendee, ...guestAttendees];
         });
