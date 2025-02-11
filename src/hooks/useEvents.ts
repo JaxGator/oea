@@ -6,7 +6,7 @@ import { toast } from 'sonner';
 import { useAuthState } from './useAuthState';
 import { useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { type Database } from '@/integrations/supabase/types/database';
+import { type Database } from '@/types/database.types';
 
 type EventResponseRow = Database['public']['Tables']['events']['Row'] & {
   event_rsvps?: Array<{
@@ -37,7 +37,6 @@ export function useEvents(selectedDate?: Date) {
   const isApproved = profile?.is_approved;
   const queryClient = useQueryClient();
 
-  // Set up real-time subscription for events
   useEffect(() => {
     const channel = supabase
       .channel('events-changes')

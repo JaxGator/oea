@@ -2,7 +2,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Database } from "@/integrations/supabase/types/database";
+import { Database } from "@/types/database.types";
 
 type Profile = Database['public']['Tables']['profiles']['Row'];
 type EventGuest = Database['public']['Tables']['event_guests']['Row'];
@@ -43,7 +43,7 @@ export function useRSVPDetails(eventId: string) {
             user_id,
             response,
             status,
-            profiles:profiles!event_rsvps_user_id_fkey (
+            profiles!event_rsvps_user_id_fkey (
               full_name,
               username
             ),
