@@ -6,11 +6,14 @@ import { Database } from "@/integrations/supabase/types/database";
 
 type Profile = Database['public']['Tables']['profiles']['Row'];
 type EventGuest = Database['public']['Tables']['event_guests']['Row'];
-type EventRSVP = Database['public']['Tables']['event_rsvps']['Row'];
 
-interface RSVPWithProfile extends EventRSVP {
-  profiles: Profile;
-  event_guests: EventGuest[];
+interface RSVPWithProfile {
+  id: string;
+  user_id: string;
+  response: string;
+  status: string;
+  profiles?: Profile;
+  event_guests?: EventGuest[];
 }
 
 interface Attendee {
@@ -62,11 +65,13 @@ export function useRSVPDetails(eventId: string) {
 
         console.log('Fetched RSVPs:', rsvps);
 
-        const rsvpCount = rsvps.reduce((total, rsvp) => {
+        const transformedRsvps = rsvps as RSVPWithProfile[];
+
+        const rsvpCount = transformedRsvps.reduce((total, rsvp) => {
           return total + 1 + (rsvp.event_guests?.length || 0);
         }, 0);
 
-        const attendees = rsvps.flatMap(rsvp => {
+        const attendees = transformedRsvps.flatMap(rsvp => {
           const attendee: Attendee = {
             profile: {
               full_name: rsvp.profiles?.full_name ?? null,

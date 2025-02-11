@@ -1,12 +1,30 @@
 
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { transformEventData } from './events/useEventTransform';
 import type { Event } from '@/types/event';
 import { toast } from 'sonner';
 import { useAuthState } from './useAuthState';
 import { useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
+import { type Database } from '@/integrations/supabase/types/database';
+
+type EventResponseRow = Database['public']['Tables']['events']['Row'] & {
+  event_rsvps?: Array<{
+    id: string;
+    user_id: string;
+    response: string;
+    status: string;
+    created_at: string;
+    profiles?: {
+      full_name: string | null;
+      username: string;
+    };
+    event_guests?: Array<{
+      id: string;
+      first_name: string | null;
+    }>;
+  }>;
+};
 
 interface EventsResponse {
   events: Event[];
@@ -123,7 +141,7 @@ export function useEvents(selectedDate?: Date) {
         }
 
         // Transform and organize the data
-        const transformedEvents = events.map(event => ({
+        const transformedEvents = (events as EventResponseRow[]).map(event => ({
           ...event,
           rsvps: event.event_rsvps || [],
           attendees: event.event_rsvps?.filter(rsvp => 

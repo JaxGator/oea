@@ -8,14 +8,22 @@ import { toast } from "sonner";
 import { useAuthState } from "./useAuthState";
 import { Database } from "@/integrations/supabase/types/database";
 
-type ProfileRow = Database['public']['Tables']['profiles']['Row'];
-type EventGuestRow = Database['public']['Tables']['event_guests']['Row'];
-type EventRSVPRow = Database['public']['Tables']['event_rsvps']['Row'];
-
-interface RSVPWithDetails extends EventRSVPRow {
-  profiles: ProfileRow;
-  event_guests: EventGuestRow[];
-}
+type EventResponseRow = Database['public']['Tables']['events']['Row'] & {
+  event_rsvps?: Array<{
+    id: string;
+    user_id: string;
+    response: string;
+    status: string;
+    profiles?: {
+      full_name: string | null;
+      username: string;
+    };
+    event_guests?: Array<{
+      id: string;
+      first_name: string | null;
+    }>;
+  }>;
+};
 
 export const useFeaturedEvents = () => {
   const queryClient = useQueryClient();
@@ -61,14 +69,16 @@ export const useFeaturedEvents = () => {
         const eventsData = eventsResult.data || [];
         console.log('Fetched events:', eventsData);
 
-        const eventsWithRSVPs = eventsData.map(event => ({
+        const eventsWithRSVPs = (eventsData as EventResponseRow[]).map(event => ({
           ...event,
           rsvps: event.event_rsvps || [],
           attendees: event.event_rsvps?.filter(rsvp => 
             rsvp.response === 'attending' && 
             rsvp.status === 'confirmed'
           ) || [],
-          guests: []
+          guests: event.event_rsvps?.flatMap(rsvp => 
+            rsvp.event_guests || []
+          ) || []
         })) as Event[];
 
         return eventsWithRSVPs;
