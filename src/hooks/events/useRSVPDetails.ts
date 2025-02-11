@@ -13,8 +13,8 @@ interface RSVPDetails {
   user_id: string;
   response: string;
   status: string;
-  profiles?: Profile;
-  event_guests?: EventGuest[];
+  profiles?: Profile | null;
+  event_guests?: EventGuest[] | null;
 }
 
 interface Attendee {
