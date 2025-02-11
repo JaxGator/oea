@@ -11,8 +11,8 @@ type EventRSVP = Database['public']['Tables']['event_rsvps']['Row'];
 interface RSVPDetails {
   id: string;
   user_id: string;
-  response: string;
-  status: string;
+  response: 'attending' | 'not_attending' | 'maybe';
+  status: 'confirmed' | 'waitlisted';
   profiles?: Profile | null;
   event_guests?: EventGuest[] | null;
 }
