@@ -1,3 +1,4 @@
+
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -26,12 +27,12 @@ export function useRSVPDetails(eventId: string) {
   const { data: rsvpData } = useQuery({
     queryKey: ['event-rsvps', eventId],
     queryFn: async () => {
-      // Get RSVPs with profiles and guests
+      // Get RSVPs with profiles and guests, explicitly specifying the foreign key
       const { data: rsvps, error: rsvpError } = await supabase
         .from('event_rsvps')
         .select(`
           id,
-          profiles (
+          profiles!event_rsvps_user_id_fkey (
             full_name,
             username
           ),
