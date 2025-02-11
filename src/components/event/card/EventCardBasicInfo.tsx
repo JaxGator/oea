@@ -1,7 +1,11 @@
 
+import { useAuthState } from "@/hooks/useAuthState";
+import { formatInTimeZone } from "date-fns-tz";
+
 interface EventCardBasicInfoProps {
   date: string;
   time: string;
+  location: string;
   rsvpCount: number;
   maxGuests: number;
   isWixEvent: boolean;
@@ -9,11 +13,13 @@ interface EventCardBasicInfoProps {
   waitlistCapacity?: number | null;
   importedRsvpCount?: number | null;
   isPastEvent: boolean;
+  canViewDetails?: boolean;
 }
 
 export function EventCardBasicInfo({ 
   date,
   time,
+  location,
   rsvpCount,
   maxGuests,
   isWixEvent,
@@ -21,7 +27,11 @@ export function EventCardBasicInfo({
   waitlistCapacity,
   importedRsvpCount,
   isPastEvent,
+  canViewDetails = false
 }: EventCardBasicInfoProps) {
+  const { profile, isAuthenticated } = useAuthState();
+  const showDetails = canViewDetails || (isAuthenticated && profile?.is_approved);
+
   // Create a proper date-time string and handle timezone
   const dateTimeStr = `${date}T${time}`;
   const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
@@ -48,15 +58,24 @@ export function EventCardBasicInfo({
           </p>
         </div>
         <p className="text-sm text-muted-foreground">
-          {isWixEvent ? (
-            `${importedRsvpCount || 0} attendees`
+          {showDetails ? (
+            location
           ) : (
-            `${rsvpCount} / ${maxGuests} attendees`
-          )}
-          {waitlistEnabled && (
-            ` (Waitlist: ${waitlistCapacity || 'unlimited'})`
+            "Location visible after approval"
           )}
         </p>
+        {showDetails && (
+          <p className="text-sm text-muted-foreground">
+            {isWixEvent ? (
+              `${importedRsvpCount || 0} attendees`
+            ) : (
+              `${rsvpCount} / ${maxGuests} attendees`
+            )}
+            {waitlistEnabled && (
+              ` (Waitlist: ${waitlistCapacity || 'unlimited'})`
+            )}
+          </p>
+        )}
         {isPastEvent && (
           <p className="text-sm text-muted-foreground italic">
             This event has already taken place
