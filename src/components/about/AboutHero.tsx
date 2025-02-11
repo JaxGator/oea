@@ -1,3 +1,4 @@
+
 import { cn } from "@/lib/utils";
 
 interface AboutHeroProps {
@@ -7,11 +8,11 @@ interface AboutHeroProps {
 
 export function AboutHero({ imageUrl, imageAlt }: AboutHeroProps) {
   return (
-    <div className="relative w-full min-h-[30vh] sm:min-h-[35vh] md:min-h-[40vh]">
+    <div className="relative w-full max-h-[500px] h-[35vh] sm:h-[40vh] md:h-[45vh] overflow-hidden">
       <img
         src={imageUrl}
         alt={imageAlt}
-        className="absolute inset-0 w-full h-full object-cover object-bottom"
+        className="absolute inset-0 w-full h-full object-contain object-center"
       />
       <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center space-y-6">
         <h1 className={cn(
