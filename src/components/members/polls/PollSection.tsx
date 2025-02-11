@@ -8,7 +8,7 @@ import { CreatePollDialog } from "./CreatePollDialog";
 import { useAuthState } from "@/hooks/useAuthState";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import type { PollWithDetails } from "@/types/database.types";
+import type { PollWithDetails, PollVoteCount, Poll } from "@/types/database.types";
 
 export function PollSection() {
   const [showCreateDialog, setShowCreateDialog] = useState(false);
@@ -20,16 +20,7 @@ export function PollSection() {
       const { data: pollsData, error: pollsError } = await supabase
         .from('polls')
         .select(`
-          id,
-          title,
-          description,
-          created_by,
-          status,
-          start_date,
-          end_date,
-          allow_multiple_choices,
-          created_at,
-          share_token,
+          *,
           poll_options (
             id,
             option_text,
@@ -57,9 +48,9 @@ export function PollSection() {
       if (userVotesError) throw userVotesError;
 
       // Transform the data
-      return (pollsData || []).map((poll): PollWithDetails => {
-        const pollVoteCounts = voteCounts?.filter(vc => vc.poll_id === poll.id) || [];
-        const totalVotes = pollVoteCounts.reduce((sum, vc) => sum + Number(vc.vote_count), 0);
+      return (pollsData as Poll[]).map((poll): PollWithDetails => {
+        const pollVoteCounts = (voteCounts as PollVoteCount[])?.filter(vc => vc.poll_id === poll.id) || [];
+        const totalVotes = pollVoteCounts.reduce((sum, vc) => sum + (Number(vc.vote_count) || 0), 0);
         
         return {
           ...poll,

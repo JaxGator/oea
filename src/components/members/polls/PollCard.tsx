@@ -80,11 +80,11 @@ export function PollCard({ poll, canEdit, onDelete, isPublicView = false }: Poll
       <CardHeader>
         <PollCardHeader
           title={poll.title}
-          description={poll.description}
-          totalVotes={poll.total_votes || 0}
+          description={poll.description ?? undefined}
+          totalVotes={poll.total_votes ?? 0}
           canEdit={canEdit}
           showPieChart={showPieChart}
-          shareToken={poll.share_token}
+          shareToken={poll.share_token ?? undefined}
           pollId={poll.id}
           onDelete={onDelete}
           onToggleChart={() => setShowPieChart(!showPieChart)}
@@ -99,7 +99,7 @@ export function PollCard({ poll, canEdit, onDelete, isPublicView = false }: Poll
             userVote={userVote}
             isVoting={isVoting}
             isPublicView={isPublicView}
-            voters={[]} // We'll implement this in the next phase
+            voters={[]}
             onVote={handleVote}
           />
         )}
