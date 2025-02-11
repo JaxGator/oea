@@ -1,3 +1,4 @@
+
 import { Event } from "@/types/event";
 import { EventCardWrapper } from "../EventCardWrapper";
 import { EventCardHeader } from "../EventCardHeader";
@@ -31,6 +32,7 @@ interface EventCardInteractionsProps {
   requireAuth?: boolean;
   onSelect?: () => void;
   showDelete?: boolean;
+  isAuthenticated?: boolean;
 }
 
 export function EventCardInteractions({
@@ -60,6 +62,7 @@ export function EventCardInteractions({
   requireAuth = false,
   onSelect,
   showDelete = false,
+  isAuthenticated = false
 }: EventCardInteractionsProps) {
   const { handleCardClick } = useEventInteractions(setShowDetailsDialog);
 
@@ -89,7 +92,6 @@ export function EventCardInteractions({
         isPastEvent={isPastEvent}
         canAddGuests={canAddGuests}
         waitlistEnabled={event.waitlist_enabled}
-        waitlistCount={rsvpData.waitlistCount}
         waitlistCapacity={event.waitlist_capacity}
         currentGuests={guests}
         editedRSVPCount={editedRSVPCount}
@@ -109,6 +111,7 @@ export function EventCardInteractions({
         isAuthChecking={isAuthChecking}
         requireAuth={requireAuth}
         showDelete={showDelete}
+        isAuthenticated={isAuthenticated}
       />
     </EventCardWrapper>
   );

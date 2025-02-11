@@ -11,6 +11,7 @@ interface EventCardStateProps {
   event: Event;
   userRSVPStatus?: string | null;
   onUpdate?: () => void;
+  isAuthenticated?: boolean;
   children: (props: {
     isAdmin: boolean;
     canManageEvents: boolean;
@@ -33,6 +34,7 @@ interface EventCardStateProps {
     handleSaveRSVP: () => Promise<void>;
     handleCancelEdit: () => void;
     handleRSVPCountChange: (value: string) => void;
+    isAuthenticated?: boolean;
   }) => React.ReactNode;
 }
 
@@ -40,6 +42,7 @@ export function EventCardState({
   event,
   userRSVPStatus,
   onUpdate,
+  isAuthenticated = false,
   children
 }: EventCardStateProps) {
   const { isAdmin, canManageEvents } = useAdminStatus();
@@ -65,7 +68,6 @@ export function EventCardState({
     cleanupModals
   } = useEventStateManager(event, onUpdate);
 
-  // Cleanup modals when component unmounts or event changes
   useEffect(() => {
     return () => {
       cleanupModals();
@@ -103,5 +105,6 @@ export function EventCardState({
     handleSaveRSVP,
     handleCancelEdit,
     handleRSVPCountChange,
+    isAuthenticated
   });
 }

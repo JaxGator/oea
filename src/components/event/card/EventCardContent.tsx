@@ -32,6 +32,7 @@ interface EventCardContentProps {
   isAuthChecking?: boolean;
   requireAuth?: boolean;
   showDelete?: boolean;
+  isAuthenticated?: boolean;
 }
 
 export function EventCardContent({
@@ -61,7 +62,8 @@ export function EventCardContent({
   onRSVPCountChange,
   isAuthChecking = false,
   requireAuth = false,
-  showDelete = false
+  showDelete = false,
+  isAuthenticated = false
 }: EventCardContentProps) {
   return (
     <div className="p-4">
@@ -100,6 +102,7 @@ export function EventCardContent({
         requireAuth={requireAuth}
         event={event}
         showDelete={showDelete}
+        isAuthenticated={isAuthenticated}
       />
     </div>
   );
