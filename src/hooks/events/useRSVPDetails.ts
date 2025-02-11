@@ -38,7 +38,7 @@ export function useRSVPDetails(eventId: string) {
               full_name,
               username
             ),
-            event_guests!event_guests_rsvp_id_fkey (
+            event_guests (
               id,
               first_name
             )
@@ -62,17 +62,11 @@ export function useRSVPDetails(eventId: string) {
 
         console.log('Fetched RSVPs:', rsvps);
 
-        const typedRsvps = rsvps.map(rsvp => ({
-          ...rsvp,
-          profiles: rsvp.profiles,
-          event_guests: rsvp.event_guests || []
-        })) as RSVPWithProfile[];
-
-        const rsvpCount = typedRsvps.reduce((total, rsvp) => {
+        const rsvpCount = rsvps.reduce((total, rsvp) => {
           return total + 1 + (rsvp.event_guests?.length || 0);
         }, 0);
 
-        const attendees = typedRsvps.flatMap(rsvp => {
+        const attendees = rsvps.flatMap(rsvp => {
           const attendee: Attendee = {
             profile: {
               full_name: rsvp.profiles?.full_name ?? null,

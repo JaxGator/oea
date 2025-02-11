@@ -31,7 +31,23 @@ export const useFeaturedEvents = () => {
         
         const eventsResult = await supabase
           .from('events')
-          .select('*')
+          .select(`
+            *,
+            event_rsvps!event_rsvps_event_id_fkey (
+              id,
+              user_id,
+              response,
+              status,
+              profiles!event_rsvps_user_id_fkey (
+                full_name,
+                username
+              ),
+              event_guests (
+                id,
+                first_name
+              )
+            )
+          `)
           .eq('is_published', true)
           .gte('date', today)
           .order('is_featured', { ascending: false })
@@ -45,42 +61,15 @@ export const useFeaturedEvents = () => {
         const eventsData = eventsResult.data || [];
         console.log('Fetched events:', eventsData);
 
-        const rsvpsResult = await supabase
-          .from('event_rsvps')
-          .select(`
-            id,
-            user_id,
-            response,
-            status,
-            profiles!event_rsvps_user_id_fkey (
-              full_name,
-              username
-            ),
-            event_guests!event_guests_rsvp_id_fkey (
-              id,
-              first_name
-            )
-          `)
-          .in('event_id', eventsData.map(e => e.id));
-
-        if (rsvpsResult.error) {
-          console.error('RSVPs query error:', rsvpsResult.error);
-          throw rsvpsResult.error;
-        }
-
-        const rsvpsData = (rsvpsResult.data || []) as RSVPWithDetails[];
-        console.log('Fetched RSVPs:', rsvpsData);
-
         const eventsWithRSVPs = eventsData.map(event => ({
           ...event,
-          rsvps: rsvpsData.filter(rsvp => rsvp.event_id === event.id) || [],
-          attendees: rsvpsData.filter(rsvp => 
-            rsvp.event_id === event.id && 
+          rsvps: event.event_rsvps || [],
+          attendees: event.event_rsvps?.filter(rsvp => 
             rsvp.response === 'attending' && 
             rsvp.status === 'confirmed'
           ) || [],
           guests: []
-        })) satisfies Event[];
+        })) as Event[];
 
         return eventsWithRSVPs;
       } catch (error) {
