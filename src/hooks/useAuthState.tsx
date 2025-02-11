@@ -5,10 +5,11 @@ import { useToast } from "@/hooks/use-toast";
 import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
+import type { Profile } from "@/types/auth";
 
 interface AuthState {
-  user: any | null;
-  profile: any | null;
+  user: Profile | null;
+  profile: Profile | null;
   isLoading: boolean;
   error: Error | null;
   isAuthenticated: boolean;
@@ -34,14 +35,20 @@ export function useAuthState(): AuthState {
           filter: `id=eq.${user.id}`
         },
         (payload) => {
-          console.log('Profile changed:', payload);
+          console.log('Profile changed:', {
+            payload,
+            timestamp: new Date().toISOString()
+          });
           queryClient.invalidateQueries({
             queryKey: ['profile', user.id]
           });
         }
       )
       .subscribe((status) => {
-        console.log('Profile subscription status:', status);
+        console.log('Profile subscription status:', {
+          status,
+          timestamp: new Date().toISOString()
+        });
       });
 
     return () => {
@@ -68,10 +75,13 @@ export function useAuthState(): AuthState {
     timestamp: new Date().toISOString()
   });
 
-  // Handle session errors
+  // Enhanced error handling for session errors
   useEffect(() => {
     if (sessionError) {
-      console.error('Session error:', sessionError);
+      console.error('Session error:', {
+        error: sessionError,
+        timestamp: new Date().toISOString()
+      });
       toast({
         title: "Authentication Error",
         description: "Please try signing in again",
@@ -80,10 +90,13 @@ export function useAuthState(): AuthState {
     }
   }, [sessionError, toast]);
 
-  // Handle profile errors
+  // Enhanced error handling for profile errors
   useEffect(() => {
     if (profileError) {
-      console.error('Profile error:', profileError);
+      console.error('Profile error:', {
+        error: profileError,
+        timestamp: new Date().toISOString()
+      });
       toast({
         title: "Profile Error",
         description: "Unable to load user profile",
