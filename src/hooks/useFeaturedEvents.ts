@@ -24,14 +24,14 @@ export const useFeaturedEvents = () => {
           .from('events')
           .select(`
             *,
-            event_rsvps!event_rsvps_event_id_fkey (
+            event_rsvps (
               id,
               event_id,
               user_id,
               response,
               created_at,
               status,
-              profiles (
+              profiles!event_rsvps_user_id_fkey (
                 full_name,
                 username
               )
