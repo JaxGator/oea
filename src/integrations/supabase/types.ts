@@ -129,13 +129,6 @@ export type Database = {
             referencedRelation: "event_rsvps"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "fk_rsvp_id"
-            columns: ["rsvp_id"]
-            isOneToOne: false
-            referencedRelation: "event_rsvps"
-            referencedColumns: ["id"]
-          },
         ]
       }
       event_reminders: {
@@ -252,13 +245,6 @@ export type Database = {
             columns: ["event_id"]
             isOneToOne: false
             referencedRelation: "events"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_user_id"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
