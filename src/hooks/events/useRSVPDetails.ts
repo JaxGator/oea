@@ -27,7 +27,7 @@ export function useRSVPDetails(eventId: string) {
   const { data: rsvpData } = useQuery({
     queryKey: ['event-rsvps', eventId],
     queryFn: async () => {
-      // Get RSVPs with profiles and guests, explicitly specifying the foreign key relationship
+      // Get RSVPs with profiles and guests, explicitly specifying foreign key relationships
       const { data: rsvps, error: rsvpError } = await supabase
         .from('event_rsvps')
         .select(`
@@ -36,7 +36,7 @@ export function useRSVPDetails(eventId: string) {
             full_name,
             username
           ),
-          event_guests (
+          event_guests!event_guests_rsvp_id_fkey (
             id,
             first_name
           )
