@@ -1,3 +1,4 @@
+
 import { EventActions } from "../actions/EventActions";
 
 interface EventCardActionsProps {
@@ -22,6 +23,7 @@ interface EventCardActionsProps {
   isWixEvent?: boolean;
   requireAuth?: boolean;
   event: { id: string; title: string };
+  isAuthenticated?: boolean;
 }
 
 export function EventCardActions({
@@ -45,7 +47,8 @@ export function EventCardActions({
   canJoinWaitlist = false,
   isWixEvent = false,
   requireAuth = false,
-  event
+  event,
+  isAuthenticated = false
 }: EventCardActionsProps) {
   if (isAuthChecking) {
     return (
@@ -77,6 +80,8 @@ export function EventCardActions({
       canJoinWaitlist={canJoinWaitlist}
       requireAuth={requireAuth}
       event={event}
+      isAuthenticated={isAuthenticated}
+      isAuthChecking={isAuthChecking}
     />
   );
 }

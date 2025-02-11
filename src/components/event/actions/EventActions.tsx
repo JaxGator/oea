@@ -58,7 +58,12 @@ export function EventActions({
 }: EventActionsProps) {
   const showViewDetails = isAdmin || canManageEvents || userRSVPStatus === "attending";
 
-  console.log('EventActions - Authentication state:', { isAuthenticated });
+  console.log('EventActions - Authentication state:', { 
+    isAuthenticated,
+    userRSVPStatus,
+    isAdmin,
+    canManageEvents
+  });
 
   if (isAuthChecking) {
     return (
@@ -84,13 +89,14 @@ export function EventActions({
         onViewDetails={onViewDetails}
         showViewDetails={showViewDetails}
         requireAuth={requireAuth}
+        isAuthenticated={isAuthenticated}
       />
 
-      {!isAuthenticated && (
+      {isAuthenticated && (
         <EventShareMenu eventId={event.id} title={event.title} />
       )}
 
-      {(isAdmin || canManageEvents) && (
+      {isAuthenticated && (isAdmin || canManageEvents) && (
         <AdminActions
           onEdit={onEdit}
           onDelete={onDelete}

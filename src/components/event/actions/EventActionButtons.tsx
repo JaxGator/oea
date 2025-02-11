@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { RSVPButton } from "./RSVPButton";
 import { AddGuestsButton } from "./AddGuestsButton";
@@ -18,6 +19,7 @@ interface EventActionButtonsProps {
   onViewDetails?: () => void;
   showViewDetails?: boolean;
   requireAuth?: boolean;
+  isAuthenticated?: boolean;
 }
 
 export function EventActionButtons({
@@ -31,11 +33,12 @@ export function EventActionButtons({
   onCancelRSVP,
   onViewDetails,
   showViewDetails = false,
-  requireAuth = false
+  requireAuth = false,
+  isAuthenticated = false
 }: EventActionButtonsProps) {
   return (
     <>
-      {!userRSVPStatus && !isPastEvent && (
+      {isAuthenticated && !userRSVPStatus && !isPastEvent && (
         <RSVPButton 
           isFullyBooked={isFullyBooked} 
           onRSVP={onRSVP} 
@@ -44,7 +47,7 @@ export function EventActionButtons({
         />
       )}
 
-      {userRSVPStatus === "attending" && !isPastEvent && (
+      {isAuthenticated && userRSVPStatus === "attending" && !isPastEvent && (
         <>
           <Button
             variant="destructive"
@@ -61,7 +64,7 @@ export function EventActionButtons({
         </>
       )}
 
-      {showViewDetails && onViewDetails && (
+      {isAuthenticated && showViewDetails && onViewDetails && (
         <Button
           variant="outline"
           onClick={onViewDetails}
