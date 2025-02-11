@@ -6,7 +6,15 @@ import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 
-export function useAuthState() {
+interface AuthState {
+  user: any | null;
+  profile: any | null;
+  isLoading: boolean;
+  error: Error | null;
+  isAuthenticated: boolean;
+}
+
+export function useAuthState(): AuthState {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { user, isLoading: isSessionLoading, error: sessionError } = useSession();
@@ -15,7 +23,6 @@ export function useAuthState() {
   useEffect(() => {
     if (!user?.id) return;
 
-    // Subscribe to profile changes
     const channel = supabase
       .channel(`public:profiles:id=eq.${user.id}`)
       .on(

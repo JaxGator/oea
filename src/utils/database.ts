@@ -3,35 +3,59 @@ import { supabase } from "@/integrations/supabase/client";
 import type { QueryResult } from "@/types/supabase";
 import { isErrorWithMessage } from "@/types/supabase";
 import { toast } from "sonner";
+import { PostgrestError, PostgrestResponse, PostgrestSingleResponse } from "@supabase/supabase-js";
 
 export async function executeQuery<T>(
-  operation: () => Promise<{ data: T | null; error: any }>
+  operation: () => Promise<PostgrestResponse<T> | PostgrestSingleResponse<T>>
 ): Promise<QueryResult<T>> {
   try {
+    console.log('Executing database query...');
     const { data, error } = await operation();
 
     if (error) {
-      console.error('Database operation failed:', error);
+      console.error('Database operation failed:', {
+        code: error.code,
+        details: error.details,
+        message: error.message
+      });
       throw error;
     }
 
+    console.log('Database query completed successfully');
     return { data, error: null };
   } catch (error) {
     const message = isErrorWithMessage(error) ? error.message : 'An unexpected error occurred';
     console.error('Database operation error:', error);
     toast.error(message);
-    return { data: null, error: { message } };
+    return { 
+      data: null, 
+      error: { 
+        message,
+        code: error instanceof PostgrestError ? error.code : undefined,
+        details: error instanceof PostgrestError ? error.details : undefined
+      } 
+    };
   }
 }
 
 export async function executeTableQuery<T>(
   table: string,
   query: string,
-  params?: any[]
+  params?: Record<string, unknown>[]
 ): Promise<QueryResult<T>> {
-  return executeQuery<T>(() =>
-    supabase.from(table).select(query, { count: 'exact' })
-  );
+  console.log('Executing table query:', { table, query, params });
+  return executeQuery<T>(() => {
+    let queryBuilder = supabase.from(table).select(query, { count: 'exact' });
+    
+    if (params?.length) {
+      queryBuilder = params.reduce((builder, param) => {
+        const [key, value] = Object.entries(param)[0];
+        return builder.eq(key, value);
+      }, queryBuilder);
+    }
+    
+    return queryBuilder;
+  });
 }
 
 export function getErrorMessage(error: unknown): string {
