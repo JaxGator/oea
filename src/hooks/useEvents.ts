@@ -145,7 +145,8 @@ export function useEvents(selectedDate?: Date) {
           ...event,
           rsvps: event.event_rsvps || [],
           attendees: event.event_rsvps?.filter(rsvp => 
-            rsvp.response === 'attending' && rsvp.status === 'confirmed'
+            rsvp.response === 'attending' && 
+            rsvp.status === 'confirmed'
           ) || [],
           guests: event.event_rsvps?.flatMap(rsvp => 
             rsvp.event_guests || []
