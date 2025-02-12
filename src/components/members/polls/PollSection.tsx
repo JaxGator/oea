@@ -92,7 +92,7 @@ export function PollSection() {
             onClick={() => setShowCreateDialog(true)}
             className="w-full sm:w-auto"
           >
-            <Plus className="h-4 w-4 mr-2" />
+            <Plus className="h-6 w-6 text-primary shrink-0 mr-2" />
             Create Poll
           </Button>
         )}
