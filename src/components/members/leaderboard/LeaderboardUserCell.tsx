@@ -1,3 +1,4 @@
+
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { UserCircle } from "lucide-react";
 import { Member } from "../types";
@@ -20,9 +21,6 @@ export function LeaderboardUserCell({ user }: LeaderboardUserCellProps) {
       </Avatar>
       <div className="min-w-0">
         <div className="font-medium truncate">{user.username}</div>
-        {user.full_name && (
-          <div className="text-sm text-gray-500 truncate">{user.full_name}</div>
-        )}
       </div>
     </div>
   );
