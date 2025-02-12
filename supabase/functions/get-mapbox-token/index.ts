@@ -5,11 +5,11 @@ import { corsHeaders } from '../_shared/cors.ts'
 console.log('Loading get-mapbox-token function...')
 
 serve(async (req) => {
-  // Handle CORS preflight requests
+  // This is necessary for CORS to work
   if (req.method === 'OPTIONS') {
-    return new Response(null, { 
-      headers: corsHeaders,
-      status: 204
+    return new Response(null, {
+      status: 204,
+      headers: corsHeaders
     })
   }
 
@@ -24,12 +24,8 @@ serve(async (req) => {
 
     console.log('Successfully retrieved Mapbox token')
     
-    // Return response with CORS headers
     return new Response(
-      JSON.stringify({ 
-        token,
-        timestamp: new Date().toISOString() 
-      }),
+      JSON.stringify({ token }),
       { 
         headers: {
           ...corsHeaders,
@@ -42,10 +38,7 @@ serve(async (req) => {
     console.error('Error in get-mapbox-token:', error.message)
     
     return new Response(
-      JSON.stringify({ 
-        error: error.message,
-        timestamp: new Date().toISOString()
-      }), 
+      JSON.stringify({ error: error.message }), 
       { 
         headers: {
           ...corsHeaders,
