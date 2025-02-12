@@ -4,8 +4,8 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Loader2 } from "lucide-react";
-import { format } from "date-fns";
 import { formatInTimeZone } from "date-fns-tz";
+import { parseISO } from "date-fns";
 import { Event } from "@/types/event";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EventDetails } from "@/components/event/EventDetails";
@@ -96,8 +96,21 @@ export function PublicEventView() {
     );
   }
 
-  // Create a proper date-time string
-  const dateTimeStr = `${event.date}T${event.time}`;
+  // Create proper UTC date-time string
+  const isoString = `${event.date}T${event.time}Z`;
+
+  // Format date and time in user's timezone
+  const formattedDate = formatInTimeZone(
+    parseISO(isoString),
+    userTimeZone,
+    'EEEE, MMMM do, yyyy'
+  );
+
+  const formattedTime = formatInTimeZone(
+    parseISO(isoString),
+    userTimeZone,
+    'h:mm a'
+  );
 
   return (
     <div className="min-h-screen bg-[#222222]">
@@ -127,8 +140,7 @@ export function PublicEventView() {
               <h1 className="text-3xl font-bold mb-2">{event.title}</h1>
               <div className="text-gray-600 space-y-2">
                 <p>
-                  {format(new Date(event.date), "EEEE, MMMM do, yyyy")} at{" "}
-                  {formatInTimeZone(new Date(dateTimeStr), userTimeZone, 'h:mm a')}
+                  {formattedDate} at {formattedTime}
                 </p>
                 <p>{event.location}</p>
               </div>
