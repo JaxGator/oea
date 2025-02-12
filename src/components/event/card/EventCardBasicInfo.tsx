@@ -33,19 +33,19 @@ export function EventCardBasicInfo({
   const { profile, isAuthenticated } = useAuthState();
   const showDetails = canViewDetails || (isAuthenticated && profile?.is_approved);
 
-  // Parse the date and time as UTC first
-  const isoString = `${date}T${time}Z`; // Append Z to treat as UTC
+  // Create a local ISO string without the UTC 'Z' suffix
+  const localIsoString = `${date}T${time}`;
   const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
   
-  // Format the date and time in user's timezone
+  // Parse and format the date and time in user's timezone
   const formattedDate = formatInTimeZone(
-    parseISO(isoString),
+    parseISO(localIsoString),
     userTimeZone,
     'MMMM d, yyyy'
   );
 
   const formattedTime = formatInTimeZone(
-    parseISO(isoString),
+    parseISO(localIsoString),
     userTimeZone,
     'h:mm a'
   );
@@ -86,3 +86,4 @@ export function EventCardBasicInfo({
     </div>
   );
 }
+
