@@ -29,8 +29,8 @@ export function MessagesContent({ conversations }: MessagesContentProps) {
     setSelectedConversation,
     setShowDeleteDialog,
     isDeleting,
-    isSending,
-    setIsSending
+    setIsDeleting,
+    showDeleteDialog,
   } = useMessages();
 
   const selectedConversationData = selectedConversation ? conversations[selectedConversation] : null;
@@ -46,7 +46,6 @@ export function MessagesContent({ conversations }: MessagesContentProps) {
     }
 
     console.log('Sending message:', { sender: user.id, receiver: selectedConversation, content });
-    setIsSending(true);
 
     try {
       const { error } = await supabase
@@ -72,8 +71,6 @@ export function MessagesContent({ conversations }: MessagesContentProps) {
         description: "Failed to send message. Please try again.",
         variant: "destructive",
       });
-    } finally {
-      setIsSending(false);
     }
   };
 
@@ -82,9 +79,48 @@ export function MessagesContent({ conversations }: MessagesContentProps) {
     editMessageMutation({ messageId, content });
   };
 
-  const handleDeleteConversation = () => {
-    if (!selectedConversation || !user) return;
-    setShowDeleteDialog(true);
+  const handleDeleteConversation = async () => {
+    if (!selectedConversation || !user) {
+      toast({
+        title: "Error",
+        description: "No conversation selected.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsDeleting(true);
+    try {
+      // Delete all messages between the two users in both directions
+      const { error } = await supabase
+        .from('messages')
+        .delete()
+        .or(
+          `and(sender_id.eq.${user.id},receiver_id.eq.${selectedConversation}),` +
+          `and(sender_id.eq.${selectedConversation},receiver_id.eq.${user.id})`
+        );
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Conversation deleted successfully.",
+      });
+
+      // Refresh the messages list
+      queryClient.invalidateQueries({ queryKey: ['messages', user.id] });
+      setSelectedConversation(null);
+    } catch (error) {
+      console.error('Error deleting conversation:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete conversation. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDeleting(false);
+      setShowDeleteDialog(false);
+    }
   };
 
   return (
@@ -99,6 +135,11 @@ export function MessagesContent({ conversations }: MessagesContentProps) {
                 conversations={conversations}
                 selectedConversation={selectedConversation}
                 onSelect={setSelectedConversation}
+                onDelete={(userId) => {
+                  setSelectedConversation(userId);
+                  setShowDeleteDialog(true);
+                }}
+                isDeleting={isDeleting}
               />
             </Card>
           )}
@@ -110,7 +151,7 @@ export function MessagesContent({ conversations }: MessagesContentProps) {
                   <ConversationHeader
                     conversation={selectedConversationData}
                     onBack={() => setSelectedConversation(null)}
-                    onDelete={handleDeleteConversation}
+                    onDelete={() => setShowDeleteDialog(true)}
                     isDeleting={isDeleting}
                   />
                   <ConversationContent
@@ -121,7 +162,7 @@ export function MessagesContent({ conversations }: MessagesContentProps) {
                   />
                   <ConversationInput
                     onSend={handleSendMessage}
-                    isSending={isSending}
+                    isSending={false}
                     receiverId={selectedConversation}
                   />
                 </>

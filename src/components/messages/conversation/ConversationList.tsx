@@ -8,6 +8,8 @@ export function ConversationList({
   conversations, 
   selectedConversation,
   onSelect,
+  onDelete,
+  isDeleting,
 }: ConversationListProps) {
   const directMessages = Object.entries(conversations).filter(([_, conv]) => !conv.isGroup);
   const groupChats = Object.entries(conversations).filter(([_, conv]) => conv.isGroup);
@@ -27,8 +29,8 @@ export function ConversationList({
                   conversation={conversation}
                   isSelected={selectedConversation === id}
                   onSelect={() => onSelect(id)}
-                  onDelete={() => {}}
-                  isDeleting={false}
+                  onDelete={() => onDelete(id)}
+                  isDeleting={isDeleting && selectedConversation === id}
                 />
               ))}
             </div>
@@ -51,8 +53,8 @@ export function ConversationList({
                   conversation={conversation}
                   isSelected={selectedConversation === userId}
                   onSelect={() => onSelect(userId)}
-                  onDelete={() => {}}
-                  isDeleting={false}
+                  onDelete={() => onDelete(userId)}
+                  isDeleting={isDeleting && selectedConversation === userId}
                 />
               ))}
             </div>
