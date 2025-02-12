@@ -1,3 +1,4 @@
+
 import { useEffect } from "react";
 import { Outlet } from "react-router-dom";
 import { DesktopNavigation } from "../DesktopNavigation";
@@ -6,7 +7,6 @@ import { useMaintenanceMode } from "@/hooks/useMaintenanceMode";
 import Maintenance from "@/pages/Maintenance";
 import { supabase } from "@/integrations/supabase/client";
 import { Toaster } from "@/components/ui/sonner";
-import { CookieConsent } from "@/components/CookieConsent";
 import { Footer } from "@/components/home/Footer";
 
 // Add styles for the skip links
@@ -82,7 +82,6 @@ export function AppLayout() {
       </footer>
 
       <Toaster />
-      <CookieConsent />
     </div>
   );
 }
