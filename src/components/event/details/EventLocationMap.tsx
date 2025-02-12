@@ -1,5 +1,5 @@
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { useMapboxToken } from '@/hooks/useMapboxToken';
@@ -17,21 +17,22 @@ export function EventLocationMap({ location, lat, lng }: EventLocationMapProps) 
   const map = useRef<mapboxgl.Map | null>(null);
   const marker = useRef<mapboxgl.Marker | null>(null);
   const { mapToken, isLoading: isKeyLoading, error: keyError } = useMapboxToken();
-  const hasInitialized = useRef(false);
+  const [isMapReady, setIsMapReady] = useState(false);
 
   // Effect for map initialization
   useEffect(() => {
-    // Only initialize when we have all required data and token
-    if (!mapContainer.current || !lat || !lng || !mapToken) {
-      return;
-    }
+    let initTimeout: NodeJS.Timeout;
 
-    try {
-      if (!hasInitialized.current) {
-        console.log('Initializing map with token and coordinates:', { lat, lng });
+    const initializeMap = () => {
+      if (!mapContainer.current || !lat || !lng || !mapToken || map.current) {
+        return;
+      }
+
+      try {
+        console.log('Initializing map with coordinates:', { lat, lng });
         mapboxgl.accessToken = mapToken;
         
-        map.current = new mapboxgl.Map({
+        const mapInstance = new mapboxgl.Map({
           container: mapContainer.current,
           style: 'mapbox://styles/mapbox/outdoors-v12',
           center: [lng, lat],
@@ -39,39 +40,67 @@ export function EventLocationMap({ location, lat, lng }: EventLocationMapProps) 
           scrollZoom: false
         });
 
-        map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
+        // Initialize map controls and marker after the map is fully loaded
+        mapInstance.on('load', () => {
+          console.log('Map loaded successfully');
+          if (!mapInstance.removed) {
+            mapInstance.resize();
+            
+            // Add controls after a short delay
+            initTimeout = setTimeout(() => {
+              if (!mapInstance.removed) {
+                mapInstance.addControl(new mapboxgl.NavigationControl(), 'top-right');
+                
+                // Create marker only after map is fully initialized
+                marker.current = new mapboxgl.Marker()
+                  .setLngLat([lng, lat])
+                  .addTo(mapInstance);
+                
+                setIsMapReady(true);
+              }
+            }, 100);
+          }
+        });
 
-        marker.current = new mapboxgl.Marker()
-          .setLngLat([lng, lat])
-          .addTo(map.current);
+        map.current = mapInstance;
 
-        hasInitialized.current = true;
+      } catch (error) {
+        console.error('Error initializing map:', error);
+        setIsMapReady(false);
       }
-    } catch (error) {
-      console.error('Error initializing map:', error);
-    }
+    };
+
+    initializeMap();
 
     return () => {
+      if (initTimeout) {
+        clearTimeout(initTimeout);
+      }
       if (map.current) {
+        if (marker.current) {
+          marker.current.remove();
+          marker.current = null;
+        }
         map.current.remove();
-        hasInitialized.current = false;
+        map.current = null;
+        setIsMapReady(false);
       }
     };
   }, [lat, lng, mapToken]);
 
   // Separate effect for updating marker position
   useEffect(() => {
-    if (marker.current && lat && lng) {
-      marker.current.setLngLat([lng, lat]);
+    if (!isMapReady || !marker.current || !map.current || !lat || !lng) {
+      return;
     }
-    if (map.current && lat && lng) {
-      map.current.flyTo({
-        center: [lng, lat],
-        zoom: 14,
-        essential: true
-      });
-    }
-  }, [lat, lng]);
+
+    marker.current.setLngLat([lng, lat]);
+    map.current.flyTo({
+      center: [lng, lat],
+      zoom: 14,
+      essential: true
+    });
+  }, [lat, lng, isMapReady]);
 
   if (isKeyLoading) {
     return <MapLoadingState />;
