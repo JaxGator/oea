@@ -11,6 +11,7 @@ interface UseMapboxTokenReturn {
 
 const TOKEN_CACHE_KEY = 'mapbox_token_cache';
 const TOKEN_CACHE_DURATION = 3600000; // 1 hour in milliseconds
+const MAX_RETRIES = 3;
 
 interface TokenCache {
   token: string;
@@ -18,28 +19,32 @@ interface TokenCache {
 }
 
 const getTokenFromCache = (): string | null => {
-  const cached = localStorage.getItem(TOKEN_CACHE_KEY);
-  if (!cached) return null;
-
   try {
+    const cached = localStorage.getItem(TOKEN_CACHE_KEY);
+    if (!cached) return null;
+
     const { token, timestamp }: TokenCache = JSON.parse(cached);
     if (Date.now() - timestamp < TOKEN_CACHE_DURATION) {
       return token;
     }
     localStorage.removeItem(TOKEN_CACHE_KEY);
   } catch (error) {
-    console.error('Error parsing cached token:', error);
+    console.error('Error reading token from cache:', error);
     localStorage.removeItem(TOKEN_CACHE_KEY);
   }
   return null;
 };
 
 const setTokenInCache = (token: string) => {
-  const cacheData: TokenCache = {
-    token,
-    timestamp: Date.now()
-  };
-  localStorage.setItem(TOKEN_CACHE_KEY, JSON.stringify(cacheData));
+  try {
+    const cacheData: TokenCache = {
+      token,
+      timestamp: Date.now()
+    };
+    localStorage.setItem(TOKEN_CACHE_KEY, JSON.stringify(cacheData));
+  } catch (error) {
+    console.error('Error caching token:', error);
+  }
 };
 
 export const useMapboxToken = (): UseMapboxTokenReturn => {
@@ -68,33 +73,38 @@ export const useMapboxToken = (): UseMapboxTokenReturn => {
 
         console.log('Fetching fresh Mapbox token...');
         const { data, error: fetchError } = await supabase.functions.invoke('get-mapbox-token', {
-          method: 'GET'
+          method: 'GET',
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+          }
         });
         
         if (!isMounted) return;
 
         if (fetchError) {
-          throw fetchError;
+          console.error('Fetch error:', fetchError);
+          throw new Error(fetchError.message);
         }
 
         if (!data?.token) {
           throw new Error('No token returned from function');
         }
 
+        console.log('Token fetched successfully');
         setTokenInCache(data.token);
         setMapToken(data.token);
         setError(null);
         setRetryCount(0);
       } catch (err) {
-        console.error('Error in fetchMapboxToken:', err);
+        console.error('Error fetching Mapbox token:', err);
         if (!isMounted) return;
 
         setError(err as Error);
         
-        // Implement exponential backoff for retries
-        if (retryCount < 3) {
+        if (retryCount < MAX_RETRIES) {
           const nextRetry = Math.min(1000 * Math.pow(2, retryCount), 8000);
-          console.log(`Retrying token fetch in ${nextRetry}ms...`);
+          console.log(`Retrying token fetch in ${nextRetry}ms (attempt ${retryCount + 1}/${MAX_RETRIES})`);
           retryTimeout = setTimeout(() => {
             if (isMounted) {
               setRetryCount(prev => prev + 1);
@@ -102,7 +112,7 @@ export const useMapboxToken = (): UseMapboxTokenReturn => {
             }
           }, nextRetry);
         } else {
-          toast.error('Failed to load map configuration. Please try again later.');
+          toast.error('Failed to load map configuration. Please refresh the page or try again later.');
         }
       } finally {
         if (isMounted) {
