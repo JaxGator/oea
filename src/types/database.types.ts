@@ -6,7 +6,7 @@ export type Json = string | number | boolean | null | { [key: string]: Json | un
 
 export type TableNames = keyof Database['public']['Tables'];
 
-// Common table types with proper nullability handling
+// Core Profile type from database
 export type Profile = {
   id: string;
   username: string;
@@ -25,6 +25,7 @@ export type Profile = {
   leaderboard_opt_out: boolean;
 };
 
+// Event and RSVP types
 export type Event = Database['public']['Tables']['events']['Row'] & {
   rsvps?: EventRSVP[];
   attendees?: Profile[];
