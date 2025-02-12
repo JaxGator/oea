@@ -28,7 +28,7 @@ export const Hero = () => {
               loading="eager"
               decoding="async"
             />
-            <p className="text-white text-lg sm:text-xl md:text-2xl font-medium drop-shadow-lg animate-fade-in">
+            <p className="text-white text-lg sm:text-xl md:text-2xl font-medium drop-shadow-lg animate-fade-in bg-black/50 px-4 py-2 sm:px-6 sm:py-3 md:px-8 md:py-4 rounded-lg inline-block">
               Welcome to our new site - entirely built with AI!
             </p>
           </figure>
@@ -37,3 +37,4 @@ export const Hero = () => {
     </div>
   );
 };
+
