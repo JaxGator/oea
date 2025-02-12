@@ -5,7 +5,6 @@ import { corsHeaders } from '../_shared/cors.ts'
 console.log('Loading get-mapbox-token function...')
 
 serve(async (req) => {
-  // This is necessary for CORS to work
   if (req.method === 'OPTIONS') {
     return new Response(null, {
       status: 204,
@@ -25,11 +24,16 @@ serve(async (req) => {
     console.log('Successfully retrieved Mapbox token')
     
     return new Response(
-      JSON.stringify({ token }),
+      JSON.stringify({ 
+        token,
+        success: true,
+        timestamp: new Date().toISOString()
+      }),
       { 
         headers: {
           ...corsHeaders,
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Cache-Control': 'public, max-age=3600' // Cache for 1 hour
         },
         status: 200
       }
@@ -38,7 +42,11 @@ serve(async (req) => {
     console.error('Error in get-mapbox-token:', error.message)
     
     return new Response(
-      JSON.stringify({ error: error.message }), 
+      JSON.stringify({ 
+        error: error.message,
+        success: false,
+        timestamp: new Date().toISOString()
+      }), 
       { 
         headers: {
           ...corsHeaders,

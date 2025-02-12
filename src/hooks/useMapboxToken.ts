@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -17,7 +18,9 @@ export const useMapboxToken = (): UseMapboxTokenReturn => {
     const fetchMapboxToken = async () => {
       try {
         console.log('Fetching Mapbox token...');
-        const { data, error: fetchError } = await supabase.functions.invoke('get-mapbox-token');
+        const { data, error: fetchError } = await supabase.functions.invoke('get-mapbox-token', {
+          method: 'POST'
+        });
         
         if (fetchError) {
           console.error('Error fetching Mapbox token:', fetchError);

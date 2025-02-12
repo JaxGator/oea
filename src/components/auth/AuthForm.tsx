@@ -1,4 +1,3 @@
-
 import { Auth as SupabaseAuth } from "@supabase/auth-ui-react";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { supabase } from "@/integrations/supabase/client";
@@ -6,17 +5,60 @@ import { useToast } from "@/hooks/use-toast";
 import { useEffect, useState } from "react";
 import { AuthError, AuthApiError } from "@supabase/supabase-js";
 import { useLocation } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
+import { Send } from "lucide-react";
 
 export function AuthForm() {
   const { toast } = useToast();
   const [authError, setAuthError] = useState<string | null>(null);
+  const [isContactOpen, setIsContactOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [subject, setSubject] = useState("");
+  const [message, setMessage] = useState("");
   const location = useLocation();
 
+  const handleContactSubmit = async () => {
+    if (!subject.trim() || !message.trim()) {
+      toast({
+        title: "Error",
+        description: "Please fill in all fields",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const { error } = await supabase.functions.invoke('send-admin-message', {
+        body: { subject, message }
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Message Sent",
+        description: "An administrator will respond to your message soon.",
+      });
+      setIsContactOpen(false);
+      setSubject("");
+      setMessage("");
+    } catch (error) {
+      console.error('Error sending message:', error);
+      toast({
+        title: "Error",
+        description: "Failed to send message. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   useEffect(() => {
-    // Handle password reset state from location
-    const searchParams = new URLSearchParams(location.search);
-    const hashParams = new URLSearchParams(location.hash.substring(1));
-    
+    const { searchParams, hashParams } = new URL(location.href);
     const type = searchParams.get('type') || hashParams.get('type');
     const error = searchParams.get('error') || hashParams.get('error');
     const errorDescription = searchParams.get('error_description') || hashParams.get('error_description');
@@ -145,6 +187,55 @@ export function AuthForm() {
           },
         }}
       />
+
+      <div className="mt-6 p-4 bg-gray-50 rounded-lg space-y-4">
+        <p className="text-sm text-gray-600">
+          Welcome! If you previously had an account on our site, you can log in using your email and password="password", 
+          then change it from your profile. If you are still having trouble, click below to contact an administrator.
+        </p>
+        <Dialog open={isContactOpen} onOpenChange={setIsContactOpen}>
+          <DialogTrigger asChild>
+            <Button variant="outline" className="w-full">
+              Contact Us
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Contact Administrator</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <Input
+                  placeholder="Subject"
+                  value={subject}
+                  onChange={(e) => setSubject(e.target.value)}
+                />
+              </div>
+              <div>
+                <Textarea
+                  placeholder="Your message"
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  className="min-h-[100px]"
+                />
+              </div>
+              <Button 
+                className="w-full"
+                onClick={handleContactSubmit}
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? (
+                  "Sending..."
+                ) : (
+                  <>
+                    Send Message <Send className="ml-2 h-4 w-4" />
+                  </>
+                )}
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+      </div>
     </div>
   );
 }
