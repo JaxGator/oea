@@ -8,5 +8,5 @@ export * from './helpers';
 export * from './site';
 export * from './user';
 
-// Re-export Json type from database.ts to avoid ambiguity
-export { Json } from './database';
+// Re-export Json type with type keyword to fix isolatedModules issue
+export type { Json } from './database';

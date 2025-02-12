@@ -4,16 +4,7 @@ import type { Database as DatabaseGenerated } from '@/integrations/supabase/type
 export type Database = DatabaseGenerated;
 export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
 
-// Extended types
-export type PollWithDetails = Database['public']['Tables']['polls']['Row'] & {
-  poll_options: (Database['public']['Tables']['poll_options']['Row'] & {
-    has_voted?: boolean;
-    vote_count?: number;
-  })[];
-  total_votes?: number;
-};
-
-export type VoteResult = 'success' | 'already_voted' | 'poll_closed' | 'not_found';
+export type TableNames = keyof Database['public']['Tables'];
 
 // Common table types with proper nullability handling
 export type Profile = {
@@ -97,3 +88,16 @@ export interface PollVoteCount {
   option_id: string;
   vote_count: number;
 }
+
+// Extended types
+export type PollWithDetails = Database['public']['Tables']['polls']['Row'] & {
+  poll_options: (Database['public']['Tables']['poll_options']['Row'] & {
+    has_voted?: boolean;
+    vote_count?: number;
+  })[];
+  total_votes?: number;
+};
+
+export type Poll = Database['public']['Tables']['polls']['Row'];
+export type PollOption = Database['public']['Tables']['poll_options']['Row'];
+export type SocialMediaFeed = Database['public']['Tables']['social_media_feeds']['Row'];
