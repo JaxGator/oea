@@ -18,21 +18,21 @@ interface AuthState {
 export function useAuthState(): AuthState {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const { user, isLoading: isSessionLoading, error: sessionError } = useSession();
-  const { data: profile, isLoading: isProfileLoading, error: profileError } = useProfile(user?.id);
+  const { user: authUser, isLoading: isSessionLoading, error: sessionError } = useSession();
+  const { data: profile, isLoading: isProfileLoading, error: profileError } = useProfile(authUser?.id);
 
   useEffect(() => {
-    if (!user?.id) return;
+    if (!authUser?.id) return;
 
     const channel = supabase
-      .channel(`public:profiles:id=eq.${user.id}`)
+      .channel(`public:profiles:id=eq.${authUser.id}`)
       .on(
         'postgres_changes',
         {
           event: '*',
           schema: 'public',
           table: 'profiles',
-          filter: `id=eq.${user.id}`
+          filter: `id=eq.${authUser.id}`
         },
         (payload) => {
           console.log('Profile changed:', {
@@ -40,7 +40,7 @@ export function useAuthState(): AuthState {
             timestamp: new Date().toISOString()
           });
           queryClient.invalidateQueries({
-            queryKey: ['profile', user.id]
+            queryKey: ['profile', authUser.id]
           });
         }
       )
@@ -55,12 +55,12 @@ export function useAuthState(): AuthState {
       console.log('Cleaning up profile subscription');
       supabase.removeChannel(channel);
     };
-  }, [user?.id, queryClient]);
+  }, [authUser?.id, queryClient]);
 
   // Enhanced logging for authentication state
   console.log('useAuthState - Current state:', {
-    isAuthenticated: !!user,
-    userId: user?.id,
+    isAuthenticated: !!authUser,
+    userId: authUser?.id,
     hasProfile: !!profile,
     isAdmin: profile?.is_admin,
     profileDetails: profile ? {
@@ -106,10 +106,10 @@ export function useAuthState(): AuthState {
   }, [profileError, toast]);
 
   return {
-    user,
+    user: profile || null,
     profile,
     isLoading: isSessionLoading || isProfileLoading,
     error: sessionError || profileError,
-    isAuthenticated: !!user
+    isAuthenticated: !!authUser
   };
 }

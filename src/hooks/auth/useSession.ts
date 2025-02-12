@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { User } from '@supabase/supabase-js';
@@ -70,7 +71,7 @@ export function useSession() {
           if (mounted) {
             setState({
               user: session.user,
-              profile,
+              profile: profile as Profile,
               isLoading: false,
               error: null
             });
@@ -131,7 +132,7 @@ export function useSession() {
           if (mounted) {
             setState({
               user: session.user,
-              profile,
+              profile: profile as Profile,
               isLoading: false,
               error: null
             });
