@@ -1,3 +1,4 @@
+
 import { PostgrestError, PostgrestResponse, PostgrestSingleResponse } from '@supabase/supabase-js';
 import { Database } from '@/types/database.types';
 import { isSupabaseError } from '@/integrations/supabase/types/helpers';
@@ -11,7 +12,7 @@ export type TablesRow<T extends keyof Database['public']['Tables']> = Database['
 const MAX_RETRIES = 3;
 const INITIAL_RETRY_DELAY = 1000;
 
-async function retryWithBackoff<T>(
+export async function retryWithBackoff<T>(
   operation: () => Promise<T>,
   retries = MAX_RETRIES,
   delay = INITIAL_RETRY_DELAY
