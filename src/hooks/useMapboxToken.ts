@@ -79,11 +79,10 @@ export const useMapboxToken = (): UseMapboxTokenReturn => {
             'Content-Type': 'application/json'
           }
         });
-        
+
         if (!isMounted) return;
 
         if (fetchError) {
-          console.error('Fetch error:', fetchError);
           throw new Error(fetchError.message);
         }
 
@@ -112,7 +111,7 @@ export const useMapboxToken = (): UseMapboxTokenReturn => {
             }
           }, nextRetry);
         } else {
-          toast.error('Failed to load map configuration. Please refresh the page or try again later.');
+          toast.error('Failed to load map configuration. Please try again later.');
         }
       } finally {
         if (isMounted) {
