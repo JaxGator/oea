@@ -1,5 +1,5 @@
 
-import type { Database } from '../supabase';
+import type { Database } from '../database.types';
 import type { Tables, TablesInsert, TablesUpdate } from '../database.types';
 
 export * from './base';

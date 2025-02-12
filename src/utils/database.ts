@@ -1,6 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import type { QueryResult } from "@/types/supabase";
+import type { QueryResult } from "@/types/database.types";
 import { isErrorWithMessage, isPostgrestError } from "@/types/supabase";
 import { toast } from "sonner";
 import { PostgrestError, PostgrestResponse, PostgrestSingleResponse } from "@supabase/supabase-js";
@@ -22,11 +22,13 @@ export async function executeQuery<T>(
       throw error;
     }
 
+    const result = Array.isArray(data) ? data[0] : data;
+
     console.log('Database query completed successfully:', {
-      hasData: !!data,
+      hasData: !!result,
       timestamp: new Date().toISOString()
     });
-    return { data, error: null };
+    return { data: result, error: null };
   } catch (error) {
     const message = isErrorWithMessage(error) ? error.message : 'An unexpected error occurred';
     console.error('Database operation error:', {
@@ -39,8 +41,7 @@ export async function executeQuery<T>(
       error: { 
         message,
         code: isPostgrestError(error) ? error.code : undefined,
-        details: isPostgrestError(error) ? error.details : undefined,
-        timestamp: new Date().toISOString()
+        details: isPostgrestError(error) ? error.details : undefined
       } 
     };
   }
@@ -57,19 +58,16 @@ export async function executeTableQuery<T>(
     params,
     timestamp: new Date().toISOString()
   });
-  return executeQuery<T>(() => {
-    let queryBuilder = supabase.from(table).select(query, { count: 'exact' });
-    
-    if (params?.length) {
-      queryBuilder = params.reduce((builder, param) => {
-        const [key, value] = Object.entries(param)[0];
-        console.log('Applying filter:', { key, value });
-        return builder.eq(key, value);
-      }, queryBuilder);
-    }
-    
-    return queryBuilder;
-  });
+
+  return executeQuery<T>(() => 
+    supabase
+      .from(table)
+      .select(query)
+      .then(response => {
+        if (response.error) throw response.error;
+        return response;
+      })
+  );
 }
 
 export function getErrorMessage(error: unknown): string {

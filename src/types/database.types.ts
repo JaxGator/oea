@@ -75,6 +75,7 @@ export type QueryResult<T> = {
 // RSVPs and response types
 export type RSVPResponse = 'attending' | 'not_attending' | 'maybe';
 export type RSVPStatus = 'confirmed' | 'waitlisted';
+export type VoteResult = 'success' | 'already_voted' | 'poll_closed' | 'not_found';
 
 // Additional types needed for query responses
 export interface EventsResponse {

@@ -15,12 +15,6 @@ export interface Member {
   interests: string[] | null;
   updated_at: string | null;
   leaderboard_opt_out: boolean;
-  leaderboard_metrics?: {
-    events_attended: number | null;
-    events_hosted: number | null;
-    current_streak: number | null;
-    total_contributions: number | null;
-  } | null;
 }
 
 export interface MemberTableProps {
