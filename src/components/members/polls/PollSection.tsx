@@ -86,8 +86,7 @@ export function PollSection() {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <h2 className="text-xl sm:text-2xl font-semibold">Member Polls</h2>
+      <div className="flex justify-end">
         {canManagePolls && (
           <Button
             onClick={() => setShowCreateDialog(true)}
