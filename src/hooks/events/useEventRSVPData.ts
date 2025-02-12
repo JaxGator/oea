@@ -11,6 +11,11 @@ export function useEventRSVPData(eventId: string) {
         .from('event_rsvps')
         .select(`
           id,
+          event_id,
+          user_id,
+          response,
+          created_at,
+          status,
           profiles!event_rsvps_user_id_fkey (
             full_name,
             username
@@ -26,10 +31,19 @@ export function useEventRSVPData(eventId: string) {
 
       if (error) {
         console.error('Error fetching attendees:', error);
-        return [];
+        throw error;
       }
 
-      return (rsvps || []) as EventRSVPWithProfile[];
+      return (rsvps || []).map(rsvp => ({
+        id: rsvp.id,
+        event_id: rsvp.event_id,
+        user_id: rsvp.user_id,
+        response: rsvp.response,
+        created_at: rsvp.created_at,
+        status: rsvp.status,
+        profiles: rsvp.profiles,
+        event_guests: rsvp.event_guests || []
+      })) as EventRSVPWithProfile[];
     },
     staleTime: 1000 * 60 * 5 // Cache for 5 minutes
   });

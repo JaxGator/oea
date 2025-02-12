@@ -19,7 +19,6 @@ export function EventLocationMap({ location, lat, lng }: EventLocationMapProps) 
   const { mapToken, isLoading: isKeyLoading, error: keyError } = useMapboxToken();
   const [isMapReady, setIsMapReady] = useState(false);
 
-  // Effect for map initialization
   useEffect(() => {
     let initTimeout: NodeJS.Timeout;
 
@@ -40,18 +39,15 @@ export function EventLocationMap({ location, lat, lng }: EventLocationMapProps) 
           scrollZoom: false
         });
 
-        // Initialize map controls and marker after the map is fully loaded
         mapInstance.on('load', () => {
           console.log('Map loaded successfully');
-          if (!mapInstance.removed) {
+          if (!mapInstance._removed) {
             mapInstance.resize();
             
-            // Add controls after a short delay
             initTimeout = setTimeout(() => {
-              if (!mapInstance.removed) {
+              if (!mapInstance._removed) {
                 mapInstance.addControl(new mapboxgl.NavigationControl(), 'top-right');
                 
-                // Create marker only after map is fully initialized
                 marker.current = new mapboxgl.Marker()
                   .setLngLat([lng, lat])
                   .addTo(mapInstance);
@@ -76,7 +72,7 @@ export function EventLocationMap({ location, lat, lng }: EventLocationMapProps) 
       if (initTimeout) {
         clearTimeout(initTimeout);
       }
-      if (map.current) {
+      if (map.current && !map.current._removed) {
         if (marker.current) {
           marker.current.remove();
           marker.current = null;
@@ -88,7 +84,7 @@ export function EventLocationMap({ location, lat, lng }: EventLocationMapProps) 
     };
   }, [lat, lng, mapToken]);
 
-  // Separate effect for updating marker position
+  // Update marker position when coordinates change
   useEffect(() => {
     if (!isMapReady || !marker.current || !map.current || !lat || !lng) {
       return;

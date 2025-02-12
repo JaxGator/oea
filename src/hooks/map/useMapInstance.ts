@@ -34,10 +34,9 @@ export const useMapInstance = (containerRef: React.RefObject<HTMLDivElement>) =>
           preserveDrawingBuffer: true
         });
 
-        // Wait for the map to be fully loaded before adding controls
         map.on('load', () => {
           console.log('Map style loaded successfully');
-          if (map && !map.removed) {
+          if (map && !map._removed) {
             map.resize();
             setIsInitialized(true);
           }
@@ -47,9 +46,8 @@ export const useMapInstance = (containerRef: React.RefObject<HTMLDivElement>) =>
           console.error('Map instance error:', e);
         });
 
-        // Add controls after a short delay to ensure container is ready
         initTimeout = setTimeout(() => {
-          if (map && !map.removed) {
+          if (map && !map._removed) {
             map.addControl(new mapboxgl.NavigationControl(), 'top-right');
           }
         }, 100);
@@ -68,8 +66,7 @@ export const useMapInstance = (containerRef: React.RefObject<HTMLDivElement>) =>
       if (initTimeout) {
         clearTimeout(initTimeout);
       }
-      if (mapInstance.current) {
-        console.log('Cleaning up map instance');
+      if (mapInstance.current && !mapInstance.current._removed) {
         mapInstance.current.remove();
         mapInstance.current = null;
         setIsInitialized(false);
