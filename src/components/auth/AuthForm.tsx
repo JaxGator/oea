@@ -20,7 +20,8 @@ export function AuthForm() {
   const location = useLocation();
 
   const handleContactSubmit = async () => {
-    if (!message.trim()) {
+    const trimmedMessage = message.trim();
+    if (!trimmedMessage) {
       toast({
         title: "Error",
         description: "Please enter a message",
@@ -30,24 +31,31 @@ export function AuthForm() {
     }
 
     setIsSubmitting(true);
+
     try {
-      const { error } = await supabase.functions.invoke('send-admin-message', {
-        body: { message: message.trim() }
+      const response = await supabase.functions.invoke('send-admin-message', {
+        body: { message: trimmedMessage }
       });
 
-      if (error) throw error;
+      console.log('Function response:', response);
+
+      if (response.error || !response.data?.success) {
+        throw new Error(response.error?.message || 'Failed to send message');
+      }
 
       toast({
-        title: "Message Sent",
+        title: "Success",
         description: "An administrator will respond to your message soon.",
       });
-      setIsContactOpen(false);
+
+      // Reset form and close dialog only after successful submission
       setMessage("");
+      setIsContactOpen(false);
     } catch (error) {
       console.error('Error sending message:', error);
       toast({
         title: "Error",
-        description: "Failed to send message. Please try again.",
+        description: error instanceof Error ? error.message : "Failed to send message. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -191,7 +199,16 @@ export function AuthForm() {
           Welcome! If you previously had an account on our site, you can log in using your email and password="password", 
           then change it from your profile. If you are still having trouble, click below to contact an administrator.
         </p>
-        <Dialog open={isContactOpen} onOpenChange={setIsContactOpen}>
+        <Dialog 
+          open={isContactOpen} 
+          onOpenChange={(open) => {
+            setIsContactOpen(open);
+            if (!open) {
+              setMessage("");
+              setIsSubmitting(false);
+            }
+          }}
+        >
           <DialogTrigger asChild>
             <Button variant="outline" className="w-full">
               Contact Us
@@ -208,6 +225,7 @@ export function AuthForm() {
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
                   className="min-h-[100px]"
+                  disabled={isSubmitting}
                 />
               </div>
               <Button 
