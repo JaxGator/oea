@@ -1,3 +1,4 @@
+
 export type Event = {
   id: string;
   title: string;
@@ -11,6 +12,15 @@ export type Event = {
   image_url: string;
   imported_rsvp_count: number | null;
   is_featured: boolean | null;
+  waitlist_enabled?: boolean;
+  waitlist_capacity?: number | null;
+  end_time?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  reminder_enabled?: boolean;
+  reminder_intervals?: string[];
+  requires_payment?: boolean;
+  ticket_price?: number | null;
 };
 
 export type EventRSVP = {
@@ -18,7 +28,13 @@ export type EventRSVP = {
   event_id: string;
   user_id: string;
   response: 'attending' | 'not_attending' | 'maybe';
+  status: 'confirmed' | 'waitlisted';
   created_at: string;
+  send_confirmation_email?: boolean;
+  profiles?: {
+    full_name: string | null;
+    username: string;
+  } | null;
 };
 
 export type EventGuest = {

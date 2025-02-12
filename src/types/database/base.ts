@@ -7,6 +7,12 @@ export type Json =
   | { [key: string]: Json | undefined }
   | Json[]
 
+// Import the table types
+import { ProfilesTable } from './profiles'
+import { EventsTable } from './events'
+import { EventRSVPsTable } from './event-rsvps'
+import { EventGuestsTable } from './event-guests'
+
 export interface Database {
   public: {
     Tables: {
