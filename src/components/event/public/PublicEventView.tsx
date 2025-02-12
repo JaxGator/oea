@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { format } from "date-fns";
+import { formatInTimeZone } from "date-fns-tz";
 import { Event } from "@/types/event";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EventDetails } from "@/components/event/EventDetails";
@@ -13,6 +14,7 @@ import { toast } from "sonner";
 export function PublicEventView() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
 
   const { data: event, isLoading, error } = useQuery({
     queryKey: ['public-event', id],
@@ -94,6 +96,9 @@ export function PublicEventView() {
     );
   }
 
+  // Create a proper date-time string
+  const dateTimeStr = `${event.date}T${event.time}`;
+
   return (
     <div className="min-h-screen bg-[#222222]">
       <div className="max-w-4xl mx-auto p-4">
@@ -122,7 +127,8 @@ export function PublicEventView() {
               <h1 className="text-3xl font-bold mb-2">{event.title}</h1>
               <div className="text-gray-600 space-y-2">
                 <p>
-                  {format(new Date(event.date), "EEEE, MMMM do, yyyy")} at {event.time}
+                  {format(new Date(event.date), "EEEE, MMMM do, yyyy")} at{" "}
+                  {formatInTimeZone(new Date(dateTimeStr), userTimeZone, 'h:mm a')}
                 </p>
                 <p>{event.location}</p>
               </div>
