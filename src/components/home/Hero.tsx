@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 
 export const Hero = () => {
@@ -19,14 +20,17 @@ export const Hero = () => {
       <div className="relative z-10 flex items-center justify-center">
         <div className="container mx-auto text-center">
           <h1 className="sr-only">Outdoor Energy Adventures - Jacksonville's Premier Adventure Community</h1>
-          <figure role="none" className="mx-auto">
+          <figure role="none" className="mx-auto space-y-4">
             <img 
               src="/lovable-uploads/609edf01-3169-439a-80f5-f6f15de7a5a6.png"
               alt="Outdoor Energy Adventures Logo - A vibrant emblem representing outdoor activities and community spirit"
-              className="w-48 sm:w-56 md:w-64 lg:w-80 mx-auto mb-6 sm:mb-8 animate-fade-in"
+              className="w-48 sm:w-56 md:w-64 lg:w-80 mx-auto animate-fade-in"
               loading="eager"
               decoding="async"
             />
+            <p className="text-white text-lg sm:text-xl md:text-2xl font-medium drop-shadow-lg animate-fade-in">
+              Welcome to our new site - entirely built with AI!
+            </p>
           </figure>
         </div>
       </div>
