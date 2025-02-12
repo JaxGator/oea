@@ -12,6 +12,7 @@ export type EventGuest = DatabaseGenerated['public']['Tables']['event_guests']['
 export type Poll = DatabaseGenerated['public']['Tables']['polls']['Row']
 export type PollOption = DatabaseGenerated['public']['Tables']['poll_options']['Row']
 export type PollVote = DatabaseGenerated['public']['Tables']['poll_votes']['Row']
+export type PollShare = DatabaseGenerated['public']['Tables']['poll_shares']['Row']
 export type SocialMediaFeed = DatabaseGenerated['public']['Tables']['social_media_feeds']['Row']
 
 // Type helpers for database operations
@@ -40,3 +41,4 @@ export type QueryResult<T> = {
     details?: string
   } | null
 }
+
