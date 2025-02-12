@@ -1,9 +1,12 @@
 
-export * from './base'
-export * from './profiles'
-export * from './events'
-export * from './rsvp'
+import type { Database } from '../supabase';
+import type { TablesRow, TablesInsert, TablesUpdate } from '../database.types';
 
-export type TableRow<T extends keyof Database['public']['Tables']> = Database['public']['Tables'][T]['Row']
-export type InsertRow<T extends keyof Database['public']['Tables']> = Database['public']['Tables'][T]['Insert']
-export type UpdateRow<T extends keyof Database['public']['Tables']> = Database['public']['Tables'][T]['Update']
+export * from './base';
+export * from './profiles';
+export * from './events';
+export * from './rsvp';
+
+export type TableRow<T extends keyof Database['public']['Tables']> = TablesRow<T>;
+export type InsertRow<T extends keyof Database['public']['Tables']> = TablesInsert<T>;
+export type UpdateRow<T extends keyof Database['public']['Tables']> = TablesUpdate<T>;

@@ -1,3 +1,4 @@
+
 export * from './admin';
 export * from './auth';
 export * from './database';
@@ -6,3 +7,6 @@ export * from './gallery';
 export * from './helpers';
 export * from './site';
 export * from './user';
+
+// Re-export Json type from database.ts to avoid ambiguity
+export { Json } from './database';
