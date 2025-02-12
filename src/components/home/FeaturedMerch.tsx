@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -109,19 +110,19 @@ export const FeaturedMerch = () => {
         </Button>
       </div>
       
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
         {products.map((product) => (
           <Card key={product.id} className="hover:shadow-lg transition-shadow duration-300">
-            <CardContent className="p-4">
-              <div className="aspect-square overflow-hidden rounded-lg mb-4">
+            <CardContent className="p-3">
+              <div className="aspect-square overflow-hidden rounded-lg mb-3">
                 <img
                   src={product.image_url}
                   alt={product.title}
                   className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
                 />
               </div>
-              <h3 className="font-semibold text-lg mb-2 line-clamp-2">{product.title}</h3>
-              <p className="text-blue-700 font-medium">From ${product.price.toFixed(2)}</p>
+              <h3 className="font-semibold text-sm mb-1 line-clamp-2">{product.title}</h3>
+              <p className="text-blue-700 font-medium text-sm">From ${product.price.toFixed(2)}</p>
             </CardContent>
           </Card>
         ))}
