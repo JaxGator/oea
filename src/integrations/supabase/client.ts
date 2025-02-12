@@ -13,18 +13,17 @@ export const supabase = createClient<Database>(
   SUPABASE_ANON_KEY,
   {
     auth: {
-      persistSession: true,
       autoRefreshToken: true,
+      persistSession: true,
       detectSessionInUrl: true,
       flowType: 'pkce',
       storage: localStorage,
       storageKey: 'oea-auth-token',
       debug: true,
-      redirect_to: window.location.origin + '/auth/callback'
     },
     global: {
       headers: {
-        'X-Client-Info': 'supabase-js-web',
+        'X-Client-Info': 'supabase-js-web'
       },
     },
     db: {
