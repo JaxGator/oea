@@ -8,7 +8,7 @@ import { CreatePollDialog } from "./CreatePollDialog";
 import { useAuthState } from "@/hooks/useAuthState";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import type { PollWithDetails, PollVoteCount, Poll } from "@/types/database.types";
+import type { PollWithDetails, Poll } from "@/types/database.types";
 
 export function PollSection() {
   const [showCreateDialog, setShowCreateDialog] = useState(false);
@@ -49,7 +49,7 @@ export function PollSection() {
 
       // Transform the data
       return (pollsData as Poll[]).map((poll): PollWithDetails => {
-        const pollVoteCounts = (voteCounts as PollVoteCount[])?.filter(vc => vc.poll_id === poll.id) || [];
+        const pollVoteCounts = voteCounts?.filter(vc => vc.poll_id === poll.id) || [];
         const totalVotes = pollVoteCounts.reduce((sum, vc) => sum + (Number(vc.vote_count) || 0), 0);
         
         return {
@@ -86,7 +86,7 @@ export function PollSection() {
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-end">
+      <div className="flex items-center justify-between">
         {canManagePolls && (
           <Button
             onClick={() => setShowCreateDialog(true)}
