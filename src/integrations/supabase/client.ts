@@ -1,6 +1,6 @@
 
 import { createClient } from '@supabase/supabase-js';
-import { Database } from './types/database';
+import type { Database } from './types/database';
 
 const SUPABASE_URL = "https://qegpuqitjfocyyrivlhv.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFlZ3B1cWl0amZvY3l5cml2bGh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzM5MzU4NTMsImV4cCI6MjA0OTUxMTg1M30.o3yD902DFG0PlLD0V8pEvx-IbnVawP3HDhNEp6cMoW4";
@@ -17,7 +17,7 @@ export const supabase = createClient<Database>(
       persistSession: true,
       detectSessionInUrl: true,
       flowType: 'pkce',
-      storage: localStorage,
+      storage: typeof window !== 'undefined' ? window.localStorage : undefined,
       storageKey: 'oea-auth-token',
       debug: true,
     },
@@ -102,4 +102,3 @@ if (typeof window !== 'undefined') {
     }
   });
 }
-
