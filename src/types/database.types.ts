@@ -7,23 +7,7 @@ export type Json = string | number | boolean | null | { [key: string]: Json | un
 export type TableNames = keyof Database['public']['Tables'];
 
 // Core Profile type from database
-export type Profile = {
-  id: string;
-  username: string;
-  full_name: string | null;
-  avatar_url: string | null;
-  created_at: string;
-  is_admin: boolean;
-  is_approved: boolean;
-  is_member: boolean;
-  email: string | null;
-  event_reminders_enabled: boolean;
-  email_notifications: boolean;
-  in_app_notifications: boolean;
-  interests: string[] | null;
-  updated_at: string | null;
-  leaderboard_opt_out: boolean;
-};
+export type Profile = Database['public']['Tables']['profiles']['Row'];
 
 // Event and RSVP types
 export type Event = Database['public']['Tables']['events']['Row'] & {
