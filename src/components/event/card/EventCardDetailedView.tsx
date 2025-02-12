@@ -24,6 +24,7 @@ interface EventCardDetailedViewProps {
   onEdit?: () => void;
   onDelete?: () => void;
   onTogglePublish?: () => void;
+  isAuthenticated?: boolean;
 }
 
 export function EventCardDetailedView({
@@ -42,8 +43,8 @@ export function EventCardDetailedView({
   onEdit,
   onDelete,
   onTogglePublish,
+  isAuthenticated = false,
 }: EventCardDetailedViewProps) {
-  const { isAuthenticated } = useAuthState();
   const isFullyBooked = rsvpCount >= event.max_guests;
   const canJoinWaitlist = event.waitlist_enabled && isFullyBooked;
   const canViewRSVPs = isAdmin || canManageEvents || userRSVPStatus === "attending";
