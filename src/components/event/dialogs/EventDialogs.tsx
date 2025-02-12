@@ -1,3 +1,4 @@
+
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { EventCardDetailedView } from "@/components/event/card/EventCardDetailedView";
 import { EventEditDialog } from "@/components/event/EventEditDialog";
@@ -22,6 +23,7 @@ interface EventDialogsProps {
   onCancelRSVP: () => void;
   onDelete?: () => void;
   handleEditSuccess: () => void;
+  isAuthenticated?: boolean;
 }
 
 export function EventDialogs({
@@ -43,6 +45,7 @@ export function EventDialogs({
   onCancelRSVP,
   onDelete,
   handleEditSuccess,
+  isAuthenticated = false,
 }: EventDialogsProps) {
   return (
     <>
@@ -70,6 +73,8 @@ export function EventDialogs({
               onCancelRSVP={onCancelRSVP}
               onEdit={() => setShowEditDialog(true)}
               onDelete={onDelete}
+              onTogglePublish={() => {}}
+              isAuthenticated={isAuthenticated}
             />
           </div>
         </DialogContent>

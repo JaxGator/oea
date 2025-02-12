@@ -20,8 +20,8 @@ export function AddGuestsDialog({
 }: AddGuestsDialogProps) {
   const [guests, setGuests] = useState<{ firstName: string }[]>(currentGuests);
   
-  const handleAddGuest = (firstName: string) => {
-    setGuests([...guests, { firstName }]);
+  const handleAddGuest = (name: string) => {
+    setGuests([...guests, { firstName: name }]);
   };
 
   const handleRemoveGuest = (index: number) => {
@@ -39,7 +39,10 @@ export function AddGuestsDialog({
           <DialogTitle>Add Guests</DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
-          <GuestInput onAdd={handleAddGuest} />
+          <GuestInput 
+            onAddGuest={handleAddGuest}
+            isApproved={true}
+          />
           <GuestListDisplay 
             guests={guests} 
             onRemoveGuest={handleRemoveGuest}
