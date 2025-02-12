@@ -5,6 +5,7 @@ import { ConversationList } from "./conversation/ConversationList";
 import { ConversationHeader } from "./conversation/ConversationHeader";
 import { ConversationContent } from "./conversation/ConversationContent";
 import { ConversationInput } from "./conversation/ConversationInput";
+import { DeleteConversationDialog } from "./DeleteConversationDialog";
 import { useMessages } from "./context/MessagesContext";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useMessageOperations } from "@/hooks/messages/useMessageOperations";
@@ -27,10 +28,10 @@ export function MessagesContent({ conversations }: MessagesContentProps) {
   const {
     selectedConversation,
     setSelectedConversation,
+    showDeleteDialog,
     setShowDeleteDialog,
     isDeleting,
     setIsDeleting,
-    showDeleteDialog,
   } = useMessages();
 
   const selectedConversationData = selectedConversation ? conversations[selectedConversation] : null;
@@ -44,8 +45,6 @@ export function MessagesContent({ conversations }: MessagesContentProps) {
       });
       return;
     }
-
-    console.log('Sending message:', { sender: user.id, receiver: selectedConversation, content });
 
     try {
       const { error } = await supabase
@@ -75,7 +74,6 @@ export function MessagesContent({ conversations }: MessagesContentProps) {
   };
 
   const handleEditMessage = (messageId: string, content: string) => {
-    console.log('Editing message:', { messageId, content });
     editMessageMutation({ messageId, content });
   };
 
@@ -91,7 +89,8 @@ export function MessagesContent({ conversations }: MessagesContentProps) {
 
     setIsDeleting(true);
     try {
-      // Delete all messages between the two users in both directions
+      console.log('Deleting conversation between:', { user: user.id, other: selectedConversation });
+      
       const { error } = await supabase
         .from('messages')
         .delete()
@@ -107,7 +106,6 @@ export function MessagesContent({ conversations }: MessagesContentProps) {
         description: "Conversation deleted successfully.",
       });
 
-      // Refresh the messages list
       queryClient.invalidateQueries({ queryKey: ['messages', user.id] });
       setSelectedConversation(null);
     } catch (error) {
@@ -124,57 +122,65 @@ export function MessagesContent({ conversations }: MessagesContentProps) {
   };
 
   return (
-    <div className="h-[100dvh] bg-background pt-16 pb-4 px-4 md:px-8">
-      <div className="container mx-auto h-full max-w-6xl">
-        <div className={`grid h-full gap-4 ${
-          isMobile ? 'grid-cols-1' : 'md:grid-cols-[350px,1fr]'
-        }`}>
-          {(!isMobile || !selectedConversation) && (
-            <Card className="h-full overflow-hidden border">
-              <ConversationList
-                conversations={conversations}
-                selectedConversation={selectedConversation}
-                onSelect={setSelectedConversation}
-                onDelete={(userId) => {
-                  setSelectedConversation(userId);
-                  setShowDeleteDialog(true);
-                }}
-                isDeleting={isDeleting}
-              />
-            </Card>
-          )}
+    <>
+      <div className="h-[100dvh] bg-background pt-16 pb-4 px-4 md:px-8">
+        <div className="container mx-auto h-full max-w-6xl">
+          <div className={`grid h-full gap-4 ${
+            isMobile ? 'grid-cols-1' : 'md:grid-cols-[350px,1fr]'
+          }`}>
+            {(!isMobile || !selectedConversation) && (
+              <Card className="h-full overflow-hidden border">
+                <ConversationList
+                  conversations={conversations}
+                  selectedConversation={selectedConversation}
+                  onSelect={setSelectedConversation}
+                  onDelete={(userId) => {
+                    setSelectedConversation(userId);
+                    setShowDeleteDialog(true);
+                  }}
+                  isDeleting={isDeleting}
+                />
+              </Card>
+            )}
 
-          {(!isMobile || selectedConversation) && (
-            <Card className="flex h-full flex-col overflow-hidden border">
-              {selectedConversationData ? (
-                <>
-                  <ConversationHeader
-                    conversation={selectedConversationData}
-                    onBack={() => setSelectedConversation(null)}
-                    onDelete={() => setShowDeleteDialog(true)}
-                    isDeleting={isDeleting}
-                  />
-                  <ConversationContent
-                    messages={selectedConversationData.messages}
-                    currentUserId={user?.id || ''}
-                    onEdit={handleEditMessage}
-                    onDelete={deleteMessage}
-                  />
-                  <ConversationInput
-                    onSend={handleSendMessage}
-                    isSending={false}
-                    receiverId={selectedConversation}
-                  />
-                </>
-              ) : (
-                <div className="flex flex-1 items-center justify-center">
-                  <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-                </div>
-              )}
-            </Card>
-          )}
+            {(!isMobile || selectedConversation) && (
+              <Card className="flex h-full flex-col overflow-hidden border">
+                {selectedConversationData ? (
+                  <>
+                    <ConversationHeader
+                      conversation={selectedConversationData}
+                      onBack={() => setSelectedConversation(null)}
+                      onDelete={() => setShowDeleteDialog(true)}
+                      isDeleting={isDeleting}
+                    />
+                    <ConversationContent
+                      messages={selectedConversationData.messages}
+                      currentUserId={user?.id || ''}
+                      onEdit={handleEditMessage}
+                      onDelete={deleteMessage}
+                    />
+                    <ConversationInput
+                      onSend={handleSendMessage}
+                      isSending={false}
+                      receiverId={selectedConversation}
+                    />
+                  </>
+                ) : (
+                  <div className="flex flex-1 items-center justify-center">
+                    <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                  </div>
+                )}
+              </Card>
+            )}
+          </div>
         </div>
       </div>
-    </div>
+
+      <DeleteConversationDialog
+        open={showDeleteDialog}
+        onOpenChange={setShowDeleteDialog}
+        onDelete={handleDeleteConversation}
+      />
+    </>
   );
 }

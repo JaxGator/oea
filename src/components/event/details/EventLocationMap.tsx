@@ -1,3 +1,4 @@
+
 import { useEffect, useRef } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -18,29 +19,34 @@ export function EventLocationMap({ location, lat, lng }: EventLocationMapProps) 
   const { mapToken, isLoading: isKeyLoading, error: keyError } = useMapboxToken();
   const hasInitialized = useRef(false);
 
+  // Effect for map initialization
   useEffect(() => {
-    if (!mapContainer.current || !lat || !lng || !mapToken || hasInitialized.current) {
+    // Only initialize when we have all required data and token
+    if (!mapContainer.current || !lat || !lng || !mapToken) {
       return;
     }
 
     try {
-      mapboxgl.accessToken = mapToken;
-      
-      map.current = new mapboxgl.Map({
-        container: mapContainer.current,
-        style: 'mapbox://styles/mapbox/outdoors-v12',
-        center: [lng, lat],
-        zoom: 14,
-        scrollZoom: false
-      });
+      if (!hasInitialized.current) {
+        console.log('Initializing map with token and coordinates:', { lat, lng });
+        mapboxgl.accessToken = mapToken;
+        
+        map.current = new mapboxgl.Map({
+          container: mapContainer.current,
+          style: 'mapbox://styles/mapbox/outdoors-v12',
+          center: [lng, lat],
+          zoom: 14,
+          scrollZoom: false
+        });
 
-      marker.current = new mapboxgl.Marker()
-        .setLngLat([lng, lat])
-        .addTo(map.current);
+        map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
 
-      map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
-      
-      hasInitialized.current = true;
+        marker.current = new mapboxgl.Marker()
+          .setLngLat([lng, lat])
+          .addTo(map.current);
+
+        hasInitialized.current = true;
+      }
     } catch (error) {
       console.error('Error initializing map:', error);
     }
@@ -53,7 +59,7 @@ export function EventLocationMap({ location, lat, lng }: EventLocationMapProps) 
     };
   }, [lat, lng, mapToken]);
 
-  // Update marker position when coordinates change
+  // Separate effect for updating marker position
   useEffect(() => {
     if (marker.current && lat && lng) {
       marker.current.setLngLat([lng, lat]);
