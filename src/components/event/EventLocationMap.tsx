@@ -1,3 +1,4 @@
+
 import { useEffect, useRef } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -54,7 +55,7 @@ export function EventLocationMap({ location, lat, lng }: EventLocationMapProps) 
     }
 
     return () => {
-      if (map.current) {
+      if (map.current && !map.current._removed) {
         map.current.remove();
         hasInitialized.current = false;
       }
@@ -66,7 +67,7 @@ export function EventLocationMap({ location, lat, lng }: EventLocationMapProps) 
     if (marker.current && lat && lng) {
       marker.current.setLngLat([lng, lat]);
     }
-    if (map.current && lat && lng) {
+    if (map.current && !map.current._removed && lat && lng) {
       map.current.flyTo({
         center: [lng, lat],
         zoom: 14,
