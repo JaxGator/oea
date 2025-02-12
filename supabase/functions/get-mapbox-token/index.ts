@@ -5,11 +5,30 @@ import { corsHeaders } from '../_shared/cors.ts'
 console.log('Loading get-mapbox-token function...')
 
 serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, {
       status: 204,
       headers: corsHeaders
     })
+  }
+
+  // Only allow GET requests
+  if (req.method !== 'GET') {
+    return new Response(
+      JSON.stringify({ 
+        error: 'Method not allowed',
+        success: false,
+        timestamp: new Date().toISOString()
+      }), 
+      { 
+        headers: {
+          ...corsHeaders,
+          'Content-Type': 'application/json'
+        },
+        status: 405
+      }
+    )
   }
 
   try {

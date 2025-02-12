@@ -1,6 +1,7 @@
 
 import { useAuthState } from "@/hooks/useAuthState";
 import { formatInTimeZone } from "date-fns-tz";
+import { parseISO } from "date-fns";
 
 interface EventCardBasicInfoProps {
   date: string;
@@ -32,19 +33,19 @@ export function EventCardBasicInfo({
   const { profile, isAuthenticated } = useAuthState();
   const showDetails = canViewDetails || (isAuthenticated && profile?.is_approved);
 
-  // Create a proper date-time string and handle timezone
-  const dateTimeStr = `${date}T${time}`;
+  // Parse the date and time as UTC first
+  const isoString = `${date}T${time}Z`; // Append Z to treat as UTC
   const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
   
-  // Format the date in the user's timezone
+  // Format the date and time in user's timezone
   const formattedDate = formatInTimeZone(
-    new Date(dateTimeStr),
+    parseISO(isoString),
     userTimeZone,
     'MMMM d, yyyy'
   );
 
   const formattedTime = formatInTimeZone(
-    new Date(dateTimeStr),
+    parseISO(isoString),
     userTimeZone,
     'h:mm a'
   );
