@@ -1,3 +1,4 @@
+
 import {
   Accordion,
   AccordionContent,
@@ -8,8 +9,6 @@ import {
 export function GuidesSection() {
   return (
     <div className="prose max-w-none">
-      <h2 className="text-xl sm:text-2xl font-semibold mb-4">Guides</h2>
-      
       <Accordion type="single" collapsible className="space-y-3">
         {/* Event Management Guide */}
         <AccordionItem value="events" className="border rounded-lg px-3 sm:px-4">
