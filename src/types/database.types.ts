@@ -9,6 +9,15 @@ export type TableNames = keyof Database['public']['Tables'];
 // Core Profile type from database
 export type Profile = Database['public']['Tables']['profiles']['Row'];
 
+// Member type extends Profile with all required fields
+export interface Member extends Profile {
+  updated_at: string | null;
+  leaderboard_opt_out: boolean;
+  email_notifications: boolean;
+  in_app_notifications: boolean;
+  interests: string[] | null;
+}
+
 // Event and RSVP types
 export type Event = Database['public']['Tables']['events']['Row'] & {
   rsvps?: EventRSVP[];
@@ -17,7 +26,6 @@ export type Event = Database['public']['Tables']['events']['Row'] & {
 };
 
 export type EventRSVP = Database['public']['Tables']['event_rsvps']['Row'] & {
-  event_id: string;
   profiles?: Profile | null;
   event_guests?: EventGuest[];
 };
@@ -76,8 +84,8 @@ export interface PollVoteCount {
 }
 
 // Extended types
-export type PollWithDetails = Database['public']['Tables']['polls']['Row'] & {
-  poll_options: (Database['public']['Tables']['poll_options']['Row'] & {
+export type PollWithDetails = Poll & {
+  poll_options: (PollOption & {
     has_voted?: boolean;
     vote_count?: number;
   })[];
@@ -87,3 +95,9 @@ export type PollWithDetails = Database['public']['Tables']['polls']['Row'] & {
 export type Poll = Database['public']['Tables']['polls']['Row'];
 export type PollOption = Database['public']['Tables']['poll_options']['Row'];
 export type SocialMediaFeed = Database['public']['Tables']['social_media_feeds']['Row'];
+
+// Profile details type for consistency
+export interface RSVPDetails extends EventRSVP {
+  profiles: Profile;
+  event_guests?: EventGuest[];
+}
