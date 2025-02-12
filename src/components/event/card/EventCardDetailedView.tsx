@@ -56,6 +56,7 @@ export function EventCardDetailedView({
         <EventCardBasicInfo
           date={event.date}
           time={event.time || '00:00:00'}
+          location={event.location}
           rsvpCount={rsvpCount}
           maxGuests={event.max_guests}
           isWixEvent={isWixEvent}
