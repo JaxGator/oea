@@ -9,7 +9,6 @@ import { useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
-import { Input } from "@/components/ui/input";
 import { Send } from "lucide-react";
 
 export function AuthForm() {
@@ -17,15 +16,14 @@ export function AuthForm() {
   const [authError, setAuthError] = useState<string | null>(null);
   const [isContactOpen, setIsContactOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
   const location = useLocation();
 
   const handleContactSubmit = async () => {
-    if (!subject.trim() || !message.trim()) {
+    if (!message.trim()) {
       toast({
         title: "Error",
-        description: "Please fill in all fields",
+        description: "Please enter a message",
         variant: "destructive",
       });
       return;
@@ -34,7 +32,7 @@ export function AuthForm() {
     setIsSubmitting(true);
     try {
       const { error } = await supabase.functions.invoke('send-admin-message', {
-        body: { subject, message }
+        body: { message: message.trim() }
       });
 
       if (error) throw error;
@@ -44,7 +42,6 @@ export function AuthForm() {
         description: "An administrator will respond to your message soon.",
       });
       setIsContactOpen(false);
-      setSubject("");
       setMessage("");
     } catch (error) {
       console.error('Error sending message:', error);
@@ -205,13 +202,6 @@ export function AuthForm() {
               <DialogTitle>Contact Administrator</DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
-              <div>
-                <Input
-                  placeholder="Subject"
-                  value={subject}
-                  onChange={(e) => setSubject(e.target.value)}
-                />
-              </div>
               <div>
                 <Textarea
                   placeholder="Your message"

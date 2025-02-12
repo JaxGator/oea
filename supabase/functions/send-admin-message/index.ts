@@ -20,10 +20,10 @@ serve(async (req) => {
       supabaseServiceRole!
     )
 
-    const { subject, message } = await req.json()
+    const { message } = await req.json()
 
-    if (!subject || !message) {
-      throw new Error('Subject and message are required')
+    if (!message) {
+      throw new Error('Message is required')
     }
 
     // Get all admin users
@@ -45,7 +45,7 @@ serve(async (req) => {
         .insert({
           sender_id: null, // System message
           receiver_id: admin.id,
-          content: `Subject: ${subject}\n\nMessage: ${message}`,
+          content: message,
           type: 'system'
         })
     )
