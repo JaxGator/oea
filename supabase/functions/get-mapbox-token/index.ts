@@ -1,34 +1,17 @@
 
+// Follow Deno/Supabase Edge Function standards
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { corsHeaders } from '../_shared/cors.ts'
 
-console.log('Loading get-mapbox-token function...')
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
+}
 
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response(null, {
-      status: 204,
-      headers: corsHeaders
-    })
-  }
-
-  // Only allow GET requests
-  if (req.method !== 'GET') {
-    return new Response(
-      JSON.stringify({ 
-        error: 'Method not allowed',
-        success: false,
-        timestamp: new Date().toISOString()
-      }), 
-      { 
-        headers: {
-          ...corsHeaders,
-          'Content-Type': 'application/json'
-        },
-        status: 405
-      }
-    )
+    return new Response('ok', { headers: corsHeaders })
   }
 
   try {
@@ -37,13 +20,26 @@ serve(async (req) => {
     
     if (!token) {
       console.error('No Mapbox token found in environment variables')
-      throw new Error('Mapbox token not configured')
+      return new Response(
+        JSON.stringify({
+          error: 'Mapbox token not configured',
+          success: false,
+          timestamp: new Date().toISOString()
+        }),
+        { 
+          headers: {
+            ...corsHeaders,
+            'Content-Type': 'application/json'
+          },
+          status: 500
+        }
+      )
     }
 
     console.log('Successfully retrieved Mapbox token')
     
     return new Response(
-      JSON.stringify({ 
+      JSON.stringify({
         token,
         success: true,
         timestamp: new Date().toISOString()
@@ -61,11 +57,11 @@ serve(async (req) => {
     console.error('Error in get-mapbox-token:', error.message)
     
     return new Response(
-      JSON.stringify({ 
+      JSON.stringify({
         error: error.message,
         success: false,
         timestamp: new Date().toISOString()
-      }), 
+      }),
       { 
         headers: {
           ...corsHeaders,
