@@ -23,11 +23,11 @@ export const supabase = createClient<Database>(
     },
     global: {
       headers: {
-        'X-Client-Info': 'supabase-js-web'
+        'X-Client-Info': 'supabase-js-web',
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, POST, PUT, PATCH, DELETE, OPTIONS',
+        'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type'
       },
-    },
-    db: {
-      schema: 'public'
     },
     realtime: {
       params: {
@@ -45,13 +45,32 @@ export const testSupabaseConnection = async () => {
       timestamp: new Date().toISOString()
     });
     
-    const { data: { session }, error } = await supabase.auth.getSession();
+    // First test auth session
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
     
-    if (error) {
-      console.error('Supabase connection test error:', {
-        error,
-        errorCode: error.code,
-        errorMessage: error.message,
+    if (sessionError) {
+      console.error('Supabase auth test error:', {
+        error: sessionError,
+        errorCode: sessionError.code || 'unknown',
+        errorMessage: sessionError.message,
+        url: SUPABASE_URL,
+        timestamp: new Date().toISOString()
+      });
+      return false;
+    }
+    
+    // Then test a simple database query
+    const { error: dbError } = await supabase
+      .from('profiles')
+      .select('id')
+      .limit(1)
+      .single();
+    
+    if (dbError) {
+      console.error('Supabase database test error:', {
+        error: dbError,
+        errorCode: dbError.code,
+        errorMessage: dbError.message,
         url: SUPABASE_URL,
         timestamp: new Date().toISOString()
       });
@@ -63,6 +82,7 @@ export const testSupabaseConnection = async () => {
       url: SUPABASE_URL,
       timestamp: new Date().toISOString()
     });
+    
     return true;
   } catch (error) {
     console.error('Supabase connection test failed:', {
