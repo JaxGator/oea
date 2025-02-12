@@ -7,13 +7,14 @@ export type Json =
   | { [key: string]: Json | undefined }
   | Json[]
 
-export type Database = {
+export interface Database {
   public: {
     Tables: {
       profiles: ProfilesTable
       events: EventsTable
       event_rsvps: EventRSVPsTable
       event_guests: EventGuestsTable
+      leaderboard_metrics: LeaderboardMetricsTable
     }
     Views: {
       [_ in never]: never
@@ -28,6 +29,51 @@ export type Database = {
       poll_visibility: 'public' | 'private'
       notification_type: 'event_reminder' | 'message' | 'poll_share' | 'waitlist'
     }
+  }
+}
+
+export interface LeaderboardMetricsTable {
+  Row: {
+    id: string
+    user_id: string | null
+    events_attended: number | null
+    events_hosted: number | null
+    current_streak: number | null
+    longest_streak: number | null
+    total_contributions: number | null
+    monthly_points: number | null
+    weekly_points: number | null
+    last_activity_date: string | null
+    created_at: string | null
+    updated_at: string | null
+  }
+  Insert: {
+    id?: string
+    user_id?: string | null
+    events_attended?: number | null
+    events_hosted?: number | null
+    current_streak?: number | null
+    longest_streak?: number | null
+    total_contributions?: number | null
+    monthly_points?: number | null
+    weekly_points?: number | null
+    last_activity_date?: string | null
+    created_at?: string | null
+    updated_at?: string | null
+  }
+  Update: {
+    id?: string
+    user_id?: string | null
+    events_attended?: number | null
+    events_hosted?: number | null
+    current_streak?: number | null
+    longest_streak?: number | null
+    total_contributions?: number | null
+    monthly_points?: number | null
+    weekly_points?: number | null
+    last_activity_date?: string | null
+    created_at?: string | null
+    updated_at?: string | null
   }
 }
 
