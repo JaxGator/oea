@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback, memo } from "react";
 import { Member } from "@/components/members/types";
 import { EditMemberDialog } from "@/components/members/EditMemberDialog";
@@ -60,7 +61,13 @@ export const EditMemberHandler = memo(function EditMemberHandler({
         is_approved: Boolean(data.is_approved),
         is_member: Boolean(data.is_member),
         created_at: data.created_at || new Date().toISOString(),
-        event_reminders_enabled: Boolean(data.event_reminders_enabled)
+        event_reminders_enabled: Boolean(data.event_reminders_enabled),
+        email: data.email || null,
+        email_notifications: Boolean(data.email_notifications),
+        in_app_notifications: Boolean(data.in_app_notifications),
+        interests: data.interests || [],
+        updated_at: data.updated_at || null,
+        leaderboard_opt_out: Boolean(data.leaderboard_opt_out)
       };
 
       console.log('EditMemberHandler: Member data fetched:', enrichedData);
