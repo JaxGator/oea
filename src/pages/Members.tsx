@@ -41,15 +41,6 @@ const Members = () => {
         </form>
       </div>
 
-      {/* Polls Section */}
-      <div className="w-full overflow-hidden">
-        <h2 className="flex items-center gap-2 text-xl sm:text-2xl font-semibold mb-4">
-          <ChartPie className="h-6 w-6 text-primary shrink-0" />
-          Member Polls
-        </h2>
-        <PollSection />
-      </div>
-
       {/* Reports Section */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-3">
@@ -76,6 +67,15 @@ const Members = () => {
       {/* Member Merch Section */}
       <div className="overflow-hidden">
         <FeaturedMerch />
+      </div>
+
+      {/* Polls Section */}
+      <div className="w-full overflow-hidden">
+        <h2 className="flex items-center gap-2 text-xl sm:text-2xl font-semibold mb-4">
+          <ChartPie className="h-6 w-6 text-primary shrink-0" />
+          Member Polls
+        </h2>
+        <PollSection />
       </div>
 
       {/* Guides Section */}
