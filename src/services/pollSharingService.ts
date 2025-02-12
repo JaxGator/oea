@@ -1,5 +1,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
+import { handleQueryResult } from "@/utils/supabase-helpers";
+import type { Database } from "@/types/database.types";
 
 export interface PollSharing {
   shareToken: string | null;
@@ -8,54 +10,54 @@ export interface PollSharing {
 
 export const pollSharingService = {
   async getPollShareToken(pollId: string): Promise<string | null> {
-    const { data, error } = await supabase
+    const response = await supabase
       .from('polls')
       .select('share_token')
-      .eq('id', pollId)
+      .eq('id', pollId as string)
       .maybeSingle();
 
-    if (error) {
-      console.error('Error fetching share token:', error);
-      throw error;
+    if (response.error) {
+      console.error('Error fetching share token:', response.error);
+      throw response.error;
     }
-    return data?.share_token ?? null;
+    return response.data?.share_token ?? null;
   },
 
   async getPollShares(pollId: string): Promise<string[]> {
-    const { data, error } = await supabase
+    const response = await supabase
       .from('poll_shares')
       .select('shared_with')
-      .eq('poll_id', pollId);
+      .eq('poll_id', pollId as string);
 
-    if (error) {
-      console.error('Error fetching poll shares:', error);
-      throw error;
+    if (response.error) {
+      console.error('Error fetching poll shares:', response.error);
+      throw response.error;
     }
-    return data.map(share => share.shared_with);
+    return (response.data || []).map(share => share.shared_with);
   },
 
   async sharePoll(pollId: string, selectedUsers: string[], shareUrl: string) {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('No authenticated user');
 
-    // Share the poll with selected users
+    type PollShare = Database['public']['Tables']['poll_shares']['Insert'];
+    const pollShares: PollShare[] = selectedUsers.map(userId => ({
+      poll_id: pollId,
+      shared_with: userId,
+      shared_by: user.id
+    }));
+
     const { error: shareError } = await supabase
       .from('poll_shares')
-      .insert(
-        selectedUsers.map(userId => ({
-          poll_id: pollId,
-          shared_with: userId,
-          shared_by: user.id
-        }))
-      );
+      .insert(pollShares);
 
     if (shareError) {
       console.error('Error sharing poll:', shareError);
       throw shareError;
     }
 
-    // Create notifications for shared users
-    const notifications = selectedUsers.map(userId => ({
+    type Notification = Database['public']['Tables']['notifications']['Insert'];
+    const notifications: Notification[] = selectedUsers.map(userId => ({
       user_id: userId,
       type: 'poll_share',
       title: 'New Poll Shared',

@@ -1,6 +1,6 @@
 
 import { PostgrestError, PostgrestResponse, PostgrestSingleResponse } from '@supabase/supabase-js';
-import { Database } from '@/types/database.types';
+import type { Database } from '@/types/database.types';
 import { isSupabaseError } from '@/integrations/supabase/types/helpers';
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -13,12 +13,18 @@ const MAX_RETRIES = 3;
 const INITIAL_RETRY_DELAY = 1000;
 
 export async function retryWithBackoff<T>(
-  operation: () => Promise<T>,
+  operation: () => Promise<PostgrestResponse<T>>,
   retries = MAX_RETRIES,
   delay = INITIAL_RETRY_DELAY
 ): Promise<T> {
   try {
-    return await operation();
+    const response = await operation();
+    const { data, error } = response;
+    
+    if (error) throw error;
+    if (!data) throw new Error('No data returned from query');
+    
+    return Array.isArray(data) ? data[0] : data;
   } catch (error) {
     if (retries === 0) throw error;
     
@@ -52,8 +58,13 @@ export function handleError(error: PostgrestError | null, context?: string) {
   }
 }
 
-export function assertData<T>(data: T | null, error: PostgrestError | null, context?: string): asserts data is T {
+export function assertData<T>(
+  response: PostgrestResponse<T> | PostgrestSingleResponse<T>, 
+  context?: string
+): asserts response is PostgrestResponse<T> & { data: T } {
+  const { data, error } = response;
   handleError(error, context);
+  
   if (!data) {
     const message = 'No data returned from query';
     console.error(message, { context });
@@ -70,40 +81,26 @@ export async function handleQueryResult<T>(
   response: PostgrestResponse<T> | PostgrestSingleResponse<T>,
   context?: string
 ): Promise<T> {
-  return retryWithBackoff(async () => {
-    const { data, error } = response;
-    handleError(error, context);
-    
-    if (!data) {
-      const message = 'No data returned from query';
+  const { data, error } = response;
+  handleError(error, context);
+  
+  if (!data) {
+    const message = 'No data returned from query';
+    console.error(message, { context });
+    throw new Error(message);
+  }
+
+  // Handle array results when single item is expected
+  if (Array.isArray(data)) {
+    if (data.length === 0) {
+      const message = 'No data found';
       console.error(message, { context });
       throw new Error(message);
     }
-
-    // Handle array results when single item is expected
-    if (Array.isArray(data)) {
-      if (data.length === 0) {
-        const message = 'No data found';
-        console.error(message, { context });
-        throw new Error(message);
-      }
-      return data[0] as T;
-    }
-
-    return data;
-  });
-}
-
-export function isQueryError(result: unknown): result is PostgrestError {
-  return isSupabaseError(result);
-}
-
-export function ensureQueryResult<T>(result: T | PostgrestError, context?: string): T {
-  if (isQueryError(result)) {
-    handleError(result, context);
-    throw result;
+    return data[0];
   }
-  return result;
+
+  return data;
 }
 
 export async function testDatabaseConnection() {

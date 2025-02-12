@@ -1,69 +1,42 @@
 
-import { Database } from '@/integrations/supabase/types/database'
-import { TableRow, NonNullableFields } from './supabase'
+import type { Database as DatabaseGenerated } from '@/integrations/supabase/types/database'
 
-// Basic table types
-export type Tables<T extends keyof Database['public']['Tables']> = Database['public']['Tables'][T]['Row']
-export type TablesInsert<T extends keyof Database['public']['Tables']> = Database['public']['Tables'][T]['Insert']
-export type TablesUpdate<T extends keyof Database['public']['Tables']> = Database['public']['Tables'][T]['Update']
+export type { Database } from '@/integrations/supabase/types/database'
+export type { Json } from '@/integrations/supabase/types/database'
 
 // Common table types with proper nullability handling
-export type Profile = NonNullableFields<TableRow<'profiles'>>
-export type Event = NonNullableFields<TableRow<'events'>>
-export type EventRSVP = NonNullableFields<TableRow<'event_rsvps'>>
-export type EventGuest = NonNullableFields<TableRow<'event_guests'>>
-export type SocialMediaFeed = NonNullableFields<TableRow<'social_media_feeds'>>
-export type Poll = NonNullableFields<TableRow<'polls'>>
-export type PollOption = NonNullableFields<TableRow<'poll_options'>>
-export type PollVote = NonNullableFields<TableRow<'poll_votes'>>
+export type Profile = DatabaseGenerated['public']['Tables']['profiles']['Row']
+export type Event = DatabaseGenerated['public']['Tables']['events']['Row']
+export type EventRSVP = DatabaseGenerated['public']['Tables']['event_rsvps']['Row']
+export type EventGuest = DatabaseGenerated['public']['Tables']['event_guests']['Row']
+export type Poll = DatabaseGenerated['public']['Tables']['polls']['Row']
+export type PollOption = DatabaseGenerated['public']['Tables']['poll_options']['Row']
+export type PollVote = DatabaseGenerated['public']['Tables']['poll_votes']['Row']
+export type SocialMediaFeed = DatabaseGenerated['public']['Tables']['social_media_feeds']['Row']
 
-// Relationship types with proper type safety
-export interface EventRSVPWithProfile extends EventRSVP {
-  profiles?: Profile | null;
-  event_guests?: EventGuest[];
+// Type helpers for database operations
+export type Tables<T extends keyof DatabaseGenerated['public']['Tables']> = DatabaseGenerated['public']['Tables'][T]['Row']
+export type TablesInsert<T extends keyof DatabaseGenerated['public']['Tables']> = DatabaseGenerated['public']['Tables'][T]['Insert']
+export type TablesUpdate<T extends keyof DatabaseGenerated['public']['Tables']> = DatabaseGenerated['public']['Tables'][T]['Update']
+
+// Type guards for database operations
+export function isQueryError<T>(result: T | { error: true }): result is { error: true } {
+  return result && typeof result === 'object' && 'error' in result
 }
 
-export interface PollOptionWithVotes extends PollOption {
-  vote_count?: number;
-  has_voted?: boolean;
+export function isQuerySuccess<T>(result: T | { error: true }): result is T {
+  return !isQueryError(result)
 }
 
-export interface PollWithDetails extends Poll {
-  poll_options: PollOptionWithVotes[];
-  total_votes?: number;
-}
+// Database operation result types
+export type DbResult<T> = Promise<T | { error: true }>
+export type DbResultOk<T> = Promise<T>
 
-// Database function return types
-export type VoteResult = 'success' | 'already_voted' | 'poll_closed' | 'not_found'
-
-// View types with proper nullability
-export interface PollVoteCount {
-  poll_id: string;
-  option_id: string;
-  vote_count: number;
-}
-
-// Helper types for database queries with improved type safety
-export type DbResult<T> = T extends PromiseLike<infer U> ? U : never
-export type DbResultOk<T> = T extends PromiseLike<{ data: infer U }> ? Exclude<U, null> : never
-
-// Type guard utilities
-export function isPollWithDetails(value: unknown): value is PollWithDetails {
-  return (
-    typeof value === 'object' &&
-    value !== null &&
-    'id' in value &&
-    'poll_options' in value &&
-    Array.isArray((value as PollWithDetails).poll_options)
-  )
-}
-
-export function isEventRSVPWithProfile(value: unknown): value is EventRSVPWithProfile {
-  return (
-    typeof value === 'object' &&
-    value !== null &&
-    'id' in value &&
-    'user_id' in value &&
-    'event_id' in value
-  )
+export type QueryResult<T> = {
+  data: T | null
+  error: {
+    message: string
+    code?: string
+    details?: string
+  } | null
 }
