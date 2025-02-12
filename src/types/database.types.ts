@@ -5,7 +5,7 @@ export type { Database } from '@/integrations/supabase/types/database'
 export type { Json } from '@/integrations/supabase/types/database'
 
 // Extended types
-export interface PollWithDetails extends DatabaseGenerated['public']['Tables']['polls']['Row'] {
+export type PollWithDetails = DatabaseGenerated['public']['Tables']['polls']['Row'] & {
   poll_options: (DatabaseGenerated['public']['Tables']['poll_options']['Row'] & {
     has_voted?: boolean;
     vote_count?: number;
@@ -16,18 +16,39 @@ export interface PollWithDetails extends DatabaseGenerated['public']['Tables']['
 export type VoteResult = 'success' | 'already_voted' | 'poll_closed' | 'not_found';
 
 // Common table types with proper nullability handling
-export type Profile = DatabaseGenerated['public']['Tables']['profiles']['Row']
+export type Profile = {
+  id: string;
+  username: string;
+  full_name: string | null;
+  avatar_url: string | null;
+  created_at: string;
+  is_admin: boolean;
+  is_approved: boolean;
+  is_member: boolean;
+  email: string | null;
+  event_reminders_enabled: boolean;
+  email_notifications: boolean;
+  in_app_notifications: boolean;
+  interests: string[] | null;
+  updated_at: string | null;
+  leaderboard_opt_out: boolean;
+}
+
 export type Event = DatabaseGenerated['public']['Tables']['events']['Row'] & {
   rsvps?: EventRSVP[];
   attendees?: Profile[];
   guests?: EventGuest[];
 }
+
 export type EventRSVP = DatabaseGenerated['public']['Tables']['event_rsvps']['Row'] & {
+  event_id: string;
   profiles?: {
     full_name: string | null;
     username: string;
   } | null;
+  event_guests?: EventGuest[];
 }
+
 export type EventGuest = DatabaseGenerated['public']['Tables']['event_guests']['Row']
 export type Poll = DatabaseGenerated['public']['Tables']['polls']['Row']
 export type PollOption = DatabaseGenerated['public']['Tables']['poll_options']['Row']
@@ -71,3 +92,16 @@ export type QueryResult<T> = {
 // RSVPs and response types
 export type RSVPResponse = 'attending' | 'not_attending' | 'maybe'
 export type RSVPStatus = 'confirmed' | 'waitlisted'
+
+// Additional types needed for query responses
+export interface EventsResponse {
+  events: Event[];
+  totalCount: number;
+  nextPage: number | null;
+}
+
+export interface PollVoteCount {
+  poll_id: string;
+  option_id: string;
+  vote_count: number;
+}
