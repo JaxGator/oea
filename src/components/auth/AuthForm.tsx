@@ -1,3 +1,4 @@
+
 import { Auth as SupabaseAuth } from "@supabase/auth-ui-react";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { supabase } from "@/integrations/supabase/client";
@@ -58,10 +59,10 @@ export function AuthForm() {
   };
 
   useEffect(() => {
-    const { searchParams, hashParams } = new URL(location.href);
-    const type = searchParams.get('type') || hashParams.get('type');
-    const error = searchParams.get('error') || hashParams.get('error');
-    const errorDescription = searchParams.get('error_description') || hashParams.get('error_description');
+    const searchParams = new URLSearchParams(location.search);
+    const type = searchParams.get('type');
+    const error = searchParams.get('error');
+    const errorDescription = searchParams.get('error_description');
 
     if (error) {
       console.error('Auth error:', { error, errorDescription });
