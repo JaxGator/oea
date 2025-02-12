@@ -1,5 +1,5 @@
 
-import { Star } from "lucide-react";
+import { Star, ChartPie, Check, Activity, NotebookText } from "lucide-react";
 import { FeaturedMerch } from "@/components/home/FeaturedMerch";
 import { EventParticipationReport } from "@/components/admin/reports/EventParticipationReport";
 import { UserActivityReport } from "@/components/admin/reports/UserActivityReport";
@@ -43,20 +43,30 @@ const Members = () => {
 
       {/* Polls Section */}
       <div className="w-full overflow-hidden">
+        <div className="flex items-center gap-2 mb-4">
+          <ChartPie className="h-6 w-6 text-primary shrink-0" />
+          <h2 className="text-xl sm:text-2xl font-semibold">Member Polls</h2>
+        </div>
         <PollSection />
       </div>
 
       {/* Reports Section */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-3">
-          <h2 className="text-xl sm:text-2xl font-semibold">Event Participation</h2>
+          <div className="flex items-center gap-2">
+            <Check className="h-6 w-6 text-primary shrink-0" />
+            <h2 className="text-xl sm:text-2xl font-semibold">Event Participation</h2>
+          </div>
           <div className="bg-white rounded-lg shadow-sm border p-3 sm:p-6 overflow-hidden">
             <EventParticipationReport />
           </div>
         </div>
 
         <div className="space-y-3">
-          <h2 className="text-xl sm:text-2xl font-semibold">User Activity</h2>
+          <div className="flex items-center gap-2">
+            <Activity className="h-6 w-6 text-primary shrink-0" />
+            <h2 className="text-xl sm:text-2xl font-semibold">User Activity</h2>
+          </div>
           <div className="bg-white rounded-lg shadow-sm border p-3 sm:p-6 overflow-hidden">
             <UserActivityReport />
           </div>
@@ -70,6 +80,10 @@ const Members = () => {
 
       {/* Guides Section */}
       <div className="overflow-hidden">
+        <div className="flex items-center gap-2 mb-4">
+          <NotebookText className="h-6 w-6 text-primary shrink-0" />
+          <h2 className="text-xl sm:text-2xl font-semibold">Guides</h2>
+        </div>
         <GuidesSection />
       </div>
     </div>
