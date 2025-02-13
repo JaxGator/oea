@@ -4,6 +4,7 @@ import type { ProfilesTable } from './profiles';
 import type { EventsTable } from './events';
 import type { PollsTable, PollOptionsTable } from './polls';
 import type { SocialMediaFeedsTable } from './social';
+import type { EventRSVPsTable } from './rsvp';
 
 export interface Database {
   public: {
@@ -13,6 +14,7 @@ export interface Database {
       polls: PollsTable;
       poll_options: PollOptionsTable;
       social_media_feeds: SocialMediaFeedsTable;
+      event_rsvps: EventRSVPsTable;
     };
     Functions: {
       handle_poll_vote: {
@@ -32,8 +34,30 @@ export * from './profiles';
 export * from './events';
 export * from './polls';
 export * from './social';
+export * from './rsvp';
 
 // Re-export utility types
 export type TableRow<T extends keyof Database['public']['Tables']> = Database['public']['Tables'][T]['Row'];
 export type InsertRow<T extends keyof Database['public']['Tables']> = Database['public']['Tables'][T]['Insert'];
 export type UpdateRow<T extends keyof Database['public']['Tables']> = Database['public']['Tables'][T]['Update'];
+
+// Event-specific types
+export interface EventsPage {
+  data: Event[];
+  count: number;
+  nextPage: number | null;
+}
+
+export interface EventRSVPWithProfile extends EventRSVP {
+  profiles?: Profile;
+  event_guests?: EventGuest[];
+}
+
+export interface PollWithDetails extends Poll {
+  poll_options: (PollOption & {
+    has_voted?: boolean;
+    vote_count?: number;
+  })[];
+  total_votes?: number;
+  poll_votes?: PollVote[];
+}

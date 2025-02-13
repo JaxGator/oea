@@ -1,7 +1,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import type { EventRSVPWithProfile } from "@/types/database.types";
+import type { EventRSVPWithProfile } from "@/types/database";
 
 export function useEventRSVPData(eventId: string) {
   return useQuery({

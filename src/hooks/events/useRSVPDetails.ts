@@ -3,10 +3,8 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Database } from "@/types/database.types";
-
-type Profile = Database['public']['Tables']['profiles']['Row'];
-type EventGuest = Database['public']['Tables']['event_guests']['Row'];
-type EventRSVP = Database['public']['Tables']['event_rsvps']['Row'];
+import type { Profile } from "@/types/database/profiles";
+import type { EventGuest } from "@/types/database/events";
 
 interface RSVPDetails {
   id: string;
@@ -71,7 +69,7 @@ export function useRSVPDetails(eventId: string) {
 
         console.log('Fetched RSVPs:', rsvps);
 
-        const transformedRsvps = rsvps as RSVPDetails[];
+        const transformedRsvps = rsvps as unknown as RSVPDetails[];
 
         const rsvpCount = transformedRsvps.reduce((total, rsvp) => {
           return total + 1 + (rsvp.event_guests?.length || 0);

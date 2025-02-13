@@ -43,4 +43,3 @@ export const createMemberFromPartial = (partial: Partial<Member>): Member => ({
   updated_at: partial.updated_at || null,
   leaderboard_opt_out: partial.leaderboard_opt_out || false,
 });
-
