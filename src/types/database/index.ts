@@ -2,6 +2,7 @@ import type { Json } from './base';
 import type { ProfilesTable } from './profiles';
 import type { EventsTable } from './events';
 import type { PollsTable, PollOptionsTable } from './polls';
+import type { SocialMediaFeedsTable } from './social';
 
 export interface Database {
   public: {
@@ -10,6 +11,7 @@ export interface Database {
       events: EventsTable;
       polls: PollsTable;
       poll_options: PollOptionsTable;
+      social_media_feeds: SocialMediaFeedsTable;
       // ... other tables can be added here
     };
     Functions: {
@@ -29,6 +31,7 @@ export * from './base';
 export * from './profiles';
 export * from './events';
 export * from './polls';
+export * from './social';
 
 // Re-export utility types
 export type TableRow<T extends keyof Database['public']['Tables']> = Database['public']['Tables'][T]['Row'];
