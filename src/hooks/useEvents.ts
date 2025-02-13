@@ -26,10 +26,15 @@ type EventResponseRow = Database['public']['Tables']['events']['Row'] & {
   }>;
 };
 
-interface EventsResponse {
+interface EventsPage {
   events: Event[];
   totalCount: number;
   nextPage: number | null;
+}
+
+type EventsResponse = {
+  pages: EventsPage[];
+  pageParams: number[];
 }
 
 export function useEvents(selectedDate?: Date) {
@@ -59,7 +64,7 @@ export function useEvents(selectedDate?: Date) {
     };
   }, [queryClient]);
 
-  return useInfiniteQuery<EventsResponse, Error>({
+  return useInfiniteQuery<EventsPage, Error>({
     queryKey: ['events', selectedDate?.toISOString(), isAuthenticated, isApproved],
     queryFn: async () => {
       try {
@@ -93,14 +98,12 @@ export function useEvents(selectedDate?: Date) {
           .order('is_featured', { ascending: false })
           .order('date', { ascending: true });
 
-        // Apply auth filters
         if (!isAuthenticated) {
           query = query.eq('is_published', true);
         } else if (!isApproved) {
           query = query.eq('is_published', true);
         }
 
-        // Apply date filter if selected
         if (selectedDate) {
           const dateStr = selectedDate.toISOString().split('T')[0];
           query = query.gte('date', dateStr);
@@ -139,7 +142,6 @@ export function useEvents(selectedDate?: Date) {
           };
         }
 
-        // Transform and organize the data
         const transformedEvents = (events as EventResponseRow[]).map(event => ({
           ...event,
           rsvps: event.event_rsvps || [],
@@ -161,7 +163,7 @@ export function useEvents(selectedDate?: Date) {
         return { 
           events: transformedEvents,
           totalCount: count || 0,
-          nextPage: null // We're getting all events at once now
+          nextPage: null
         };
       } catch (error) {
         console.error('Error in useEvents:', error);
@@ -170,8 +172,8 @@ export function useEvents(selectedDate?: Date) {
       }
     },
     initialPageParam: 0,
-    getNextPageParam: () => null, // Disable pagination as we're getting all events at once
-    staleTime: 1000 * 60 * 5, // Cache for 5 minutes
+    getNextPageParam: () => null,
+    staleTime: 1000 * 60 * 5,
     refetchOnWindowFocus: false,
   });
 }

@@ -22,7 +22,7 @@ export default function Index() {
     <NotificationProvider>
       <HomeLayout>
         <Suspense fallback={<LoadingSection />}>
-          <HomeSection title="Events">
+          <HomeSection title="Featured Events">
             <FeaturedEvents />
           </HomeSection>
         </Suspense>
@@ -41,10 +41,10 @@ export default function Index() {
 
         <Suspense fallback={<LoadingSection />}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <HomeSection>
+            <HomeSection title="Taco Tracker">
               <TacoTracker />
             </HomeSection>
-            <HomeSection>
+            <HomeSection title="Social Updates">
               <SocialFeed />
             </HomeSection>
           </div>
