@@ -16,9 +16,22 @@ export function useEventRSVPData(eventId: string) {
           response,
           created_at,
           status,
-          profiles!event_rsvps_user_id_fkey (
+          profiles:profiles!event_rsvps_user_id_fkey (
+            id,
+            username,
             full_name,
-            username
+            avatar_url,
+            created_at,
+            is_admin,
+            is_approved,
+            is_member,
+            email,
+            event_reminders_enabled,
+            email_notifications,
+            in_app_notifications,
+            interests,
+            updated_at,
+            leaderboard_opt_out
           ),
           event_guests (
             id,
@@ -34,16 +47,7 @@ export function useEventRSVPData(eventId: string) {
         throw error;
       }
 
-      return (rsvps || []).map(rsvp => ({
-        id: rsvp.id,
-        event_id: rsvp.event_id,
-        user_id: rsvp.user_id,
-        response: rsvp.response,
-        created_at: rsvp.created_at,
-        status: rsvp.status,
-        profiles: rsvp.profiles,
-        event_guests: rsvp.event_guests || []
-      })) as EventRSVPWithProfile[];
+      return rsvps as unknown as EventRSVPWithProfile[];
     },
     staleTime: 1000 * 60 * 5 // Cache for 5 minutes
   });

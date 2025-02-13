@@ -7,13 +7,19 @@ import { Member } from "./types";
 const DEFAULT_MEMBER: Member = {
   id: '',
   username: '',
-  full_name: '',
-  avatar_url: '',
+  full_name: null,
+  avatar_url: null,
   is_admin: false,
   is_approved: false,
   is_member: false,
   created_at: new Date().toISOString(),
-  event_reminders_enabled: false
+  event_reminders_enabled: false,
+  email: null,
+  email_notifications: true,
+  in_app_notifications: true,
+  interests: null,
+  updated_at: null,
+  leaderboard_opt_out: false
 };
 
 export function useMemberForm(member: Member | null, onUpdate: () => void, onClose: () => void) {
@@ -23,32 +29,12 @@ export function useMemberForm(member: Member | null, onUpdate: () => void, onClo
   // Initialize state with member data
   const [username, setUsername] = useState(safeMember.username);
   const [fullName, setFullName] = useState(safeMember.full_name || '');
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState(safeMember.email || '');
   const [password, setPassword] = useState('');
-  const [isAdmin, setIsAdmin] = useState(safeMember.is_admin || false);
-  const [isApproved, setIsApproved] = useState(safeMember.is_approved || false);
-  const [isMember, setIsMember] = useState(safeMember.is_member || false);
+  const [isAdmin, setIsAdmin] = useState(safeMember.is_admin);
+  const [isApproved, setIsApproved] = useState(safeMember.is_approved);
+  const [isMember, setIsMember] = useState(safeMember.is_member);
   const [avatarUrl, setAvatarUrl] = useState(safeMember.avatar_url || '');
-
-  // Initialize email from auth data
-  useEffect(() => {
-    const fetchUserEmail = async () => {
-      if (member?.id) {
-        // Use the admin-user-management function to get user data
-        const { data, error } = await supabase.functions.invoke('admin-user-management', {
-          body: { 
-            action: 'get_user',
-            userId: member.id
-          }
-        });
-
-        if (!error && data?.email) {
-          setEmail(data.email);
-        }
-      }
-    };
-    fetchUserEmail();
-  }, [member?.id]);
 
   const handleSubmit = async () => {
     try {
@@ -56,26 +42,6 @@ export function useMemberForm(member: Member | null, onUpdate: () => void, onClo
         throw new Error('Member ID is required for updates');
       }
 
-      console.log('useMemberForm: Starting member update:', {
-        memberId: member.id,
-        updates: {
-          username,
-          fullName,
-          isAdmin,
-          isApproved,
-          isMember,
-          avatarUrl,
-          hasEmail: !!email,
-          hasPassword: !!password
-        }
-      });
-
-      const { data: currentUser } = await supabase.auth.getUser();
-      if (!currentUser?.user?.id) {
-        throw new Error('No authenticated user found');
-      }
-
-      // Call admin-user-management function for full update
       const { error } = await supabase.functions.invoke('admin-user-management', {
         body: {
           userId: member.id,
@@ -91,12 +57,10 @@ export function useMemberForm(member: Member | null, onUpdate: () => void, onClo
       });
 
       if (error) {
-        console.error('useMemberForm: Error from admin-user-management:', error);
+        console.error('Error updating member:', error);
         throw error;
       }
 
-      console.log('useMemberForm: Update successful');
-      
       await onUpdate();
       
       toast({
@@ -108,7 +72,7 @@ export function useMemberForm(member: Member | null, onUpdate: () => void, onClo
 
       onClose();
     } catch (error) {
-      console.error('useMemberForm: Error updating member:', error);
+      console.error('Error updating member:', error);
       toast({
         title: "Error",
         description: "Failed to update member",

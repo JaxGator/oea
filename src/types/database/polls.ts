@@ -43,43 +43,17 @@ export interface PollsTable {
   };
 }
 
-export type Poll = PollsTable['Row'];
-export type PollOption = PollOptionsTable['Row'];
-
-export interface PollOptionsTable {
-  Row: {
-    id: string;
-    poll_id: string;
-    option_text: string;
-    created_at: string;
-    display_order: number;
-  };
-  Insert: {
-    id?: string;
-    poll_id: string;
-    option_text: string;
-    created_at?: string;
-    display_order: number;
-  };
-  Update: {
-    id?: string;
-    poll_id?: string;
-    option_text?: string;
-    created_at?: string;
-    display_order?: number;
-  };
-}
-
-export type VoteResult = 'success' | 'already_voted' | 'poll_closed' | 'not_found';
-
-export type PollWithDetails = Poll & {
-  poll_options: (PollOption & {
-    has_voted?: boolean;
-    vote_count?: number;
-  })[];
-  total_votes?: number;
-  poll_votes?: PollVote[];
+export type Poll = PollsTable['Row'] & {
+  poll_options?: PollOption[];
 };
+
+export interface PollOption {
+  id: string;
+  poll_id: string;
+  option_text: string;
+  created_at: string;
+  display_order: number;
+}
 
 export interface PollVote {
   id: string;
@@ -91,4 +65,15 @@ export interface PollVote {
     username: string;
     avatar_url: string | null;
   } | null;
+}
+
+export type VoteResult = 'success' | 'already_voted' | 'poll_closed' | 'not_found';
+
+export interface PollWithDetails extends Poll {
+  poll_options: (PollOption & {
+    has_voted?: boolean;
+    vote_count?: number;
+  })[];
+  total_votes?: number;
+  poll_votes?: PollVote[];
 }
