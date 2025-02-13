@@ -8,6 +8,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { PollCardHeader } from "./components/PollCardHeader";
 import { PollOptionsList } from "./components/PollOptionsList";
 import { PollChartView } from "./components/PollChartView";
+import { EditPollDialog } from "./EditPollDialog";
 import type { PollWithDetails, VoteResult } from "@/types/database.types";
 import { executeQuery } from "@/utils/database";
 
@@ -23,6 +24,7 @@ export function PollCard({ poll, canEdit, onDelete, isPublicView = false }: Poll
   const queryClient = useQueryClient();
   const [isVoting, setIsVoting] = useState(false);
   const [showPieChart, setShowPieChart] = useState(false);
+  const [showEditDialog, setShowEditDialog] = useState(false);
 
   const userVote = poll.poll_options.find(option => option.has_voted)?.id;
 
@@ -88,6 +90,7 @@ export function PollCard({ poll, canEdit, onDelete, isPublicView = false }: Poll
           shareToken={poll.share_token ?? undefined}
           pollId={poll.id}
           onDelete={onDelete}
+          onEdit={() => setShowEditDialog(true)}
           onToggleChart={() => setShowPieChart(!showPieChart)}
         />
       </CardHeader>
@@ -105,6 +108,12 @@ export function PollCard({ poll, canEdit, onDelete, isPublicView = false }: Poll
           />
         )}
       </CardContent>
+
+      <EditPollDialog
+        poll={poll}
+        open={showEditDialog}
+        onOpenChange={setShowEditDialog}
+      />
     </Card>
   );
 }

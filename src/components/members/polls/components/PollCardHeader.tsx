@@ -11,6 +11,7 @@ interface PollCardHeaderProps {
   shareToken: string;
   pollId: string;
   onDelete: () => void;
+  onEdit: () => void;
   onToggleChart: () => void;
 }
 
@@ -23,6 +24,7 @@ export function PollCardHeader({
   shareToken,
   pollId,
   onDelete,
+  onEdit,
   onToggleChart,
 }: PollCardHeaderProps) {
   return (
@@ -47,6 +49,14 @@ export function PollCardHeader({
                 className="flex-shrink-0"
               >
                 {showPieChart ? "Show Bars" : "Show Chart"}
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onEdit}
+                className="flex-shrink-0"
+              >
+                Edit
               </Button>
               <Button
                 variant="ghost"
