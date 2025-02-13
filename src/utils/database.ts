@@ -59,11 +59,10 @@ export async function executeTableQuery<T>(
     timestamp: new Date().toISOString()
   });
 
-  // Convert the operation to return a Promise instead of PromiseLike
   return executeQuery<T>(async () => {
     const response = await supabase
       .from(table)
-      .select(query);
+      .select(query) as PostgrestResponse<T>;
     
     if (response.error) throw response.error;
     return response;
