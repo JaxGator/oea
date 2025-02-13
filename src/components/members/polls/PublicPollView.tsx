@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { useAuthState } from "@/hooks/useAuthState";
 import { LogIn } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import type { PollWithDetails } from "@/types/database/polls";
 
 export function PublicPollView() {
   const { token } = useParams();
