@@ -41,12 +41,8 @@ export default function Index() {
 
         <Suspense fallback={<LoadingSection />}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <HomeSection title="Taco Tracker">
-              <TacoTracker />
-            </HomeSection>
-            <HomeSection title="Social Updates">
-              <SocialFeed />
-            </HomeSection>
+            <TacoTracker />
+            <SocialFeed />
           </div>
         </Suspense>
       </HomeLayout>
