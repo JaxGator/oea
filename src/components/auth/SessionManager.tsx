@@ -1,3 +1,4 @@
+
 import { ReactNode, useEffect, useState } from "react";
 import { QueryClient } from "@tanstack/react-query";
 import { useSessionManager } from "@/hooks/useSessionManager";
@@ -103,10 +104,6 @@ export function SessionManager({ children, queryClient }: SessionManagerProps) {
       if (event === 'SIGNED_IN') {
         console.log('User signed in, invalidating queries');
         queryClient.invalidateQueries();
-        toast({
-          title: "Signed in",
-          description: "Welcome back!",
-        });
         navigate('/');
         return;
       }
