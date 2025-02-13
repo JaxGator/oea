@@ -1,3 +1,4 @@
+
 import { Auth as SupabaseAuth } from "@supabase/auth-ui-react";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { supabase } from "@/integrations/supabase/client";
@@ -32,12 +33,19 @@ export function AuthForm() {
     setIsSubmitting(true);
 
     try {
-      const response = await supabase.functions.invoke('send-admin-message', {
+      console.log('Sending message to admins...');
+      const { data, error } = await supabase.functions.invoke('send-admin-message', {
         body: { message: trimmedMessage }
       });
 
-      if (!response.data?.success) {
-        throw new Error(response.error?.message || 'Failed to send message');
+      console.log('Response from edge function:', { data, error });
+
+      if (error) {
+        throw error;
+      }
+
+      if (!data?.success) {
+        throw new Error('Failed to send message');
       }
 
       toast({
@@ -45,11 +53,12 @@ export function AuthForm() {
         description: "An administrator will respond to your message soon.",
       });
 
-      // Only reset and close after confirmed success
       setMessage("");
       setIsContactOpen(false);
     } catch (error) {
       console.error('Error sending message:', error);
+      
+      // Reset submitting state and show error toast
       toast({
         title: "Error",
         description: error instanceof Error ? error.message : "Failed to send message. Please try again.",
@@ -199,10 +208,11 @@ export function AuthForm() {
         <Dialog 
           open={isContactOpen} 
           onOpenChange={(open) => {
-            setIsContactOpen(open);
-            if (!open) {
-              setMessage("");
-              setIsSubmitting(false);
+            if (!isSubmitting) {
+              setIsContactOpen(open);
+              if (!open) {
+                setMessage("");
+              }
             }
           }}
         >
