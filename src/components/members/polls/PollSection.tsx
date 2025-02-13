@@ -8,7 +8,7 @@ import { CreatePollDialog } from "./CreatePollDialog";
 import { useAuthState } from "@/hooks/useAuthState";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import type { PollWithDetails, Poll } from "@/types/database.types";
+import type { PollWithDetails, Poll } from "@/types/database/polls";
 
 export function PollSection() {
   const [showCreateDialog, setShowCreateDialog] = useState(false);
@@ -20,11 +20,23 @@ export function PollSection() {
       const { data: pollsData, error: pollsError } = await supabase
         .from('polls')
         .select(`
-          *,
+          id,
+          title,
+          description,
+          created_by,
+          status,
+          start_date,
+          end_date,
+          allow_multiple_choices,
+          created_at,
+          share_token,
+          visibility,
           poll_options (
             id,
+            poll_id,
             option_text,
-            display_order
+            display_order,
+            created_at
           )
         `)
         .eq('status', 'active')
@@ -54,11 +66,11 @@ export function PollSection() {
         
         return {
           ...poll,
-          poll_options: poll.poll_options.map(option => ({
+          poll_options: poll.poll_options?.map(option => ({
             ...option,
             vote_count: pollVoteCounts.find(vc => vc.option_id === option.id)?.vote_count || 0,
             has_voted: userVotes?.some(uv => uv.option_id === option.id) || false
-          })),
+          })) || [],
           total_votes: totalVotes
         };
       });
