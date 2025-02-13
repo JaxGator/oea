@@ -1,9 +1,8 @@
-
 import { Auth as SupabaseAuth } from "@supabase/auth-ui-react";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { AuthError, AuthApiError } from "@supabase/supabase-js";
 import { useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -11,15 +10,42 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Textarea } from "@/components/ui/textarea";
 import { Send } from "lucide-react";
 
+const SEND_TIMEOUT = 30000; // 30 seconds timeout
+const MAX_RETRIES = 2;
+
 export function AuthForm() {
   const { toast } = useToast();
   const [authError, setAuthError] = useState<string | null>(null);
   const [isContactOpen, setIsContactOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState("");
+  const [submitAttempts, setSubmitAttempts] = useState(0);
   const location = useLocation();
 
-  const handleContactSubmit = async () => {
+  // Reset submission state after timeout
+  useEffect(() => {
+    let timeoutId: NodeJS.Timeout;
+    
+    if (isSubmitting) {
+      timeoutId = setTimeout(() => {
+        console.log('Submit timeout reached, resetting state');
+        setIsSubmitting(false);
+        toast({
+          title: "Error",
+          description: "Request timed out. Please try again.",
+          variant: "destructive",
+        });
+      }, SEND_TIMEOUT);
+    }
+
+    return () => {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+    };
+  }, [isSubmitting, toast]);
+
+  const handleContactSubmit = useCallback(async () => {
     const trimmedMessage = message.trim();
     if (!trimmedMessage) {
       toast({
@@ -30,44 +56,70 @@ export function AuthForm() {
       return;
     }
 
+    if (isSubmitting) {
+      console.log('Already submitting, preventing duplicate submission');
+      return;
+    }
+
     setIsSubmitting(true);
+    setSubmitAttempts(prev => prev + 1);
+
+    const attemptSubmission = async (retry = 0): Promise<boolean> => {
+      try {
+        console.log(`Sending message to admins (attempt ${retry + 1})...`);
+        
+        const { data, error } = await supabase.functions.invoke('send-admin-message', {
+          body: { message: trimmedMessage }
+        });
+
+        console.log('Response from edge function:', { data, error });
+
+        if (error) {
+          throw error;
+        }
+
+        if (!data?.success) {
+          throw new Error(data?.error || 'Failed to send message');
+        }
+
+        toast({
+          title: "Success",
+          description: "An administrator will respond to your message soon.",
+        });
+
+        setMessage("");
+        setIsContactOpen(false);
+        setSubmitAttempts(0);
+        return true;
+
+      } catch (error) {
+        console.error('Error sending message:', error);
+        
+        // If we have retries left, try again
+        if (retry < MAX_RETRIES) {
+          console.log(`Retrying submission (${retry + 1}/${MAX_RETRIES})`);
+          await new Promise(resolve => setTimeout(resolve, 1000 * (retry + 1)));
+          return attemptSubmission(retry + 1);
+        }
+
+        toast({
+          title: "Error",
+          description: error instanceof Error ? error.message : "Failed to send message. Please try again.",
+          variant: "destructive",
+        });
+        return false;
+      }
+    };
 
     try {
-      console.log('Sending message to admins...');
-      const { data, error } = await supabase.functions.invoke('send-admin-message', {
-        body: { message: trimmedMessage }
-      });
-
-      console.log('Response from edge function:', { data, error });
-
-      if (error) {
-        throw error;
+      const success = await attemptSubmission();
+      if (!success) {
+        console.log('All submission attempts failed');
       }
-
-      if (!data?.success) {
-        throw new Error('Failed to send message');
-      }
-
-      toast({
-        title: "Success",
-        description: "An administrator will respond to your message soon.",
-      });
-
-      setMessage("");
-      setIsContactOpen(false);
-    } catch (error) {
-      console.error('Error sending message:', error);
-      
-      // Reset submitting state and show error toast
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to send message. Please try again.",
-        variant: "destructive",
-      });
     } finally {
       setIsSubmitting(false);
     }
-  };
+  }, [message, isSubmitting, toast]);
 
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
@@ -202,7 +254,7 @@ export function AuthForm() {
 
       <div className="mt-6 p-4 bg-gray-50 rounded-lg space-y-4">
         <p className="text-sm text-gray-600">
-          Welcome! If you previously had an account on our site, you can log in using your email and password="password", 
+          Welcome! If you previously had an account on our site, you can log in using your email and password, 
           then change it from your profile. If you are still having trouble, click below to contact an administrator.
         </p>
         <Dialog 
@@ -212,6 +264,7 @@ export function AuthForm() {
               setIsContactOpen(open);
               if (!open) {
                 setMessage("");
+                setSubmitAttempts(0);
               }
             }
           }}
@@ -241,7 +294,7 @@ export function AuthForm() {
                 disabled={isSubmitting}
               >
                 {isSubmitting ? (
-                  "Sending..."
+                  submitAttempts > 1 ? `Retrying... (${submitAttempts}/${MAX_RETRIES + 1})` : "Sending..."
                 ) : (
                   <>
                     Send Message <Send className="ml-2 h-4 w-4" />
