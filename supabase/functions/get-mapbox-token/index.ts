@@ -5,8 +5,10 @@ import { corsHeaders } from "../_shared/cors.ts";
 console.log("Initializing get-mapbox-token function...");
 
 serve(async (req) => {
-  // Handle CORS preflight requests
+  console.log(`Handling ${req.method} request from ${req.headers.get("Origin")}`);
+
   if (req.method === "OPTIONS") {
+    console.log("Handling CORS preflight request");
     return new Response(null, {
       headers: {
         ...corsHeaders,
@@ -16,8 +18,8 @@ serve(async (req) => {
     });
   }
 
-  // Only allow GET requests
   if (req.method !== "GET") {
+    console.log("Invalid method:", req.method);
     return new Response(
       JSON.stringify({
         error: "Method not allowed",
@@ -35,6 +37,7 @@ serve(async (req) => {
 
   try {
     const token = Deno.env.get("MAPBOX_PUBLIC_TOKEN");
+    console.log("Retrieved token status:", token ? "found" : "not found");
     
     if (!token) {
       console.error("MAPBOX_PUBLIC_TOKEN not found in environment");
