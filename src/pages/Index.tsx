@@ -4,7 +4,7 @@ import { Hero } from '@/components/home/Hero';
 import { FeaturedEvents } from "@/components/home/FeaturedEvents";
 import { GalleryPreview } from "@/components/home/GalleryPreview";
 import { SocialFeed } from "@/components/home/SocialFeed";
-import { HomeLayout, HomeSection } from '@/components/home/HomeLayout';
+import { HomeLayout } from '@/components/home/HomeLayout';
 import { LeaderboardSection } from '@/components/home/LeaderboardSection';
 import { NotificationProvider } from "@/components/providers/NotificationProvider";
 import { TacoTracker } from "@/components/home/TacoTracker";
@@ -22,21 +22,21 @@ export default function Index() {
     <NotificationProvider>
       <HomeLayout>
         <Suspense fallback={<LoadingSection />}>
-          <HomeSection title="Featured Events">
+          <div className="space-y-8">
             <FeaturedEvents />
-          </HomeSection>
+          </div>
         </Suspense>
 
         <Suspense fallback={<LoadingSection />}>
-          <HomeSection title="Leaderboard">
+          <div className="space-y-8">
             <LeaderboardSection />
-          </HomeSection>
+          </div>
         </Suspense>
 
         <Suspense fallback={<LoadingSection />}>
-          <HomeSection title="Gallery">
+          <div className="space-y-8">
             <GalleryPreview />
-          </HomeSection>
+          </div>
         </Suspense>
 
         <Suspense fallback={<LoadingSection />}>
