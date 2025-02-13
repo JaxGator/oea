@@ -31,12 +31,12 @@ export default function Events() {
   const upcomingEvents = filteredEvents.filter(event => {
     const eventDate = new Date(event.date);
     return eventDate >= now;
-  });
+  }) as Event[];
 
   const pastEvents = filteredEvents.filter(event => {
     const eventDate = new Date(event.date);
     return eventDate < now;
-  }).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  }).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()) as Event[];
 
   const handleEventUpdate = () => {
     queryClient.invalidateQueries({ queryKey: ['events'] });

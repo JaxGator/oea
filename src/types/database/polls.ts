@@ -38,7 +38,6 @@ export interface PollsTable {
     allow_multiple_choices: boolean;
     share_token: string | null;
     visibility: 'public' | 'private';
-    poll_options?: PollOption[];
   };
   Insert: {
     id?: string;
@@ -68,14 +67,16 @@ export interface PollsTable {
   };
 }
 
-export type Poll = PollsTable['Row'];
-
 export interface PollOption {
   id: string;
   poll_id: string;
   option_text: string;
   created_at: string;
   display_order: number;
+}
+
+export interface Poll extends PollsTable['Row'] {
+  poll_options?: PollOption[];
 }
 
 export interface PollVote {

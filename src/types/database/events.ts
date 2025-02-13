@@ -77,12 +77,6 @@ export interface EventsTable {
   };
 }
 
-export type Event = EventsTable['Row'] & {
-  rsvps?: EventRSVP[];
-  attendees?: Profile[];
-  guests?: EventGuest[];
-};
-
 export interface EventRSVP {
   id: string;
   event_id: string;
@@ -102,3 +96,9 @@ export interface EventGuest {
   id: string;
   first_name: string;
 }
+
+export type Event = EventsTable['Row'] & {
+  rsvps?: EventRSVP[];
+  attendees?: EventRSVP[];
+  guests?: EventGuest[];
+};
