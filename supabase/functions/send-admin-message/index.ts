@@ -1,7 +1,12 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-import { corsHeaders } from '../_shared/cors.ts'
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+}
 
 const FUNCTION_NAME = 'send-admin-message';
 
@@ -30,13 +35,11 @@ serve(async (req) => {
       throw new Error('Server configuration error');
     }
 
-    // Create Supabase client
     const supabaseAdmin = createClient(
       supabaseUrl,
       supabaseServiceRole
     );
 
-    // Parse and validate request body
     let requestBody: MessageRequest;
     try {
       requestBody = await req.json();
@@ -53,75 +56,45 @@ serve(async (req) => {
       throw new Error('Message is required');
     }
 
-    // Get all admin users with retry logic
-    let retryCount = 0;
-    const maxRetries = 3;
-    let adminProfiles = null;
-    let adminError = null;
+    // Get all admin users
+    const { data: adminProfiles, error: adminError } = await supabaseAdmin
+      .from('profiles')
+      .select('id')
+      .eq('is_admin', true);
 
-    while (retryCount < maxRetries && !adminProfiles) {
-      console.log(`[${FUNCTION_NAME}] Fetching admin profiles (attempt ${retryCount + 1})`);
-      
-      const { data, error } = await supabaseAdmin
-        .from('profiles')
-        .select('id')
-        .eq('is_admin', true);
-
-      if (!error && data) {
-        adminProfiles = data;
-        break;
-      }
-
-      adminError = error;
-      retryCount++;
-      if (retryCount < maxRetries) {
-        await new Promise(resolve => setTimeout(resolve, 1000 * retryCount));
-      }
-    }
-
-    if (!adminProfiles) {
-      console.error(`[${FUNCTION_NAME}] Error fetching admin profiles after ${maxRetries} attempts:`, adminError);
+    if (adminError || !adminProfiles?.length) {
+      console.error(`[${FUNCTION_NAME}] Error fetching admin profiles:`, adminError);
       throw new Error('Failed to fetch administrators');
     }
 
-    if (!adminProfiles.length) {
-      console.error(`[${FUNCTION_NAME}] No administrators found`);
-      throw new Error('No administrators found');
+    console.log(`[${FUNCTION_NAME}] Found ${adminProfiles.length} admin(s), creating notifications`);
+
+    // Create admin notifications
+    const { error: notificationError } = await supabaseAdmin
+      .from('admin_notifications')
+      .insert(
+        adminProfiles.map(admin => ({
+          type: 'contact_message',
+          message: message,
+          metadata: {
+            source: 'contact_form',
+            timestamp: new Date().toISOString()
+          },
+          user_id: admin.id
+        }))
+      );
+
+    if (notificationError) {
+      console.error(`[${FUNCTION_NAME}] Error creating notifications:`, notificationError);
+      throw new Error('Failed to create notifications');
     }
 
-    console.log(`[${FUNCTION_NAME}] Found ${adminProfiles.length} admin(s), creating messages`);
+    console.log(`[${FUNCTION_NAME}] Successfully created notifications for ${adminProfiles.length} admin(s)`);
 
-    // Create messages for each admin with individual error handling
-    const results = await Promise.allSettled(
-      adminProfiles.map(admin => 
-        supabaseAdmin
-          .from('messages')
-          .insert({
-            sender_id: null,
-            receiver_id: admin.id,
-            content: message,
-            type: 'system'
-          })
-      )
-    );
-
-    const failures = results.filter(r => r.status === 'rejected');
-    const successes = results.filter(r => r.status === 'fulfilled');
-
-    if (failures.length > 0) {
-      console.error(`[${FUNCTION_NAME}] Some messages failed to send:`, failures);
-      if (successes.length === 0) {
-        throw new Error('Failed to send message to administrators');
-      }
-    }
-
-    console.log(`[${FUNCTION_NAME}] Successfully sent ${successes.length} messages`);
-    
     return new Response(
       JSON.stringify({ 
         success: true,
-        sent: successes.length,
-        failed: failures.length
+        notified: adminProfiles.length
       }),
       { 
         headers: {
@@ -131,6 +104,7 @@ serve(async (req) => {
         status: 200 
       }
     );
+
   } catch (error) {
     console.error(`[${FUNCTION_NAME}] Error:`, error);
     
