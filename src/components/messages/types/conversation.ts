@@ -22,6 +22,8 @@ export interface ConversationListProps {
   conversations: Record<string, ConversationType>;
   selectedConversation: string | null;
   onSelect: (userId: string) => void;
+  onDelete: (userId: string) => void;
+  isDeleting: boolean;
 }
 
 export interface ConversationHeaderProps {
