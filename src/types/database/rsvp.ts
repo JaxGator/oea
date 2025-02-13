@@ -1,53 +1,36 @@
 
-import { Json } from './base'
+import { Json } from './base';
+import type { Profile } from './profiles';
+import type { EventGuest } from './events';
 
 export interface EventRSVPsTable {
   Row: {
-    id: string
-    event_id: string
-    user_id: string
-    response: 'attending' | 'not_attending' | 'maybe'
-    status: 'confirmed' | 'waitlisted'
-    created_at: string
-    send_confirmation_email: boolean
-  }
+    id: string;
+    event_id: string;
+    user_id: string;
+    response: 'attending' | 'not_attending' | 'maybe';
+    status: 'confirmed' | 'waitlisted';
+    created_at: string;
+    send_confirmation_email: boolean;
+    profiles?: Profile;
+    event_guests?: EventGuest[];
+  };
   Insert: {
-    id?: string
-    event_id: string
-    user_id: string
-    response: 'attending' | 'not_attending' | 'maybe'
-    status?: 'confirmed' | 'waitlisted'
-    created_at?: string
-    send_confirmation_email?: boolean
-  }
+    id?: string;
+    event_id: string;
+    user_id: string;
+    response: 'attending' | 'not_attending' | 'maybe';
+    status?: 'confirmed' | 'waitlisted';
+    created_at?: string;
+    send_confirmation_email?: boolean;
+  };
   Update: {
-    id?: string
-    event_id?: string
-    user_id?: string
-    response?: 'attending' | 'not_attending' | 'maybe'
-    status?: 'confirmed' | 'waitlisted'
-    created_at?: string
-    send_confirmation_email?: boolean
-  }
-}
-
-export interface EventGuestsTable {
-  Row: {
-    id: string
-    rsvp_id: string
-    first_name: string | null
-    created_at: string
-  }
-  Insert: {
-    id?: string
-    rsvp_id: string
-    first_name?: string | null
-    created_at?: string
-  }
-  Update: {
-    id?: string
-    rsvp_id?: string
-    first_name?: string | null
-    created_at?: string
-  }
+    id?: string;
+    event_id?: string;
+    user_id?: string;
+    response?: 'attending' | 'not_attending' | 'maybe';
+    status?: 'confirmed' | 'waitlisted';
+    created_at?: string;
+    send_confirmation_email?: boolean;
+  };
 }
