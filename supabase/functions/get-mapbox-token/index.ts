@@ -7,6 +7,7 @@ console.log("Initializing get-mapbox-token function...");
 serve(async (req) => {
   console.log(`Handling ${req.method} request from ${req.headers.get("Origin")}`);
 
+  // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
     console.log("Handling CORS preflight request");
     return new Response(null, {

@@ -12,6 +12,7 @@ interface UseMapboxTokenReturn {
 const TOKEN_CACHE_KEY = 'mapbox_token_cache';
 const TOKEN_CACHE_DURATION = 3600000; // 1 hour in milliseconds
 const MAX_RETRIES = 3;
+const RETRY_DELAY = 2000; // 2 seconds
 
 interface TokenCache {
   token: string;
@@ -75,15 +76,14 @@ export const useMapboxToken = (): UseMapboxTokenReturn => {
         const { data, error: fetchError } = await supabase.functions.invoke('get-mapbox-token', {
           method: 'GET',
           headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
+            prefer: 'return=minimal'
           }
         });
 
         if (!isMounted) return;
 
         if (fetchError) {
-          throw new Error(fetchError.message);
+          throw new Error(fetchError.message || 'Failed to fetch Mapbox token');
         }
 
         if (!data?.token) {
@@ -102,7 +102,7 @@ export const useMapboxToken = (): UseMapboxTokenReturn => {
         setError(err as Error);
         
         if (retryCount < MAX_RETRIES) {
-          const nextRetry = Math.min(1000 * Math.pow(2, retryCount), 8000);
+          const nextRetry = Math.min(RETRY_DELAY * Math.pow(2, retryCount), 8000);
           console.log(`Retrying token fetch in ${nextRetry}ms (attempt ${retryCount + 1}/${MAX_RETRIES})`);
           retryTimeout = setTimeout(() => {
             if (isMounted) {
