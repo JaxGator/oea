@@ -6,7 +6,7 @@ import { useAuthState } from "@/hooks/useAuthState";
 import { EventsHeader } from "@/components/event/sections/EventsHeader";
 import { EventsContent } from "@/components/event/sections/EventsContent";
 import { useQueryClient } from "@tanstack/react-query";
-import type { Event } from "@/types/event";
+import type { Event } from "@/types/database";
 
 export default function Events() {
   const { isAuthenticated } = useAuthState();
@@ -15,15 +15,15 @@ export default function Events() {
   const queryClient = useQueryClient();
   
   const { 
-    data, 
+    data: eventsData, 
     isLoading: isEventsLoading, 
     error,
   } = useEvents(selectedDate);
 
   const { handleRSVP, cancelRSVP } = useRSVP();
 
-  const allEvents = data?.pages.flatMap(page => page.data as Event[]) || [];
-  const totalCount = data?.pages[0]?.count || 0;
+  const allEvents = eventsData?.pages.flatMap(page => page.data) || [];
+  const totalCount = eventsData?.pages[0]?.count || 0;
 
   const filteredEvents = selectedDate ? allEvents : allEvents;
   

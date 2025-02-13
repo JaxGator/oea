@@ -1,8 +1,8 @@
 
 import type { Json } from './base';
-import type { ProfilesTable } from './profiles';
-import type { EventsTable } from './events';
-import type { PollsTable, PollOptionsTable } from './polls';
+import type { ProfilesTable, Profile } from './profiles';
+import type { EventsTable, Event, EventGuest, EventRSVP } from './events';
+import type { PollsTable, PollOptionsTable, Poll, PollOption, PollVote } from './polls';
 import type { SocialMediaFeedsTable } from './social';
 import type { EventRSVPsTable } from './rsvp';
 
