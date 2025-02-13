@@ -59,15 +59,15 @@ export async function executeTableQuery<T>(
     timestamp: new Date().toISOString()
   });
 
-  return executeQuery<T>(() => 
-    supabase
+  // Convert the operation to return a Promise instead of PromiseLike
+  return executeQuery<T>(async () => {
+    const response = await supabase
       .from(table)
-      .select(query)
-      .then(response => {
-        if (response.error) throw response.error;
-        return response;
-      })
-  );
+      .select(query);
+    
+    if (response.error) throw response.error;
+    return response;
+  });
 }
 
 export function getErrorMessage(error: unknown): string {
