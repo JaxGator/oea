@@ -1,4 +1,5 @@
 import { startOfDay, parseISO } from "date-fns";
+import { formatInTimeZone } from "date-fns-tz";
 
 export const isSameDay = (date1: Date, date2: Date): boolean => {
   const d1 = startOfDay(date1);
@@ -55,4 +56,18 @@ export const isDateInWeekendRange = (date: Date, weekendStart: Date): boolean =>
   weekendEnd.setHours(23, 59, 59, 999);
   
   return normalizedDate >= normalizedWeekendStart && normalizedDate <= weekendEnd;
+};
+
+export const formatEventDateTime = (date: string, time: string, format: string) => {
+  const localIsoString = `${date}T${time}`; // Create ISO string without Z suffix
+  const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+  return formatInTimeZone(parseISO(localIsoString), userTimeZone, format);
+};
+
+export const formatEventDate = (date: string, time: string) => {
+  return formatEventDateTime(date, time, 'EEEE, MMMM do, yyyy');
+};
+
+export const formatEventTime = (date: string, time: string) => {
+  return formatEventDateTime(date, time, 'h:mm a');
 };
