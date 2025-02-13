@@ -1,3 +1,4 @@
+
 import { Auth as SupabaseAuth } from "@supabase/auth-ui-react";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,10 +9,11 @@ import { useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
-import { Send } from "lucide-react";
+import { Send, Loader2 } from "lucide-react";
 
 const SEND_TIMEOUT = 30000; // 30 seconds timeout
 const MAX_RETRIES = 2;
+const BASE_DELAY = 1000; // Start with 1 second delay
 
 export function AuthForm() {
   const { toast } = useToast();
@@ -28,8 +30,9 @@ export function AuthForm() {
     
     if (isSubmitting) {
       timeoutId = setTimeout(() => {
-        console.log('Submit timeout reached, resetting state');
+        console.log('Request timeout reached');
         setIsSubmitting(false);
+        setSubmitAttempts(0);
         toast({
           title: "Error",
           description: "Request timed out. Please try again.",
@@ -57,7 +60,7 @@ export function AuthForm() {
     }
 
     if (isSubmitting) {
-      console.log('Already submitting, preventing duplicate submission');
+      console.log('Preventing duplicate submission');
       return;
     }
 
@@ -66,13 +69,13 @@ export function AuthForm() {
 
     const attemptSubmission = async (retry = 0): Promise<boolean> => {
       try {
-        console.log(`Sending message to admins (attempt ${retry + 1})...`);
+        console.log(`Attempting to send message (attempt ${retry + 1}/${MAX_RETRIES + 1})`);
         
         const { data, error } = await supabase.functions.invoke('send-admin-message', {
           body: { message: trimmedMessage }
         });
 
-        console.log('Response from edge function:', { data, error });
+        console.log('Response:', { data, error });
 
         if (error) {
           throw error;
@@ -83,7 +86,7 @@ export function AuthForm() {
         }
 
         toast({
-          title: "Success",
+          title: "Message Sent",
           description: "An administrator will respond to your message soon.",
         });
 
@@ -93,12 +96,12 @@ export function AuthForm() {
         return true;
 
       } catch (error) {
-        console.error('Error sending message:', error);
+        console.error('Send error:', error);
         
-        // If we have retries left, try again
         if (retry < MAX_RETRIES) {
-          console.log(`Retrying submission (${retry + 1}/${MAX_RETRIES})`);
-          await new Promise(resolve => setTimeout(resolve, 1000 * (retry + 1)));
+          const backoffDelay = BASE_DELAY * Math.pow(2, retry);
+          console.log(`Retrying in ${backoffDelay}ms...`);
+          await new Promise(resolve => setTimeout(resolve, backoffDelay));
           return attemptSubmission(retry + 1);
         }
 
@@ -123,7 +126,6 @@ export function AuthForm() {
 
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
-    const type = searchParams.get('type');
     const error = searchParams.get('error');
     const errorDescription = searchParams.get('error_description');
 
@@ -162,7 +164,7 @@ export function AuthForm() {
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log('Auth state change:', event, 'Session:', session);
+      console.log('Auth state change:', event);
       
       if (event === 'SIGNED_OUT') {
         toast({
@@ -176,14 +178,6 @@ export function AuthForm() {
           description: "Welcome back!",
         });
         setAuthError(null);
-      } else if (event === 'USER_UPDATED') {
-        console.log('User updated:', session?.user);
-      } else if (event === 'PASSWORD_RECOVERY') {
-        setAuthError(null);
-        toast({
-          title: "Password Recovery",
-          description: "Check your email for password reset instructions",
-        });
       }
     });
 
@@ -223,33 +217,6 @@ export function AuthForm() {
         providers={[]}
         redirectTo={`${window.location.origin}/auth/callback`}
         magicLink={false}
-        localization={{
-          variables: {
-            sign_in: {
-              email_label: 'Email',
-              password_label: 'Password',
-              button_label: 'Sign in',
-              loading_button_label: 'Signing in...',
-              social_provider_text: 'Sign in with {{provider}}',
-              link_text: "Already have an account? Sign in",
-            },
-            sign_up: {
-              email_label: 'Email',
-              password_label: 'Password',
-              button_label: 'Sign up',
-              loading_button_label: 'Signing up...',
-              social_provider_text: 'Sign up with {{provider}}',
-              link_text: "Don't have an account? Sign up",
-            },
-            forgotten_password: {
-              email_label: 'Email',
-              password_label: 'Password',
-              button_label: 'Send reset instructions',
-              loading_button_label: 'Sending reset instructions...',
-              link_text: "Forgot your password?",
-            },
-          },
-        }}
       />
 
       <div className="mt-6 p-4 bg-gray-50 rounded-lg space-y-4">
@@ -289,16 +256,19 @@ export function AuthForm() {
                 />
               </div>
               <Button 
-                className="w-full"
+                className="w-full relative"
                 onClick={handleContactSubmit}
                 disabled={isSubmitting}
               >
                 {isSubmitting ? (
-                  submitAttempts > 1 ? `Retrying... (${submitAttempts}/${MAX_RETRIES + 1})` : "Sending..."
+                  <span className="flex items-center justify-center">
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    {submitAttempts > 1 ? `Retrying (${submitAttempts}/${MAX_RETRIES + 1})` : "Sending..."}
+                  </span>
                 ) : (
-                  <>
+                  <span className="flex items-center justify-center">
                     Send Message <Send className="ml-2 h-4 w-4" />
-                  </>
+                  </span>
                 )}
               </Button>
             </div>
