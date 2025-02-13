@@ -1,10 +1,8 @@
-
 import { Auth as SupabaseAuth } from "@supabase/auth-ui-react";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useEffect, useState, useCallback } from "react";
-import { AuthError, AuthApiError } from "@supabase/supabase-js";
 import { useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -24,7 +22,6 @@ export function AuthForm() {
   const [submitAttempts, setSubmitAttempts] = useState(0);
   const location = useLocation();
 
-  // Reset submission state after timeout
   useEffect(() => {
     let timeoutId: NodeJS.Timeout;
     
@@ -221,8 +218,7 @@ export function AuthForm() {
 
       <div className="mt-6 p-4 bg-gray-50 rounded-lg space-y-4">
         <p className="text-sm text-gray-600">
-          Welcome! If you previously had an account on our site, you can log in using your email and password, 
-          then change it from your profile. If you are still having trouble, click below to contact an administrator.
+          Welcome! If you previously had an account on our site, you can log in using your original email address and password="password", then change it from your profile. If you are still having trouble, click below to contact an administrator.
         </p>
         <Dialog 
           open={isContactOpen} 
