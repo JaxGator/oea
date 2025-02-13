@@ -12,6 +12,7 @@ export function useEvents(selectedDate?: Date) {
 
   return useInfiniteQuery<EventsPage>({
     queryKey: ['events', selectedDate?.toISOString(), isAuthenticated, isApproved],
+    initialPageParam: 0,
     queryFn: async ({ pageParam = 0 }) => {
       try {
         let query = supabase
