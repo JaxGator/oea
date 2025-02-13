@@ -1,2 +1,7 @@
 
 project_id = "qegpuqitjfocyyrivlhv"
+
+[functions]
+[functions.send-admin-message]
+verify_jwt = false
+

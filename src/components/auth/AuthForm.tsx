@@ -1,4 +1,3 @@
-
 import { Auth as SupabaseAuth } from "@supabase/auth-ui-react";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { supabase } from "@/integrations/supabase/client";
@@ -37,9 +36,7 @@ export function AuthForm() {
         body: { message: trimmedMessage }
       });
 
-      console.log('Function response:', response);
-
-      if (response.error || !response.data?.success) {
+      if (!response.data?.success) {
         throw new Error(response.error?.message || 'Failed to send message');
       }
 
@@ -48,7 +45,7 @@ export function AuthForm() {
         description: "An administrator will respond to your message soon.",
       });
 
-      // Reset form and close dialog only after successful submission
+      // Only reset and close after confirmed success
       setMessage("");
       setIsContactOpen(false);
     } catch (error) {

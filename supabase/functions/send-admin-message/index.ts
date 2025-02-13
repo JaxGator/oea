@@ -18,15 +18,20 @@ serve(async (req) => {
   try {
     console.log('Initializing send-admin-message function')
     
+    if (!supabaseUrl || !supabaseServiceRole) {
+      console.error('Missing required environment variables')
+      throw new Error('Server configuration error')
+    }
+
     const supabaseAdmin = createClient(
-      supabaseUrl!,
-      supabaseServiceRole!
+      supabaseUrl,
+      supabaseServiceRole
     )
 
     const { message } = await req.json()
     console.log('Received message request:', { messageLength: message?.length })
 
-    if (!message) {
+    if (!message?.trim()) {
       console.error('Validation failed: Message is required')
       throw new Error('Message is required')
     }
