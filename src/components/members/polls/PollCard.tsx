@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { useAuthState } from "@/hooks/useAuthState";
@@ -36,17 +35,15 @@ export function PollCard({ poll, canEdit, onDelete, isPublicView = false }: Poll
 
     setIsVoting(true);
     try {
-      const { data: result, error } = await executeQuery<VoteResult>(() =>
-        supabase.rpc('handle_poll_vote', {
-          p_poll_id: poll.id,
-          p_option_id: optionId,
-          p_user_id: user.id
-        })
-      );
+      const { data, error } = await supabase.rpc('handle_poll_vote', {
+        p_poll_id: poll.id,
+        p_option_id: optionId,
+        p_user_id: user.id
+      });
 
       if (error) throw error;
 
-      switch (result) {
+      switch (data) {
         case 'success':
           toast.success("Vote recorded successfully!");
           break;

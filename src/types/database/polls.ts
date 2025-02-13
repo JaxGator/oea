@@ -78,4 +78,17 @@ export type PollWithDetails = Poll & {
     vote_count?: number;
   })[];
   total_votes?: number;
+  poll_votes?: PollVote[];
 };
+
+export interface PollVote {
+  id: string;
+  poll_id: string;
+  option_id: string;
+  user_id: string;
+  created_at: string;
+  profiles?: {
+    username: string;
+    avatar_url: string | null;
+  } | null;
+}

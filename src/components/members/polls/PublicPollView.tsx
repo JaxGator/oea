@@ -33,8 +33,10 @@ export function PublicPollView() {
           visibility,
           poll_options (
             id,
+            poll_id,
             option_text,
-            display_order
+            display_order,
+            created_at
           ),
           poll_votes (
             id,
@@ -55,15 +57,26 @@ export function PublicPollView() {
         throw new Error('Poll not found');
       }
 
-      return {
+      // Transform the data to match PollWithDetails type
+      const transformedPoll: PollWithDetails = {
         ...data,
-        poll_votes: data.poll_votes.map((vote: any) => ({
-          id: vote.id,
-          option_id: vote.option_id,
-          user_id: vote.user_id,
+        poll_options: data.poll_options.map((option: any) => ({
+          ...option,
+          has_voted: data.poll_votes?.some((vote: any) => 
+            vote.option_id === option.id && vote.user_id === user?.id
+          ),
+          vote_count: data.poll_votes?.filter((vote: any) => 
+            vote.option_id === option.id
+          ).length || 0
+        })),
+        total_votes: data.poll_votes?.length || 0,
+        poll_votes: data.poll_votes?.map((vote: any) => ({
+          ...vote,
           profiles: vote.profiles || { username: '', avatar_url: null }
         }))
       };
+
+      return transformedPoll;
     },
     enabled: !!token
   });
