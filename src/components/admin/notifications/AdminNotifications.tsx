@@ -1,3 +1,4 @@
+
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Bell, UserPlus } from "lucide-react";
@@ -8,6 +9,7 @@ import {
 } from "@/components/ui/hover-card";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import { AdminNotificationList } from "./AdminNotificationList";
 
 export function AdminNotifications() {
   const navigate = useNavigate();
@@ -26,7 +28,22 @@ export function AdminNotifications() {
     },
   });
 
-  if (unapprovedUsers.length === 0) return null;
+  const { data: unreadNotifications = [] } = useQuery({
+    queryKey: ['unread-notifications'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('admin_notifications')
+        .select('*')
+        .eq('is_read', false);
+
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
+  const totalNotifications = unapprovedUsers.length + unreadNotifications.length;
+
+  if (totalNotifications === 0) return null;
 
   return (
     <HoverCard>
@@ -38,32 +55,34 @@ export function AdminNotifications() {
         >
           <Bell className="h-5 w-5" />
           <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] text-white">
-            {unapprovedUsers.length}
+            {totalNotifications}
           </span>
         </Button>
       </HoverCardTrigger>
-      <HoverCardContent className="w-80">
+      <HoverCardContent className="w-96">
         <div className="space-y-4">
-          <div className="flex items-center gap-2">
-            <UserPlus className="h-4 w-4 text-orange-500" />
-            <h4 className="text-sm font-semibold">New Users Pending Approval</h4>
-          </div>
-          <div className="space-y-2">
-            {unapprovedUsers.map((user) => (
-              <div key={user.id} className="text-sm flex items-center justify-between">
-                <span>{user.username}</span>
-                <span className="text-gray-500 text-xs">
-                  {new Date(user.created_at).toLocaleDateString()}
-                </span>
+          {unapprovedUsers.length > 0 && (
+            <div className="space-y-4">
+              <div className="flex items-center gap-2">
+                <UserPlus className="h-4 w-4 text-orange-500" />
+                <h4 className="text-sm font-semibold">
+                  {unapprovedUsers.length} User{unapprovedUsers.length !== 1 && 's'} Pending Approval
+                </h4>
               </div>
-            ))}
-          </div>
-          <Button 
-            className="w-full"
-            onClick={() => navigate('/admin?tab=users')}
-          >
-            Manage Users
-          </Button>
+              <Button 
+                className="w-full"
+                onClick={() => navigate('/admin?tab=users')}
+              >
+                Manage Users
+              </Button>
+            </div>
+          )}
+          {unreadNotifications.length > 0 && (
+            <div className="space-y-2">
+              <h4 className="text-sm font-semibold">Recent Notifications</h4>
+              <AdminNotificationList />
+            </div>
+          )}
         </div>
       </HoverCardContent>
     </HoverCard>
