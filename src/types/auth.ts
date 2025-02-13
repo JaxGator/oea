@@ -13,6 +13,8 @@ export interface Profile {
   email_notifications: boolean;
   in_app_notifications: boolean;
   interests: string[] | null;
+  updated_at: string | null;
+  leaderboard_opt_out: boolean;
 }
 
 export interface AuthState {
