@@ -169,7 +169,11 @@ export interface Database {
           created_at: string;
           created_by: string;
           status: 'active' | 'closed';
+          start_date: string | null;
+          end_date: string | null;
+          allow_multiple_choices: boolean;
           share_token: string | null;
+          visibility: 'public' | 'private';
         };
         Insert: {
           id?: string;
@@ -178,7 +182,11 @@ export interface Database {
           created_at?: string;
           created_by: string;
           status?: 'active' | 'closed';
+          start_date?: string | null;
+          end_date?: string | null;
+          allow_multiple_choices?: boolean;
           share_token?: string | null;
+          visibility?: 'public' | 'private';
         };
         Update: {
           id?: string;
@@ -187,7 +195,11 @@ export interface Database {
           created_at?: string;
           created_by?: string;
           status?: 'active' | 'closed';
+          start_date?: string | null;
+          end_date?: string | null;
+          allow_multiple_choices?: boolean;
           share_token?: string | null;
+          visibility?: 'public' | 'private';
         };
       };
       poll_options: {
@@ -196,17 +208,43 @@ export interface Database {
           poll_id: string;
           option_text: string;
           created_at: string;
+          display_order: number;
         };
         Insert: {
           id?: string;
           poll_id: string;
           option_text: string;
           created_at?: string;
+          display_order: number;
         };
         Update: {
           id?: string;
           poll_id?: string;
           option_text?: string;
+          created_at?: string;
+          display_order?: number;
+        };
+      };
+      poll_votes: {
+        Row: {
+          id: string;
+          poll_id: string;
+          option_id: string;
+          user_id: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          poll_id: string;
+          option_id: string;
+          user_id: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          poll_id?: string;
+          option_id?: string;
+          user_id?: string;
           created_at?: string;
         };
       };
@@ -233,6 +271,16 @@ export interface Database {
           updated_at?: string;
         };
       };
+    };
+    Functions: {
+      handle_poll_vote: {
+        Args: { p_poll_id: string; p_option_id: string; p_user_id: string };
+        Returns: VoteResult;
+      };
+    };
+    Enums: {
+      poll_status: 'active' | 'closed';
+      poll_visibility: 'public' | 'private';
     };
   };
 }
@@ -267,18 +315,7 @@ export type Poll = Database['public']['Tables']['polls']['Row'];
 export type PollOption = Database['public']['Tables']['poll_options']['Row'];
 export type SocialMediaFeed = Database['public']['Tables']['social_media_feeds']['Row'];
 
-// Type guards for database operations
-export function isQueryError<T>(result: T | { error: true }): result is { error: true } {
-  return result && typeof result === 'object' && 'error' in result;
-}
-
-export function isQuerySuccess<T>(result: T | { error: true }): result is T {
-  return !isQueryError(result);
-}
-
-// Database operation result types
-export type DbResult<T> = Promise<T | { error: true }>;
-export type DbResultOk<T> = Promise<T>;
+export type VoteResult = 'success' | 'already_voted' | 'poll_closed' | 'not_found';
 
 export type QueryResult<T> = {
   data: T | null;
@@ -288,3 +325,14 @@ export type QueryResult<T> = {
     details?: string;
   } | null;
 };
+
+export function isQueryError<T>(result: T | { error: true }): result is { error: true } {
+  return result && typeof result === 'object' && 'error' in result;
+}
+
+export function isQuerySuccess<T>(result: T | { error: true }): result is T {
+  return !isQueryError(result);
+}
+
+export type DbResult<T> = Promise<T | { error: true }>;
+export type DbResultOk<T> = Promise<T>;
