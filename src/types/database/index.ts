@@ -1,3 +1,4 @@
+
 import type { Json } from './base';
 import type { ProfilesTable } from './profiles';
 import type { EventsTable } from './events';
@@ -12,12 +13,11 @@ export interface Database {
       polls: PollsTable;
       poll_options: PollOptionsTable;
       social_media_feeds: SocialMediaFeedsTable;
-      // ... other tables can be added here
     };
     Functions: {
       handle_poll_vote: {
         Args: { p_poll_id: string; p_option_id: string; p_user_id: string };
-        Returns: VoteResult;
+        Returns: 'success' | 'already_voted' | 'poll_closed' | 'not_found';
       };
     };
     Enums: {

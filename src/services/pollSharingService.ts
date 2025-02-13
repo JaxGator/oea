@@ -24,50 +24,46 @@ export const pollSharingService = {
   },
 
   async getPollShares(pollId: string): Promise<string[]> {
-    const response = await supabase
+    const { data, error } = await supabase
       .from('poll_shares')
       .select('shared_with')
-      .eq('poll_id', pollId as string);
+      .eq('poll_id', pollId);
 
-    if (response.error) {
-      console.error('Error fetching poll shares:', response.error);
-      throw response.error;
+    if (error) {
+      console.error('Error fetching poll shares:', error);
+      throw error;
     }
-    return (response.data || []).map(share => share.shared_with);
+    return (data || []).map(share => share.shared_with);
   },
 
   async sharePoll(pollId: string, selectedUsers: string[], shareUrl: string) {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('No authenticated user');
 
-    type PollShare = Database['public']['Tables']['poll_shares']['Insert'];
-    const pollShares: PollShare[] = selectedUsers.map(userId => ({
-      poll_id: pollId,
-      shared_with: userId,
-      shared_by: user.id
-    }));
-
+    // Create poll shares
     const { error: shareError } = await supabase
       .from('poll_shares')
-      .insert(pollShares);
+      .insert(selectedUsers.map(userId => ({
+        poll_id: pollId,
+        shared_with: userId,
+        shared_by: user.id
+      })));
 
     if (shareError) {
       console.error('Error sharing poll:', shareError);
       throw shareError;
     }
 
-    type Notification = Database['public']['Tables']['notifications']['Insert'];
-    const notifications: Notification[] = selectedUsers.map(userId => ({
-      user_id: userId,
-      type: 'poll_share',
-      title: 'New Poll Shared',
-      message: `A poll has been shared with you. Click to view: ${shareUrl}`,
-      related_entity_id: pollId
-    }));
-
+    // Create notifications
     const { error: notificationError } = await supabase
       .from('notifications')
-      .insert(notifications);
+      .insert(selectedUsers.map(userId => ({
+        user_id: userId,
+        type: 'poll_share',
+        title: 'New Poll Shared',
+        message: `A poll has been shared with you. Click to view: ${shareUrl}`,
+        related_entity_id: pollId
+      })));
 
     if (notificationError) {
       console.error('Error creating notifications:', notificationError);
@@ -75,4 +71,3 @@ export const pollSharingService = {
     }
   }
 };
-
