@@ -1,15 +1,22 @@
+
 import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { AuthForm } from "@/components/auth/AuthForm";
 import { useAuthRedirect } from "@/hooks/auth/useAuthRedirect";
 import { useToast } from "@/hooks/use-toast";
+import { useLocation } from "react-router-dom";
 
 const Auth = () => {
   useAuthRedirect();
   const { toast } = useToast();
+  const location = useLocation();
+  const isLogout = location.state?.logout === true;
 
   useEffect(() => {
     const clearSession = async () => {
+      // Only clear session if this was an actual logout action
+      if (!isLogout) return;
+
       try {
         const { error } = await supabase.auth.signOut();
         if (error) {
@@ -31,7 +38,7 @@ const Auth = () => {
     };
     
     clearSession();
-  }, [toast]);
+  }, [toast, isLogout]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
