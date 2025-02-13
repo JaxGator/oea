@@ -1,5 +1,5 @@
 
-import { Member } from "../types";
+import { Member, createMemberFromPartial } from "../types";
 import { MemberListContent } from "./MemberListContent";
 import { EditMemberDialog } from "../EditMemberDialog";
 import { useMembers } from "@/hooks/useMembers";
@@ -23,7 +23,11 @@ export function MemberListContainer({
 }: MemberListContainerProps) {
   const { editingMember, setEditingMember, handleDeleteMember } = useMembers();
   const queryClient = useQueryClient();
-  const members = useMessageSubscription(initialMembers);
+  
+  // Transform any potential partial member data to full Member objects
+  const members = useMessageSubscription(
+    initialMembers.map(member => createMemberFromPartial(member))
+  );
 
   const handleDelete = (member: Member) => {
     if (member.id) {

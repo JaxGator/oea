@@ -1,3 +1,4 @@
+
 import {
   Table,
   TableBody,
@@ -9,6 +10,7 @@ import {
 import { LeaderboardRank } from "./LeaderboardRank";
 import { LeaderboardUserCell } from "./LeaderboardUserCell";
 import { LeaderboardMetrics } from "./LeaderboardMetrics";
+import { createMemberFromPartial } from "../types";
 
 interface LeaderboardTableProps {
   data: any[];
@@ -63,7 +65,7 @@ export function LeaderboardTable({
               </TableCell>
               <TableCell>
                 <LeaderboardUserCell
-                  user={{
+                  user={createMemberFromPartial({
                     id: item.id,
                     username: item.profiles?.username || 'Unknown User',
                     full_name: item.profiles?.full_name,
@@ -72,8 +74,14 @@ export function LeaderboardTable({
                     is_approved: item.profiles?.is_approved || false,
                     is_member: item.profiles?.is_member || false,
                     created_at: item.profiles?.created_at || new Date().toISOString(),
-                    event_reminders_enabled: item.profiles?.event_reminders_enabled || false
-                  }}
+                    event_reminders_enabled: item.profiles?.event_reminders_enabled || false,
+                    email: item.profiles?.email || null,
+                    email_notifications: item.profiles?.email_notifications || false,
+                    in_app_notifications: item.profiles?.in_app_notifications || false,
+                    interests: item.profiles?.interests || null,
+                    updated_at: item.profiles?.updated_at || null,
+                    leaderboard_opt_out: item.profiles?.leaderboard_opt_out || false
+                  })}
                 />
               </TableCell>
               <LeaderboardMetrics
