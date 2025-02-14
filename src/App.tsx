@@ -19,6 +19,7 @@ const Social = lazy(() => import("@/pages/Social"));
 const Gallery = lazy(() => import("@/pages/Gallery"));
 const Site = lazy(() => import("@/pages/Site"));
 const Account = lazy(() => import("@/pages/Account"));
+const Auth = lazy(() => import("@/pages/Auth"));
 
 const router = createBrowserRouter([
   {
@@ -29,6 +30,14 @@ const router = createBrowserRouter([
           <Home />
         </Suspense>
       </SessionManager>
+    ),
+  },
+  {
+    path: "/auth",
+    element: (
+      <Suspense fallback={<div>Loading...</div>}>
+        <Auth />
+      </Suspense>
     ),
   },
   {
