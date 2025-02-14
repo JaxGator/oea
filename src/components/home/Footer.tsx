@@ -7,14 +7,14 @@ export function Footer() {
 
   // Always render the footer container, even during loading or error states
   return (
-    <footer className="bg-white border-t mt-auto">
+    <footer className="bg-[#1A1F2C] border-t border-[#6E59A5] mt-auto">
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         {isLoading ? (
           <div className="flex justify-center">
-            <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
+            <Loader2 className="h-6 w-6 animate-spin text-[#9b87f5]" />
           </div>
         ) : error ? (
-          <p className="text-center text-base text-gray-400">
+          <p className="text-center text-base text-[#8E9196]">
             &copy; {new Date().getFullYear()} OEA. All rights reserved.
           </p>
         ) : (
@@ -23,7 +23,7 @@ export function Footer() {
               {socialLinks?.facebook && (
                 <a
                   href={socialLinks.facebook}
-                  className="text-gray-400 hover:text-gray-500"
+                  className="text-[#9b87f5] hover:text-[#D6BCFA] transition-colors duration-200"
                   target="_blank"
                   rel="noopener noreferrer"
                 >
@@ -41,7 +41,7 @@ export function Footer() {
               {socialLinks?.instagram && (
                 <a
                   href={socialLinks.instagram}
-                  className="text-gray-400 hover:text-gray-500"
+                  className="text-[#9b87f5] hover:text-[#D6BCFA] transition-colors duration-200"
                   target="_blank"
                   rel="noopener noreferrer"
                 >
@@ -59,7 +59,7 @@ export function Footer() {
               {socialLinks?.youtube && (
                 <a
                   href={socialLinks.youtube}
-                  className="text-gray-400 hover:text-gray-500"
+                  className="text-[#9b87f5] hover:text-[#D6BCFA] transition-colors duration-200"
                   target="_blank"
                   rel="noopener noreferrer"
                 >
@@ -74,7 +74,7 @@ export function Footer() {
                 </a>
               )}
             </div>
-            <p className="mt-8 text-center text-base text-gray-400">
+            <p className="mt-8 text-center text-base text-[#8E9196]">
               &copy; {new Date().getFullYear()} OEA. All rights reserved.
             </p>
           </>
