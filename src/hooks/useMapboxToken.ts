@@ -73,9 +73,7 @@ export const useMapboxToken = (): UseMapboxTokenReturn => {
         }
 
         console.log('Fetching fresh Mapbox token...');
-        const { data, error: fetchError } = await supabase.functions.invoke<{ token: string }>('get-mapbox-token', {
-          method: 'GET'
-        });
+        const { data, error: fetchError } = await supabase.functions.invoke('get-mapbox-token');
 
         if (fetchError) {
           console.error('Function error:', fetchError);
