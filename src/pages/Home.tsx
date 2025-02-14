@@ -6,6 +6,7 @@ import { GalleryPreview } from "@/components/home/GalleryPreview";
 import { SocialFeed } from "@/components/home/SocialFeed";
 import { TacoTracker } from "@/components/home/TacoTracker";
 import { NotificationProvider } from "@/components/providers/NotificationProvider";
+import { Footer } from "@/components/home/Footer";
 
 export default function Home() {
   return (
@@ -13,25 +14,18 @@ export default function Home() {
       <HomeLayout>
         <div className="container mx-auto px-4 py-8">
           <div className="space-y-12">
-            <section className="space-y-8">
-              <FeaturedEvents />
-            </section>
-
-            <section className="space-y-8">
-              <LeaderboardSection />
-            </section>
-
-            <section className="space-y-8">
-              <GalleryPreview />
-            </section>
-
+            <FeaturedEvents />
+            <LeaderboardSection />
+            <GalleryPreview />
             <section className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <TacoTracker />
               <SocialFeed />
             </section>
           </div>
         </div>
+        <Footer />
       </HomeLayout>
     </NotificationProvider>
   );
 }
+
