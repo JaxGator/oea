@@ -1,5 +1,5 @@
 
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { useMapboxToken } from '@/hooks/useMapboxToken';
 import { LocationSearchInputProps } from './types/location';
@@ -14,21 +14,21 @@ export function LocationSearchInput({
 }: LocationSearchInputProps) {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const { mapToken, isLoading, error } = useMapboxToken();
+  const [inputValue, setInputValue] = useState(currentValue);
   const { 
-    searchValue, 
-    setSearchValue, 
+    setSearchValue,
     suggestions, 
     isDropdownOpen, 
     setIsDropdownOpen,
     isSearching
   } = useLocationSearch(mapToken);
 
-  // Only update searchValue from currentValue on mount or when currentValue changes
+  // Only update input value from currentValue on mount
   useEffect(() => {
-    if (currentValue !== undefined && !searchValue) {
-      setSearchValue(currentValue);
+    if (currentValue) {
+      setInputValue(currentValue);
     }
-  }, [currentValue]);
+  }, []);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -58,9 +58,19 @@ export function LocationSearchInput({
     );
   }
 
+  const handleInputChange = (value: string) => {
+    setInputValue(value);
+    setSearchValue(value);
+    if (value.length >= 3) {
+      setIsDropdownOpen(true);
+    } else {
+      setIsDropdownOpen(false);
+    }
+  };
+
   const handleSuggestionSelect = (suggestion: { place_name: string; center: [number, number] }) => {
+    setInputValue(suggestion.place_name);
     onLocationSelect(suggestion);
-    setSearchValue(suggestion.place_name);
     setIsDropdownOpen(false);
   };
 
@@ -69,13 +79,8 @@ export function LocationSearchInput({
       <div className="relative">
         <Input
           placeholder="Search for a location or business..."
-          value={searchValue}
-          onChange={(e) => {
-            setSearchValue(e.target.value);
-            if (e.target.value.length >= 3) {
-              setIsDropdownOpen(true);
-            }
-          }}
+          value={inputValue}
+          onChange={(e) => handleInputChange(e.target.value)}
           disabled={disabled || isSearching}
           className="w-full"
         />
@@ -89,7 +94,7 @@ export function LocationSearchInput({
       <SuggestionsList
         suggestions={suggestions}
         isOpen={isDropdownOpen}
-        searchValue={searchValue}
+        searchValue={inputValue}
         onSelect={handleSuggestionSelect}
       />
     </div>
