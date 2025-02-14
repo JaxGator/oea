@@ -19,10 +19,9 @@ export function useLocationSearch(mapToken: string | undefined) {
     console.log('Searching locations with token status:', !!mapToken);
 
     try {
-      // Enhanced search parameters to match Mapbox demo behavior
       const endpoint = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
         searchValue
-      )}.json?access_token=${mapToken}&country=us&fuzzy_match=true&autocomplete=true&language=en&limit=10&proximity=`;
+      )}.json?access_token=${mapToken}&country=us&types=poi,place,address,neighborhood,locality,postcode&autocomplete=true&language=en&limit=10&routing=true&fuzzy_match=true`;
 
       const response = await fetch(endpoint);
       if (!response.ok) {
@@ -49,10 +48,21 @@ export function useLocationSearch(mapToken: string | undefined) {
           Array.isArray(feature.center) &&
           feature.center.length === 2
         )
-        .map((feature: any) => ({
-          place_name: feature.place_name,
-          center: feature.center as [number, number]
-        }));
+        .map((feature: any) => {
+          // Log each feature for debugging
+          console.log('Processing feature:', {
+            id: feature.id,
+            type: feature.place_type,
+            text: feature.text,
+            place_name: feature.place_name,
+            properties: feature.properties
+          });
+          
+          return {
+            place_name: feature.place_name,
+            center: feature.center as [number, number]
+          };
+        });
       
       console.log('Found suggestions:', validSuggestions.length);
       setSuggestions(validSuggestions);
