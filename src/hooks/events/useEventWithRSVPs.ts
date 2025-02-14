@@ -65,28 +65,34 @@ export const useEventWithRSVPs = (eventId: string | undefined) => {
 
       const typedRsvpData = rsvpData as unknown as RSVPWithProfile[];
       
-      const rsvpsWithProfiles = typedRsvpData?.map((rsvp): EventRSVP => ({
-        id: rsvp.id,
-        event_id: rsvp.event_id,
-        user_id: rsvp.user_id,
-        response: rsvp.response,
-        status: rsvp.status,
-        created_at: rsvp.created_at,
-        profiles: rsvp.profiles ? {
-          full_name: rsvp.profiles.full_name,
-          username: rsvp.profiles.username
-        } : null,
-        event_guests: rsvp.event_guests?.map(guest => ({
-          id: guest.id,
-          first_name: guest.first_name
-        }))
-      })) || [];
+      const rsvpsWithProfiles = typedRsvpData?.map((rsvp): EventRSVP => {
+        // Get the main attendee name
+        const attendeeName = rsvp.profiles?.full_name || rsvp.profiles?.username || 'Unknown';
+        
+        return {
+          id: rsvp.id,
+          event_id: rsvp.event_id,
+          user_id: rsvp.user_id,
+          response: rsvp.response,
+          status: rsvp.status,
+          created_at: rsvp.created_at,
+          profiles: rsvp.profiles ? {
+            full_name: attendeeName,
+            username: rsvp.profiles.username
+          } : null,
+          event_guests: rsvp.event_guests?.map(guest => ({
+            id: guest.id,
+            first_name: guest.first_name
+          }))
+        };
+      }) || [];
 
       console.log('Processed RSVPs:', rsvpsWithProfiles);
 
       return {
         ...eventData,
-        rsvps: rsvpsWithProfiles
+        rsvps: rsvpsWithProfiles,
+        attendees: rsvpsWithProfiles // Adding attendees directly to make it more explicit
       } as Event;
     },
     enabled: !!eventId
