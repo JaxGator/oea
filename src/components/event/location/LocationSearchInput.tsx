@@ -6,6 +6,7 @@ import { LocationSearchInputProps } from './types/location';
 import { SuggestionsList } from './components/SuggestionsList';
 import { useLocationSearch } from './hooks/useLocationSearch';
 import { Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
 
 export function LocationSearchInput({ 
   onLocationSelect, 
