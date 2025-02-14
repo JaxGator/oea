@@ -22,7 +22,7 @@ interface EventCardActionsProps {
   canJoinWaitlist?: boolean;
   isWixEvent?: boolean;
   requireAuth?: boolean;
-  event: { id: string; title: string };
+  event: { id: string; shareToken: string };
   isAuthenticated?: boolean;
 }
 
