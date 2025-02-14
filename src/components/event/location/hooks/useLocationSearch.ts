@@ -19,19 +19,10 @@ export function useLocationSearch(mapToken: string | undefined) {
     console.log('Searching locations with token status:', !!mapToken);
 
     try {
-      // Using only officially supported types
-      const types = [
-        'place',
-        'district',
-        'locality',
-        'neighborhood',
-        'address',
-        'poi'
-      ].join(',');
-
+      // Using fuzzy matching and no type restrictions for broader results
       const endpoint = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
         searchValue
-      )}.json?access_token=${mapToken}&country=us&types=${types}&limit=15`;
+      )}.json?access_token=${mapToken}&country=us&fuzzy_match=true&limit=15`;
 
       const response = await fetch(endpoint);
       if (!response.ok) {
@@ -42,7 +33,8 @@ export function useLocationSearch(mapToken: string | undefined) {
       console.log('Mapbox API response received:', { 
         status: response.status, 
         hasFeatures: !!data?.features,
-        featureCount: data?.features?.length 
+        featureCount: data?.features?.length,
+        features: data?.features 
       });
       
       if (!data?.features || !Array.isArray(data.features)) {
