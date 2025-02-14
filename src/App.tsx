@@ -114,16 +114,16 @@ const router = createBrowserRouter([
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <AppProviders>
-        <NotificationProvider>
-          <ErrorBoundary>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <AppProviders>
+          <NotificationProvider>
             <RouterProvider router={router} />
-          </ErrorBoundary>
-          <Toaster />
-        </NotificationProvider>
-      </AppProviders>
-    </QueryClientProvider>
+            <Toaster />
+          </NotificationProvider>
+        </AppProviders>
+      </QueryClientProvider>
+    </ErrorBoundary>
   );
 }
 
