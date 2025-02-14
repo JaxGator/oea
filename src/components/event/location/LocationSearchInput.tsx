@@ -23,8 +23,9 @@ export function LocationSearchInput({
     isSearching
   } = useLocationSearch(mapToken);
 
+  // Only update searchValue from currentValue on mount or when currentValue changes
   useEffect(() => {
-    if (currentValue !== undefined) {
+    if (currentValue !== undefined && !searchValue) {
       setSearchValue(currentValue);
     }
   }, [currentValue]);

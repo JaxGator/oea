@@ -1,35 +1,17 @@
 
 import { useParams, useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { format } from "date-fns";
-import { Event, EventRSVP } from "@/types/event";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useEffect } from "react";
 import { AttendeeList } from "@/components/event/details/AttendeeList";
-
-interface RSVPWithProfile {
-  id: string;
-  event_id: string;
-  user_id: string;
-  response: 'attending' | 'not_attending' | 'maybe';
-  status: 'confirmed' | 'waitlisted';
-  created_at: string;
-  profiles: {
-    full_name: string | null;
-    username: string;
-  };
-  event_guests?: {
-    id: string;
-    first_name: string;
-  }[];
-}
+import { useEventWithRSVPs } from "@/hooks/events/useEventWithRSVPs";
 
 export default function EventDetails() {
   const { eventId } = useParams();
   const navigate = useNavigate();
+  const { data: event, isLoading, error } = useEventWithRSVPs(eventId);
 
   useEffect(() => {
     if (!eventId) {
@@ -37,85 +19,10 @@ export default function EventDetails() {
     }
   }, [eventId, navigate]);
 
-  if (!eventId) {
-    return null;
-  }
-
-  const { data: event, isLoading, error } = useQuery({
-    queryKey: ['event', eventId],
-    queryFn: async () => {
-      const { data: eventData, error: eventError } = await supabase
-        .from('events')
-        .select('*')
-        .eq('id', eventId)
-        .maybeSingle();
-
-      if (eventError) throw eventError;
-      if (!eventData) throw new Error('Event not found');
-
-      const { data: rsvpData, error: rsvpError } = await supabase
-        .from('event_rsvps')
-        .select(`
-          id,
-          event_id,
-          user_id,
-          response,
-          status,
-          created_at,
-          profiles!inner (
-            full_name,
-            username
-          ),
-          event_guests (
-            id,
-            first_name
-          )
-        `)
-        .eq('event_id', eventId)
-        .eq('response', 'attending')
-        .eq('status', 'confirmed');
-
-      if (rsvpError) {
-        console.error('RSVP query error:', rsvpError);
-        throw rsvpError;
-      }
-
-      console.log('RSVP Data:', rsvpData); // Debug log
-
-      const typedRsvpData = rsvpData as unknown as RSVPWithProfile[];
-      
-      const rsvpsWithProfiles = typedRsvpData?.map((rsvp): EventRSVP => {
-        console.log('Processing RSVP:', rsvp); // Debug log
-        return {
-          id: rsvp.id,
-          event_id: rsvp.event_id,
-          user_id: rsvp.user_id,
-          response: rsvp.response,
-          status: rsvp.status,
-          created_at: rsvp.created_at,
-          profiles: rsvp.profiles ? {
-            full_name: rsvp.profiles.full_name,
-            username: rsvp.profiles.username
-          } : null,
-          event_guests: rsvp.event_guests?.map(guest => ({
-            id: guest.id,
-            first_name: guest.first_name
-          }))
-        };
-      }) || [];
-
-      console.log('Processed RSVPs:', rsvpsWithProfiles); // Debug log
-
-      return {
-        ...eventData,
-        rsvps: rsvpsWithProfiles
-      } as Event;
-    },
-    enabled: !!eventId
-  });
+  if (!eventId) return null;
 
   if (error) {
-    console.error('Query error:', error); // Debug log
+    console.error('Query error:', error);
     throw error;
   }
 
@@ -138,23 +45,18 @@ export default function EventDetails() {
     throw new Error('Event not found');
   }
 
-  console.log('Event RSVPs:', event.rsvps); // Debug log
-
   const attendeeNames = event.rsvps
     ?.filter(rsvp => rsvp.response === 'attending' && rsvp.status === 'confirmed')
-    .map(rsvp => {
-      console.log('Processing attendee:', rsvp); // Debug log
-      return {
-        name: rsvp.profiles?.full_name || rsvp.profiles?.username || 'Unknown',
-        guests: rsvp.event_guests?.map(guest => guest.first_name) || []
-      };
-    })
+    .map(rsvp => ({
+      name: rsvp.profiles?.full_name || rsvp.profiles?.username || 'Unknown',
+      guests: rsvp.event_guests?.map(guest => guest.first_name) || []
+    }))
     .flatMap(({name, guests}) => [
       name,
       ...guests.map(guestName => `${guestName} (Guest of ${name})`)
     ]) || [];
 
-  console.log('Final attendee names:', attendeeNames); // Debug log
+  console.log('Final attendee names:', attendeeNames);
 
   return (
     <div className="min-h-screen bg-[#222222]">
