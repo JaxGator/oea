@@ -3,8 +3,8 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': '*',
-  'Access-Control-Request-Method': '*'
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'GET, OPTIONS'
 };
 
 console.log("Initializing get-mapbox-token function...");
@@ -16,10 +16,7 @@ serve(async (req) => {
   if (req.method === "OPTIONS") {
     console.log("Handling CORS preflight request");
     return new Response(null, {
-      headers: {
-        ...corsHeaders,
-        'Access-Control-Allow-Methods': 'GET, OPTIONS',
-      },
+      headers: corsHeaders,
       status: 204
     });
   }
