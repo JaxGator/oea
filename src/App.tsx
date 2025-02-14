@@ -1,4 +1,3 @@
-
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "@/lib/react-query";
@@ -9,7 +8,7 @@ import { PublicEventView } from "./components/event/public/PublicEventView";
 import { RequireAuth } from "@/components/auth/RequireAuth";
 
 // Lazy load components
-const Home = lazy(() => import("@/pages/Home"));
+const Index = lazy(() => import("@/pages/Index"));
 const Events = lazy(() => import("@/pages/Events"));
 const EventDetails = lazy(() => import("@/pages/EventDetails"));
 const Profile = lazy(() => import("@/pages/Profile"));
@@ -27,7 +26,7 @@ const router = createBrowserRouter([
     element: (
       <RequireAuth>
         <Suspense fallback={<div>Loading...</div>}>
-          <Home />
+          <Index />
         </Suspense>
       </RequireAuth>
     ),
@@ -143,7 +142,9 @@ const router = createBrowserRouter([
 function App() {
   return (
     <ErrorBoundary>
-      <AppProviders router={router} />
+      <QueryClientProvider client={queryClient}>
+        <AppProviders router={router} />
+      </QueryClientProvider>
     </ErrorBoundary>
   );
 }
