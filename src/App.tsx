@@ -1,8 +1,8 @@
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
+
+import { createBrowserRouter } from "react-router-dom";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "@/lib/react-query";
 import { AppProviders } from "@/components/providers/AppProviders";
-import { Toaster } from "@/components/ui/sonner";
 import { ErrorBoundary } from "@/components/error/ErrorBoundary";
 import { lazy, Suspense } from "react";
 import { PublicEventView } from "./components/event/public/PublicEventView";

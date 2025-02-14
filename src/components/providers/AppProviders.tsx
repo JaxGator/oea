@@ -11,7 +11,6 @@ import { SessionManager } from "@/components/auth/SessionManager";
 import { RouterProvider } from "react-router-dom";
 
 interface AppProvidersProps {
-  children?: ReactNode;
   router: any;
 }
 
