@@ -16,19 +16,19 @@ export function LocationSearchInput({
   const { mapToken, isLoading, error } = useMapboxToken();
   const [inputValue, setInputValue] = useState(currentValue);
   const { 
-    setSearchValue,
     suggestions, 
     isDropdownOpen, 
     setIsDropdownOpen,
-    isSearching
+    isSearching,
+    searchLocations
   } = useLocationSearch(mapToken);
 
-  // Only update input value from currentValue on mount
+  // Initialize input value only once on mount if currentValue exists
   useEffect(() => {
-    if (currentValue) {
+    if (currentValue && !inputValue) {
       setInputValue(currentValue);
     }
-  }, []);
+  }, []); // Empty dependency array ensures this only runs once on mount
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -59,9 +59,12 @@ export function LocationSearchInput({
   }
 
   const handleInputChange = (value: string) => {
+    // Always update local input value immediately
     setInputValue(value);
-    setSearchValue(value);
+    
+    // Trigger search only if we have 3 or more characters
     if (value.length >= 3) {
+      searchLocations(value);
       setIsDropdownOpen(true);
     } else {
       setIsDropdownOpen(false);
@@ -81,7 +84,7 @@ export function LocationSearchInput({
           placeholder="Search for a location or business..."
           value={inputValue}
           onChange={(e) => handleInputChange(e.target.value)}
-          disabled={disabled || isSearching}
+          disabled={disabled}
           className="w-full"
         />
         {isSearching && (
