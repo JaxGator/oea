@@ -24,7 +24,10 @@ export const useEventWithRSVPs = (eventId: string | undefined) => {
   return useQuery({
     queryKey: ['event', eventId],
     queryFn: async () => {
-      if (!eventId) throw new Error('Event ID is required');
+      if (!eventId) {
+        console.warn('useEventWithRSVPs called without event ID');
+        return null;
+      }
 
       console.log('Fetching event and RSVPs for event ID:', eventId);
 
@@ -114,6 +117,6 @@ export const useEventWithRSVPs = (eventId: string | undefined) => {
     },
     enabled: !!eventId,
     staleTime: 1000 * 60, // Consider data fresh for 1 minute
-    gcTime: 1000 * 60 * 5 // Keep unused data in cache for 5 minutes (renamed from cacheTime)
+    gcTime: 1000 * 60 * 5 // Keep unused data in cache for 5 minutes
   });
 };

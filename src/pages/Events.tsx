@@ -38,18 +38,12 @@ export default function Events() {
     return eventDate < now;
   }).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()) as Event[];
 
+  console.log('Events page - Upcoming events:', upcomingEvents);
+  console.log('Events page - Past events:', pastEvents);
+
   const handleEventUpdate = () => {
     queryClient.invalidateQueries({ queryKey: ['events'] });
   };
-
-  if (error) {
-    console.error("Events loading error:", error);
-    return (
-      <div className="min-h-screen bg-[#F1F0FB] flex items-center justify-center animate-fade-in">
-        <div className="text-black">Error loading events. Please try again.</div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-white">
