@@ -8,7 +8,7 @@ import { SessionContextProvider } from "@supabase/auth-helpers-react";
 import { supabase } from "@/integrations/supabase/client";
 import { LoadingScreen } from "@/components/ui/loading-screen";
 import { SessionManager } from "@/components/auth/SessionManager";
-import { Router } from "react-router-dom";
+import { RouterProvider } from "react-router-dom";
 
 interface AppProvidersProps {
   children: ReactNode;
