@@ -9,6 +9,7 @@ import { ArrowLeft } from 'lucide-react';
 import { format } from 'date-fns';
 import { Skeleton } from '@/components/ui/skeleton';
 import { EventLocationMap } from '../EventLocationMap';
+import { toast } from 'sonner';
 
 export function PublicEventView() {
   const { token } = useParams();
@@ -19,21 +20,36 @@ export function PublicEventView() {
     queryFn: async () => {
       console.log('Fetching event with share token:', token);
       
-      // Make sure to only select the fields we need for public viewing
+      if (!token) {
+        throw new Error('No share token provided');
+      }
+
+      // Basic query first to debug
       const { data: eventData, error } = await supabase
         .from('events')
+        .select('*')
+        .eq('share_token', token)
+        .maybeSingle();
+
+      if (error) {
+        console.error('Error fetching event:', error);
+        toast.error('Error fetching event details');
+        throw error;
+      }
+      
+      if (!eventData) {
+        console.error('Event not found for share token:', token);
+        toast.error('Event not found');
+        throw new Error('Event not found');
+      }
+
+      console.log('Found event:', eventData);
+      
+      // If basic query works, get full details
+      const { data: fullEventData, error: fullError } = await supabase
+        .from('events')
         .select(`
-          id,
-          title,
-          description,
-          date,
-          time,
-          location,
-          max_guests,
-          image_url,
-          latitude,
-          longitude,
-          share_token,
+          *,
           event_rsvps (
             id,
             user_id,
@@ -50,20 +66,15 @@ export function PublicEventView() {
           )
         `)
         .eq('share_token', token)
-        .single();
+        .maybeSingle();
 
-      if (error) {
-        console.error('Error fetching event:', error);
-        throw error;
-      }
-      
-      if (!eventData) {
-        console.error('Event not found for share token:', token);
-        throw new Error('Event not found');
+      if (fullError) {
+        console.error('Error fetching full event details:', fullError);
+        // Fall back to basic event data if full query fails
+        return eventData;
       }
 
-      console.log('Found event:', eventData);
-      return eventData;
+      return fullEventData;
     },
     enabled: !!token,
     retry: 1
