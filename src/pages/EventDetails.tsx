@@ -22,6 +22,7 @@ interface RSVPWithProfile {
     username: string;
   };
   event_guests?: {
+    id: string;
     first_name: string;
   }[];
 }
@@ -87,7 +88,10 @@ export default function EventDetails() {
           full_name: rsvp.profiles.full_name,
           username: rsvp.profiles.username
         },
-        event_guests: rsvp.event_guests
+        event_guests: rsvp.event_guests?.map(guest => ({
+          id: guest.id,
+          first_name: guest.first_name
+        }))
       }));
 
       return {
