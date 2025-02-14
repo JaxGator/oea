@@ -29,91 +29,96 @@ export const useEventWithRSVPs = (eventId: string | undefined) => {
         return null;
       }
 
-      console.log('Fetching event and RSVPs for event ID:', eventId);
+      console.log('useEventWithRSVPs - Fetching event:', eventId);
 
-      // Fetch event data
-      const { data: eventData, error: eventError } = await supabase
-        .from('events')
-        .select('*')
-        .eq('id', eventId)
-        .maybeSingle();
+      try {
+        // Fetch event data
+        const { data: eventData, error: eventError } = await supabase
+          .from('events')
+          .select('*')
+          .eq('id', eventId)
+          .maybeSingle();
 
-      if (eventError) {
-        console.error('Error fetching event:', eventError);
-        throw eventError;
-      }
-      if (!eventData) {
-        console.error('Event not found for ID:', eventId);
-        throw new Error('Event not found');
-      }
+        if (eventError) {
+          console.error('Error fetching event:', eventError);
+          throw eventError;
+        }
+        if (!eventData) {
+          console.error('Event not found for ID:', eventId);
+          throw new Error('Event not found');
+        }
 
-      console.log('Event data fetched:', eventData);
+        console.log('useEventWithRSVPs - Event data fetched:', eventData);
 
-      // Fetch RSVPs with profiles and guests
-      const { data: rsvpData, error: rsvpError } = await supabase
-        .from('event_rsvps')
-        .select(`
-          id,
-          event_id,
-          user_id,
-          response,
-          status,
-          created_at,
-          profiles:profiles!inner (
-            full_name,
-            username
-          ),
-          event_guests (
+        // Fetch RSVPs with profiles and guests
+        const { data: rsvpData, error: rsvpError } = await supabase
+          .from('event_rsvps')
+          .select(`
             id,
-            first_name
-          )
-        `)
-        .eq('event_id', eventId)
-        .eq('response', 'attending')
-        .eq('status', 'confirmed');
+            event_id,
+            user_id,
+            response,
+            status,
+            created_at,
+            profiles:profiles!inner (
+              full_name,
+              username
+            ),
+            event_guests (
+              id,
+              first_name
+            )
+          `)
+          .eq('event_id', eventId)
+          .eq('response', 'attending')
+          .eq('status', 'confirmed');
 
-      if (rsvpError) {
-        console.error('Error fetching RSVPs:', rsvpError);
-        throw rsvpError;
-      }
+        if (rsvpError) {
+          console.error('Error fetching RSVPs:', rsvpError);
+          throw rsvpError;
+        }
 
-      console.log('Raw RSVP data fetched:', rsvpData);
+        console.log('useEventWithRSVPs - Raw RSVP data:', rsvpData);
 
-      const typedRsvpData = rsvpData as unknown as RSVPWithProfile[];
-      
-      const rsvpsWithProfiles = typedRsvpData?.map((rsvp): EventRSVP => {
-        // Get the main attendee name
-        const attendeeName = rsvp.profiles?.full_name || rsvp.profiles?.username || 'Unknown';
+        const typedRsvpData = rsvpData as unknown as RSVPWithProfile[];
         
-        return {
-          id: rsvp.id,
-          event_id: rsvp.event_id,
-          user_id: rsvp.user_id,
-          response: rsvp.response,
-          status: rsvp.status,
-          created_at: rsvp.created_at,
-          profiles: rsvp.profiles ? {
-            full_name: attendeeName,
-            username: rsvp.profiles.username
-          } : null,
-          event_guests: rsvp.event_guests?.map(guest => ({
-            id: guest.id,
-            first_name: guest.first_name
-          })) || []
-        };
-      }) || [];
+        const rsvpsWithProfiles = typedRsvpData?.map((rsvp): EventRSVP => {
+          // Get the main attendee name
+          const attendeeName = rsvp.profiles?.full_name || rsvp.profiles?.username || 'Unknown';
+          
+          return {
+            id: rsvp.id,
+            event_id: rsvp.event_id,
+            user_id: rsvp.user_id,
+            response: rsvp.response,
+            status: rsvp.status,
+            created_at: rsvp.created_at,
+            profiles: rsvp.profiles ? {
+              full_name: attendeeName,
+              username: rsvp.profiles.username
+            } : null,
+            event_guests: rsvp.event_guests?.map(guest => ({
+              id: guest.id,
+              first_name: guest.first_name
+            })) || []
+          };
+        }) || [];
 
-      console.log('Processed RSVPs with profiles:', rsvpsWithProfiles);
+        console.log('useEventWithRSVPs - Processed RSVPs:', rsvpsWithProfiles);
 
-      const enrichedEvent = {
-        ...eventData,
-        rsvps: rsvpsWithProfiles,
-        attendees: rsvpsWithProfiles
-      } as Event;
+        const enrichedEvent = {
+          ...eventData,
+          rsvps: rsvpsWithProfiles,
+          attendees: rsvpsWithProfiles
+        } as Event;
 
-      console.log('Final enriched event data:', enrichedEvent);
+        console.log('useEventWithRSVPs - Final enriched event:', enrichedEvent);
 
-      return enrichedEvent;
+        return enrichedEvent;
+      } catch (error) {
+        console.error('useEventWithRSVPs - Error:', error);
+        throw error;
+      }
     },
     enabled: !!eventId,
     staleTime: 1000 * 60, // Consider data fresh for 1 minute
