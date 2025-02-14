@@ -1,8 +1,8 @@
+
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "@/lib/react-query";
 import { AppProviders } from "@/components/providers/AppProviders";
-import { NotificationProvider } from "@/components/providers/NotificationProvider";
 import { Toaster } from "@/components/ui/sonner";
 import { ErrorBoundary } from "@/components/error/ErrorBoundary";
 import { lazy, Suspense } from "react";
@@ -115,8 +115,7 @@ function App() {
   return (
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
-        <AppProviders>
-          <RouterProvider router={router} />
+        <AppProviders router={router}>
           <Toaster />
         </AppProviders>
       </QueryClientProvider>

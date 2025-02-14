@@ -1,3 +1,4 @@
+
 import { ReactNode, useState } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -7,9 +8,11 @@ import { SessionContextProvider } from "@supabase/auth-helpers-react";
 import { supabase } from "@/integrations/supabase/client";
 import { LoadingScreen } from "@/components/ui/loading-screen";
 import { SessionManager } from "@/components/auth/SessionManager";
+import { Router } from "react-router-dom";
 
 interface AppProvidersProps {
   children: ReactNode;
+  router: any;
 }
 
 const queryClient = new QueryClient({
@@ -22,7 +25,7 @@ const queryClient = new QueryClient({
   },
 });
 
-export function AppProviders({ children }: AppProvidersProps) {
+export function AppProviders({ children, router }: AppProvidersProps) {
   const [isLoading, setIsLoading] = useState(true);
 
   // Simulate initial load to prevent flash
@@ -42,9 +45,11 @@ export function AppProviders({ children }: AppProvidersProps) {
         initialSession={null}
       >
         <TooltipProvider>
-          <SessionManager queryClient={queryClient}>
-            {children}
-          </SessionManager>
+          <RouterProvider router={router}>
+            <SessionManager queryClient={queryClient}>
+              {children}
+            </SessionManager>
+          </RouterProvider>
           <Toaster />
           <Sonner />
         </TooltipProvider>
