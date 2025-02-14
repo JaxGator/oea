@@ -19,22 +19,18 @@ export function useLocationSearch(mapToken: string | undefined) {
     console.log('Searching locations with query:', searchValue);
 
     try {
-      // Matching the exact configuration from the demo
+      // Using only the valid types as specified in the API error message
       const types = [
         'country',
         'region',
-        'district',
-        'postcode',
-        'locality',
         'place',
+        'district',
+        'locality',
+        'postcode',
         'neighborhood',
-        'address',
-        'poi',
-        'street',
-        'category'
+        'address'
       ].join(',');
 
-      // Using the same proximity point as in the demo
       const endpoint = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
         searchValue
       )}.json?access_token=${mapToken}&types=${types}&proximity=-81.5366144,30.1334528&limit=10&language=en&autocomplete=true`;
