@@ -7,7 +7,6 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { SessionContextProvider } from "@supabase/auth-helpers-react";
 import { supabase } from "@/integrations/supabase/client";
 import { LoadingScreen } from "@/components/ui/loading-screen";
-import { SessionManager } from "@/components/auth/SessionManager";
 import { RouterProvider } from "react-router-dom";
 
 interface AppProvidersProps {
@@ -44,9 +43,7 @@ export function AppProviders({ router }: AppProvidersProps) {
         initialSession={null}
       >
         <TooltipProvider>
-          <SessionManager queryClient={queryClient}>
-            <RouterProvider router={router} />
-          </SessionManager>
+          <RouterProvider router={router} />
           <Toaster />
           <Sonner />
         </TooltipProvider>

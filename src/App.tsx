@@ -6,8 +6,9 @@ import { AppProviders } from "@/components/providers/AppProviders";
 import { ErrorBoundary } from "@/components/error/ErrorBoundary";
 import { lazy, Suspense } from "react";
 import { PublicEventView } from "./components/event/public/PublicEventView";
+import { SessionManager } from "@/components/auth/SessionManager";
 
-// Lazy load other components
+// Lazy load components
 const Home = lazy(() => import("@/pages/Home"));
 const Events = lazy(() => import("@/pages/Events"));
 const EventDetails = lazy(() => import("@/pages/EventDetails"));
@@ -23,17 +24,21 @@ const router = createBrowserRouter([
   {
     path: "/",
     element: (
-      <Suspense fallback={<div>Loading...</div>}>
-        <Home />
-      </Suspense>
+      <SessionManager queryClient={queryClient}>
+        <Suspense fallback={<div>Loading...</div>}>
+          <Home />
+        </Suspense>
+      </SessionManager>
     ),
   },
   {
     path: "/events",
     element: (
-      <Suspense fallback={<div>Loading...</div>}>
-        <Events />
-      </Suspense>
+      <SessionManager queryClient={queryClient}>
+        <Suspense fallback={<div>Loading...</div>}>
+          <Events />
+        </Suspense>
+      </SessionManager>
     ),
   },
   {
@@ -47,65 +52,81 @@ const router = createBrowserRouter([
   {
     path: "/events/:eventId",
     element: (
-      <Suspense fallback={<div>Loading...</div>}>
-        <EventDetails />
-      </Suspense>
+      <SessionManager queryClient={queryClient}>
+        <Suspense fallback={<div>Loading...</div>}>
+          <EventDetails />
+        </Suspense>
+      </SessionManager>
     ),
   },
   {
     path: "/profile",
     element: (
-      <Suspense fallback={<div>Loading...</div>}>
-        <Profile />
-      </Suspense>
+      <SessionManager queryClient={queryClient}>
+        <Suspense fallback={<div>Loading...</div>}>
+          <Profile />
+        </Suspense>
+      </SessionManager>
     ),
   },
   {
     path: "/admin",
     element: (
-      <Suspense fallback={<div>Loading...</div>}>
-        <Admin />
-      </Suspense>
+      <SessionManager queryClient={queryClient}>
+        <Suspense fallback={<div>Loading...</div>}>
+          <Admin />
+        </Suspense>
+      </SessionManager>
     ),
   },
   {
     path: "/polls",
     element: (
-      <Suspense fallback={<div>Loading...</div>}>
-        <Polls />
-      </Suspense>
+      <SessionManager queryClient={queryClient}>
+        <Suspense fallback={<div>Loading...</div>}>
+          <Polls />
+        </Suspense>
+      </SessionManager>
     ),
   },
   {
     path: "/social",
     element: (
-      <Suspense fallback={<div>Loading...</div>}>
-        <Social />
-      </Suspense>
+      <SessionManager queryClient={queryClient}>
+        <Suspense fallback={<div>Loading...</div>}>
+          <Social />
+        </Suspense>
+      </SessionManager>
     ),
   },
   {
     path: "/gallery",
     element: (
-      <Suspense fallback={<div>Loading...</div>}>
-        <Gallery />
-      </Suspense>
+      <SessionManager queryClient={queryClient}>
+        <Suspense fallback={<div>Loading...</div>}>
+          <Gallery />
+        </Suspense>
+      </SessionManager>
     ),
   },
   {
     path: "/site",
     element: (
-      <Suspense fallback={<div>Loading...</div>}>
-        <Site />
-      </Suspense>
+      <SessionManager queryClient={queryClient}>
+        <Suspense fallback={<div>Loading...</div>}>
+          <Site />
+        </Suspense>
+      </SessionManager>
     ),
   },
   {
     path: "/account",
     element: (
-      <Suspense fallback={<div>Loading...</div>}>
-        <Account />
-      </Suspense>
+      <SessionManager queryClient={queryClient}>
+        <Suspense fallback={<div>Loading...</div>}>
+          <Account />
+        </Suspense>
+      </SessionManager>
     ),
   },
 ]);
