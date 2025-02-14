@@ -1,13 +1,37 @@
 
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { LocationSuggestion } from '../types/location';
+import { LocationSuggestion, RetrieveResponse } from '../types/location';
 
 export function useLocationSearch(mapToken: string | undefined) {
   const [suggestions, setSuggestions] = useState<LocationSuggestion[]>([]);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
-  const sessionToken = crypto.randomUUID(); // Generate a session token for the search session
+  const sessionToken = crypto.randomUUID();
+
+  const retrieveCoordinates = async (mapboxId: string): Promise<[number, number] | null> => {
+    if (!mapToken) return null;
+
+    try {
+      const endpoint = `https://api.mapbox.com/search/searchbox/v1/retrieve/${mapboxId}?access_token=${mapToken}&session_token=${sessionToken}`;
+      
+      const response = await fetch(endpoint);
+      if (!response.ok) {
+        throw new Error(`Failed to retrieve coordinates: ${response.statusText}`);
+      }
+
+      const data: RetrieveResponse = await response.json();
+      console.log('Coordinate retrieval response:', data);
+
+      if (data.features?.[0]?.geometry?.coordinates) {
+        return data.features[0].geometry.coordinates as [number, number];
+      }
+      return null;
+    } catch (error) {
+      console.error('Error retrieving coordinates:', error);
+      return null;
+    }
+  };
 
   const searchLocations = async (searchValue: string) => {
     if (!searchValue || searchValue.length < 3 || !mapToken) {
@@ -41,10 +65,9 @@ export function useLocationSearch(mapToken: string | undefined) {
         .filter((suggestion: any) => 
           suggestion &&
           typeof suggestion.name === 'string' &&
-          suggestion.context?.address?.name
+          suggestion.full_address
         )
         .map((suggestion: any) => {
-          // Enhanced logging to understand what we're getting
           console.log('Processing suggestion:', {
             name: suggestion.name,
             type: suggestion.feature_type,
@@ -52,13 +75,9 @@ export function useLocationSearch(mapToken: string | undefined) {
             category: suggestion.poi_category
           });
           
-          // Parse coordinates from mapbox_id if available
           return {
             place_name: `${suggestion.name}, ${suggestion.full_address}`,
-            // We'll need to retrieve exact coordinates in a separate retrieve call
-            // For now, we'll store the mapbox_id to look up coordinates later
             mapbox_id: suggestion.mapbox_id,
-            // Placeholder coordinates until we get the exact location
             center: [0, 0] as [number, number]
           };
         });
@@ -81,6 +100,7 @@ export function useLocationSearch(mapToken: string | undefined) {
     isDropdownOpen,
     setIsDropdownOpen,
     isSearching,
-    searchLocations
+    searchLocations,
+    retrieveCoordinates
   };
 }

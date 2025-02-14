@@ -20,15 +20,15 @@ export function LocationSearchInput({
     isDropdownOpen, 
     setIsDropdownOpen,
     isSearching,
-    searchLocations
+    searchLocations,
+    retrieveCoordinates
   } = useLocationSearch(mapToken);
 
-  // Initialize input value only once on mount if currentValue exists
   useEffect(() => {
     if (currentValue && !inputValue) {
       setInputValue(currentValue);
     }
-  }, []); // Empty dependency array ensures this only runs once on mount
+  }, []);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -59,10 +59,8 @@ export function LocationSearchInput({
   }
 
   const handleInputChange = (value: string) => {
-    // Always update local input value immediately
     setInputValue(value);
     
-    // Trigger search only if we have 3 or more characters
     if (value.length >= 3) {
       searchLocations(value);
       setIsDropdownOpen(true);
@@ -71,10 +69,18 @@ export function LocationSearchInput({
     }
   };
 
-  const handleSuggestionSelect = (suggestion: { place_name: string; center: [number, number] }) => {
-    setInputValue(suggestion.place_name);
-    onLocationSelect(suggestion);
-    setIsDropdownOpen(false);
+  const handleSuggestionSelect = async (suggestion: { place_name: string; mapbox_id: string; center: [number, number] }) => {
+    const coordinates = await retrieveCoordinates(suggestion.mapbox_id);
+    if (coordinates) {
+      setInputValue(suggestion.place_name);
+      onLocationSelect({
+        ...suggestion,
+        center: coordinates
+      });
+      setIsDropdownOpen(false);
+    } else {
+      toast.error('Could not retrieve location coordinates. Please try again.');
+    }
   };
 
   return (
