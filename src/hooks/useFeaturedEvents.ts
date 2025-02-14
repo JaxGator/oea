@@ -1,135 +1,101 @@
 
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuthState } from "@/hooks/useAuthState";
 import { useRSVPManagement } from "@/hooks/events/useRSVPManagement";
-import { Event } from "@/types/event";
-import { useEffect } from "react";
-import { toast } from "sonner";
-import { useAuthState } from "./useAuthState";
-import { Database } from "@/integrations/supabase/types/database";
+import type { Event } from "@/types/event";
 
-type EventResponseRow = Database['public']['Tables']['events']['Row'] & {
-  event_rsvps?: Array<{
-    id: string;
-    user_id: string;
-    response: string;
-    status: string;
-    profiles?: {
-      full_name: string | null;
-      username: string;
-    };
-    event_guests?: Array<{
-      id: string;
-      first_name: string | null;
-    }>;
-  }>;
-};
+interface EventsPage {
+  data: Event[];
+  count: number;
+}
 
-export const useFeaturedEvents = () => {
-  const queryClient = useQueryClient();
-  const { userRSVPs, handleRSVP, handleCancelRSVP } = useRSVPManagement();
+export function useFeaturedEvents() {
   const { isAuthenticated } = useAuthState();
+  const { userRSVPs, handleRSVP, handleCancelRSVP } = useRSVPManagement();
 
-  const { data: events = [], isLoading, error } = useQuery({
-    queryKey: ['featuredEvents'],
-    queryFn: async () => {
-      try {
-        console.log('Fetching featured events');
-        const today = new Date().toISOString().split('T')[0];
-        
-        const eventsResult = await supabase
-          .from('events')
-          .select(`
-            *,
-            event_rsvps!event_rsvps_event_id_fkey (
+  const query = useInfiniteQuery<EventsPage>({
+    queryKey: ['featured-events'],
+    queryFn: async ({ pageParam = 0 }) => {
+      console.log('Fetching featured events, page:', pageParam);
+
+      const from = pageParam * 10;
+      const to = from + 9;
+
+      // First get the count of all events
+      const { count: totalCount, error: countError } = await supabase
+        .from('events')
+        .select('*', { count: 'exact', head: true })
+        .eq('is_featured', true);
+
+      if (countError) {
+        console.error('Error getting event count:', countError);
+        throw countError;
+      }
+
+      // Then fetch the events with their RSVPs
+      const { data: events, error } = await supabase
+        .from('events')
+        .select(`
+          *,
+          rsvps:event_rsvps(
+            id,
+            user_id,
+            response,
+            status,
+            created_at,
+            profiles:profiles!inner (
+              full_name,
+              username
+            ),
+            event_guests (
               id,
-              user_id,
-              response,
-              status,
-              profiles!event_rsvps_user_id_fkey (
-                full_name,
-                username
-              ),
-              event_guests (
-                id,
-                first_name
-              )
+              first_name
             )
-          `)
-          .eq('is_published', true)
-          .gte('date', today)
-          .order('is_featured', { ascending: false })
-          .order('date', { ascending: true });
+          )
+        `)
+        .eq('is_featured', true)
+        .order('date', { ascending: true })
+        .range(from, to);
 
-        if (eventsResult.error) {
-          console.error('Events query error:', eventsResult.error);
-          throw eventsResult.error;
-        }
-
-        const eventsData = eventsResult.data || [];
-        console.log('Fetched events:', eventsData);
-
-        const eventsWithRSVPs = (eventsData as EventResponseRow[]).map(event => ({
-          ...event,
-          rsvps: event.event_rsvps || [],
-          attendees: event.event_rsvps?.filter(rsvp => 
-            rsvp.response === 'attending' && 
-            rsvp.status === 'confirmed'
-          ) || [],
-          guests: event.event_rsvps?.flatMap(rsvp => 
-            rsvp.event_guests || []
-          ) || []
-        })) as Event[];
-
-        return eventsWithRSVPs;
-      } catch (error) {
-        console.error('Featured events query error:', error);
-        toast.error("Failed to load events. Please try again later.");
+      if (error) {
+        console.error('Error fetching events:', error);
         throw error;
       }
+
+      console.log('Featured events fetched:', events);
+
+      return {
+        data: events as Event[],
+        count: totalCount || 0
+      };
     },
-    staleTime: 1000 * 60 * 5,
-    refetchOnWindowFocus: false,
-    retry: 3,
-    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+    getNextPageParam: (lastPage, pages) => {
+      const hasNextPage = pages.length * 10 < lastPage.count;
+      return hasNextPage ? pages.length : null;
+    },
+    enabled: true,
+    staleTime: 1000 * 60 * 5, // Consider data fresh for 5 minutes
   });
 
-  useEffect(() => {
-    console.log('Setting up real-time subscription for events');
-    const channel = supabase
-      .channel('events-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'events'
-        },
-        (payload) => {
-          console.log('Event change detected:', payload);
-          queryClient.invalidateQueries({ queryKey: ['featuredEvents'] });
-        }
-      )
-      .subscribe((status) => {
-        console.log('Subscription status:', status);
-      });
+  const events = query.data?.pages.flatMap(page => page.data) || [];
 
-    return () => {
-      console.log('Cleaning up events subscription');
-      supabase.removeChannel(channel);
-    };
-  }, [queryClient]);
+  console.log('useFeaturedEvents - Final events:', {
+    events,
+    rsvpCount: events.map(e => e.rsvps?.length || 0),
+    isLoading: query.isLoading,
+    error: query.error
+  });
 
   return {
-    events: events as Event[],
-    isLoading,
-    error,
-    userRSVPs: isAuthenticated ? userRSVPs : {},
-    handleRSVP: isAuthenticated ? handleRSVP : () => {
-      toast.error("Please log in to RSVP for events");
-    },
-    handleCancelRSVP: isAuthenticated ? handleCancelRSVP : () => {
-      toast.error("Please log in to manage your RSVPs");
-    },
+    events,
+    isLoading: query.isLoading,
+    error: query.error,
+    userRSVPs,
+    handleRSVP,
+    handleCancelRSVP,
+    hasNextPage: query.hasNextPage,
+    fetchNextPage: query.fetchNextPage,
+    isFetchingNextPage: query.isFetchingNextPage
   };
-};
+}
