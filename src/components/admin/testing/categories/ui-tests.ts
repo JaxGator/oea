@@ -1,3 +1,4 @@
+
 import { TestDefinition } from "../types";
 
 export const uiTests: TestDefinition[] = [
@@ -33,6 +34,23 @@ export const uiTests: TestDefinition[] = [
       
       if (!hasBreakpoints) {
         throw new Error("Responsive design breakpoints not implemented");
+      }
+    }
+  },
+  {
+    name: "Theme consistency",
+    category: "ui",
+    run: async () => {
+      const root = document.documentElement;
+      const style = getComputedStyle(root);
+      
+      const requiredColors = ['--background', '--foreground', '--primary'];
+      const missingColors = requiredColors.filter(color => 
+        !style.getPropertyValue(color)
+      );
+      
+      if (missingColors.length > 0) {
+        throw new Error(`Missing theme colors: ${missingColors.join(', ')}`);
       }
     }
   }

@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { validateResponse } from "../utils/test-helpers";
 import { TestDefinition } from "../types";
@@ -42,6 +43,19 @@ export const authTests: TestDefinition[] = [
       if (!hasAllFields) {
         throw new Error("Profile missing required fields");
       }
+    }
+  },
+  {
+    name: "Auth session handling",
+    category: "auth",
+    run: async () => {
+      const { data: { session }, error } = await supabase.auth.getSession();
+      if (error) {
+        throw new Error(`Session handling test failed: ${error.message}`);
+      }
+      
+      // This should not throw an error whether logged in or not
+      validateResponse({ data: session, error }, "Session handling test failed");
     }
   }
 ];

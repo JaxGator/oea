@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { validateResponse } from "../utils/test-helpers";
 import { TestDefinition } from "../types";
@@ -35,6 +36,47 @@ export const systemTests: TestDefinition[] = [
         }
       } catch (error) {
         throw new Error(`Storage bucket test failed: ${error.message}`);
+      }
+    }
+  },
+  {
+    name: "Site configuration availability",
+    category: "system",
+    run: async () => {
+      try {
+        const { data, error } = await supabase
+          .from('site_config')
+          .select('*')
+          .limit(1);
+        
+        validateResponse({ data, error }, "Site configuration test failed");
+      } catch (error) {
+        throw new Error(`Site configuration test failed: ${error.message}`);
+      }
+    }
+  },
+  {
+    name: "Events table structure",
+    category: "system",
+    run: async () => {
+      try {
+        const { data, error } = await supabase
+          .from('events')
+          .select('*')
+          .limit(1);
+        
+        validateResponse({ data, error }, "Events table structure test failed");
+        
+        if (data && data[0]) {
+          const requiredFields = ['id', 'title', 'description', 'date', 'created_at'];
+          const missingFields = requiredFields.filter(field => !(field in data[0]));
+          
+          if (missingFields.length > 0) {
+            throw new Error(`Missing required fields in events table: ${missingFields.join(', ')}`);
+          }
+        }
+      } catch (error) {
+        throw new Error(`Events table test failed: ${error.message}`);
       }
     }
   }
