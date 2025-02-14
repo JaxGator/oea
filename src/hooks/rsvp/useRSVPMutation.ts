@@ -1,3 +1,4 @@
+
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
@@ -76,33 +77,44 @@ export const useRSVPMutation = () => {
       }
 
       // Send confirmation email
-      const { error: emailError } = await supabase.functions.invoke('send-rsvp-email', {
-        body: {
-          eventId,
-          userId: user.id,
-          type: 'confirmation'
+      try {
+        const { error: emailError } = await supabase.functions.invoke('send-rsvp-email', {
+          body: {
+            eventId,
+            userId: user.id,
+            type: 'confirmation'
+          }
+        });
+
+        if (emailError) {
+          console.error('Error sending confirmation email:', emailError);
+          toast({
+            title: "RSVP Successful",
+            description: "Your RSVP was recorded but there was an issue sending the confirmation email.",
+          });
+        } else {
+          toast({
+            title: "Success",
+            description: "Your RSVP has been recorded and a confirmation email has been sent",
+          });
         }
-      });
-
-      if (emailError) {
-        console.error('Error sending confirmation email:', emailError);
-        // Don't throw here - we still want to show success even if email fails
+      } catch (emailError) {
+        console.error('Failed to send confirmation email:', emailError);
+        toast({
+          title: "RSVP Successful",
+          description: "Your RSVP was recorded but there was an issue sending the confirmation email.",
+        });
       }
-
-      toast({
-        title: "Success",
-        description: "Your RSVP has been recorded and a confirmation email has been sent",
-      });
       
       queryClient.invalidateQueries({ queryKey: ['events'] });
       queryClient.invalidateQueries({ queryKey: ['event-rsvps'] });
     } catch (error: any) {
+      console.error('RSVP error:', error);
       toast({
         title: "Error",
         description: "Failed to RSVP for the event",
         variant: "destructive",
       });
-      console.error('RSVP error:', error);
     }
   };
 

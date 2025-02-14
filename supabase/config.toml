@@ -2,9 +2,8 @@
 project_id = "qegpuqitjfocyyrivlhv"
 
 [functions]
-[functions.get-mapbox-token]
+[functions.send-rsvp-email]
 verify_jwt = false
 
 [functions.send-admin-message]
 verify_jwt = false
-

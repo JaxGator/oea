@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
@@ -25,12 +26,24 @@ const formatTime = (timeStr: string): string => {
 };
 
 const handler = async (req: Request): Promise<Response> => {
+  console.log('Edge function invoked with method:', req.method);
+
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { 
+      headers: {
+        ...corsHeaders,
+        'Access-Control-Allow-Methods': 'POST, OPTIONS',
+      }
+    });
   }
 
   try {
+    // Validate request method
+    if (req.method !== "POST") {
+      throw new Error(`HTTP method ${req.method} is not allowed`);
+    }
+
     // Validate RESEND_API_KEY
     if (!RESEND_API_KEY) {
       console.error('RESEND_API_KEY is not configured');
@@ -43,10 +56,26 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
-    const { eventId, userId, type } = await req.json() as EmailRequest;
+
+    // Parse and validate request body
+    let body;
+    try {
+      body = await req.json() as EmailRequest;
+      console.log('Received request body:', body);
+    } catch (error) {
+      console.error('Error parsing request body:', error);
+      throw new Error('Invalid request body');
+    }
+
+    const { eventId, userId, type } = body;
+    
+    if (!eventId || !userId || !type) {
+      throw new Error('Missing required fields');
+    }
+
     console.log(`Processing ${type} email for event ${eventId} and user ${userId}`);
 
-    // Fetch event details with detailed error logging
+    // Fetch event details
     const { data: event, error: eventError } = await supabase
       .from('events')
       .select('*')
@@ -63,10 +92,10 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error('Event not found');
     }
 
-    // Fetch user profile with detailed error logging
+    // Fetch user profile
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
-      .select('email')
+      .select('email, full_name')
       .eq('id', userId)
       .single();
 
@@ -90,7 +119,7 @@ const handler = async (req: Request): Promise<Response> => {
     
     const eventTime = formatTime(event.time);
 
-    // Get email template with detailed logging
+    // Get email template
     const templateName = type === 'confirmation' ? 'rsvp_confirmation' : 'rsvp_cancellation';
     console.log('Attempting to fetch template:', templateName);
     
@@ -117,9 +146,12 @@ const handler = async (req: Request): Promise<Response> => {
       .replace('{event_title}', event.title)
       .replace('{event_date}', eventDate)
       .replace('{event_time}', eventTime)
-      .replace('{event_location}', event.location);
+      .replace('{event_location}', event.location)
+      .replace('{user_name}', profile.full_name || 'User');
 
-    let emailSubject = template.subject.replace('{event_title}', event.title);
+    let emailSubject = template.subject
+      .replace('{event_title}', event.title)
+      .replace('{user_name}', profile.full_name || 'User');
 
     console.log('Sending email with Resend API...');
     
@@ -138,24 +170,37 @@ const handler = async (req: Request): Promise<Response> => {
       }),
     });
 
+    if (!res.ok) {
+      const resendError = await res.json();
+      console.error('Resend API error:', resendError);
+      throw new Error(`Failed to send email: ${resendError.message || 'Unknown error'}`);
+    }
+
     const resendResponse = await res.json();
     console.log('Resend API response:', resendResponse);
 
-    if (!res.ok) {
-      console.error('Resend API error:', resendResponse);
-      throw new Error(`Failed to send email: ${resendResponse.message || 'Unknown error'}`);
-    }
-
-    return new Response(JSON.stringify({ success: true }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return new Response(
+      JSON.stringify({ success: true, data: resendResponse }), 
+      { 
+        headers: { 
+          ...corsHeaders, 
+          "Content-Type": "application/json" 
+        } 
+      }
+    );
   } catch (error) {
     console.error('Error in send-rsvp-email function:', error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        error: error.message || 'Internal server error',
+        details: error.stack
+      }),
       { 
         status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" }
+        headers: { 
+          ...corsHeaders, 
+          "Content-Type": "application/json" 
+        }
       }
     );
   }
