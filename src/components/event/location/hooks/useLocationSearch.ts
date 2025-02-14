@@ -16,12 +16,28 @@ export function useLocationSearch(mapToken: string | undefined) {
     }
 
     setIsSearching(true);
-    console.log('Searching locations with token status:', !!mapToken);
+    console.log('Searching locations with query:', searchValue);
 
     try {
+      // Matching the exact configuration from the demo
+      const types = [
+        'country',
+        'region',
+        'district',
+        'postcode',
+        'locality',
+        'place',
+        'neighborhood',
+        'address',
+        'poi',
+        'street',
+        'category'
+      ].join(',');
+
+      // Using the same proximity point as in the demo
       const endpoint = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
         searchValue
-      )}.json?access_token=${mapToken}&country=us&types=poi,place,address,neighborhood,locality,postcode&autocomplete=true&language=en&limit=10&routing=true&fuzzy_match=true`;
+      )}.json?access_token=${mapToken}&types=${types}&proximity=-81.5366144,30.1334528&limit=10&language=en&autocomplete=true`;
 
       const response = await fetch(endpoint);
       if (!response.ok) {
@@ -29,12 +45,7 @@ export function useLocationSearch(mapToken: string | undefined) {
       }
 
       const data = await response.json();
-      console.log('Mapbox API response received:', { 
-        status: response.status, 
-        hasFeatures: !!data?.features,
-        featureCount: data?.features?.length,
-        features: data?.features 
-      });
+      console.log('Mapbox API full response:', data);
       
       if (!data?.features || !Array.isArray(data.features)) {
         setSuggestions([]);
@@ -49,13 +60,15 @@ export function useLocationSearch(mapToken: string | undefined) {
           feature.center.length === 2
         )
         .map((feature: any) => {
-          // Log each feature for debugging
-          console.log('Processing feature:', {
+          // Enhanced logging to understand what we're getting
+          console.log('Feature details:', {
             id: feature.id,
             type: feature.place_type,
             text: feature.text,
             place_name: feature.place_name,
-            properties: feature.properties
+            relevance: feature.relevance,
+            properties: feature.properties,
+            context: feature.context
           });
           
           return {
