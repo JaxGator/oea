@@ -19,9 +19,24 @@ export function useLocationSearch(mapToken: string | undefined) {
     console.log('Searching locations with token status:', !!mapToken);
 
     try {
+      // Expanded types to include more POI categories
+      const types = [
+        'poi',
+        'poi.landmark',
+        'place',
+        'district',
+        'locality',
+        'neighborhood',
+        'address',
+        'restaurant',
+        'cafe',
+        'bar',
+        'hotel'
+      ].join(',');
+
       const endpoint = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
         searchValue
-      )}.json?access_token=${mapToken}&country=us&types=place,district,locality,neighborhood,address,poi&limit=10`;
+      )}.json?access_token=${mapToken}&country=us&types=${types}&limit=15`;
 
       const response = await fetch(endpoint);
       if (!response.ok) {
@@ -29,7 +44,11 @@ export function useLocationSearch(mapToken: string | undefined) {
       }
 
       const data = await response.json();
-      console.log('Mapbox API response received:', { status: response.status, hasFeatures: !!data?.features });
+      console.log('Mapbox API response received:', { 
+        status: response.status, 
+        hasFeatures: !!data?.features,
+        featureCount: data?.features?.length 
+      });
       
       if (!data?.features || !Array.isArray(data.features)) {
         setSuggestions([]);
@@ -48,6 +67,7 @@ export function useLocationSearch(mapToken: string | undefined) {
           center: feature.center as [number, number]
         }));
       
+      console.log('Found suggestions:', validSuggestions.length);
       setSuggestions(validSuggestions);
       setIsDropdownOpen(validSuggestions.length > 0);
     } catch (error) {
