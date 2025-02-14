@@ -7,7 +7,7 @@ export function Footer() {
   const { data: socialLinks, isLoading, error } = useSocialLinks();
 
   return (
-    <footer className="bg-[#1A1F2C] border-t border-[#6E59A5] w-full">
+    <footer className="bg-[#1A1F2C] border-t border-[#6E59A5] w-full mt-auto">
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         {isLoading ? (
           <div className="flex justify-center">
