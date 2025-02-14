@@ -1,27 +1,34 @@
-import { ReactNode } from "react";
-import { Navigate, useLocation } from "react-router-dom";
-import { useSession } from "@/hooks/auth/useSession";
-import { Loader2 } from "lucide-react";
+
+import { useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { useSession } from '@supabase/auth-helpers-react';
+import { useToast } from '@/hooks/use-toast';
 
 interface RequireAuthProps {
-  children: ReactNode;
+  children: React.ReactNode;
 }
 
 export function RequireAuth({ children }: RequireAuthProps) {
-  const { user, isLoading } = useSession();
+  const session = useSession();
+  const navigate = useNavigate();
   const location = useLocation();
+  const { toast } = useToast();
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center" role="status" aria-label="Loading">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" aria-hidden="true" />
-        <span className="sr-only">Loading authentication status...</span>
-      </div>
-    );
-  }
+  useEffect(() => {
+    if (!session) {
+      console.log('No active session, redirecting to auth');
+      toast({
+        title: "Authentication Required",
+        description: "Please sign in to continue",
+        variant: "destructive",
+      });
+      navigate('/auth', { state: { from: location } });
+      return;
+    }
+  }, [session, navigate, location, toast]);
 
-  if (!user) {
-    return <Navigate to="/auth" state={{ from: location }} replace />;
+  if (!session) {
+    return null;
   }
 
   return <>{children}</>;

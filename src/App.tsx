@@ -1,12 +1,12 @@
 
-import { createBrowserRouter } from "react-router-dom";
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "@/lib/react-query";
 import { AppProviders } from "@/components/providers/AppProviders";
 import { ErrorBoundary } from "@/components/error/ErrorBoundary";
 import { lazy, Suspense } from "react";
 import { PublicEventView } from "./components/event/public/PublicEventView";
-import { SessionManager } from "@/components/auth/SessionManager";
+import { RequireAuth } from "@/components/auth/RequireAuth";
 
 // Lazy load components
 const Home = lazy(() => import("@/pages/Home"));
@@ -25,11 +25,11 @@ const router = createBrowserRouter([
   {
     path: "/",
     element: (
-      <SessionManager queryClient={queryClient}>
+      <RequireAuth>
         <Suspense fallback={<div>Loading...</div>}>
           <Home />
         </Suspense>
-      </SessionManager>
+      </RequireAuth>
     ),
   },
   {
@@ -43,11 +43,11 @@ const router = createBrowserRouter([
   {
     path: "/events",
     element: (
-      <SessionManager queryClient={queryClient}>
+      <RequireAuth>
         <Suspense fallback={<div>Loading...</div>}>
           <Events />
         </Suspense>
-      </SessionManager>
+      </RequireAuth>
     ),
   },
   {
@@ -61,81 +61,81 @@ const router = createBrowserRouter([
   {
     path: "/events/:eventId",
     element: (
-      <SessionManager queryClient={queryClient}>
+      <RequireAuth>
         <Suspense fallback={<div>Loading...</div>}>
           <EventDetails />
         </Suspense>
-      </SessionManager>
+      </RequireAuth>
     ),
   },
   {
     path: "/profile",
     element: (
-      <SessionManager queryClient={queryClient}>
+      <RequireAuth>
         <Suspense fallback={<div>Loading...</div>}>
           <Profile />
         </Suspense>
-      </SessionManager>
+      </RequireAuth>
     ),
   },
   {
     path: "/admin",
     element: (
-      <SessionManager queryClient={queryClient}>
+      <RequireAuth>
         <Suspense fallback={<div>Loading...</div>}>
           <Admin />
         </Suspense>
-      </SessionManager>
+      </RequireAuth>
     ),
   },
   {
     path: "/polls",
     element: (
-      <SessionManager queryClient={queryClient}>
+      <RequireAuth>
         <Suspense fallback={<div>Loading...</div>}>
           <Polls />
         </Suspense>
-      </SessionManager>
+      </RequireAuth>
     ),
   },
   {
     path: "/social",
     element: (
-      <SessionManager queryClient={queryClient}>
+      <RequireAuth>
         <Suspense fallback={<div>Loading...</div>}>
           <Social />
         </Suspense>
-      </SessionManager>
+      </RequireAuth>
     ),
   },
   {
     path: "/gallery",
     element: (
-      <SessionManager queryClient={queryClient}>
+      <RequireAuth>
         <Suspense fallback={<div>Loading...</div>}>
           <Gallery />
         </Suspense>
-      </SessionManager>
+      </RequireAuth>
     ),
   },
   {
     path: "/site",
     element: (
-      <SessionManager queryClient={queryClient}>
+      <RequireAuth>
         <Suspense fallback={<div>Loading...</div>}>
           <Site />
         </Suspense>
-      </SessionManager>
+      </RequireAuth>
     ),
   },
   {
     path: "/account",
     element: (
-      <SessionManager queryClient={queryClient}>
+      <RequireAuth>
         <Suspense fallback={<div>Loading...</div>}>
           <Account />
         </Suspense>
-      </SessionManager>
+      </RequireAuth>
     ),
   },
 ]);
@@ -143,9 +143,7 @@ const router = createBrowserRouter([
 function App() {
   return (
     <ErrorBoundary>
-      <QueryClientProvider client={queryClient}>
-        <AppProviders router={router} />
-      </QueryClientProvider>
+      <AppProviders router={router} />
     </ErrorBoundary>
   );
 }
