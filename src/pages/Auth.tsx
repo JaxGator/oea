@@ -62,10 +62,6 @@ export default function Auth() {
             }}
             theme="default"
             providers={[]}
-            onError={(error) => {
-              console.error('Auth error:', error);
-              toast.error(error.message);
-            }}
           />
         </div>
       </div>
