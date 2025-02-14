@@ -9,6 +9,7 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, {
       status: 204,
@@ -27,6 +28,7 @@ serve(async (req) => {
   }
 
   try {
+    console.log('Retrieving Mapbox token...');
     const token = Deno.env.get('MAPBOX_PUBLIC_TOKEN');
     
     if (!token) {
@@ -43,6 +45,7 @@ serve(async (req) => {
       );
     }
 
+    console.log('Successfully retrieved Mapbox token');
     return new Response(
       JSON.stringify({ 
         token,
