@@ -2,6 +2,7 @@
 import { Event } from "@/types/event";
 import { EventCardContainer } from "./event/EventCardContainer";
 import { useAuthState } from "@/hooks/useAuthState";
+import { useEventWithRSVPs } from "@/hooks/events/useEventWithRSVPs";
 
 interface EventCardProps {
   event: Event;
@@ -27,21 +28,26 @@ export function EventCard({
   requireAuth = false
 }: EventCardProps) {
   const { isAuthenticated } = useAuthState();
+  const { data: eventWithRSVPs } = useEventWithRSVPs(event.id);
 
-  console.log('EventCard - Authentication state:', { isAuthenticated });
+  console.log('EventCard - RSVP data:', eventWithRSVPs?.rsvps);
 
   if (!event) {
     console.error("Event object is undefined");
     return null;
   }
 
+  // Merge the original event data with any updated RSVP data
+  const enrichedEvent = {
+    ...event,
+    rsvps: eventWithRSVPs?.rsvps || event.rsvps || [],
+    attendees: eventWithRSVPs?.attendees || event.attendees || []
+  };
+
   return (
     <div className="h-full">
       <EventCardContainer 
-        event={{
-          ...event,
-          time: event.time || '00:00:00' // Ensure time is always provided
-        }}
+        event={enrichedEvent}
         onRSVP={onRSVP}
         onCancelRSVP={onCancelRSVP}
         userRSVPStatus={userRSVPStatus}

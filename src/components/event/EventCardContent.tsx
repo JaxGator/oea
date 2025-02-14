@@ -1,6 +1,8 @@
+
 import { Event } from "@/types/event";
 import { EventDetailsSection } from "./card/sections/EventDetailsSection";
 import { EventActionsSection } from "./card/sections/EventActionsSection";
+import { AttendeeList } from "./details/AttendeeList";
 
 interface EventCardContentProps {
   event: Event;
@@ -59,6 +61,25 @@ export function EventCardContent({
   isAuthChecking = false,
   requireAuth = false
 }: EventCardContentProps) {
+  // Process attendee names including guests
+  const attendeeNames = event.rsvps?.reduce((names: string[], rsvp) => {
+    // Add primary attendee
+    if (rsvp.profiles) {
+      names.push(rsvp.profiles.full_name || rsvp.profiles.username);
+    }
+    
+    // Add guests if any
+    if (rsvp.event_guests) {
+      rsvp.event_guests.forEach(guest => {
+        names.push(`${guest.first_name} (Guest of ${rsvp.profiles?.full_name || rsvp.profiles?.username})`);
+      });
+    }
+    
+    return names;
+  }, []) || [];
+
+  console.log('EventCardContent - Attendee names:', attendeeNames);
+
   return (
     <div className="p-4">
       <EventDetailsSection
@@ -76,6 +97,12 @@ export function EventCardContent({
         onCancelEdit={onCancelEdit}
         onRSVPCountChange={onRSVPCountChange}
       />
+
+      {attendeeNames.length > 0 && (
+        <div className="mt-4 mb-4">
+          <AttendeeList attendeeNames={attendeeNames} />
+        </div>
+      )}
 
       <EventActionsSection
         isAdmin={isAdmin}
