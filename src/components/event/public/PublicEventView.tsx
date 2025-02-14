@@ -1,71 +1,54 @@
 
-import { useParams, useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
-import { ArrowLeft, Loader2 } from "lucide-react";
-import { Event } from "@/types/event";
-import { Skeleton } from "@/components/ui/skeleton";
-import { EventDetails } from "@/components/event/EventDetails";
-import { toast } from "sonner";
-import { formatEventDate, formatEventTime } from "@/utils/dateUtils";
+import React from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
+import { useQuery } from '@tanstack/react-query';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
+import { ArrowLeft } from 'lucide-react';
+import { format } from 'date-fns';
+import { Skeleton } from '@/components/ui/skeleton';
+import { EventLocationMap } from '../EventLocationMap';
 
 export function PublicEventView() {
-  const { id } = useParams();
+  const { token } = useParams();
   const navigate = useNavigate();
-  const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
 
   const { data: event, isLoading, error } = useQuery({
-    queryKey: ['public-event', id],
+    queryKey: ['shared-event', token],
     queryFn: async () => {
-      const { data: eventData, error: eventError } = await supabase
+      const { data: eventData, error } = await supabase
         .from('events')
-        .select('*')
-        .eq('id', id)
-        .eq('is_published', true)
+        .select(`
+          id,
+          title,
+          description,
+          date,
+          time,
+          location,
+          max_guests,
+          image_url,
+          latitude,
+          longitude,
+          is_featured
+        `)
+        .eq('share_token', token)
         .maybeSingle();
 
-      if (eventError) {
-        console.error('Error fetching event:', eventError);
-        throw eventError;
-      }
-      
-      if (!eventData) {
-        toast.error("Event not found or not published");
-        throw new Error('Event not found or not published');
-      }
+      if (error) throw error;
+      if (!eventData) throw new Error('Event not found');
 
-      return eventData as Event;
+      return eventData;
     },
-    enabled: !!id
+    enabled: !!token
   });
-
-  if (error) {
-    return (
-      <div className="min-h-screen bg-[#222222] p-4">
-        <div className="max-w-4xl mx-auto bg-white rounded-lg p-6">
-          <Button
-            variant="ghost"
-            className="text-white mb-4"
-            onClick={() => navigate('/')}
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Home
-          </Button>
-          <div className="text-center py-8">
-            <p className="text-red-500">Event not found or not published</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   if (isLoading) {
     return (
       <div className="min-h-screen bg-[#222222] p-4">
         <div className="max-w-4xl mx-auto bg-white rounded-lg p-6 space-y-6">
           <div className="flex items-center space-x-2">
-            <Loader2 className="h-4 w-4 animate-spin" />
+            <Skeleton className="h-4 w-4" />
             <span className="text-sm text-muted-foreground">Loading event details...</span>
           </div>
           <Skeleton className="h-64 w-full" />
@@ -75,28 +58,19 @@ export function PublicEventView() {
     );
   }
 
-  if (!event) {
+  if (error || !event) {
     return (
       <div className="min-h-screen bg-[#222222] p-4">
-        <div className="max-w-4xl mx-auto bg-white rounded-lg p-6">
-          <Button
-            variant="ghost"
-            className="text-white mb-4"
-            onClick={() => navigate('/')}
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Home
-          </Button>
-          <div className="text-center py-8">
-            <p>Event not found</p>
-          </div>
+        <div className="max-w-4xl mx-auto">
+          <Alert variant="destructive">
+            <AlertDescription>
+              Event not found or has been removed.
+            </AlertDescription>
+          </Alert>
         </div>
       </div>
     );
   }
-
-  const formattedDate = formatEventDate(event.date, event.time);
-  const formattedTime = formatEventTime(event.date, event.time);
 
   return (
     <div className="min-h-screen bg-[#222222]">
@@ -104,10 +78,10 @@ export function PublicEventView() {
         <Button
           variant="ghost"
           className="text-white mb-4"
-          onClick={() => navigate('/')}
+          onClick={() => navigate('/events')}
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to Home
+          Back to Events
         </Button>
 
         <div className="bg-white rounded-lg overflow-hidden">
@@ -126,7 +100,7 @@ export function PublicEventView() {
               <h1 className="text-3xl font-bold mb-2">{event.title}</h1>
               <div className="text-gray-600 space-y-2">
                 <p>
-                  {formattedDate} at {formattedTime}
+                  {format(new Date(event.date), "EEEE, MMMM do, yyyy")} at {event.time}
                 </p>
                 <p>{event.location}</p>
               </div>
@@ -137,19 +111,15 @@ export function PublicEventView() {
               dangerouslySetInnerHTML={{ __html: event.description || "" }}
             />
 
-            <EventDetails event={event} />
-
-            <div className="border-t pt-6">
-              <p className="text-sm text-gray-500">
-                Sign in to RSVP and see who else is attending
-              </p>
-              <Button 
-                className="mt-4"
-                onClick={() => navigate('/auth', { state: { from: `/events/${event.id}` } })}
-              >
-                Sign In
-              </Button>
-            </div>
+            {event.latitude && event.longitude && (
+              <div className="h-[400px] w-full rounded-lg overflow-hidden">
+                <EventLocationMap 
+                  lat={event.latitude} 
+                  lng={event.longitude} 
+                  location={event.location}
+                />
+              </div>
+            )}
           </div>
         </div>
       </div>
