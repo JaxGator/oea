@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useDebounce } from '@/hooks/use-debounce';
 import { toast } from 'sonner';
@@ -7,16 +8,19 @@ export function useLocationSearch(mapToken: string | undefined) {
   const [searchValue, setSearchValue] = useState<string>('');
   const [suggestions, setSuggestions] = useState<LocationSuggestion[]>([]);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
   const debouncedSearch = useDebounce(searchValue, 300);
 
   useEffect(() => {
     const searchLocations = async () => {
-      setSuggestions([]);
-      
       if (!debouncedSearch || debouncedSearch.length < 3 || !mapToken) {
+        setSuggestions([]);
         setIsDropdownOpen(false);
         return;
       }
+
+      setIsSearching(true);
+      console.log('Searching locations with token status:', !!mapToken);
 
       try {
         const endpoint = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
@@ -25,10 +29,11 @@ export function useLocationSearch(mapToken: string | undefined) {
 
         const response = await fetch(endpoint);
         if (!response.ok) {
-          throw new Error('Failed to fetch locations');
+          throw new Error(`Failed to fetch locations: ${response.statusText}`);
         }
 
         const data = await response.json();
+        console.log('Mapbox API response received:', { status: response.status, hasFeatures: !!data?.features });
         
         if (!data?.features || !Array.isArray(data.features)) {
           setSuggestions([]);
@@ -54,6 +59,8 @@ export function useLocationSearch(mapToken: string | undefined) {
         toast.error('Error searching for locations. Please try again.');
         setSuggestions([]);
         setIsDropdownOpen(false);
+      } finally {
+        setIsSearching(false);
       }
     };
 
@@ -65,6 +72,7 @@ export function useLocationSearch(mapToken: string | undefined) {
     setSearchValue,
     suggestions,
     isDropdownOpen,
-    setIsDropdownOpen
+    setIsDropdownOpen,
+    isSearching
   };
 }
