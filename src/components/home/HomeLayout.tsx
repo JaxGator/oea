@@ -5,6 +5,7 @@ import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { ErrorInfo } from 'react';
 import { Hero } from './Hero';
+import { Footer } from './Footer';
 
 interface BaseSectionProps {
   children: React.ReactNode;
@@ -58,13 +59,14 @@ const Section = ({ children, title }: SectionProps) => (
 );
 
 export const HomeLayout = ({ children }: { children: React.ReactNode }) => (
-  <div className="bg-background">
+  <div className="bg-background min-h-screen flex flex-col">
     <Hero />
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-8 flex-grow">
       <div className="space-y-8">
         {children}
       </div>
     </div>
+    <Footer />
   </div>
 );
 

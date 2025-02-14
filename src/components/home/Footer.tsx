@@ -1,8 +1,28 @@
 
 import { useSocialLinks } from "@/hooks/useSocialLinks";
+import { Loader2 } from "lucide-react";
 
 export function Footer() {
-  const { data: socialLinks } = useSocialLinks();
+  const { data: socialLinks, isLoading, error } = useSocialLinks();
+
+  if (isLoading) {
+    return (
+      <footer className="bg-white border-t">
+        <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8 flex justify-center">
+          <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
+        </div>
+      </footer>
+    );
+  }
+
+  if (error) {
+    console.error('Error loading social links:', error);
+    return null;
+  }
+
+  if (!socialLinks) {
+    return null;
+  }
 
   return (
     <footer className="bg-white border-t">
