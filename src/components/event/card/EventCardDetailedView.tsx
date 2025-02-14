@@ -101,7 +101,7 @@ export function EventCardDetailedView({
           showPublishToggle={true}
           canAddGuests={canAddGuests}
           currentGuests={currentGuests}
-          event={{ id: event.id, title: event.title }}
+          event={{ id: event.id, shareToken: event.share_token }}
           isAuthenticated={isAuthenticated}
         />
 
