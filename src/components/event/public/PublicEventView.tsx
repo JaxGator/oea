@@ -17,7 +17,7 @@ export function PublicEventView() {
   const { data: event, isLoading, error } = useQuery({
     queryKey: ['shared-event', token],
     queryFn: async () => {
-      console.log('Fetching event with ID:', token);
+      console.log('Fetching event with share token:', token);
       
       const { data: eventData, error } = await supabase
         .from('events')
@@ -32,9 +32,10 @@ export function PublicEventView() {
           image_url,
           latitude,
           longitude,
-          is_featured
+          is_featured,
+          share_token
         `)
-        .eq('id', token)
+        .eq('share_token', token)
         .single();
 
       if (error) {
@@ -43,7 +44,7 @@ export function PublicEventView() {
       }
       
       if (!eventData) {
-        console.error('Event not found for ID:', token);
+        console.error('Event not found for share token:', token);
         throw new Error('Event not found');
       }
 
