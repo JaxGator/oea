@@ -11,7 +11,7 @@ import { SessionManager } from "@/components/auth/SessionManager";
 import { RouterProvider } from "react-router-dom";
 
 interface AppProvidersProps {
-  children: ReactNode;
+  children?: ReactNode;
   router: any;
 }
 
@@ -25,7 +25,7 @@ const queryClient = new QueryClient({
   },
 });
 
-export function AppProviders({ children, router }: AppProvidersProps) {
+export function AppProviders({ router }: AppProvidersProps) {
   const [isLoading, setIsLoading] = useState(true);
 
   // Simulate initial load to prevent flash
@@ -45,11 +45,9 @@ export function AppProviders({ children, router }: AppProvidersProps) {
         initialSession={null}
       >
         <TooltipProvider>
-          <RouterProvider router={router}>
-            <SessionManager queryClient={queryClient}>
-              {children}
-            </SessionManager>
-          </RouterProvider>
+          <SessionManager queryClient={queryClient}>
+            <RouterProvider router={router} />
+          </SessionManager>
           <Toaster />
           <Sonner />
         </TooltipProvider>

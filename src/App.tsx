@@ -1,4 +1,3 @@
-
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "@/lib/react-query";
@@ -115,9 +114,7 @@ function App() {
   return (
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
-        <AppProviders router={router}>
-          <Toaster />
-        </AppProviders>
+        <AppProviders router={router} />
       </QueryClientProvider>
     </ErrorBoundary>
   );
