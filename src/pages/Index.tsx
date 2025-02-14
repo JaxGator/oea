@@ -1,6 +1,11 @@
 
+import { AppLayout } from "@/components/layout/AppLayout";
 import Home from "./Home";
 
 export default function Index() {
-  return <Home />;
+  return (
+    <AppLayout>
+      <Home />
+    </AppLayout>
+  );
 }
