@@ -62,7 +62,7 @@ export default function EventDetails() {
           response,
           status,
           created_at,
-          profiles (
+          profiles!event_rsvps_user_id_fkey (
             full_name,
             username
           ),
@@ -71,28 +71,40 @@ export default function EventDetails() {
             first_name
           )
         `)
-        .eq('event_id', eventId);
+        .eq('event_id', eventId)
+        .eq('response', 'attending')
+        .eq('status', 'confirmed');
 
-      if (rsvpError) throw rsvpError;
+      if (rsvpError) {
+        console.error('RSVP query error:', rsvpError);
+        throw rsvpError;
+      }
+
+      console.log('RSVP Data:', rsvpData); // Debug log
 
       const typedRsvpData = rsvpData as unknown as RSVPWithProfile[];
       
-      const rsvpsWithProfiles = typedRsvpData?.map((rsvp): EventRSVP => ({
-        id: rsvp.id,
-        event_id: rsvp.event_id,
-        user_id: rsvp.user_id,
-        response: rsvp.response,
-        status: rsvp.status,
-        created_at: rsvp.created_at,
-        profiles: {
-          full_name: rsvp.profiles.full_name,
-          username: rsvp.profiles.username
-        },
-        event_guests: rsvp.event_guests?.map(guest => ({
-          id: guest.id,
-          first_name: guest.first_name
-        }))
-      }));
+      const rsvpsWithProfiles = typedRsvpData?.map((rsvp): EventRSVP => {
+        console.log('Processing RSVP:', rsvp); // Debug log
+        return {
+          id: rsvp.id,
+          event_id: rsvp.event_id,
+          user_id: rsvp.user_id,
+          response: rsvp.response,
+          status: rsvp.status,
+          created_at: rsvp.created_at,
+          profiles: {
+            full_name: rsvp.profiles.full_name,
+            username: rsvp.profiles.username
+          },
+          event_guests: rsvp.event_guests?.map(guest => ({
+            id: guest.id,
+            first_name: guest.first_name
+          }))
+        };
+      });
+
+      console.log('Processed RSVPs:', rsvpsWithProfiles); // Debug log
 
       return {
         ...eventData,
@@ -103,6 +115,7 @@ export default function EventDetails() {
   });
 
   if (error) {
+    console.error('Query error:', error); // Debug log
     throw error;
   }
 
@@ -125,16 +138,23 @@ export default function EventDetails() {
     throw new Error('Event not found');
   }
 
+  console.log('Event RSVPs:', event.rsvps); // Debug log
+
   const attendeeNames = event.rsvps
     ?.filter(rsvp => rsvp.response === 'attending' && rsvp.status === 'confirmed')
-    .map(rsvp => ({
-      name: rsvp.profiles?.full_name || rsvp.profiles?.username || 'Unknown',
-      guests: rsvp.event_guests?.map(guest => guest.first_name) || []
-    }))
+    .map(rsvp => {
+      console.log('Processing attendee:', rsvp); // Debug log
+      return {
+        name: rsvp.profiles?.full_name || rsvp.profiles?.username || 'Unknown',
+        guests: rsvp.event_guests?.map(guest => guest.first_name) || []
+      };
+    })
     .flatMap(({name, guests}) => [
       name,
       ...guests.map(guestName => `${guestName} (Guest of ${name})`)
     ]) || [];
+
+  console.log('Final attendee names:', attendeeNames); // Debug log
 
   return (
     <div className="min-h-screen bg-[#222222]">
