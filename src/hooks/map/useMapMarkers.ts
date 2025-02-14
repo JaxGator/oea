@@ -1,3 +1,4 @@
+
 import { useEffect, useRef } from 'react';
 import mapboxgl from 'mapbox-gl';
 import { Location } from '@/hooks/useEventLocations';
@@ -13,34 +14,57 @@ export const useMapMarkers = (
   useEffect(() => {
     if (!map) return;
 
-    // Clear existing markers
-    markersRef.current.forEach(marker => marker.remove());
-    markersRef.current = [];
+    const initializeMarkers = () => {
+      // Clear existing markers
+      markersRef.current.forEach(marker => marker.remove());
+      markersRef.current = [];
 
-    // Add new markers
-    locations.forEach(location => {
-      const isSelected = location.event.id === selectedEventId;
-      
-      const el = document.createElement('div');
-      el.className = 'marker';
-      el.style.backgroundColor = isSelected ? '#4A90E2' : '#FF5A5F';
-      el.style.width = '24px';
-      el.style.height = '24px';
-      el.style.borderRadius = '50%';
-      el.style.cursor = 'pointer';
-      el.style.border = '2px solid white';
-      el.style.boxShadow = '0 2px 4px rgba(0,0,0,0.2)';
+      // Add new markers
+      locations.forEach(location => {
+        const isSelected = location.event.id === selectedEventId;
+        
+        const el = document.createElement('div');
+        el.className = 'marker';
+        el.style.backgroundColor = isSelected ? '#4A90E2' : '#FF5A5F';
+        el.style.width = '24px';
+        el.style.height = '24px';
+        el.style.borderRadius = '50%';
+        el.style.cursor = 'pointer';
+        el.style.border = '2px solid white';
+        el.style.boxShadow = '0 2px 4px rgba(0,0,0,0.2)';
 
-      el.addEventListener('click', () => {
-        onMarkerClick(location.event);
+        el.addEventListener('click', () => {
+          onMarkerClick(location.event);
+        });
+
+        try {
+          const marker = new mapboxgl.Marker(el)
+            .setLngLat([location.lng, location.lat]);
+          
+          // Only add marker if map is loaded
+          if (map.loaded()) {
+            marker.addTo(map);
+            markersRef.current.push(marker);
+          } else {
+            // Wait for map to load before adding marker
+            map.once('load', () => {
+              marker.addTo(map);
+              markersRef.current.push(marker);
+            });
+          }
+        } catch (error) {
+          console.error('Error creating marker:', error);
+        }
       });
+    };
 
-      const marker = new mapboxgl.Marker(el)
-        .setLngLat([location.lng, location.lat])
-        .addTo(map);
-
-      markersRef.current.push(marker);
-    });
+    // Initialize markers if map is loaded
+    if (map.loaded()) {
+      initializeMarkers();
+    } else {
+      // Wait for map to load before initializing markers
+      map.once('load', initializeMarkers);
+    }
 
     // Center map on selected event or first location
     const selectedLocation = locations.find(loc => loc.event.id === selectedEventId);
