@@ -285,6 +285,7 @@ export type Database = {
           reminder_enabled: boolean | null
           reminder_intervals: Json | null
           requires_payment: boolean | null
+          share_token: string | null
           ticket_price: number | null
           time: string
           title: string
@@ -310,6 +311,7 @@ export type Database = {
           reminder_enabled?: boolean | null
           reminder_intervals?: Json | null
           requires_payment?: boolean | null
+          share_token?: string | null
           ticket_price?: number | null
           time: string
           title: string
@@ -335,6 +337,7 @@ export type Database = {
           reminder_enabled?: boolean | null
           reminder_intervals?: Json | null
           requires_payment?: boolean | null
+          share_token?: string | null
           ticket_price?: number | null
           time?: string
           title?: string
