@@ -28,9 +28,14 @@ export function EventCard({
   requireAuth = false
 }: EventCardProps) {
   const { isAuthenticated } = useAuthState();
-  const { data: eventWithRSVPs } = useEventWithRSVPs(event.id);
+  const { data: eventWithRSVPs, isLoading, error } = useEventWithRSVPs(event?.id);
 
-  console.log('EventCard - RSVP data:', eventWithRSVPs?.rsvps);
+  console.log('EventCard - Event data:', {
+    originalEvent: event,
+    enrichedEvent: eventWithRSVPs,
+    loading: isLoading,
+    error: error
+  });
 
   if (!event) {
     console.error("Event object is undefined");
@@ -43,6 +48,14 @@ export function EventCard({
     rsvps: eventWithRSVPs?.rsvps || event.rsvps || [],
     attendees: eventWithRSVPs?.attendees || event.attendees || []
   };
+
+  console.log('EventCard - Final enriched event:', {
+    id: enrichedEvent.id,
+    title: enrichedEvent.title,
+    rsvpCount: enrichedEvent.rsvps?.length,
+    attendeeCount: enrichedEvent.attendees?.length,
+    attendees: enrichedEvent.attendees
+  });
 
   return (
     <div className="h-full">
