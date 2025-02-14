@@ -10,6 +10,7 @@ export const useMapMarkers = (
   onMarkerClick: (event: Location['event']) => void
 ) => {
   const markersRef = useRef<mapboxgl.Marker[]>([]);
+  const loadHandlerRef = useRef<(() => void) | null>(null);
 
   useEffect(() => {
     if (!map) return;
@@ -37,53 +38,54 @@ export const useMapMarkers = (
           onMarkerClick(location.event);
         });
 
-        try {
-          const marker = new mapboxgl.Marker(el)
-            .setLngLat([location.lng, location.lat]);
-          
-          // Only add marker if map is loaded
-          if (map.loaded()) {
-            marker.addTo(map);
-            markersRef.current.push(marker);
-          } else {
-            // Wait for map to load before adding marker
-            map.once('load', () => {
-              marker.addTo(map);
-              markersRef.current.push(marker);
-            });
-          }
-        } catch (error) {
-          console.error('Error creating marker:', error);
+        const marker = new mapboxgl.Marker(el)
+          .setLngLat([location.lng, location.lat]);
+        
+        if (map.loaded()) {
+          marker.addTo(map);
+          markersRef.current.push(marker);
         }
       });
+
+      // Center map on selected event or first location
+      const selectedLocation = locations.find(loc => loc.event.id === selectedEventId);
+      if (selectedLocation) {
+        map.flyTo({
+          center: [selectedLocation.lng, selectedLocation.lat],
+          zoom: 14,
+          duration: 1500
+        });
+      } else if (locations.length > 0) {
+        map.flyTo({
+          center: [locations[0].lng, locations[0].lat],
+          zoom: 12
+        });
+      }
     };
 
-    // Initialize markers if map is loaded
+    // Remove previous load handler if it exists
+    if (loadHandlerRef.current) {
+      map.off('load', loadHandlerRef.current);
+    }
+
+    // Set up new load handler
     if (map.loaded()) {
       initializeMarkers();
     } else {
-      // Wait for map to load before initializing markers
-      map.once('load', initializeMarkers);
-    }
-
-    // Center map on selected event or first location
-    const selectedLocation = locations.find(loc => loc.event.id === selectedEventId);
-    if (selectedLocation) {
-      map.flyTo({
-        center: [selectedLocation.lng, selectedLocation.lat],
-        zoom: 14,
-        duration: 1500
-      });
-    } else if (locations.length > 0) {
-      map.flyTo({
-        center: [locations[0].lng, locations[0].lat],
-        zoom: 12
-      });
+      loadHandlerRef.current = initializeMarkers;
+      map.once('load', loadHandlerRef.current);
     }
 
     return () => {
+      // Clean up markers
       markersRef.current.forEach(marker => marker.remove());
       markersRef.current = [];
+      
+      // Remove load handler
+      if (loadHandlerRef.current) {
+        map.off('load', loadHandlerRef.current);
+        loadHandlerRef.current = null;
+      }
     };
   }, [map, locations, selectedEventId, onMarkerClick]);
 };
