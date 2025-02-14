@@ -19,19 +19,14 @@ export function useLocationSearch(mapToken: string | undefined) {
     console.log('Searching locations with token status:', !!mapToken);
 
     try {
-      // Expanded types to include more POI categories
+      // Using only officially supported types
       const types = [
-        'poi',
-        'poi.landmark',
         'place',
         'district',
         'locality',
         'neighborhood',
         'address',
-        'restaurant',
-        'cafe',
-        'bar',
-        'hotel'
+        'poi'
       ].join(',');
 
       const endpoint = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
