@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { Event } from '@/types/event';
 import { useMapboxToken } from './useMapboxToken';
 
-interface Location {
+export interface Location {
   lat: number;
   lng: number;
   event: Event;
