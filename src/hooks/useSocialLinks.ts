@@ -25,7 +25,12 @@ export const useSocialLinks = () => {
       }
 
       console.log('Fetched social links:', data);
-      return JSON.parse(data?.value || '{"facebook":"","instagram":"","youtube":""}') as SocialLinks;
+      // Since the value is now stored as JSONB in the database, we don't need to parse it
+      return (data?.value || {
+        facebook: "",
+        instagram: "",
+        youtube: ""
+      }) as SocialLinks;
     },
   });
 };
