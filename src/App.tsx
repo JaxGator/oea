@@ -20,6 +20,8 @@ const Gallery = lazy(() => import("@/pages/Gallery"));
 const Site = lazy(() => import("@/pages/Site"));
 const Account = lazy(() => import("@/pages/Account"));
 const Auth = lazy(() => import("@/pages/Auth"));
+const Terms = lazy(() => import("@/pages/Terms"));
+const PrivacyPolicy = lazy(() => import("@/pages/PrivacyPolicy"));
 
 const router = createBrowserRouter([
   {
@@ -32,6 +34,14 @@ const router = createBrowserRouter([
   },
   {
     path: "/auth",
+    element: (
+      <Suspense fallback={<div>Loading...</div>}>
+        <Auth />
+      </Suspense>
+    ),
+  },
+  {
+    path: "/auth/callback",
     element: (
       <Suspense fallback={<div>Loading...</div>}>
         <Auth />
@@ -132,6 +142,22 @@ const router = createBrowserRouter([
       </RequireAuth>
     ),
   },
+  {
+    path: "/terms",
+    element: (
+      <Suspense fallback={<div>Loading...</div>}>
+        <Terms />
+      </Suspense>
+    ),
+  },
+  {
+    path: "/privacy-policy",
+    element: (
+      <Suspense fallback={<div>Loading...</div>}>
+        <PrivacyPolicy />
+      </Suspense>
+    ),
+  }
 ]);
 
 function App() {

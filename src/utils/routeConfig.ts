@@ -3,13 +3,15 @@ export const publicRoutes = [
   '/',
   '/about',
   '/privacy-policy',
+  '/terms',
   '/terms-and-conditions',
   '/resources',
   '/events',
   '/polls/share/:token',
   '/events/share/:id',
   '/auth',
-  '/auth/callback'
+  '/auth/callback',
+  '/maintenance'
 ];
 
 export const protectedRoutes = [
@@ -21,33 +23,33 @@ export const protectedRoutes = [
   '/social',
   '/messages',
   '/account',
-  '/site'
+  '/site',
+  '/events/:id'
 ];
 
 export const isProtectedRoute = (pathname: string): boolean => {
-  // Check if the path exactly matches or starts with any protected route
+  // Check if the path matches any protected route pattern
   return protectedRoutes.some(route => {
-    // Convert route pattern to regex to handle dynamic segments
-    const routePattern = route
-      .replace(/:\w+/g, '[^/]+') // Replace :param with regex for any non-slash chars
-      .replace(/\//g, '\\/'); // Escape forward slashes
-    const regex = new RegExp(`^${routePattern}(?:\\/.*)?$`);
-    return regex.test(pathname);
+    const pattern = route
+      .replace(/:\w+/g, '[^/]+')
+      .replace(/\//g, '\\/');
+    return new RegExp(`^${pattern}$`).test(pathname);
   });
 };
 
 export const isPublicRoute = (pathname: string): boolean => {
-  // Check if the path exactly matches or starts with any public route
+  // Check if the path matches any public route pattern
   return publicRoutes.some(route => {
-    // Convert route pattern to regex to handle dynamic segments
-    const routePattern = route
-      .replace(/:\w+/g, '[^/]+') // Replace :param with regex for any non-slash chars
-      .replace(/\//g, '\\/'); // Escape forward slashes
-    const regex = new RegExp(`^${routePattern}(?:\\/.*)?$`);
-    return regex.test(pathname);
+    const pattern = route
+      .replace(/:\w+/g, '[^/]+')
+      .replace(/\//g, '\\/');
+    return new RegExp(`^${pattern}$`).test(pathname);
   });
 };
 
 export const isValidRoute = (pathname: string): boolean => {
-  return isPublicRoute(pathname) || isProtectedRoute(pathname);
+  // Split the path and check each segment
+  const pathSegments = pathname.split('/').filter(Boolean);
+  const basePath = '/' + (pathSegments[0] || '');
+  return isPublicRoute(pathname) || isProtectedRoute(pathname) || isPublicRoute(basePath) || isProtectedRoute(basePath);
 };
