@@ -62,7 +62,7 @@ export default function EventDetails() {
           response,
           status,
           created_at,
-          profiles!event_rsvps_user_id_fkey (
+          profiles!inner (
             full_name,
             username
           ),
@@ -93,16 +93,16 @@ export default function EventDetails() {
           response: rsvp.response,
           status: rsvp.status,
           created_at: rsvp.created_at,
-          profiles: {
+          profiles: rsvp.profiles ? {
             full_name: rsvp.profiles.full_name,
             username: rsvp.profiles.username
-          },
+          } : null,
           event_guests: rsvp.event_guests?.map(guest => ({
             id: guest.id,
             first_name: guest.first_name
           }))
         };
-      });
+      }) || [];
 
       console.log('Processed RSVPs:', rsvpsWithProfiles); // Debug log
 
