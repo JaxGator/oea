@@ -6,7 +6,6 @@ import { useMaintenanceMode } from "@/hooks/useMaintenanceMode";
 import Maintenance from "@/pages/Maintenance";
 import { supabase } from "@/integrations/supabase/client";
 import { Toaster } from "@/components/ui/sonner";
-import { Footer } from "@/components/home/Footer";
 
 interface AppLayoutProps {
   children: ReactNode;
@@ -63,9 +62,6 @@ export function AppLayout({ children }: AppLayoutProps) {
         <a href="#main-navigation" className={skipLinkStyles}>
           Skip to main navigation
         </a>
-        <a href="#footer" className={skipLinkStyles}>
-          Skip to footer
-        </a>
       </div>
 
       {/* Main Navigation */}
@@ -78,11 +74,6 @@ export function AppLayout({ children }: AppLayoutProps) {
       <main id="main-content" className="flex-1" tabIndex={-1}>
         {children}
       </main>
-
-      {/* Footer */}
-      <footer id="footer" tabIndex={-1}>
-        <Footer />
-      </footer>
 
       <Toaster />
     </div>
