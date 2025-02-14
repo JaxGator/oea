@@ -30,8 +30,6 @@ export default function Auth() {
         toast.info('Signed out');
       } else if (event === 'USER_UPDATED') {
         toast.success('Profile updated');
-      } else if (event === 'USER_DELETED') {
-        toast.error('Account deleted');
       } else if (event === 'PASSWORD_RECOVERY') {
         toast.info('Password recovery email sent');
       }

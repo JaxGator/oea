@@ -68,7 +68,7 @@ export function EventCard({
         isSelected={isSelected}
         onUpdate={onUpdate}
         isAuthChecking={isAuthChecking}
-        requireAuth={requireAuth}
+        requireAuth={true}
         showDelete={true}
         isAuthenticated={isAuthenticated}
       />

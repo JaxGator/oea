@@ -1,3 +1,4 @@
+
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "@/lib/react-query";
@@ -24,11 +25,9 @@ const router = createBrowserRouter([
   {
     path: "/",
     element: (
-      <RequireAuth>
-        <Suspense fallback={<div>Loading...</div>}>
-          <Index />
-        </Suspense>
-      </RequireAuth>
+      <Suspense fallback={<div>Loading...</div>}>
+        <Index />
+      </Suspense>
     ),
   },
   {
@@ -42,11 +41,9 @@ const router = createBrowserRouter([
   {
     path: "/events",
     element: (
-      <RequireAuth>
-        <Suspense fallback={<div>Loading...</div>}>
-          <Events />
-        </Suspense>
-      </RequireAuth>
+      <Suspense fallback={<div>Loading...</div>}>
+        <Events />
+      </Suspense>
     ),
   },
   {
@@ -60,11 +57,9 @@ const router = createBrowserRouter([
   {
     path: "/events/:eventId",
     element: (
-      <RequireAuth>
-        <Suspense fallback={<div>Loading...</div>}>
-          <EventDetails />
-        </Suspense>
-      </RequireAuth>
+      <Suspense fallback={<div>Loading...</div>}>
+        <EventDetails />
+      </Suspense>
     ),
   },
   {

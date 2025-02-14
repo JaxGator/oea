@@ -11,21 +11,25 @@ export default function Home() {
   return (
     <NotificationProvider>
       <HomeLayout>
-        <div className="space-y-8">
-          <FeaturedEvents />
-        </div>
+        <div className="container mx-auto px-4 py-8">
+          <div className="space-y-12">
+            <section className="space-y-8">
+              <FeaturedEvents />
+            </section>
 
-        <div className="space-y-8">
-          <LeaderboardSection />
-        </div>
+            <section className="space-y-8">
+              <LeaderboardSection />
+            </section>
 
-        <div className="space-y-8">
-          <GalleryPreview />
-        </div>
+            <section className="space-y-8">
+              <GalleryPreview />
+            </section>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <TacoTracker />
-          <SocialFeed />
+            <section className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <TacoTracker />
+              <SocialFeed />
+            </section>
+          </div>
         </div>
       </HomeLayout>
     </NotificationProvider>
