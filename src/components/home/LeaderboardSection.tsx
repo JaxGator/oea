@@ -6,9 +6,11 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Trophy } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
 
 export function LeaderboardSection() {
-  const { data: leaderboardData = [], isLoading } = useQuery({
+  const { toast } = useToast();
+  const { data: leaderboardData, isLoading, error } = useQuery({
     queryKey: ["leaderboard-preview"],
     queryFn: async () => {
       console.log('Fetching leaderboard data...');
@@ -19,8 +21,7 @@ export function LeaderboardSection() {
           profiles:user_id (
             username,
             avatar_url,
-            full_name,
-            leaderboard_opt_out
+            full_name
           )
         `)
         .gt('events_attended', 0)
@@ -29,23 +30,25 @@ export function LeaderboardSection() {
 
       if (error) {
         console.error('Error fetching leaderboard:', error);
+        toast({
+          title: "Error loading leaderboard",
+          description: "Please try refreshing the page",
+          variant: "destructive",
+        });
         throw error;
       }
       
-      // Filter out users who have opted out
-      const filteredData = data.filter(entry => !entry.profiles?.leaderboard_opt_out);
-      console.log('Leaderboard data:', filteredData);
-      return filteredData;
+      console.log('Leaderboard data:', data);
+      return data || [];
     },
     staleTime: 1000 * 60 * 5, // Cache for 5 minutes
     refetchOnWindowFocus: false,
+    retry: 2,
+    retryDelay: (attemptIndex) => Math.min(1000 * (2 ** attemptIndex), 30000)
   });
 
-  if (isLoading) {
-    return <div>Loading...</div>;
-  }
-
-  if (leaderboardData.length === 0) {
+  if (error) {
+    console.error('Leaderboard error:', error);
     return null;
   }
 
@@ -62,7 +65,9 @@ export function LeaderboardSection() {
             className="bg-[#0d97d1] hover:bg-[#0d97d1]/90 text-white border-[#0d97d1] hover:border-[#0d97d1]/90 whitespace-nowrap"
             asChild
           >
-            <Link to="/leaderboard">View All</Link>
+            <Link to="/users">
+              View All
+            </Link>
           </Button>
         </div>
         
@@ -70,7 +75,7 @@ export function LeaderboardSection() {
           <div className="overflow-x-auto -mx-4 sm:mx-0">
             <div className="min-w-full inline-block align-middle">
               <LeaderboardTable 
-                data={leaderboardData}
+                data={leaderboardData || []}
                 category="attendance"
                 timeFilter="all"
                 limit={5}

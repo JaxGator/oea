@@ -1,72 +1,67 @@
 
-import { useEffect } from 'react';
-import { Auth as SupabaseAuth } from '@supabase/auth-ui-react';
-import { useSession, useSupabaseClient } from '@supabase/auth-helpers-react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { ThemeSupa } from '@supabase/auth-ui-shared';
-import { toast } from 'sonner';
+import { useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { AuthForm } from "@/components/auth/AuthForm";
+import { useAuthRedirect } from "@/hooks/auth/useAuthRedirect";
+import { useToast } from "@/hooks/use-toast";
+import { useLocation } from "react-router-dom";
 
-export default function Auth() {
-  const session = useSession();
-  const supabase = useSupabaseClient();
-  const navigate = useNavigate();
+const Auth = () => {
+  useAuthRedirect();
+  const { toast } = useToast();
   const location = useLocation();
+  const isLogout = location.state?.logout === true;
 
   useEffect(() => {
-    if (session) {
-      const from = location.state?.from?.pathname || '/';
-      console.log('Session exists, redirecting to:', from);
-      navigate(from, { replace: true });
-    }
-  }, [session, navigate, location]);
+    const clearSession = async () => {
+      // Only clear session if this was an actual logout action
+      if (!isLogout) return;
 
-  useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log('Auth state changed:', event, session?.user?.id);
-      
-      if (event === 'SIGNED_IN') {
-        toast.success('Successfully signed in');
-      } else if (event === 'SIGNED_OUT') {
-        toast.info('Signed out');
-      } else if (event === 'USER_UPDATED') {
-        toast.success('Profile updated');
-      } else if (event === 'PASSWORD_RECOVERY') {
-        toast.info('Password recovery email sent');
+      try {
+        const { error } = await supabase.auth.signOut();
+        if (error) {
+          console.error("Error clearing session:", error);
+          toast({
+            title: "Error",
+            description: "Failed to clear previous session. Please try again.",
+            variant: "destructive",
+          });
+        }
+      } catch (error) {
+        console.error("Error clearing session:", error);
+        toast({
+          title: "Error",
+          description: "An unexpected error occurred. Please try again.",
+          variant: "destructive",
+        });
       }
-    });
-
-    return () => {
-      subscription.unsubscribe();
     };
-  }, [supabase]);
+    
+    clearSession();
+  }, [toast, isLogout]);
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="w-full max-w-md space-y-8">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">
-            Sign in to your account
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full space-y-8">
+        <div className="flex flex-col items-center">
+          <img
+            src="/lovable-uploads/609edf01-3169-439a-80f5-f6f15de7a5a6.png"
+            alt="Logo"
+            className="h-16 mb-4"
+          />
+          <h2 className="text-center text-3xl font-extrabold text-gray-900">
+            Welcome
           </h2>
+          <p className="mt-2 text-center text-sm text-gray-600">
+            Please sign in to continue
+          </p>
         </div>
         <div className="mt-8">
-          <SupabaseAuth
-            supabaseClient={supabase}
-            appearance={{ 
-              theme: ThemeSupa,
-              variables: {
-                default: {
-                  colors: {
-                    brand: '#2563eb',
-                    brandAccent: '#1d4ed8'
-                  }
-                }
-              }
-            }}
-            theme="default"
-            providers={[]}
-          />
+          <AuthForm />
         </div>
       </div>
     </div>
   );
-}
+};
+
+export default Auth;

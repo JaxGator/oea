@@ -58,9 +58,9 @@ const Section = ({ children, title }: SectionProps) => (
 );
 
 export const HomeLayout = ({ children }: { children: React.ReactNode }) => (
-  <div className="bg-background min-h-screen flex flex-col">
+  <div className="bg-background">
     <Hero />
-    <div className="container mx-auto px-4 py-8 flex-grow">
+    <div className="container mx-auto px-4 py-8">
       <div className="space-y-8">
         {children}
       </div>

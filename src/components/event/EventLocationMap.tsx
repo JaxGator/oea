@@ -20,15 +20,7 @@ export function EventLocationMap({ location, lat, lng }: EventLocationMapProps) 
   const hasInitialized = useRef(false);
 
   useEffect(() => {
-    console.log('EventLocationMap mount - token:', mapToken, 'coords:', { lat, lng });
-    
     if (!mapContainer.current || !lat || !lng || !mapToken || hasInitialized.current) {
-      console.log('Skipping map initialization - missing requirements:', {
-        hasContainer: !!mapContainer.current,
-        hasCoords: !!(lat && lng),
-        hasToken: !!mapToken,
-        alreadyInitialized: hasInitialized.current
-      });
       return;
     }
 
@@ -44,17 +36,16 @@ export function EventLocationMap({ location, lat, lng }: EventLocationMapProps) 
         scrollZoom: false
       });
 
+      marker.current = new mapboxgl.Marker()
+        .setLngLat([lng, lat])
+        .addTo(map.current);
+
+      map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
+
       map.current.on('load', () => {
         console.log('Map loaded successfully');
-        if (map.current && !map.current._removed) {
+        if (map.current) {
           map.current.resize();
-          
-          // Add marker after map is loaded
-          marker.current = new mapboxgl.Marker()
-            .setLngLat([lng, lat])
-            .addTo(map.current);
-            
-          map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
         }
       });
 
@@ -64,10 +55,6 @@ export function EventLocationMap({ location, lat, lng }: EventLocationMapProps) 
     }
 
     return () => {
-      console.log('Cleaning up map');
-      if (marker.current) {
-        marker.current.remove();
-      }
       if (map.current && !map.current._removed) {
         map.current.remove();
         hasInitialized.current = false;
@@ -75,12 +62,25 @@ export function EventLocationMap({ location, lat, lng }: EventLocationMapProps) 
     };
   }, [lat, lng, mapToken]);
 
+  // Update marker position when coordinates change
+  useEffect(() => {
+    if (marker.current && lat && lng) {
+      marker.current.setLngLat([lng, lat]);
+    }
+    if (map.current && !map.current._removed && lat && lng) {
+      map.current.flyTo({
+        center: [lng, lat],
+        zoom: 14,
+        essential: true
+      });
+    }
+  }, [lat, lng]);
+
   if (isKeyLoading) {
     return <MapLoadingState />;
   }
 
   if (keyError || !mapToken) {
-    console.error('Map token error:', keyError);
     return <MapErrorState message="Failed to load map configuration" />;
   }
 

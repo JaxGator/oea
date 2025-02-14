@@ -29,8 +29,6 @@ interface EventCardContentProps {
   onRSVPCountChange: (value: string) => void;
   isAuthChecking?: boolean;
   requireAuth?: boolean;
-  showDelete?: boolean;
-  isAuthenticated?: boolean;
 }
 
 export function EventCardContent({
@@ -59,9 +57,7 @@ export function EventCardContent({
   onCancelEdit,
   onRSVPCountChange,
   isAuthChecking = false,
-  requireAuth = false,
-  showDelete = false,
-  isAuthenticated = false
+  requireAuth = false
 }: EventCardContentProps) {
   return (
     <div className="p-4">
@@ -98,9 +94,7 @@ export function EventCardContent({
         onTogglePublish={onTogglePublish}
         isAuthChecking={isAuthChecking}
         requireAuth={requireAuth}
-        event={{ id: event.id, shareToken: event.share_token }}
-        showDelete={showDelete}
-        isAuthenticated={isAuthenticated}
+        event={{ id: event.id, title: event.title }}
       />
     </div>
   );

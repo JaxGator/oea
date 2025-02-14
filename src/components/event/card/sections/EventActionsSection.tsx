@@ -21,7 +21,7 @@ interface EventActionsSectionProps {
   canJoinWaitlist?: boolean;
   isWixEvent?: boolean;
   requireAuth?: boolean;
-  event: { id: string; shareToken: string };
+  event: { id: string; title: string };
   showDelete?: boolean;
   isAuthenticated?: boolean;
 }

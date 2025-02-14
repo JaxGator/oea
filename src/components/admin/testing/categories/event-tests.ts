@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { validateResponse } from "../utils/test-helpers";
 import { TestDefinition } from "../types";
@@ -47,25 +46,6 @@ export const eventTests: TestDefinition[] = [
       
       if (!hasAllFields) {
         throw new Error("RSVP system missing required fields");
-      }
-    }
-  },
-  {
-    name: "Event date validation",
-    category: "events",
-    run: async () => {
-      const { data, error } = await supabase
-        .from('events')
-        .select('date')
-        .limit(1);
-      
-      validateResponse({ data, error }, "Event date validation failed");
-      
-      if (data && data[0]) {
-        const date = new Date(data[0].date);
-        if (isNaN(date.getTime())) {
-          throw new Error("Invalid date format in events table");
-        }
       }
     }
   }

@@ -1,42 +1,54 @@
-
-import { useState, useEffect } from "react";
+import { ReactNode, useState } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { SessionContextProvider } from "@supabase/auth-helpers-react";
 import { supabase } from "@/integrations/supabase/client";
 import { LoadingScreen } from "@/components/ui/loading-screen";
-import { RouterProvider } from "react-router-dom";
+import { SessionManager } from "@/components/auth/SessionManager";
 
 interface AppProvidersProps {
-  router: any;
+  children: ReactNode;
 }
 
-export function AppProviders({ router }: AppProvidersProps) {
-  const [isLoading, setIsLoading] = useState(true);
-  const [initialSession, setInitialSession] = useState(null);
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 2,
+      refetchOnWindowFocus: false,
+      staleTime: 1000 * 60 * 5, // 5 minutes
+    },
+  },
+});
 
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setInitialSession(session);
-      setIsLoading(false);
-    });
-  }, []);
+export function AppProviders({ children }: AppProvidersProps) {
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Simulate initial load to prevent flash
+  useState(() => {
+    const timer = setTimeout(() => setIsLoading(false), 100);
+    return () => clearTimeout(timer);
+  });
 
   if (isLoading) {
     return <LoadingScreen message="Initializing application..." />;
   }
 
   return (
-    <SessionContextProvider 
-      supabaseClient={supabase}
-      initialSession={initialSession}
-    >
-      <TooltipProvider>
-        <RouterProvider router={router} />
-        <Toaster />
-        <Sonner />
-      </TooltipProvider>
-    </SessionContextProvider>
+    <QueryClientProvider client={queryClient}>
+      <SessionContextProvider 
+        supabaseClient={supabase}
+        initialSession={null}
+      >
+        <TooltipProvider>
+          <SessionManager queryClient={queryClient}>
+            {children}
+          </SessionManager>
+          <Toaster />
+          <Sonner />
+        </TooltipProvider>
+      </SessionContextProvider>
+    </QueryClientProvider>
   );
 }

@@ -1,173 +1,76 @@
 
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import { QueryClientProvider } from "@tanstack/react-query";
-import { queryClient } from "@/lib/react-query";
-import { AppProviders } from "@/components/providers/AppProviders";
-import { ErrorBoundary } from "@/components/error/ErrorBoundary";
-import { lazy, Suspense } from "react";
+import { Routes, Route } from "react-router-dom";
+import { AppProviders } from "./components/providers/AppProviders";
+import { AppLayout } from "./components/layout/AppLayout";
+import { RequireAuth } from "./components/auth/RequireAuth";
+import { RequireAdmin } from "./components/auth/RequireAdmin";
+import Index from "./pages/Index";
+import About from "./pages/About";
+import Auth from "./pages/Auth";
+import Events from "./pages/Events";
+import EventDetails from "./pages/EventDetails";
+import Users from "./pages/Users";
+import Members from "./pages/Members";
+import Profile from "./pages/Profile";
+import Resources from "./pages/Resources";
+import Admin from "./pages/Admin";
+import Test from "./pages/Test";
+import Store from "./pages/Store";
+import Maintenance from "./pages/Maintenance";
+import Messages from "./pages/Messages";
+import { PrivacyPolicy } from "./components/legal/PrivacyPolicy";
+import { TermsAndConditions } from "./components/legal/TermsAndConditions";
+import { ErrorBoundary } from "./components/error/ErrorBoundary";
+import { PublicPollView } from "./components/members/polls/PublicPollView";
 import { PublicEventView } from "./components/event/public/PublicEventView";
-import { RequireAuth } from "@/components/auth/RequireAuth";
 
-// Lazy load components
-const Index = lazy(() => import("@/pages/Index"));
-const Events = lazy(() => import("@/pages/Events"));
-const EventDetails = lazy(() => import("@/pages/EventDetails"));
-const Profile = lazy(() => import("@/pages/Profile"));
-const Admin = lazy(() => import("@/pages/Admin"));
-const Polls = lazy(() => import("@/pages/Polls"));
-const Social = lazy(() => import("@/pages/Social"));
-const Gallery = lazy(() => import("@/pages/Gallery"));
-const Site = lazy(() => import("@/pages/Site"));
-const Account = lazy(() => import("@/pages/Account"));
-const Auth = lazy(() => import("@/pages/Auth"));
-const Terms = lazy(() => import("@/pages/Terms"));
-const PrivacyPolicy = lazy(() => import("@/pages/PrivacyPolicy"));
+const ErrorFallback = () => (
+  <div className="min-h-screen flex items-center justify-center">
+    <div className="p-4 rounded-lg bg-red-50 text-red-800">
+      <h2 className="text-lg font-semibold mb-2">Something went wrong</h2>
+      <p>Please try refreshing the page. If the problem persists, contact support.</p>
+    </div>
+  </div>
+);
 
-const router = createBrowserRouter([
-  {
-    path: "/",
-    element: (
-      <Suspense fallback={<div>Loading...</div>}>
-        <Index />
-      </Suspense>
-    ),
-  },
-  {
-    path: "/auth",
-    element: (
-      <Suspense fallback={<div>Loading...</div>}>
-        <Auth />
-      </Suspense>
-    ),
-  },
-  {
-    path: "/auth/callback",
-    element: (
-      <Suspense fallback={<div>Loading...</div>}>
-        <Auth />
-      </Suspense>
-    ),
-  },
-  {
-    path: "/events",
-    element: (
-      <Suspense fallback={<div>Loading...</div>}>
-        <Events />
-      </Suspense>
-    ),
-  },
-  {
-    path: "/events/share/:token",
-    element: (
-      <Suspense fallback={<div>Loading...</div>}>
-        <PublicEventView />
-      </Suspense>
-    ),
-  },
-  {
-    path: "/events/:eventId",
-    element: (
-      <Suspense fallback={<div>Loading...</div>}>
-        <EventDetails />
-      </Suspense>
-    ),
-  },
-  {
-    path: "/profile",
-    element: (
-      <RequireAuth>
-        <Suspense fallback={<div>Loading...</div>}>
-          <Profile />
-        </Suspense>
-      </RequireAuth>
-    ),
-  },
-  {
-    path: "/admin",
-    element: (
-      <RequireAuth>
-        <Suspense fallback={<div>Loading...</div>}>
-          <Admin />
-        </Suspense>
-      </RequireAuth>
-    ),
-  },
-  {
-    path: "/polls",
-    element: (
-      <RequireAuth>
-        <Suspense fallback={<div>Loading...</div>}>
-          <Polls />
-        </Suspense>
-      </RequireAuth>
-    ),
-  },
-  {
-    path: "/social",
-    element: (
-      <RequireAuth>
-        <Suspense fallback={<div>Loading...</div>}>
-          <Social />
-        </Suspense>
-      </RequireAuth>
-    ),
-  },
-  {
-    path: "/gallery",
-    element: (
-      <RequireAuth>
-        <Suspense fallback={<div>Loading...</div>}>
-          <Gallery />
-        </Suspense>
-      </RequireAuth>
-    ),
-  },
-  {
-    path: "/site",
-    element: (
-      <RequireAuth>
-        <Suspense fallback={<div>Loading...</div>}>
-          <Site />
-        </Suspense>
-      </RequireAuth>
-    ),
-  },
-  {
-    path: "/account",
-    element: (
-      <RequireAuth>
-        <Suspense fallback={<div>Loading...</div>}>
-          <Account />
-        </Suspense>
-      </RequireAuth>
-    ),
-  },
-  {
-    path: "/terms",
-    element: (
-      <Suspense fallback={<div>Loading...</div>}>
-        <Terms />
-      </Suspense>
-    ),
-  },
-  {
-    path: "/privacy-policy",
-    element: (
-      <Suspense fallback={<div>Loading...</div>}>
-        <PrivacyPolicy />
-      </Suspense>
-    ),
-  }
-]);
-
-function App() {
+const App = () => {
   return (
-    <ErrorBoundary>
-      <QueryClientProvider client={queryClient}>
-        <AppProviders router={router} />
-      </QueryClientProvider>
+    <ErrorBoundary fallback={ErrorFallback}>
+      <AppProviders>
+        <Routes>
+          <Route path="/auth" element={<Auth />} />
+          <Route element={<AppLayout />}>
+            {/* Public Routes */}
+            <Route index element={<Index />} />
+            <Route path="about" element={<About />} />
+            <Route path="events" element={<Events />} />
+            <Route path="privacy" element={<PrivacyPolicy />} />
+            <Route path="terms" element={<TermsAndConditions />} />
+            <Route path="resources" element={<Resources />} />
+            <Route path="polls/share/:token" element={<PublicPollView />} />
+            <Route path="events/share/:id" element={<PublicEventView />} />
+            
+            {/* Protected Routes */}
+            <Route path="events/:id" element={<RequireAuth><EventDetails /></RequireAuth>} />
+            <Route path="users" element={<RequireAuth><Users /></RequireAuth>} />
+            <Route path="members" element={<RequireAuth><Members /></RequireAuth>} />
+            <Route path="profile" element={<RequireAuth><Profile /></RequireAuth>} />
+            <Route path="messages" element={<RequireAuth><Messages /></RequireAuth>} />
+            <Route path="admin" element={
+              <RequireAuth>
+                <RequireAdmin>
+                  <Admin />
+                </RequireAdmin>
+              </RequireAuth>
+            } />
+            <Route path="test" element={<RequireAuth><Test /></RequireAuth>} />
+            <Route path="store" element={<RequireAuth><Store /></RequireAuth>} />
+            <Route path="maintenance" element={<RequireAuth><Maintenance /></RequireAuth>} />
+          </Route>
+        </Routes>
+      </AppProviders>
     </ErrorBoundary>
   );
-}
+};
 
 export default App;

@@ -20,46 +20,63 @@ export function EventLocationMap({ location, lat, lng }: EventLocationMapProps) 
   const [isMapReady, setIsMapReady] = useState(false);
 
   useEffect(() => {
-    if (!mapContainer.current || !lat || !lng || !mapToken || map.current) {
-      return;
-    }
+    let initTimeout: NodeJS.Timeout;
 
-    try {
-      mapboxgl.accessToken = mapToken;
-      
-      const mapInstance = new mapboxgl.Map({
-        container: mapContainer.current,
-        style: 'mapbox://styles/mapbox/streets-v12',
-        center: [lng, lat],
-        zoom: 14,
-        scrollZoom: false,
-      });
+    const initializeMap = () => {
+      if (!mapContainer.current || !lat || !lng || !mapToken || map.current) {
+        return;
+      }
 
-      mapInstance.on('load', () => {
-        if (!mapInstance._removed) {
-          mapInstance.resize();
-          mapInstance.addControl(new mapboxgl.NavigationControl(), 'top-right');
-          
-          marker.current = new mapboxgl.Marker()
-            .setLngLat([lng, lat])
-            .addTo(mapInstance);
-          
-          setIsMapReady(true);
-        }
-      });
+      try {
+        console.log('Initializing map with coordinates:', { lat, lng });
+        mapboxgl.accessToken = mapToken;
+        
+        const mapInstance = new mapboxgl.Map({
+          container: mapContainer.current,
+          style: 'mapbox://styles/mapbox/outdoors-v12',
+          center: [lng, lat],
+          zoom: 14,
+          scrollZoom: false
+        });
 
-      map.current = mapInstance;
-    } catch (error) {
-      console.error('Error initializing map:', error);
-      setIsMapReady(false);
-    }
+        mapInstance.on('load', () => {
+          console.log('Map loaded successfully');
+          if (!mapInstance._removed) {
+            mapInstance.resize();
+            
+            initTimeout = setTimeout(() => {
+              if (!mapInstance._removed) {
+                mapInstance.addControl(new mapboxgl.NavigationControl(), 'top-right');
+                
+                marker.current = new mapboxgl.Marker()
+                  .setLngLat([lng, lat])
+                  .addTo(mapInstance);
+                
+                setIsMapReady(true);
+              }
+            }, 100);
+          }
+        });
+
+        map.current = mapInstance;
+
+      } catch (error) {
+        console.error('Error initializing map:', error);
+        setIsMapReady(false);
+      }
+    };
+
+    initializeMap();
 
     return () => {
-      if (marker.current) {
-        marker.current.remove();
-        marker.current = null;
+      if (initTimeout) {
+        clearTimeout(initTimeout);
       }
       if (map.current && !map.current._removed) {
+        if (marker.current) {
+          marker.current.remove();
+          marker.current = null;
+        }
         map.current.remove();
         map.current = null;
         setIsMapReady(false);
@@ -69,7 +86,7 @@ export function EventLocationMap({ location, lat, lng }: EventLocationMapProps) 
 
   // Update marker position when coordinates change
   useEffect(() => {
-    if (!isMapReady || !map.current || !marker.current || !lat || !lng) {
+    if (!isMapReady || !marker.current || !map.current || !lat || !lng) {
       return;
     }
 

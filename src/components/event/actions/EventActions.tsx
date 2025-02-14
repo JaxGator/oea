@@ -28,7 +28,7 @@ interface EventActionsProps {
   showPublishToggle?: boolean;
   isAuthChecking?: boolean;
   requireAuth?: boolean;
-  event: { id: string; shareToken: string };
+  event: { id: string; title: string };
   isAuthenticated?: boolean;
 }
 
@@ -93,7 +93,7 @@ export function EventActions({
       />
 
       {isAuthenticated && (
-        <EventShareMenu eventId={event.id} shareToken={event.shareToken} />
+        <EventShareMenu eventId={event.id} title={event.title} />
       )}
 
       {isAuthenticated && (isAdmin || canManageEvents) && (

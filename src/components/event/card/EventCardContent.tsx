@@ -100,7 +100,7 @@ export function EventCardContent({
         onTogglePublish={onTogglePublish}
         isAuthChecking={isAuthChecking}
         requireAuth={requireAuth}
-        event={{ id: event.id, shareToken: event.share_token }}
+        event={event}
         showDelete={showDelete}
         isAuthenticated={isAuthenticated}
       />

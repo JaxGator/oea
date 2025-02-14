@@ -1,5 +1,6 @@
 
-import { useEffect, ReactNode } from "react";
+import { useEffect } from "react";
+import { Outlet } from "react-router-dom";
 import { DesktopNavigation } from "../DesktopNavigation";
 import { MobileNavigation } from "../MobileNavigation";
 import { useMaintenanceMode } from "@/hooks/useMaintenanceMode";
@@ -8,10 +9,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { Toaster } from "@/components/ui/sonner";
 import { Footer } from "@/components/home/Footer";
 
-interface AppLayoutProps {
-  children: ReactNode;
-}
-
 // Add styles for the skip links
 const skipLinkStyles = `
   sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 
@@ -19,7 +16,7 @@ const skipLinkStyles = `
   z-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary
 `;
 
-export function AppLayout({ children }: AppLayoutProps) {
+export function AppLayout() {
   const { isMaintenanceMode } = useMaintenanceMode();
 
   useEffect(() => {
@@ -76,7 +73,7 @@ export function AppLayout({ children }: AppLayoutProps) {
 
       {/* Main Content */}
       <main id="main-content" className="flex-1" tabIndex={-1}>
-        {children}
+        <Outlet />
       </main>
 
       {/* Footer */}
