@@ -59,7 +59,6 @@ serve(async (req) => {
       );
     }
 
-    // Log successful token retrieval
     console.log("Successfully retrieved Mapbox token");
 
     return new Response(
