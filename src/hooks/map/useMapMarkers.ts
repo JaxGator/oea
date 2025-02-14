@@ -10,12 +10,14 @@ export const useMapMarkers = (
   onMarkerClick: (event: Location['event']) => void
 ) => {
   const markersRef = useRef<mapboxgl.Marker[]>([]);
-  const loadHandlerRef = useRef<(() => void) | null>(null);
+  const isMarkersInitialized = useRef(false);
 
   useEffect(() => {
-    if (!map) return;
+    if (!map || isMarkersInitialized.current) return;
 
-    const initializeMarkers = () => {
+    const handler = () => {
+      isMarkersInitialized.current = true;
+      
       // Clear existing markers
       markersRef.current.forEach(marker => marker.remove());
       markersRef.current = [];
@@ -39,12 +41,10 @@ export const useMapMarkers = (
         });
 
         const marker = new mapboxgl.Marker(el)
-          .setLngLat([location.lng, location.lat]);
+          .setLngLat([location.lng, location.lat])
+          .addTo(map);
         
-        if (map.loaded()) {
-          marker.addTo(map);
-          markersRef.current.push(marker);
-        }
+        markersRef.current.push(marker);
       });
 
       // Center map on selected event or first location
@@ -63,29 +63,16 @@ export const useMapMarkers = (
       }
     };
 
-    // Remove previous load handler if it exists
-    if (loadHandlerRef.current) {
-      map.off('load', loadHandlerRef.current);
-    }
-
-    // Set up new load handler
     if (map.loaded()) {
-      initializeMarkers();
+      handler();
     } else {
-      loadHandlerRef.current = initializeMarkers;
-      map.once('load', loadHandlerRef.current);
+      map.once('load', handler);
     }
 
     return () => {
-      // Clean up markers
       markersRef.current.forEach(marker => marker.remove());
       markersRef.current = [];
-      
-      // Remove load handler
-      if (loadHandlerRef.current) {
-        map.off('load', loadHandlerRef.current);
-        loadHandlerRef.current = null;
-      }
+      isMarkersInitialized.current = false;
     };
   }, [map, locations, selectedEventId, onMarkerClick]);
 };
