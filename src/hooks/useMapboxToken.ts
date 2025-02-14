@@ -73,19 +73,25 @@ export const useMapboxToken = (): UseMapboxTokenReturn => {
         }
 
         console.log('Fetching fresh Mapbox token...');
-        const { data, error: fetchError } = await supabase.functions.invoke('get-mapbox-token', {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            prefer: 'return=minimal'
+        const response = await fetch(
+          `${supabase.functions.url}/get-mapbox-token`,
+          {
+            method: 'GET',
+            headers: {
+              'Authorization': `Bearer ${supabase.auth.getSession()?.access_token}`,
+              'Content-Type': 'application/json',
+              'apikey': supabase.supabaseKey
+            }
           }
-        });
+        );
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
 
         if (!isMounted) return;
-
-        if (fetchError) {
-          throw new Error(fetchError.message || 'Failed to fetch Mapbox token');
-        }
 
         if (!data?.token) {
           throw new Error('No token returned from function');
