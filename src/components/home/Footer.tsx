@@ -1,11 +1,11 @@
 
 import { useSocialLinks } from "@/hooks/useSocialLinks";
 import { Loader2 } from "lucide-react";
+import { Link } from "react-router-dom";
 
 export function Footer() {
   const { data: socialLinks, isLoading, error } = useSocialLinks();
 
-  // Always render the footer container, even during loading or error states
   return (
     <footer className="bg-[#1A1F2C] border-t border-[#6E59A5] mt-auto">
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
@@ -74,9 +74,25 @@ export function Footer() {
                 </a>
               )}
             </div>
-            <p className="mt-8 text-center text-base text-[#8E9196]">
-              &copy; {new Date().getFullYear()} OEA. All rights reserved.
-            </p>
+            <div className="mt-8 flex flex-col items-center space-y-4">
+              <div className="flex space-x-4">
+                <Link
+                  to="/privacy-policy"
+                  className="text-[#9b87f5] hover:text-[#D6BCFA] transition-colors duration-200 text-sm"
+                >
+                  Privacy Policy
+                </Link>
+                <Link
+                  to="/terms-and-conditions"
+                  className="text-[#9b87f5] hover:text-[#D6BCFA] transition-colors duration-200 text-sm"
+                >
+                  Terms & Conditions
+                </Link>
+              </div>
+              <p className="text-center text-base text-[#8E9196]">
+                &copy; {new Date().getFullYear()} OEA. All rights reserved.
+              </p>
+            </div>
           </>
         )}
       </div>

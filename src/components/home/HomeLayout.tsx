@@ -5,7 +5,6 @@ import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { ErrorInfo } from 'react';
 import { Hero } from './Hero';
-import { Footer } from './Footer';
 
 interface BaseSectionProps {
   children: React.ReactNode;
@@ -66,7 +65,6 @@ export const HomeLayout = ({ children }: { children: React.ReactNode }) => (
         {children}
       </div>
     </div>
-    <Footer />
   </div>
 );
 
