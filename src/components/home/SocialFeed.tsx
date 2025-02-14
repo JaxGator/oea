@@ -3,10 +3,10 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Rss } from "lucide-react";
 import { useEffect } from "react";
-import type { SocialMediaFeed } from "@/types/database";
+import { Card } from "@/components/ui/card";
 
 export function SocialFeed() {
-  const { data: feeds = [], isError } = useQuery({
+  const { data: feeds = [], isLoading } = useQuery({
     queryKey: ['social-feeds'],
     queryFn: async () => {
       console.log('Fetching social feeds...');
@@ -14,7 +14,7 @@ export function SocialFeed() {
         .from('social_media_feeds')
         .select('*')
         .eq('is_active', true)
-        .order('created_at', { ascending: false })
+        .order('display_order', { ascending: true })
         .limit(1);
       
       if (error) {
@@ -22,7 +22,7 @@ export function SocialFeed() {
         throw error;
       }
       console.log('Fetched social feeds:', data);
-      return data as SocialMediaFeed[];
+      return data;
     },
     retry: 1,
     staleTime: 1000 * 60 * 5, // Cache for 5 minutes
@@ -63,28 +63,26 @@ export function SocialFeed() {
     };
   }, [feeds]);
 
-  if (isError || !feeds || feeds.length === 0) {
+  if (isLoading || !feeds || feeds.length === 0) {
     return null;
   }
 
   return (
-    <div>
+    <Card className="p-6">
       <div className="flex items-center gap-2 mb-4">
-        <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-          <Rss className="h-6 w-6" />
-          Social Feed
-        </h2>
+        <Rss className="h-6 w-6" />
+        <h2 className="text-xl font-bold">Social Feed</h2>
       </div>
       <div className="w-full h-[480px] relative">
-        <div className="absolute inset-0 overflow-y-auto scrollbar-thin hover:scrollbar-thumb-gray-300 rounded-lg border shadow-sm">
+        <div className="absolute inset-0 overflow-y-auto scrollbar-thin hover:scrollbar-thumb-gray-300 rounded-lg">
           <div 
             dangerouslySetInnerHTML={{ 
               __html: feeds[0].feed_url.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
             }} 
           />
         </div>
-        <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-white to-transparent pointer-events-none rounded-b-lg" />
+        <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-white to-transparent pointer-events-none" />
       </div>
-    </div>
+    </Card>
   );
 }
