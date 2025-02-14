@@ -19,10 +19,10 @@ export function useLocationSearch(mapToken: string | undefined) {
     console.log('Searching locations with token status:', !!mapToken);
 
     try {
-      // Using fuzzy matching and no type restrictions for broader results
+      // Enhanced search parameters to match Mapbox demo behavior
       const endpoint = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
         searchValue
-      )}.json?access_token=${mapToken}&country=us&fuzzy_match=true&limit=15`;
+      )}.json?access_token=${mapToken}&country=us&fuzzy_match=true&autocomplete=true&language=en&limit=10&proximity=`;
 
       const response = await fetch(endpoint);
       if (!response.ok) {
