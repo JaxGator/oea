@@ -1,10 +1,10 @@
+
 interface AttendeeListProps {
   attendeeNames: string[];
   waitlistNames?: string[];
 }
 
 export function AttendeeList({ attendeeNames, waitlistNames = [] }: AttendeeListProps) {
-  // Remove the initial return null check since we want to show "No attendees yet" message
   const validAttendees = attendeeNames.filter(name => name !== 'Unknown' && name !== '');
   
   // Group attendees by primary RSVP holder and preserve order

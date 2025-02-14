@@ -1,3 +1,4 @@
+
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -7,6 +8,7 @@ import { format } from "date-fns";
 import { Event, EventRSVP } from "@/types/event";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useEffect } from "react";
+import { AttendeeList } from "@/components/event/details/AttendeeList";
 
 interface RSVPWithProfile {
   id: string;
@@ -19,6 +21,9 @@ interface RSVPWithProfile {
     full_name: string | null;
     username: string;
   };
+  event_guests?: {
+    first_name: string;
+  }[];
 }
 
 export default function EventDetails() {
@@ -59,6 +64,10 @@ export default function EventDetails() {
           profiles (
             full_name,
             username
+          ),
+          event_guests (
+            id,
+            first_name
           )
         `)
         .eq('event_id', eventId);
@@ -77,7 +86,8 @@ export default function EventDetails() {
         profiles: {
           full_name: rsvp.profiles.full_name,
           username: rsvp.profiles.username
-        }
+        },
+        event_guests: rsvp.event_guests
       }));
 
       return {
@@ -110,6 +120,17 @@ export default function EventDetails() {
   if (!event) {
     throw new Error('Event not found');
   }
+
+  const attendeeNames = event.rsvps
+    ?.filter(rsvp => rsvp.response === 'attending' && rsvp.status === 'confirmed')
+    .map(rsvp => ({
+      name: rsvp.profiles?.full_name || rsvp.profiles?.username || 'Unknown',
+      guests: rsvp.event_guests?.map(guest => guest.first_name) || []
+    }))
+    .flatMap(({name, guests}) => [
+      name,
+      ...guests.map(guestName => `${guestName} (Guest of ${name})`)
+    ]) || [];
 
   return (
     <div className="min-h-screen bg-[#222222]">
@@ -152,13 +173,7 @@ export default function EventDetails() {
 
             <div className="border-t pt-6">
               <h2 className="text-xl font-semibold mb-4">Attendees</h2>
-              <div className="space-y-2">
-                {event.rsvps?.filter(rsvp => rsvp.response === 'attending').map(rsvp => (
-                  <div key={rsvp.id} className="text-gray-600">
-                    {rsvp.profiles.full_name || rsvp.profiles.username}
-                  </div>
-                ))}
-              </div>
+              <AttendeeList attendeeNames={attendeeNames} />
             </div>
           </div>
         </div>
