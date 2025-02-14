@@ -7,6 +7,7 @@ export function useLocationSearch(mapToken: string | undefined) {
   const [suggestions, setSuggestions] = useState<LocationSuggestion[]>([]);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
+  const sessionToken = crypto.randomUUID(); // Generate a session token for the search session
 
   const searchLocations = async (searchValue: string) => {
     if (!searchValue || searchValue.length < 3 || !mapToken) {
@@ -19,21 +20,9 @@ export function useLocationSearch(mapToken: string | undefined) {
     console.log('Searching locations with query:', searchValue);
 
     try {
-      // Using only the valid types as specified in the API error message
-      const types = [
-        'country',
-        'region',
-        'place',
-        'district',
-        'locality',
-        'postcode',
-        'neighborhood',
-        'address'
-      ].join(',');
-
-      const endpoint = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
+      const endpoint = `https://api.mapbox.com/search/searchbox/v1/suggest?q=${encodeURIComponent(
         searchValue
-      )}.json?access_token=${mapToken}&types=${types}&proximity=-81.5366144,30.1334528&limit=10&language=en&autocomplete=true`;
+      )}&access_token=${mapToken}&session_token=${sessionToken}&language=en&limit=10&types=postcode,place,neighborhood,address,poi,street,category&proximity=-81.5366144,30.1334528`;
 
       const response = await fetch(endpoint);
       if (!response.ok) {
@@ -41,35 +30,36 @@ export function useLocationSearch(mapToken: string | undefined) {
       }
 
       const data = await response.json();
-      console.log('Mapbox API full response:', data);
+      console.log('Mapbox Search API response:', data);
       
-      if (!data?.features || !Array.isArray(data.features)) {
+      if (!data?.suggestions || !Array.isArray(data.suggestions)) {
         setSuggestions([]);
         return;
       }
 
-      const validSuggestions = data.features
-        .filter((feature: any) => 
-          feature && 
-          typeof feature.place_name === 'string' &&
-          Array.isArray(feature.center) &&
-          feature.center.length === 2
+      const validSuggestions = data.suggestions
+        .filter((suggestion: any) => 
+          suggestion &&
+          typeof suggestion.name === 'string' &&
+          suggestion.context?.address?.name
         )
-        .map((feature: any) => {
+        .map((suggestion: any) => {
           // Enhanced logging to understand what we're getting
-          console.log('Feature details:', {
-            id: feature.id,
-            type: feature.place_type,
-            text: feature.text,
-            place_name: feature.place_name,
-            relevance: feature.relevance,
-            properties: feature.properties,
-            context: feature.context
+          console.log('Processing suggestion:', {
+            name: suggestion.name,
+            type: suggestion.feature_type,
+            address: suggestion.full_address,
+            category: suggestion.poi_category
           });
           
+          // Parse coordinates from mapbox_id if available
           return {
-            place_name: feature.place_name,
-            center: feature.center as [number, number]
+            place_name: `${suggestion.name}, ${suggestion.full_address}`,
+            // We'll need to retrieve exact coordinates in a separate retrieve call
+            // For now, we'll store the mapbox_id to look up coordinates later
+            mapbox_id: suggestion.mapbox_id,
+            // Placeholder coordinates until we get the exact location
+            center: [0, 0] as [number, number]
           };
         });
       
