@@ -19,6 +19,7 @@ export function PublicEventView() {
     queryFn: async () => {
       console.log('Fetching event with share token:', token);
       
+      // Make sure to only select the fields we need for public viewing
       const { data: eventData, error } = await supabase
         .from('events')
         .select(`
@@ -32,8 +33,21 @@ export function PublicEventView() {
           image_url,
           latitude,
           longitude,
-          is_featured,
-          share_token
+          share_token,
+          event_rsvps (
+            id,
+            user_id,
+            response,
+            status,
+            profiles (
+              username,
+              full_name
+            ),
+            event_guests (
+              id,
+              first_name
+            )
+          )
         `)
         .eq('share_token', token)
         .single();
@@ -116,13 +130,16 @@ export function PublicEventView() {
                   {format(new Date(event.date), "EEEE, MMMM do, yyyy")} at {event.time}
                 </p>
                 <p>{event.location}</p>
+                <p>Attendees: {event.event_rsvps?.filter(rsvp => rsvp.response === 'attending').length || 0} / {event.max_guests}</p>
               </div>
             </div>
 
-            <div 
-              className="prose prose-sm md:prose-base max-w-none"
-              dangerouslySetInnerHTML={{ __html: event.description || "" }}
-            />
+            {event.description && (
+              <div 
+                className="prose prose-sm md:prose-base max-w-none"
+                dangerouslySetInnerHTML={{ __html: event.description || "" }}
+              />
+            )}
 
             {event.latitude && event.longitude && (
               <div className="h-[400px] w-full rounded-lg overflow-hidden">
