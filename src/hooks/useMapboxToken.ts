@@ -73,14 +73,24 @@ export const useMapboxToken = (): UseMapboxTokenReturn => {
         }
 
         console.log('Fetching fresh Mapbox token...');
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        
+        if (sessionError) {
+          console.error('Session error:', sessionError);
+          throw sessionError;
+        }
+
+        if (!session) {
+          throw new Error('No active session');
+        }
+
         const response = await fetch(
-          `${supabase.functions.url}/get-mapbox-token`,
+          'https://qegpuqitjfocyyrivlhv.functions.supabase.co/get-mapbox-token',
           {
             method: 'GET',
             headers: {
-              'Authorization': `Bearer ${supabase.auth.getSession()?.access_token}`,
-              'Content-Type': 'application/json',
-              'apikey': supabase.supabaseKey
+              'Authorization': `Bearer ${session.access_token}`,
+              'Content-Type': 'application/json'
             }
           }
         );
