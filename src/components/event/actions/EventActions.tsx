@@ -43,7 +43,7 @@ export function EventActions({
   onEdit,
   onDelete,
   onTogglePublish,
-  isPastEvent,
+  isPastEvent = false,
   isWixEvent,
   showDelete,
   canAddGuests,
@@ -62,7 +62,8 @@ export function EventActions({
     isAuthenticated,
     userRSVPStatus,
     isAdmin,
-    canManageEvents
+    canManageEvents,
+    isPastEvent
   });
 
   if (isAuthChecking) {
@@ -79,7 +80,7 @@ export function EventActions({
     <div className="flex flex-wrap gap-1">
       <EventActionButtons
         userRSVPStatus={userRSVPStatus}
-        isPastEvent={isPastEvent || false}
+        isPastEvent={isPastEvent}
         isFullyBooked={isFullyBooked}
         canJoinWaitlist={canJoinWaitlist}
         canAddGuests={canAddGuests}

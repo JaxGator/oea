@@ -36,6 +36,13 @@ export function EventActionButtons({
   requireAuth = false,
   isAuthenticated = false
 }: EventActionButtonsProps) {
+  console.log('EventActionButtons render:', { 
+    userRSVPStatus, 
+    isPastEvent, 
+    isAuthenticated,
+    isFullyBooked 
+  });
+
   return (
     <>
       {isAuthenticated && !userRSVPStatus && !isPastEvent && (

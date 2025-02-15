@@ -1,3 +1,4 @@
+
 import { Event } from "@/types/event";
 import { EventDetailsSection } from "./card/sections/EventDetailsSection";
 import { EventActionsSection } from "./card/sections/EventActionsSection";
@@ -59,6 +60,14 @@ export function EventCardContent({
   isAuthChecking = false,
   requireAuth = false
 }: EventCardContentProps) {
+  console.log('EventCardContent render:', { 
+    event, 
+    isPastEvent, 
+    userRSVPStatus,
+    date: event.date,
+    time: event.time 
+  });
+
   return (
     <div className="p-4">
       <EventDetailsSection
