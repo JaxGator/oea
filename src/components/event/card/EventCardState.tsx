@@ -6,6 +6,7 @@ import { useAdminStatus } from "@/hooks/events/useAdminStatus";
 import { useEventStateManager } from "@/hooks/events/useEventStateManager";
 import { useGuestListUpdates } from "@/hooks/events/useGuestListUpdates";
 import { useEffect } from "react";
+import { parseISO, set } from "date-fns";
 
 interface EventCardStateProps {
   event: Event;
@@ -79,9 +80,23 @@ export function EventCardState({
     waitlistCount: 0
   };
 
-  const isPastEvent = new Date(event.date) < new Date(new Date().setHours(0, 0, 0, 0));
+  const now = new Date();
+  const [hours, minutes] = event.time.split(':').map(Number);
+  const eventDateTime = set(parseISO(event.date), {
+    hours: hours || 0,
+    minutes: minutes || 0,
+  });
+  const isPastEvent = eventDateTime < now;
   const isWixEvent = !!event.imported_rsvp_count;
   const canAddGuests = isAdmin || userRSVPStatus === 'attending';
+
+  console.log('EventCardState - Event timing:', {
+    eventDate: event.date,
+    eventTime: event.time,
+    eventDateTime,
+    now,
+    isPastEvent
+  });
 
   return children({
     isAdmin,
