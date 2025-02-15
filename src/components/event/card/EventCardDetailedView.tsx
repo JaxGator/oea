@@ -49,23 +49,6 @@ export function EventCardDetailedView({
   const canJoinWaitlist = event.waitlist_enabled && isFullyBooked;
   const canViewRSVPs = isAdmin || canManageEvents || userRSVPStatus === "attending";
 
-  // Process the event RSVPs to create attendee names list
-  const processedAttendeeNames = event.rsvps?.reduce((names: string[], rsvp) => {
-    if (rsvp.response === 'attending' && rsvp.status === 'confirmed') {
-      // Add the main RSVP holder
-      const attendeeName = rsvp.profiles?.full_name || rsvp.profiles?.username || 'Unknown';
-      names.push(attendeeName);
-
-      // Add any guests associated with this RSVP
-      if (rsvp.event_guests?.length) {
-        rsvp.event_guests.forEach(guest => {
-          names.push(`${guest.first_name} (Guest of ${attendeeName})`);
-        });
-      }
-    }
-    return names;
-  }, []) || [];
-
   // Process waitlist names
   const waitlistNames = event.rsvps?.reduce((names: string[], rsvp) => {
     if (rsvp.status === 'waitlisted') {
@@ -74,6 +57,14 @@ export function EventCardDetailedView({
     }
     return names;
   }, []) || [];
+
+  console.log('EventCardDetailedView - Attendees:', { 
+    attendeeNames,
+    rsvpCount,
+    userRSVPStatus,
+    canViewRSVPs,
+    event
+  });
 
   return (
     <div className="flex flex-col gap-6 animate-fade-in">
@@ -99,7 +90,7 @@ export function EventCardDetailedView({
           <div className="border rounded-lg p-4 bg-gray-50">
             <h3 className="text-lg font-semibold mb-4">Event Attendees</h3>
             <AttendeeList
-              attendeeNames={processedAttendeeNames}
+              attendeeNames={attendeeNames}
               waitlistNames={waitlistNames}
             />
           </div>
