@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
@@ -41,7 +42,7 @@ export function EventForm({ onSuccess, initialData, isPastEvent, isWixEvent }: E
     },
   });
 
-  const { handleSubmit: handleFormSubmit } = useEventFormSubmit(onSuccess);
+  const { handleSubmit: handleFormSubmit, isSubmitting } = useEventFormSubmit(onSuccess);
 
   const onSubmit = async (data: EventFormValues) => {
     if (!user?.id) {
@@ -55,12 +56,20 @@ export function EventForm({ onSuccess, initialData, isPastEvent, isWixEvent }: E
     };
     
     await handleFormSubmit(eventData, initialData);
-    onSuccess();
   };
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+      <form 
+        onSubmit={form.handleSubmit(onSubmit)} 
+        className="space-y-4"
+        onKeyDown={(e) => {
+          // Prevent form submission on Enter key
+          if (e.key === 'Enter') {
+            e.preventDefault();
+          }
+        }}
+      >
         <EventBasicDetails form={form} />
         <EventScheduling form={form} disabled={isPastEvent} />
         <EventLocationCapacity 
@@ -83,7 +92,11 @@ export function EventForm({ onSuccess, initialData, isPastEvent, isWixEvent }: E
           </div>
         )}
 
-        <Button type="submit" className="w-full bg-[#0d97d1] hover:bg-[#0d97d1]/90">
+        <Button 
+          type="submit" 
+          className="w-full bg-[#0d97d1] hover:bg-[#0d97d1]/90"
+          disabled={isSubmitting}
+        >
           {initialData ? "Update Event" : "Create Event"}
         </Button>
       </form>

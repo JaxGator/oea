@@ -21,17 +21,19 @@ export function EventLocationCapacity({
   const { isAdmin } = useAdminStatus();
 
   const handleLocationSelect = (suggestion: LocationSuggestion) => {
-    // Use setValue without triggering form submission
+    // Update form values without triggering validation or form submission
     form.setValue('location', suggestion.place_name, {
-      shouldValidate: true,
+      shouldValidate: false,
       shouldDirty: true,
-      shouldTouch: true
+      shouldTouch: false
     });
+    
     form.setValue('latitude', suggestion.center[1], {
       shouldValidate: false,
       shouldDirty: true,
       shouldTouch: false
     });
+    
     form.setValue('longitude', suggestion.center[0], {
       shouldValidate: false,
       shouldDirty: true,

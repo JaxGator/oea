@@ -59,19 +59,22 @@ export function LocationSearchInput({
     const coordinates = await retrieveCoordinates(suggestion.mapbox_id);
     if (coordinates) {
       setInputValue(suggestion.place_name);
-      setIsDropdownOpen(false); // Close dropdown before calling onLocationSelect
-      onLocationSelect({
-        place_name: suggestion.place_name,
-        mapbox_id: suggestion.mapbox_id, // Include the mapbox_id in the selection
-        center: coordinates
-      });
+      setIsDropdownOpen(false);
+      
+      // Wrap in setTimeout to ensure dropdown is closed before updating form
+      setTimeout(() => {
+        onLocationSelect({
+          place_name: suggestion.place_name,
+          mapbox_id: suggestion.mapbox_id,
+          center: coordinates
+        });
+      }, 0);
     } else {
       toast.error('Could not retrieve location coordinates. Please try again.');
     }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    // Prevent form submission on enter
     if (e.key === 'Enter') {
       e.preventDefault();
       e.stopPropagation();
