@@ -6,6 +6,7 @@ import { useAuthState } from "@/hooks/useAuthState";
 import { EventsHeader } from "@/components/event/sections/EventsHeader";
 import { EventsContent } from "@/components/event/sections/EventsContent";
 import { useQueryClient } from "@tanstack/react-query";
+import { startOfDay, endOfDay } from "date-fns";
 import type { Event, EventsPage } from "@/types/database";
 
 export default function Events() {
@@ -28,14 +29,17 @@ export default function Events() {
   const filteredEvents = selectedDate ? allEvents : allEvents;
   
   const now = new Date();
+  const startOfToday = startOfDay(now);
+  const endOfToday = endOfDay(now);
+
   const upcomingEvents = filteredEvents.filter(event => {
     const eventDate = new Date(event.date);
-    return eventDate >= now;
+    return eventDate >= startOfToday;
   }) as Event[];
 
   const pastEvents = filteredEvents.filter(event => {
     const eventDate = new Date(event.date);
-    return eventDate < now;
+    return eventDate < startOfToday;
   }).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()) as Event[];
 
   const handleEventUpdate = () => {
