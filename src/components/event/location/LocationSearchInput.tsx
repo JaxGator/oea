@@ -40,7 +40,7 @@ export function LocationSearchInput({
 
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+  }, [setIsDropdownOpen]);
 
   const handleInputChange = (value: string) => {
     setInputValue(value);
@@ -53,19 +53,27 @@ export function LocationSearchInput({
     }
   };
 
-  const handleSuggestionSelect = async (suggestion: { place_name: string; mapbox_id: string; center: [number, number] }) => {
+  const handleSuggestionSelect = async (suggestion: { place_name: string; mapbox_id: string }) => {
     console.log('Selected suggestion:', suggestion);
     
     const coordinates = await retrieveCoordinates(suggestion.mapbox_id);
     if (coordinates) {
       setInputValue(suggestion.place_name);
+      setIsDropdownOpen(false); // Close dropdown before calling onLocationSelect
       onLocationSelect({
-        ...suggestion,
+        place_name: suggestion.place_name,
         center: coordinates
       });
-      setIsDropdownOpen(false);
     } else {
       toast.error('Could not retrieve location coordinates. Please try again.');
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    // Prevent form submission on enter
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      e.stopPropagation();
     }
   };
 
@@ -76,14 +84,9 @@ export function LocationSearchInput({
           placeholder="Search for a location..."
           value={inputValue}
           onChange={(e) => handleInputChange(e.target.value)}
+          onKeyDown={handleKeyDown}
           disabled={disabled}
           className="w-full"
-          // Prevent form submission on enter key
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') {
-              e.preventDefault();
-            }
-          }}
         />
         {isSearching && (
           <div className="absolute right-3 top-1/2 -translate-y-1/2">

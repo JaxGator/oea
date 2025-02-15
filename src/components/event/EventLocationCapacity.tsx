@@ -19,6 +19,25 @@ export function EventLocationCapacity({
 }: EventLocationCapacityProps) {
   const { isAdmin } = useAdminStatus();
 
+  const handleLocationSelect = (suggestion: { place_name: string; center: [number, number] }) => {
+    // Use setValue without triggering form submission
+    form.setValue('location', suggestion.place_name, {
+      shouldValidate: true,
+      shouldDirty: true,
+      shouldTouch: true
+    });
+    form.setValue('latitude', suggestion.center[1], {
+      shouldValidate: false,
+      shouldDirty: true,
+      shouldTouch: false
+    });
+    form.setValue('longitude', suggestion.center[0], {
+      shouldValidate: false,
+      shouldDirty: true,
+      shouldTouch: false
+    });
+  };
+
   return (
     <>
       <FormField
@@ -28,21 +47,7 @@ export function EventLocationCapacity({
           <FormItem className="flex flex-col">
             <FormLabel>Location</FormLabel>
             <LocationSearchInput 
-              onLocationSelect={(suggestion) => {
-                // Use setValue instead of field.onChange to prevent form submission
-                form.setValue('location', suggestion.place_name, {
-                  shouldValidate: true,
-                  shouldDirty: true,
-                });
-                form.setValue('latitude', suggestion.center[1], {
-                  shouldValidate: true,
-                  shouldDirty: true,
-                });
-                form.setValue('longitude', suggestion.center[0], {
-                  shouldValidate: true,
-                  shouldDirty: true,
-                });
-              }}
+              onLocationSelect={handleLocationSelect}
               currentValue={field.value}
               disabled={disableLocation && !isAdmin}
             />

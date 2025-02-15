@@ -24,9 +24,7 @@ export function useLocationSearch(mapToken: string | undefined) {
       console.log('Coordinate retrieval response:', data);
 
       if (data.features?.[0]?.geometry?.coordinates) {
-        // Mapbox returns coordinates as [longitude, latitude]
-        const [lng, lat] = data.features[0].geometry.coordinates;
-        return [lng, lat];
+        return data.features[0].geometry.coordinates;
       }
       return null;
     } catch (error) {
@@ -69,19 +67,11 @@ export function useLocationSearch(mapToken: string | undefined) {
           suggestion.name &&
           suggestion.full_address
         )
-        .map((suggestion: any) => {
-          console.log('Processing suggestion:', {
-            name: suggestion.name,
-            address: suggestion.full_address,
-            mapboxId: suggestion.mapbox_id
-          });
-          
-          return {
-            place_name: `${suggestion.name}, ${suggestion.full_address}`,
-            mapbox_id: suggestion.mapbox_id,
-            center: [0, 0] // Will be updated when selected
-          };
-        });
+        .map((suggestion: any) => ({
+          place_name: `${suggestion.name}, ${suggestion.full_address}`,
+          mapbox_id: suggestion.mapbox_id,
+          center: [0, 0] // Will be updated when selected
+        }));
       
       console.log('Found suggestions:', validSuggestions.length);
       setSuggestions(validSuggestions);
