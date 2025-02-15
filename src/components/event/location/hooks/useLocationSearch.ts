@@ -24,7 +24,9 @@ export function useLocationSearch(mapToken: string | undefined) {
       console.log('Coordinate retrieval response:', data);
 
       if (data.features?.[0]?.geometry?.coordinates) {
-        return data.features[0].geometry.coordinates as [number, number];
+        // Mapbox returns coordinates as [longitude, latitude]
+        const [lng, lat] = data.features[0].geometry.coordinates;
+        return [lng, lat];
       }
       return null;
     } catch (error) {
@@ -46,7 +48,7 @@ export function useLocationSearch(mapToken: string | undefined) {
     try {
       const endpoint = `https://api.mapbox.com/search/searchbox/v1/suggest?q=${encodeURIComponent(
         searchValue
-      )}&access_token=${mapToken}&session_token=${sessionToken}&language=en&limit=10&types=postcode,place,neighborhood,address,poi,street,category&proximity=-81.5366144,30.1334528`;
+      )}&access_token=${mapToken}&session_token=${sessionToken}&language=en&limit=10&types=poi,address,street,place&proximity=-81.5366144,30.1334528&country=US`;
 
       const response = await fetch(endpoint);
       if (!response.ok) {
@@ -64,21 +66,20 @@ export function useLocationSearch(mapToken: string | undefined) {
       const validSuggestions = data.suggestions
         .filter((suggestion: any) => 
           suggestion &&
-          typeof suggestion.name === 'string' &&
+          suggestion.name &&
           suggestion.full_address
         )
         .map((suggestion: any) => {
           console.log('Processing suggestion:', {
             name: suggestion.name,
-            type: suggestion.feature_type,
             address: suggestion.full_address,
-            category: suggestion.poi_category
+            mapboxId: suggestion.mapbox_id
           });
           
           return {
             place_name: `${suggestion.name}, ${suggestion.full_address}`,
             mapbox_id: suggestion.mapbox_id,
-            center: [0, 0] as [number, number]
+            center: [0, 0] // Will be updated when selected
           };
         });
       

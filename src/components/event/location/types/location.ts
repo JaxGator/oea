@@ -14,7 +14,15 @@ export interface LocationSearchInputProps {
 export interface RetrieveResponse {
   features: Array<{
     geometry: {
-      coordinates: [number, number];
+      coordinates: [number, number]; // [longitude, latitude]
+    };
+    properties: {
+      name: string;
+      full_address: string;
+      coordinates: {
+        latitude: number;
+        longitude: number;
+      };
     };
   }>;
 }

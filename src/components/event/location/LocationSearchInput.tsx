@@ -26,10 +26,10 @@ export function LocationSearchInput({
   } = useLocationSearch(mapToken);
 
   useEffect(() => {
-    if (currentValue && !inputValue) {
+    if (currentValue && currentValue !== inputValue) {
       setInputValue(currentValue);
     }
-  }, []);
+  }, [currentValue]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -71,6 +71,8 @@ export function LocationSearchInput({
   };
 
   const handleSuggestionSelect = async (suggestion: { place_name: string; mapbox_id: string; center: [number, number] }) => {
+    console.log('Selected suggestion:', suggestion);
+    
     const coordinates = await retrieveCoordinates(suggestion.mapbox_id);
     if (coordinates) {
       setInputValue(suggestion.place_name);
@@ -88,7 +90,7 @@ export function LocationSearchInput({
     <div className="relative" ref={dropdownRef}>
       <div className="relative">
         <Input
-          placeholder="Search for a location or business..."
+          placeholder="Search for a location..."
           value={inputValue}
           onChange={(e) => handleInputChange(e.target.value)}
           disabled={disabled}
