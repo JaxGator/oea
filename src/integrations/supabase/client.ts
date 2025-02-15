@@ -56,12 +56,12 @@ export const testSupabaseConnection = async () => {
       return false;
     }
     
-    // Then test a simple database query
+    // Then test a simple database query using maybeSingle() instead of single()
     const { error: dbError } = await supabase
       .from('profiles')
       .select('id')
       .limit(1)
-      .single();
+      .maybeSingle();
     
     if (dbError) {
       console.error('Supabase database test error:', {
