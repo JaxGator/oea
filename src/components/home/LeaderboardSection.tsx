@@ -49,8 +49,11 @@ export function LeaderboardSection() {
         throw error;
       }
       
-      console.log('Leaderboard data:', data);
-      return data || [];
+      // Filter out any entries that don't have associated profile data
+      const filteredData = data?.filter(item => item.profiles && item.profiles.username) || [];
+      console.log('Filtered leaderboard data:', filteredData);
+      
+      return filteredData;
     },
     staleTime: 1000 * 60 * 5, // Cache for 5 minutes
     refetchOnWindowFocus: false,
