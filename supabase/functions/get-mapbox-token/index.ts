@@ -10,87 +10,33 @@ const corsHeaders = {
 
 console.log('Initializing get-mapbox-token function')
 
-serve(async (req: Request) => {
-  try {
-    // Handle CORS preflight requests
-    if (req.method === 'OPTIONS') {
-      return new Response(null, {
-        headers: corsHeaders
-      })
-    }
-
-    // Only allow GET requests
-    if (req.method !== 'GET') {
-      return new Response(
-        JSON.stringify({ 
-          error: 'Method not allowed' 
-        }), 
-        { 
-          status: 405,
-          headers: {
-            ...corsHeaders,
-            'Content-Type': 'application/json'
-          }
-        }
-      )
-    }
-
-    const token = Deno.env.get('MAPBOX_PUBLIC_TOKEN')
-    console.log('Processing token request:', {
-      timestamp: new Date().toISOString(),
-      hasToken: !!token,
-      method: req.method
+serve((req: Request) => {
+  // Handle CORS preflight requests
+  if (req.method === 'OPTIONS') {
+    return new Response(null, {
+      headers: corsHeaders
     })
-    
-    if (!token) {
-      console.error('MAPBOX_PUBLIC_TOKEN not found in environment')
-      return new Response(
-        JSON.stringify({ 
-          error: 'Configuration error',
-          details: 'Mapbox token not configured'
-        }), 
-        { 
-          status: 500,
-          headers: {
-            ...corsHeaders,
-            'Content-Type': 'application/json'
-          }
-        }
-      )
-    }
+  }
 
-    const response = {
-      token,
-      status: 'success',
-      timestamp: new Date().toISOString()
-    }
-
-    console.log('Sending successful response')
-    
+  // Only allow GET requests
+  if (req.method !== 'GET') {
     return new Response(
-      JSON.stringify(response), 
+      JSON.stringify({ error: 'Method not allowed' }), 
       { 
-        status: 200,
+        status: 405,
         headers: {
           ...corsHeaders,
-          'Content-Type': 'application/json',
-          'Cache-Control': 'private, max-age=3600'
+          'Content-Type': 'application/json'
         }
       }
     )
-  } catch (error) {
-    console.error('Error in get-mapbox-token function:', {
-      error: error.message,
-      stack: error.stack,
-      timestamp: new Date().toISOString()
-    })
-    
+  }
+
+  const token = Deno.env.get('MAPBOX_PUBLIC_TOKEN')
+  
+  if (!token) {
     return new Response(
-      JSON.stringify({ 
-        error: 'Internal server error',
-        details: error.message,
-        timestamp: new Date().toISOString()
-      }), 
+      JSON.stringify({ error: 'Configuration error' }), 
       { 
         status: 500,
         headers: {
@@ -100,4 +46,15 @@ serve(async (req: Request) => {
       }
     )
   }
+
+  return new Response(
+    JSON.stringify({ token }), 
+    { 
+      status: 200,
+      headers: {
+        ...corsHeaders,
+        'Content-Type': 'application/json'
+      }
+    }
+  )
 })
