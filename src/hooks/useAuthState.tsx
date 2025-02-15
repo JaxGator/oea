@@ -57,23 +57,23 @@ export function useAuthState(): AuthState {
     };
   }, [authUser?.id, queryClient]);
 
-  // Enhanced logging for authentication state
-  console.log('useAuthState - Current state:', {
-    isAuthenticated: !!authUser,
-    userId: authUser?.id,
-    hasProfile: !!profile,
-    isAdmin: profile?.is_admin,
-    profileDetails: profile ? {
-      id: profile.id,
-      username: profile.username,
-      isAdmin: profile.is_admin,
-      isApproved: profile.is_approved
-    } : null,
-    isLoading: isSessionLoading || isProfileLoading,
-    sessionError,
-    profileError,
-    timestamp: new Date().toISOString()
-  });
+  // Enhanced error handling for profile errors
+  useEffect(() => {
+    if (profileError) {
+      // Only show toast for actual errors, not for "no profile found" cases
+      if (profileError.message && !profileError.message.includes('JSON object requested, multiple (or no) rows returned')) {
+        console.error('Profile error:', {
+          error: profileError,
+          timestamp: new Date().toISOString()
+        });
+        toast({
+          title: "Profile Error",
+          description: "Unable to load user profile",
+          variant: "destructive",
+        });
+      }
+    }
+  }, [profileError, toast]);
 
   // Enhanced error handling for session errors
   useEffect(() => {
@@ -90,20 +90,21 @@ export function useAuthState(): AuthState {
     }
   }, [sessionError, toast]);
 
-  // Enhanced error handling for profile errors
-  useEffect(() => {
-    if (profileError) {
-      console.error('Profile error:', {
-        error: profileError,
-        timestamp: new Date().toISOString()
-      });
-      toast({
-        title: "Profile Error",
-        description: "Unable to load user profile",
-        variant: "destructive",
-      });
-    }
-  }, [profileError, toast]);
+  console.log('useAuthState - Current state:', {
+    isAuthenticated: !!authUser,
+    userId: authUser?.id,
+    hasProfile: !!profile,
+    profileError,
+    isAdmin: profile?.is_admin,
+    profileDetails: profile ? {
+      id: profile.id,
+      username: profile.username,
+      isAdmin: profile.is_admin,
+      isApproved: profile.is_approved
+    } : null,
+    isLoading: isSessionLoading || isProfileLoading,
+    timestamp: new Date().toISOString()
+  });
 
   return {
     user: profile || null,

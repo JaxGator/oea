@@ -30,7 +30,7 @@ export function useProfile(userId: string | undefined) {
           return null;
         }
 
-        // Use proper Supabase query builder syntax
+        // Use proper Supabase query builder syntax with maybeSingle()
         const { data, error } = await supabase
           .from('profiles')
           .select('*')
@@ -72,12 +72,6 @@ export function useProfile(userId: string | undefined) {
               return null;
             }
           }
-          
-          toast({
-            title: "Error loading profile",
-            description: "Please try refreshing the page",
-            variant: "destructive",
-          });
           
           throw error;
         }
