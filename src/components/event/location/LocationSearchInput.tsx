@@ -62,6 +62,7 @@ export function LocationSearchInput({
       setIsDropdownOpen(false); // Close dropdown before calling onLocationSelect
       onLocationSelect({
         place_name: suggestion.place_name,
+        mapbox_id: suggestion.mapbox_id, // Include the mapbox_id in the selection
         center: coordinates
       });
     } else {

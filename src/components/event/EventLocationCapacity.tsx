@@ -5,6 +5,7 @@ import { EventFormValues } from "./EventFormTypes";
 import { useAdminStatus } from "@/hooks/events/useAdminStatus";
 import { Input } from "@/components/ui/input";
 import { LocationSearchInput } from "./location/LocationSearchInput";
+import { LocationSuggestion } from "./location/types/location";
 
 interface EventLocationCapacityProps {
   form: UseFormReturn<EventFormValues>;
@@ -19,7 +20,7 @@ export function EventLocationCapacity({
 }: EventLocationCapacityProps) {
   const { isAdmin } = useAdminStatus();
 
-  const handleLocationSelect = (suggestion: { place_name: string; center: [number, number] }) => {
+  const handleLocationSelect = (suggestion: LocationSuggestion) => {
     // Use setValue without triggering form submission
     form.setValue('location', suggestion.place_name, {
       shouldValidate: true,
