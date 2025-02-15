@@ -57,11 +57,11 @@ export function useAuthState(): AuthState {
     };
   }, [authUser?.id, queryClient]);
 
-  // Enhanced error handling for profile errors
+  // Enhanced error handling for profile errors - only show toast for actual errors
   useEffect(() => {
     if (profileError) {
-      // Only show toast for actual errors, not for "no profile found" cases
-      if (profileError.message && !profileError.message.includes('JSON object requested, multiple (or no) rows returned')) {
+      // Skip showing error for expected "no profile" cases
+      if (!profileError.message?.includes('JSON object requested, multiple (or no) rows returned')) {
         console.error('Profile error:', {
           error: profileError,
           timestamp: new Date().toISOString()
@@ -90,6 +90,7 @@ export function useAuthState(): AuthState {
     }
   }, [sessionError, toast]);
 
+  // Debug logging
   console.log('useAuthState - Current state:', {
     isAuthenticated: !!authUser,
     userId: authUser?.id,
