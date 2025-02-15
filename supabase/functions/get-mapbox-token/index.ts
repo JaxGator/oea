@@ -28,7 +28,7 @@ serve(async (req) => {
       return new Response(
         JSON.stringify({ 
           error: 'Configuration error',
-          message: 'Mapbox token not configured'
+          details: 'Mapbox token not configured. Please add MAPBOX_PUBLIC_TOKEN to Edge Function secrets.'
         }), 
         { 
           status: 500,
@@ -49,7 +49,8 @@ serve(async (req) => {
         status: 200,
         headers: {
           ...corsHeaders,
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Cache-Control': 'private, max-age=3600' // Cache for 1 hour
         }
       }
     )
@@ -63,7 +64,7 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         error: 'Internal server error',
-        message: error.message 
+        details: error.message 
       }), 
       { 
         status: 500,
