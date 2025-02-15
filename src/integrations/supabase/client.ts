@@ -19,14 +19,11 @@ export const supabase = createClient<Database>(
       flowType: 'pkce',
       storage: typeof window !== 'undefined' ? window.localStorage : undefined,
       storageKey: 'oea-auth-token',
-      debug: true,
     },
     global: {
       headers: {
-        'X-Client-Info': 'supabase-js-web',
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'GET, POST, PUT, PATCH, DELETE, OPTIONS',
-        'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type'
+        'Content-Type': 'application/json',
+        'apikey': SUPABASE_ANON_KEY,
       },
     },
     realtime: {
