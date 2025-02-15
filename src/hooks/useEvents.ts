@@ -1,17 +1,17 @@
+
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useAuthState } from './useAuthState';
 import { useQueryClient } from '@tanstack/react-query';
 import type { Event, EventsPage } from '@/types/database';
-import { startOfDay, subMonths } from 'date-fns';
+import { startOfDay } from 'date-fns';
 
 export function useEvents(selectedDate?: Date, eventId?: string) {
   const { profile, isAuthenticated } = useAuthState();
   const isApproved = profile?.is_approved;
-  const threeMonthsAgo = subMonths(startOfDay(new Date()), 3).toISOString().split('T')[0];
 
-  console.log('Fetching events with date range:', { threeMonthsAgo, selectedDate, eventId });
+  console.log('Fetching events with params:', { selectedDate, eventId });
 
   return useInfiniteQuery<EventsPage>({
     queryKey: ['events', selectedDate?.toISOString(), isAuthenticated, isApproved, eventId],
@@ -43,9 +43,6 @@ export function useEvents(selectedDate?: Date, eventId?: string) {
         if (eventId) {
           query = query.eq('id', eventId);
         } else {
-          // Otherwise, get events from 3 months ago onwards
-          query = query.gte('date', threeMonthsAgo);
-
           // Filter by published status for non-admin users
           if (!isAuthenticated) {
             query = query.eq('is_published', true);
