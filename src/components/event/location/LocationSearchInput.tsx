@@ -14,7 +14,8 @@ export function LocationSearchInput({
   disabled = false 
 }: LocationSearchInputProps) {
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const { mapToken, isLoading, error } = useMapboxToken();
+  const inputRef = useRef<HTMLInputElement>(null);
+  const { mapToken } = useMapboxToken();
   const [inputValue, setInputValue] = useState(currentValue);
   const { 
     suggestions, 
@@ -56,21 +57,31 @@ export function LocationSearchInput({
   const handleSuggestionSelect = async (suggestion: { place_name: string; mapbox_id: string }) => {
     console.log('Selected suggestion:', suggestion);
     
-    const coordinates = await retrieveCoordinates(suggestion.mapbox_id);
-    if (coordinates) {
-      setInputValue(suggestion.place_name);
-      setIsDropdownOpen(false);
-      
-      // Wrap in setTimeout to ensure dropdown is closed before updating form
-      setTimeout(() => {
-        onLocationSelect({
-          place_name: suggestion.place_name,
-          mapbox_id: suggestion.mapbox_id,
-          center: coordinates
+    try {
+      const coordinates = await retrieveCoordinates(suggestion.mapbox_id);
+      if (coordinates) {
+        setInputValue(suggestion.place_name);
+        setIsDropdownOpen(false);
+        
+        // Wait for the next tick to update form values
+        requestAnimationFrame(() => {
+          onLocationSelect({
+            place_name: suggestion.place_name,
+            mapbox_id: suggestion.mapbox_id,
+            center: coordinates
+          });
         });
-      }, 0);
-    } else {
-      toast.error('Could not retrieve location coordinates. Please try again.');
+
+        // Ensure input loses focus
+        if (inputRef.current) {
+          inputRef.current.blur();
+        }
+      } else {
+        toast.error('Could not retrieve location coordinates. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error selecting location:', error);
+      toast.error('Error selecting location. Please try again.');
     }
   };
 
@@ -78,6 +89,7 @@ export function LocationSearchInput({
     if (e.key === 'Enter') {
       e.preventDefault();
       e.stopPropagation();
+      return false;
     }
   };
 
@@ -85,6 +97,7 @@ export function LocationSearchInput({
     <div className="relative" ref={dropdownRef}>
       <div className="relative">
         <Input
+          ref={inputRef}
           placeholder="Search for a location..."
           value={inputValue}
           onChange={(e) => handleInputChange(e.target.value)}

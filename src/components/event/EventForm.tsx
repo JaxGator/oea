@@ -22,6 +22,7 @@ export function EventForm({ onSuccess, initialData, isPastEvent, isWixEvent }: E
   
   const form = useForm<EventFormValues>({
     resolver: zodResolver(eventSchema),
+    mode: "onSubmit", // Only validate on form submission
     defaultValues: {
       title: initialData?.title || "",
       description: initialData?.description || "",
@@ -40,6 +41,7 @@ export function EventForm({ onSuccess, initialData, isPastEvent, isWixEvent }: E
       longitude: initialData?.longitude,
       created_by: initialData?.created_by || user?.id || "",
     },
+    reValidateMode: "onSubmit" // Only revalidate on form submission
   });
 
   const { handleSubmit: handleFormSubmit, isSubmitting } = useEventFormSubmit(onSuccess);
@@ -58,17 +60,23 @@ export function EventForm({ onSuccess, initialData, isPastEvent, isWixEvent }: E
     await handleFormSubmit(eventData, initialData);
   };
 
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+  };
+
   return (
     <Form {...form}>
       <form 
-        onSubmit={form.handleSubmit(onSubmit)} 
-        className="space-y-4"
-        onKeyDown={(e) => {
-          // Prevent form submission on Enter key
-          if (e.key === 'Enter') {
-            e.preventDefault();
-          }
+        onSubmit={(e) => {
+          e.preventDefault();
+          form.handleSubmit(onSubmit)(e);
         }}
+        className="space-y-4"
+        onKeyDown={handleKeyPress}
+        onKeyPress={handleKeyPress}
       >
         <EventBasicDetails form={form} />
         <EventScheduling form={form} disabled={isPastEvent} />
