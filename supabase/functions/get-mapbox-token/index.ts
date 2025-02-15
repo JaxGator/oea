@@ -1,38 +1,33 @@
 
+// @ts-ignore
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-  'Access-Control-Allow-Methods': 'GET, OPTIONS'
+  'Access-Control-Allow-Methods': 'GET, OPTIONS',
 }
 
-serve(async (req) => {
-  // Handle CORS preflight requests
-  if (req.method === 'OPTIONS') {
-    return new Response(null, {
-      headers: corsHeaders
-    })
-  }
+console.log('Initializing get-mapbox-token function')
 
+serve(async (req: Request) => {
   try {
-    const token = Deno.env.get('MAPBOX_PUBLIC_TOKEN')
-    console.log('Attempting to retrieve Mapbox token:', {
-      hasToken: !!token,
-      method: req.method,
-      url: req.url
-    })
-    
-    if (!token) {
-      console.error('MAPBOX_PUBLIC_TOKEN environment variable is not set')
+    // Handle CORS preflight requests
+    if (req.method === 'OPTIONS') {
+      return new Response(null, {
+        headers: corsHeaders
+      })
+    }
+
+    // Only allow GET requests
+    if (req.method !== 'GET') {
       return new Response(
         JSON.stringify({ 
-          error: 'Configuration error',
-          details: 'Mapbox token not configured. Please add MAPBOX_PUBLIC_TOKEN to Edge Function secrets.'
+          error: 'Method not allowed' 
         }), 
         { 
-          status: 500,
-          headers: { 
+          status: 405,
+          headers: {
             ...corsHeaders,
             'Content-Type': 'application/json'
           }
@@ -40,31 +35,61 @@ serve(async (req) => {
       )
     }
 
+    const token = Deno.env.get('MAPBOX_PUBLIC_TOKEN')
+    console.log('Processing token request:', {
+      timestamp: new Date().toISOString(),
+      hasToken: !!token,
+      method: req.method
+    })
+    
+    if (!token) {
+      console.error('MAPBOX_PUBLIC_TOKEN not found in environment')
+      return new Response(
+        JSON.stringify({ 
+          error: 'Configuration error',
+          details: 'Mapbox token not configured'
+        }), 
+        { 
+          status: 500,
+          headers: {
+            ...corsHeaders,
+            'Content-Type': 'application/json'
+          }
+        }
+      )
+    }
+
+    const response = {
+      token,
+      status: 'success',
+      timestamp: new Date().toISOString()
+    }
+
+    console.log('Sending successful response')
+    
     return new Response(
-      JSON.stringify({ 
-        token,
-        status: 'success'
-      }), 
+      JSON.stringify(response), 
       { 
         status: 200,
         headers: {
           ...corsHeaders,
           'Content-Type': 'application/json',
-          'Cache-Control': 'private, max-age=3600' // Cache for 1 hour
+          'Cache-Control': 'private, max-age=3600'
         }
       }
     )
   } catch (error) {
     console.error('Error in get-mapbox-token function:', {
-      error,
-      message: error.message,
-      stack: error.stack
+      error: error.message,
+      stack: error.stack,
+      timestamp: new Date().toISOString()
     })
     
     return new Response(
       JSON.stringify({ 
         error: 'Internal server error',
-        details: error.message 
+        details: error.message,
+        timestamp: new Date().toISOString()
       }), 
       { 
         status: 500,
