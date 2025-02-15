@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+
+import { useMemo } from 'react';
 import { Event } from '@/types/event';
 
 export interface Location {
@@ -8,22 +9,16 @@ export interface Location {
 }
 
 export const useEventLocations = (events: Event[]) => {
-  const [locations, setLocations] = useState<Location[]>([]);
-
-  useEffect(() => {
+  return useMemo(() => {
     const validEvents = events.filter(event => 
       event.latitude != null && 
       event.longitude != null
     );
 
-    const eventLocations = validEvents.map(event => ({
+    return validEvents.map(event => ({
       lat: event.latitude!,
       lng: event.longitude!,
       event
     }));
-
-    setLocations(eventLocations);
   }, [events]);
-
-  return locations;
 };

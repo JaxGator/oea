@@ -14,6 +14,7 @@ export function EventDetails({ event }: EventDetailsProps) {
   const locations = useEventLocations([event]);
   const location = locations?.[0];
 
+  // Early return for loading state
   if (isTokenLoading) {
     return (
       <div className="space-y-4">
@@ -26,6 +27,7 @@ export function EventDetails({ event }: EventDetailsProps) {
     );
   }
 
+  // Early return for error state
   if (tokenError) {
     console.error('Error loading map token:', tokenError);
     return (
@@ -41,6 +43,21 @@ export function EventDetails({ event }: EventDetailsProps) {
     );
   }
 
+  // If we have no location data, show a message
+  if (!location) {
+    return (
+      <div className="space-y-4">
+        <div className="space-y-2">
+          <h3 className="text-lg font-semibold">Location</h3>
+          <p className="text-gray-600">{event.location}</p>
+          <div className="h-[200px] rounded-lg bg-gray-100 flex items-center justify-center">
+            <p className="text-gray-500">Location not available on map</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4">
       <div className="space-y-2">
@@ -49,8 +66,8 @@ export function EventDetails({ event }: EventDetailsProps) {
         <div className="h-[200px] rounded-lg overflow-hidden">
           <EventLocationMap 
             location={event.location}
-            lat={location?.lat}
-            lng={location?.lng}
+            lat={location.lat}
+            lng={location.lng}
           />
         </div>
       </div>
