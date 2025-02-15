@@ -14,33 +14,44 @@ export function LeaderboardSection() {
     queryKey: ["leaderboard-preview"],
     queryFn: async () => {
       console.log('Fetching leaderboard data...');
-      const { data, error } = await supabase
-        .from("leaderboard_metrics")
-        .select(`
-          *,
-          profiles:user_id (
-            username,
-            avatar_url,
-            full_name,
-            is_admin,
-            is_approved,
-            is_member,
-            created_at,
-            event_reminders_enabled,
-            email,
-            email_notifications,
-            in_app_notifications,
-            interests,
-            updated_at,
-            leaderboard_opt_out
-          )
-        `)
-        .gt('events_attended', 0)
-        .order('events_attended', { ascending: false })
-        .limit(5);
+      try {
+        const { data, error } = await supabase
+          .from("leaderboard_metrics")
+          .select(`
+            *,
+            profiles:user_id (
+              username,
+              avatar_url,
+              full_name,
+              is_admin,
+              is_approved,
+              is_member,
+              created_at,
+              event_reminders_enabled,
+              email,
+              email_notifications,
+              in_app_notifications,
+              interests,
+              updated_at,
+              leaderboard_opt_out
+            )
+          `)
+          .gt('events_attended', 0)
+          .order('events_attended', { ascending: false })
+          .limit(5);
 
-      if (error) {
-        console.error('Error fetching leaderboard:', error);
+        if (error) {
+          console.error('Error fetching leaderboard:', error);
+          throw error;
+        }
+        
+        // Filter out any entries that don't have associated profile data
+        const filteredData = data?.filter(item => item.profiles && item.profiles.username) || [];
+        console.log('Filtered leaderboard data:', filteredData);
+        
+        return filteredData;
+      } catch (error) {
+        console.error('Leaderboard error:', error);
         toast({
           title: "Error loading leaderboard",
           description: "Please try refreshing the page",
@@ -48,12 +59,6 @@ export function LeaderboardSection() {
         });
         throw error;
       }
-      
-      // Filter out any entries that don't have associated profile data
-      const filteredData = data?.filter(item => item.profiles && item.profiles.username) || [];
-      console.log('Filtered leaderboard data:', filteredData);
-      
-      return filteredData;
     },
     staleTime: 1000 * 60 * 5, // Cache for 5 minutes
     refetchOnWindowFocus: false,
