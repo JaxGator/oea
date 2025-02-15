@@ -21,7 +21,18 @@ export function LeaderboardSection() {
           profiles:user_id (
             username,
             avatar_url,
-            full_name
+            full_name,
+            is_admin,
+            is_approved,
+            is_member,
+            created_at,
+            event_reminders_enabled,
+            email,
+            email_notifications,
+            in_app_notifications,
+            interests,
+            updated_at,
+            leaderboard_opt_out
           )
         `)
         .gt('events_attended', 0)

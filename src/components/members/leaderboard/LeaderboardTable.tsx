@@ -66,7 +66,7 @@ export function LeaderboardTable({
               <TableCell>
                 <LeaderboardUserCell
                   user={createMemberFromPartial({
-                    id: item.id,
+                    id: item.user_id,
                     username: item.profiles?.username || 'Unknown User',
                     full_name: item.profiles?.full_name,
                     avatar_url: item.profiles?.avatar_url,
