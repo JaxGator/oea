@@ -59,8 +59,13 @@ export function LeaderboardTable({
         </TableHeader>
         <TableBody>
           {displayData.map((item, index) => {
-            // Ensure we have a username to display
-            const username = item.profiles?.username || 'Anonymous User';
+            // Get username from profiles data
+            const username = item.profiles?.username;
+            
+            // Skip users without a username
+            if (!username) {
+              return null;
+            }
             
             return (
               <TableRow key={item.id} className="hover:bg-gray-50">
