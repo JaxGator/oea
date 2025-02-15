@@ -60,8 +60,6 @@ export function useEvents(selectedDate?: Date) {
           { ascending: true }
         );
 
-        console.log('SQL Query:', query.toSQL());
-
         const { data: events, error, count } = await query;
 
         if (error) {
