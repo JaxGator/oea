@@ -1,13 +1,14 @@
+
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import App from './App';
 import './index.css';
-import { NotificationProvider } from './components/providers/NotificationProvider';
+import { AppProviders } from './components/providers/AppProviders';
 
 createRoot(document.getElementById("root")!).render(
   <BrowserRouter>
-    <NotificationProvider>
+    <AppProviders>
       <App />
-    </NotificationProvider>
+    </AppProviders>
   </BrowserRouter>
 );
