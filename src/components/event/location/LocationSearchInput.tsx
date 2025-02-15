@@ -42,33 +42,6 @@ export function LocationSearchInput({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  useEffect(() => {
-    // Log token status for debugging
-    if (!mapToken) {
-      console.log('No Mapbox token available');
-    } else {
-      console.log('Mapbox token is available');
-    }
-  }, [mapToken]);
-
-  if (isLoading) {
-    return (
-      <div className="p-4 flex items-center gap-2 text-muted-foreground">
-        <Loader2 className="h-4 w-4 animate-spin" />
-        <span>Loading location search...</span>
-      </div>
-    );
-  }
-
-  if (error || !mapToken) {
-    console.error('Location search error:', error);
-    return (
-      <div className="p-4 text-red-500">
-        Error loading location search. Please try refreshing the page.
-      </div>
-    );
-  }
-
   const handleInputChange = (value: string) => {
     setInputValue(value);
     
@@ -105,6 +78,12 @@ export function LocationSearchInput({
           onChange={(e) => handleInputChange(e.target.value)}
           disabled={disabled}
           className="w-full"
+          // Prevent form submission on enter key
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+            }
+          }}
         />
         {isSearching && (
           <div className="absolute right-3 top-1/2 -translate-y-1/2">
