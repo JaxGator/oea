@@ -6,7 +6,7 @@ import { useAuthState } from "@/hooks/useAuthState";
 import { EventsHeader } from "@/components/event/sections/EventsHeader";
 import { EventsContent } from "@/components/event/sections/EventsContent";
 import { useQueryClient } from "@tanstack/react-query";
-import { endOfDay, parseISO, set } from "date-fns";
+import { endOfDay, parseISO, startOfDay, set } from "date-fns";
 import type { Event, EventsPage } from "@/types/database";
 
 export default function Events() {
@@ -29,16 +29,16 @@ export default function Events() {
   const filteredEvents = selectedDate ? allEvents : allEvents;
   
   const now = new Date();
+  const startOfToday = startOfDay(now);
 
   const upcomingEvents = filteredEvents.filter(event => {
-    // Convert event date string to Date object and get end of that day
-    const eventEndOfDay = endOfDay(parseISO(event.date));
-    return eventEndOfDay >= now;
+    const eventDate = parseISO(event.date);
+    return endOfDay(eventDate) >= startOfToday;
   }) as Event[];
 
   const pastEvents = filteredEvents.filter(event => {
-    const eventEndOfDay = endOfDay(parseISO(event.date));
-    return eventEndOfDay < now;
+    const eventDate = parseISO(event.date);
+    return endOfDay(eventDate) < startOfToday;
   }).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()) as Event[];
 
   // Helper function to determine if an event is past
@@ -77,7 +77,7 @@ export default function Events() {
         <EventsContent
           upcomingEvents={upcomingEvents.map(event => ({
             ...event,
-            isPastEvent: isEventPast(event) // Override isPastEvent based on actual datetime
+            isPastEvent: isEventPast(event)
           }))}
           pastEvents={pastEvents}
           onRSVP={handleRSVP}

@@ -4,14 +4,14 @@ import { toast } from 'sonner';
 import { useAuthState } from './useAuthState';
 import { useQueryClient } from '@tanstack/react-query';
 import type { Event, EventsPage } from '@/types/database';
-import { startOfDay } from 'date-fns';
+import { startOfDay, subMonths } from 'date-fns';
 
 export function useEvents(selectedDate?: Date, eventId?: string) {
   const { profile, isAuthenticated } = useAuthState();
   const isApproved = profile?.is_approved;
-  const today = startOfDay(new Date()).toISOString().split('T')[0];
+  const threeMonthsAgo = subMonths(startOfDay(new Date()), 3).toISOString().split('T')[0];
 
-  console.log('Fetching events with today:', today, 'eventId:', eventId);
+  console.log('Fetching events with date range:', { threeMonthsAgo, selectedDate, eventId });
 
   return useInfiniteQuery<EventsPage>({
     queryKey: ['events', selectedDate?.toISOString(), isAuthenticated, isApproved, eventId],
@@ -43,8 +43,8 @@ export function useEvents(selectedDate?: Date, eventId?: string) {
         if (eventId) {
           query = query.eq('id', eventId);
         } else {
-          // Otherwise, get events from today onwards
-          query = query.gte('date', today);
+          // Otherwise, get events from 3 months ago onwards
+          query = query.gte('date', threeMonthsAgo);
 
           // Filter by published status for non-admin users
           if (!isAuthenticated) {
@@ -69,14 +69,7 @@ export function useEvents(selectedDate?: Date, eventId?: string) {
 
         // Sort events with today's events first in memory
         const sortedEvents = (events as Event[]).sort((a, b) => {
-          if (a.date === today && b.date !== today) return -1;
-          if (b.date === today && a.date !== today) return 1;
-          // If both events are on the same day, sort by time
-          if (a.date === b.date) {
-            return a.time.localeCompare(b.time);
-          }
-          // Otherwise maintain date order
-          return a.date.localeCompare(b.date);
+          return new Date(a.date).getTime() - new Date(b.date).getTime();
         });
 
         console.log('Fetched events:', sortedEvents);
