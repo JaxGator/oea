@@ -29,9 +29,19 @@ export function EventLocationCapacity({
             <FormLabel>Location</FormLabel>
             <LocationSearchInput 
               onLocationSelect={(suggestion) => {
-                field.onChange(suggestion.place_name);
-                form.setValue('latitude', suggestion.center[1]);
-                form.setValue('longitude', suggestion.center[0]);
+                // Use setValue instead of field.onChange to prevent form submission
+                form.setValue('location', suggestion.place_name, {
+                  shouldValidate: true,
+                  shouldDirty: true,
+                });
+                form.setValue('latitude', suggestion.center[1], {
+                  shouldValidate: true,
+                  shouldDirty: true,
+                });
+                form.setValue('longitude', suggestion.center[0], {
+                  shouldValidate: true,
+                  shouldDirty: true,
+                });
               }}
               currentValue={field.value}
               disabled={disableLocation && !isAdmin}
