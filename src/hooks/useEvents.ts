@@ -1,4 +1,3 @@
-
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -39,9 +38,8 @@ export function useEvents(selectedDate?: Date) {
               )
             )
           `)
-          .gte('date', today) // Changed to include today's events
-          .order('date', { ascending: true })
-          .order('time', { ascending: true });
+          .gte('date', today) // Include today's events
+          .order('date', { ascending: true }); // First order by date
 
         if (!isAuthenticated) {
           query = query.eq('is_published', true);
@@ -54,12 +52,6 @@ export function useEvents(selectedDate?: Date) {
           query = query.gte('date', dateStr);
         }
 
-        // Add a case statement to sort today's events first
-        query = query.order(
-          `CASE WHEN date = '${today}' THEN 0 ELSE 1 END`,
-          { ascending: true }
-        );
-
         const { data: events, error, count } = await query;
 
         if (error) {
@@ -67,10 +59,22 @@ export function useEvents(selectedDate?: Date) {
           throw error;
         }
 
-        console.log('Fetched events:', events);
+        // Sort events with today's events first in memory
+        const sortedEvents = (events as Event[]).sort((a, b) => {
+          if (a.date === today && b.date !== today) return -1;
+          if (b.date === today && a.date !== today) return 1;
+          // If both events are on the same day, sort by time
+          if (a.date === b.date) {
+            return a.time.localeCompare(b.time);
+          }
+          // Otherwise maintain date order
+          return a.date.localeCompare(b.date);
+        });
+
+        console.log('Fetched events:', sortedEvents);
 
         return {
-          data: events as Event[],
+          data: sortedEvents,
           count: count || 0,
           nextPage: null
         };
