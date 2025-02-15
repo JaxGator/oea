@@ -1,4 +1,3 @@
-
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -7,15 +6,15 @@ import { useQueryClient } from '@tanstack/react-query';
 import type { Event, EventsPage } from '@/types/database';
 import { startOfDay } from 'date-fns';
 
-export function useEvents(selectedDate?: Date) {
+export function useEvents(selectedDate?: Date, eventId?: string) {
   const { profile, isAuthenticated } = useAuthState();
   const isApproved = profile?.is_approved;
   const today = startOfDay(new Date()).toISOString().split('T')[0];
 
-  console.log('Fetching events with today:', today);
+  console.log('Fetching events with today:', today, 'eventId:', eventId);
 
   return useInfiniteQuery<EventsPage>({
-    queryKey: ['events', selectedDate?.toISOString(), isAuthenticated, isApproved],
+    queryKey: ['events', selectedDate?.toISOString(), isAuthenticated, isApproved, eventId],
     initialPageParam: 0,
     queryFn: async ({ pageParam = 0 }) => {
       try {
@@ -38,18 +37,27 @@ export function useEvents(selectedDate?: Date) {
                 first_name
               )
             )
-          `)
-          .gte('date', today);
+          `);
 
-        if (!isAuthenticated) {
-          query = query.eq('is_published', true);
-        } else if (!isApproved) {
-          query = query.eq('is_published', true);
-        }
+        // If we have a specific event ID, fetch just that event
+        if (eventId) {
+          query = query.eq('id', eventId);
+        } else {
+          // Otherwise, get events from today onwards
+          query = query.gte('date', today);
 
-        if (selectedDate) {
-          const dateStr = selectedDate.toISOString().split('T')[0];
-          query = query.gte('date', dateStr);
+          // Filter by published status for non-admin users
+          if (!isAuthenticated) {
+            query = query.eq('is_published', true);
+          } else if (!isApproved) {
+            query = query.eq('is_published', true);
+          }
+
+          // Apply date filter if selected
+          if (selectedDate) {
+            const dateStr = selectedDate.toISOString().split('T')[0];
+            query = query.gte('date', dateStr);
+          }
         }
 
         const { data: events, error, count } = await query;
