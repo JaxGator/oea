@@ -1,3 +1,4 @@
+
 import { FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { UseFormReturn } from "react-hook-form";
 import { EventFormValues } from "./EventFormTypes";
@@ -28,7 +29,7 @@ export function EventLocationCapacity({
             <FormLabel>Location</FormLabel>
             <LocationSearchInput 
               onLocationSelect={(suggestion) => {
-                form.setValue('location', suggestion.place_name);
+                field.onChange(suggestion.place_name);
                 form.setValue('latitude', suggestion.center[1]);
                 form.setValue('longitude', suggestion.center[0]);
               }}
