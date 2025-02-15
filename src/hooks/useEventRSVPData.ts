@@ -16,11 +16,22 @@ export function useEventRSVPData(eventId: string) {
           response,
           created_at,
           status,
-          profiles:profiles!event_rsvps_user_id_fkey (
+          profiles!event_rsvps_user_id_fkey (
             id,
             username,
             full_name,
-            avatar_url
+            avatar_url,
+            created_at,
+            is_admin,
+            is_approved,
+            is_member,
+            email,
+            event_reminders_enabled,
+            email_notifications,
+            in_app_notifications,
+            interests,
+            updated_at,
+            leaderboard_opt_out
           ),
           event_guests (
             id,
@@ -38,7 +49,7 @@ export function useEventRSVPData(eventId: string) {
 
       console.log('Raw RSVP data:', rsvps);
 
-      return rsvps as EventRSVPWithProfile[];
+      return rsvps as unknown as EventRSVPWithProfile[];
     },
     staleTime: 1000 * 60 * 5 // Cache for 5 minutes
   });
