@@ -26,46 +26,36 @@ export const useEventWithRSVPs = (eventId: string | undefined) => {
     queryFn: async () => {
       if (!eventId) throw new Error('Event ID is required');
 
-      // Fetch event data
+      // Fetch event data with RSVPs and profiles in a single query
       const { data: eventData, error: eventError } = await supabase
         .from('events')
-        .select('*')
+        .select(`
+          *,
+          rsvps:event_rsvps(
+            id,
+            event_id,
+            user_id,
+            response,
+            status,
+            created_at,
+            profiles (
+              full_name,
+              username
+            ),
+            event_guests (
+              id,
+              first_name
+            )
+          )
+        `)
         .eq('id', eventId)
         .maybeSingle();
 
       if (eventError) throw eventError;
       if (!eventData) throw new Error('Event not found');
 
-      // Fetch RSVPs with profiles and guests
-      const { data: rsvpData, error: rsvpError } = await supabase
-        .from('event_rsvps')
-        .select(`
-          id,
-          event_id,
-          user_id,
-          response,
-          status,
-          created_at,
-          profiles:profiles!inner (
-            full_name,
-            username
-          ),
-          event_guests (
-            id,
-            first_name
-          )
-        `)
-        .eq('event_id', eventId)
-        .eq('response', 'attending')
-        .eq('status', 'confirmed');
-
-      if (rsvpError) throw rsvpError;
-
-      console.log('Raw RSVP data:', rsvpData);
-
-      const typedRsvpData = rsvpData as unknown as RSVPWithProfile[];
-      
-      const rsvpsWithProfiles = typedRsvpData?.map((rsvp): EventRSVP => ({
+      // Process the RSVPs to the expected format
+      const rsvps = (eventData.rsvps as any[])?.map((rsvp): EventRSVP => ({
         id: rsvp.id,
         event_id: rsvp.event_id,
         user_id: rsvp.user_id,
@@ -80,13 +70,12 @@ export const useEventWithRSVPs = (eventId: string | undefined) => {
           id: guest.id,
           first_name: guest.first_name
         }))
-      })) || [];
+      }));
 
-      console.log('Processed RSVPs:', rsvpsWithProfiles);
-
+      // Return the event with processed RSVPs
       return {
         ...eventData,
-        rsvps: rsvpsWithProfiles
+        rsvps: rsvps || []
       } as Event;
     },
     enabled: !!eventId
