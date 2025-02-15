@@ -83,10 +83,12 @@ export const useMapboxToken = (): UseMapboxTokenReturn => {
         if (!isMounted) return;
 
         if (fetchError) {
+          console.error('Supabase function error:', fetchError);
           throw new Error(fetchError.message || 'Failed to fetch Mapbox token');
         }
 
         if (!data?.token) {
+          console.error('No token in response:', data);
           throw new Error('No token returned from function');
         }
 
