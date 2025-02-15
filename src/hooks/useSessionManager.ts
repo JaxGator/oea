@@ -15,15 +15,14 @@ export const useSessionManager = (queryClient: any) => {
   const location = useLocation();
   const { toast } = useToast();
   const retryCount = useRef(0);
+  const refreshTimerRef = useRef<NodeJS.Timeout>();
 
   const handleSessionError = useCallback(async (error: AuthError) => {
     console.error('Session error:', error);
     
-    // Only clear session data for auth errors
     if (error.message.includes('Invalid Refresh Token') || error.message.includes('JWT expired')) {
       await clearSessionData();
       
-      // Only show toast for non-refresh token errors
       if (!isRefreshTokenError(error)) {
         toast({
           title: "Session Error",
@@ -32,7 +31,6 @@ export const useSessionManager = (queryClient: any) => {
         });
       }
       
-      // Redirect to auth page if on protected route
       if (isProtectedRoute(location.pathname)) {
         navigate('/auth', { state: { from: location } });
       }
@@ -44,7 +42,6 @@ export const useSessionManager = (queryClient: any) => {
       console.log('Checking session...');
       const session = await getSession();
 
-      // Reset retry count on successful check
       retryCount.current = 0;
 
       if (!session) {
@@ -91,7 +88,6 @@ export const useSessionManager = (queryClient: any) => {
 
   useEffect(() => {
     let mounted = true;
-    let refreshTimer: NodeJS.Timeout;
 
     const setupAuthListener = () => {
       const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
@@ -128,18 +124,41 @@ export const useSessionManager = (queryClient: any) => {
       return subscription;
     };
 
+    // Handle visibility changes
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        // Clear the interval when tab is not visible
+        if (refreshTimerRef.current) {
+          clearInterval(refreshTimerRef.current);
+          refreshTimerRef.current = undefined;
+        }
+      } else {
+        // Restart the interval when tab becomes visible
+        checkSession();
+        refreshTimerRef.current = setInterval(checkSession, 4 * 60 * 1000);
+      }
+    };
+
     // Initial session check
     checkSession();
 
     // Set up auth listener
     const subscription = setupAuthListener();
 
-    // Set up periodic session checks (every 4 minutes)
-    refreshTimer = setInterval(checkSession, 4 * 60 * 1000);
+    // Set up visibility change listener
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    // Set up periodic session checks only when tab is visible
+    if (!document.hidden) {
+      refreshTimerRef.current = setInterval(checkSession, 4 * 60 * 1000);
+    }
 
     return () => {
       mounted = false;
-      clearInterval(refreshTimer);
+      if (refreshTimerRef.current) {
+        clearInterval(refreshTimerRef.current);
+      }
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
       subscription.unsubscribe();
     };
   }, [checkSession, navigate, location.pathname, queryClient]);
