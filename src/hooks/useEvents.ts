@@ -12,6 +12,8 @@ export function useEvents(selectedDate?: Date) {
   const isApproved = profile?.is_approved;
   const today = startOfDay(new Date()).toISOString().split('T')[0];
 
+  console.log('Fetching events with today:', today);
+
   return useInfiniteQuery<EventsPage>({
     queryKey: ['events', selectedDate?.toISOString(), isAuthenticated, isApproved],
     initialPageParam: 0,
@@ -37,6 +39,7 @@ export function useEvents(selectedDate?: Date) {
               )
             )
           `)
+          .gte('date', today) // Changed to include today's events
           .order('date', { ascending: true })
           .order('time', { ascending: true });
 
@@ -57,12 +60,16 @@ export function useEvents(selectedDate?: Date) {
           { ascending: true }
         );
 
+        console.log('SQL Query:', query.toSQL());
+
         const { data: events, error, count } = await query;
 
         if (error) {
           console.error('Events query error:', error);
           throw error;
         }
+
+        console.log('Fetched events:', events);
 
         return {
           data: events as Event[],
