@@ -49,17 +49,32 @@ export function EventCardDetailedView({
   const canJoinWaitlist = event.waitlist_enabled && isFullyBooked;
   const canViewRSVPs = isAdmin || canManageEvents || userRSVPStatus === "attending";
 
+  // Process attendee names from RSVPs and their guests
+  const processedAttendeeNames = event.rsvps
+    ?.filter(rsvp => rsvp.response === 'attending' && rsvp.status === 'confirmed')
+    .flatMap(rsvp => {
+      const names = [];
+      // Add the main RSVP holder
+      if (rsvp.profiles?.full_name || rsvp.profiles?.username) {
+        names.push(rsvp.profiles.full_name || rsvp.profiles.username);
+      }
+      // Add their guests if any
+      if (rsvp.event_guests && rsvp.event_guests.length > 0) {
+        names.push(...rsvp.event_guests.map(guest => 
+          `${guest.first_name} (Guest of ${rsvp.profiles?.full_name || rsvp.profiles?.username})`
+        ));
+      }
+      return names;
+    }) || [];
+
   // Process waitlist names
-  const waitlistNames = event.rsvps?.reduce((names: string[], rsvp) => {
-    if (rsvp.status === 'waitlisted') {
-      const attendeeName = rsvp.profiles?.full_name || rsvp.profiles?.username || 'Unknown';
-      names.push(attendeeName);
-    }
-    return names;
-  }, []) || [];
+  const waitlistNames = event.rsvps
+    ?.filter(rsvp => rsvp.status === 'waitlisted')
+    .map(rsvp => rsvp.profiles?.full_name || rsvp.profiles?.username || 'Unknown')
+    .filter(name => name !== 'Unknown') || [];
 
   console.log('EventCardDetailedView - Attendees:', { 
-    attendeeNames,
+    processedAttendeeNames,
     rsvpCount,
     userRSVPStatus,
     canViewRSVPs,
@@ -90,7 +105,7 @@ export function EventCardDetailedView({
           <div className="border rounded-lg p-4 bg-gray-50">
             <h3 className="text-lg font-semibold mb-4">Event Attendees</h3>
             <AttendeeList
-              attendeeNames={attendeeNames}
+              attendeeNames={processedAttendeeNames}
               waitlistNames={waitlistNames}
             />
           </div>
