@@ -36,6 +36,7 @@ export function LeaderboardSection() {
               leaderboard_opt_out
             )
           `)
+          .gt('events_attended', 0)
           .order('events_attended', { ascending: false })
           .limit(5);
 
