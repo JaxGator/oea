@@ -6,7 +6,7 @@ import { useAuthState } from "@/hooks/useAuthState";
 import { EventsHeader } from "@/components/event/sections/EventsHeader";
 import { EventsContent } from "@/components/event/sections/EventsContent";
 import { useQueryClient } from "@tanstack/react-query";
-import { endOfDay, parseISO } from "date-fns";
+import { endOfDay, parseISO, set } from "date-fns";
 import type { Event, EventsPage } from "@/types/database";
 
 export default function Events() {
@@ -41,6 +41,16 @@ export default function Events() {
     return eventEndOfDay < now;
   }).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()) as Event[];
 
+  // Helper function to determine if an event is past
+  const isEventPast = (event: Event) => {
+    const [hours, minutes] = event.time.split(':').map(Number);
+    const eventDateTime = set(parseISO(event.date), {
+      hours: hours || 0,
+      minutes: minutes || 0,
+    });
+    return eventDateTime < now;
+  };
+
   const handleEventUpdate = () => {
     queryClient.invalidateQueries({ queryKey: ['events'] });
   };
@@ -65,7 +75,10 @@ export default function Events() {
         />
 
         <EventsContent
-          upcomingEvents={upcomingEvents}
+          upcomingEvents={upcomingEvents.map(event => ({
+            ...event,
+            isPastEvent: isEventPast(event) // Override isPastEvent based on actual datetime
+          }))}
           pastEvents={pastEvents}
           onRSVP={handleRSVP}
           onCancelRSVP={cancelRSVP}
