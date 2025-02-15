@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { EventFormValues } from "@/components/event/EventFormTypes";
 import { supabase } from "@/integrations/supabase/client";
@@ -34,14 +35,17 @@ export function useEventFormSubmit(onSuccess: () => void) {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (formData: EventFormValues, initialData?: any) => {
+    // Prevent duplicate submissions
+    if (isSubmitting) return;
+    
     try {
       setIsSubmitting(true);
 
       // Clean up the form data
       const cleanedData = {
         ...formData,
-        end_time: formData.end_time || null, // Convert empty string to null
-        time: formData.time || null // Ensure time is not empty
+        end_time: formData.end_time || null,
+        time: formData.time || null
       };
 
       // Validate required time field
@@ -49,8 +53,11 @@ export function useEventFormSubmit(onSuccess: () => void) {
         throw new Error('Start time is required');
       }
 
-      // Geocode the location
-      const coordinates = await geocodeLocation(cleanedData.location);
+      // Only geocode if location has changed
+      let coordinates = null;
+      if (!initialData || initialData.location !== cleanedData.location) {
+        coordinates = await geocodeLocation(cleanedData.location);
+      }
       
       const eventData = {
         ...cleanedData,

@@ -28,6 +28,15 @@ export function EventEditDialog({
     setShowDialog(false);
   };
 
+  // Prevent dialog from closing when clicking outside
+  const handleOpenChange = (open: boolean) => {
+    if (!open) {
+      // Only allow closing via the cancel or submit buttons
+      return;
+    }
+    setShowDialog(open);
+  };
+
   // Cleanup on unmount
   useEffect(() => {
     return () => {
@@ -40,7 +49,7 @@ export function EventEditDialog({
   return (
     <Dialog 
       open={showDialog} 
-      onOpenChange={setShowDialog}
+      onOpenChange={handleOpenChange}
     >
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
