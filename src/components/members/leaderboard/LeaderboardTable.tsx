@@ -58,38 +58,43 @@ export function LeaderboardTable({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {displayData.map((item, index) => (
-            <TableRow key={item.id} className="hover:bg-gray-50">
-              <TableCell className="font-medium">
-                <LeaderboardRank rank={index} />
-              </TableCell>
-              <TableCell>
-                <LeaderboardUserCell
-                  user={createMemberFromPartial({
-                    id: item.user_id,
-                    username: item.profiles?.username || 'Unknown User',
-                    full_name: item.profiles?.full_name,
-                    avatar_url: item.profiles?.avatar_url,
-                    is_admin: item.profiles?.is_admin || false,
-                    is_approved: item.profiles?.is_approved || false,
-                    is_member: item.profiles?.is_member || false,
-                    created_at: item.profiles?.created_at || new Date().toISOString(),
-                    event_reminders_enabled: item.profiles?.event_reminders_enabled || false,
-                    email: item.profiles?.email || null,
-                    email_notifications: item.profiles?.email_notifications || false,
-                    in_app_notifications: item.profiles?.in_app_notifications || false,
-                    interests: item.profiles?.interests || null,
-                    updated_at: item.profiles?.updated_at || null,
-                    leaderboard_opt_out: item.profiles?.leaderboard_opt_out || false
-                  })}
+          {displayData.map((item, index) => {
+            // Ensure we have a username to display
+            const username = item.profiles?.username || 'Anonymous User';
+            
+            return (
+              <TableRow key={item.id} className="hover:bg-gray-50">
+                <TableCell className="font-medium">
+                  <LeaderboardRank rank={index} />
+                </TableCell>
+                <TableCell>
+                  <LeaderboardUserCell
+                    user={createMemberFromPartial({
+                      id: item.user_id,
+                      username: username,
+                      full_name: item.profiles?.full_name,
+                      avatar_url: item.profiles?.avatar_url,
+                      is_admin: item.profiles?.is_admin || false,
+                      is_approved: item.profiles?.is_approved || false,
+                      is_member: item.profiles?.is_member || false,
+                      created_at: item.profiles?.created_at || new Date().toISOString(),
+                      event_reminders_enabled: item.profiles?.event_reminders_enabled || false,
+                      email: item.profiles?.email || null,
+                      email_notifications: item.profiles?.email_notifications || false,
+                      in_app_notifications: item.profiles?.in_app_notifications || false,
+                      interests: item.profiles?.interests || null,
+                      updated_at: item.profiles?.updated_at || null,
+                      leaderboard_opt_out: item.profiles?.leaderboard_opt_out || false
+                    })}
+                  />
+                </TableCell>
+                <LeaderboardMetrics
+                  eventsAttended={getMetricValue(item)}
+                  currentStreak={item.current_streak}
                 />
-              </TableCell>
-              <LeaderboardMetrics
-                eventsAttended={getMetricValue(item)}
-                currentStreak={item.current_streak}
-              />
-            </TableRow>
-          ))}
+              </TableRow>
+            );
+          })}
         </TableBody>
       </Table>
     </div>
