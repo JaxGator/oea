@@ -1,3 +1,4 @@
+
 import { Event } from "@/types/event";
 import { EventLocationMap } from "./details/EventLocationMap";
 import { useEventLocations } from "@/hooks/useEventLocations";
@@ -11,7 +12,7 @@ interface EventDetailsProps {
 export function EventDetails({ event }: EventDetailsProps) {
   const { mapToken, isLoading: isTokenLoading, error: tokenError } = useMapboxToken();
   const locations = useEventLocations([event]);
-  const location = locations[0];
+  const location = locations?.[0];
 
   if (isTokenLoading) {
     return (
