@@ -1,3 +1,4 @@
+
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -38,8 +39,7 @@ export function useEvents(selectedDate?: Date) {
               )
             )
           `)
-          .gte('date', today) // Include today's events
-          .order('date', { ascending: true }); // First order by date
+          .gte('date', today);
 
         if (!isAuthenticated) {
           query = query.eq('is_published', true);
