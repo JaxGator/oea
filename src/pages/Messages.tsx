@@ -29,28 +29,30 @@ function MessagesPage() {
 
   return (
     <StreamChatProvider>
-      <div className="h-[calc(100vh-4rem)] bg-background">
-        <div className="container mx-auto h-full max-w-7xl p-4 space-y-4">
-          <MessagesHeader />
-          <div className="grid h-[calc(100%-5rem)] gap-4 md:grid-cols-[280px,1fr]">
-            <div className="hidden md:block border rounded-lg overflow-hidden bg-card">
-              <ChannelList
-                filters={{
-                  members: { $in: [user.id] },
-                  type: 'messaging'
-                }}
-                options={{ state: true, watch: true }}
-                sort={{ last_message_at: -1 }}
-              />
-            </div>
-            <div className="border rounded-lg overflow-hidden bg-card">
-              <Channel>
-                <Window>
-                  <MessageList />
-                  <MessageInput focus />
-                </Window>
-                <Thread />
-              </Channel>
+      <div className="min-h-[calc(100vh-8rem)] bg-background py-4">
+        <div className="container mx-auto h-full max-w-7xl px-4">
+          <div className="flex flex-col h-[calc(100vh-10rem)] space-y-4">
+            <MessagesHeader />
+            <div className="grid flex-1 gap-4 md:grid-cols-[280px,1fr] overflow-hidden">
+              <div className="hidden md:block border rounded-lg overflow-hidden bg-card">
+                <ChannelList
+                  filters={{
+                    members: { $in: [user.id] },
+                    type: 'messaging'
+                  }}
+                  options={{ state: true, watch: true }}
+                  sort={{ last_message_at: -1 }}
+                />
+              </div>
+              <div className="border rounded-lg overflow-hidden bg-card">
+                <Channel>
+                  <Window>
+                    <MessageList />
+                    <MessageInput focus />
+                  </Window>
+                  <Thread />
+                </Channel>
+              </div>
             </div>
           </div>
         </div>
