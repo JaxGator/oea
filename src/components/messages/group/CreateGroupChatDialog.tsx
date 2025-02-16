@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -9,6 +8,7 @@ import { Users, Loader2 } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { UserSelect } from "./UserSelect";
+import { useChatContext } from "@/context/chat-context";
 
 export function CreateGroupChatDialog() {
   const [open, setOpen] = useState(false);
@@ -17,9 +17,12 @@ export function CreateGroupChatDialog() {
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { client: chatClient } = useChatContext();
 
   const createGroupChat = useMutation({
     mutationFn: async () => {
+      if (!chatClient) throw new Error("Chat client not initialized");
+
       const { data: groupChat, error: groupError } = await supabase
         .from('group_chats')
         .insert({
@@ -32,7 +35,6 @@ export function CreateGroupChatDialog() {
 
       if (groupError) throw groupError;
 
-      // Add participants
       const participants = selectedUsers.map(userId => ({
         group_chat_id: groupChat.id,
         user_id: userId
@@ -43,6 +45,15 @@ export function CreateGroupChatDialog() {
         .insert(participants);
 
       if (participantsError) throw participantsError;
+
+      const channel = chatClient.channel('messaging', `group-${groupChat.id}`, {
+        name,
+        members: [...selectedUsers, chatClient.userID!],
+        description,
+      });
+
+      await channel.create();
+      await channel.watch();
 
       return groupChat;
     },

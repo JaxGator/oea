@@ -10,12 +10,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useNavigate } from "react-router-dom";
+import { useChatContext } from "stream-chat-react";
 
 export function NewDirectMessageDialog() {
   const [open, setOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { client: chatClient } = useChatContext();
 
   const { data: users, isLoading } = useQuery({
     queryKey: ['messageable-users', searchTerm],
@@ -33,24 +35,58 @@ export function NewDirectMessageDialog() {
     enabled: open
   });
 
-  const handleSelectUser = async (userId: string) => {
-    setOpen(false);
-    // Navigate to the messages view with the selected user
-    const { data: canMessage } = await supabase.rpc('can_message_user', {
-      target_user_id: userId
-    });
-
-    if (!canMessage) {
+  const handleSelectUser = async (userId: string, username: string) => {
+    if (!chatClient) {
       toast({
-        title: "Cannot send message",
-        description: "You cannot message this user.",
+        title: "Error",
+        description: "Chat client not initialized",
         variant: "destructive"
       });
       return;
     }
 
-    // Select the conversation with this user
-    setOpen(false);
+    try {
+      const { data: canMessage } = await supabase.rpc('can_message_user', {
+        target_user_id: userId
+      });
+
+      if (!canMessage) {
+        toast({
+          title: "Cannot send message",
+          description: "You cannot message this user.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      // Create a unique channel ID for the conversation
+      const channelId = [chatClient.userID, userId].sort().join('-');
+      
+      // Create or get the channel
+      const channel = chatClient.channel('messaging', channelId, {
+        members: [chatClient.userID!, userId],
+        name: username, // Set the channel name to the recipient's username
+      });
+
+      await channel.create();
+      
+      // Watch the channel to receive updates
+      await channel.watch();
+
+      setOpen(false);
+      toast({
+        title: "Chat created",
+        description: `You can now message ${username}`,
+      });
+
+    } catch (error) {
+      console.error('Error creating chat:', error);
+      toast({
+        title: "Error",
+        description: "Failed to create chat. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
 
   return (
@@ -89,7 +125,7 @@ export function NewDirectMessageDialog() {
                 {users?.map((user) => (
                   <button
                     key={user.id}
-                    onClick={() => handleSelectUser(user.id)}
+                    onClick={() => handleSelectUser(user.id, user.username)}
                     className="w-full flex items-center space-x-3 p-2 hover:bg-accent rounded-lg transition-colors"
                   >
                     <Avatar className="h-8 w-8">
