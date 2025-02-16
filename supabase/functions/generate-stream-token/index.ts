@@ -1,7 +1,7 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-import jwt from 'https://esm.sh/jsonwebtoken@9.0.2'
+import { create, getNumericDate } from "https://deno.land/x/djwt@v3.0.1/mod.ts";
 
 console.log('Starting generate-stream-token function');
 
@@ -30,17 +30,22 @@ if (!streamApiKey || !streamApiSecret) {
 }
 
 // Function to generate Stream Chat token
-function createStreamToken(userId: string) {
-  const jwtOptions = {
-    algorithm: 'HS256',
-    noTimestamp: true
-  };
+async function createStreamToken(userId: string) {
+  const key = await crypto.subtle.importKey(
+    "raw",
+    new TextEncoder().encode(streamApiSecret),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"]
+  );
 
   const payload = {
-    user_id: userId
+    user_id: userId,
+    iat: getNumericDate(new Date())
   };
 
-  return jwt.sign(payload, streamApiSecret!, jwtOptions);
+  const header = { alg: "HS256", typ: "JWT" };
+  return await create(header, payload, key);
 }
 
 serve(async (req) => {
@@ -133,7 +138,7 @@ serve(async (req) => {
     // Generate Stream Chat token
     console.log('Generating Stream Chat token for user:', userId);
     try {
-      const token = createStreamToken(userId);
+      const token = await createStreamToken(userId);
       console.log('Successfully generated token');
       return new Response(
         JSON.stringify({ token }),
