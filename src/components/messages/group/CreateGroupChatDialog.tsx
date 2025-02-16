@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -8,7 +9,7 @@ import { Users, Loader2 } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { UserSelect } from "./UserSelect";
-import { useChatContext } from "@/context/chat-context";
+import { useChatContext } from "stream-chat-react";
 
 export function CreateGroupChatDialog() {
   const [open, setOpen] = useState(false);
