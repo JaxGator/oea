@@ -1,6 +1,7 @@
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-import { StreamChat } from 'https://esm.sh/stream-chat@8.14.5'
+import { StreamChat } from 'https://esm.sh/stream-chat@8.14.5?target=node'
 
 console.log('Starting generate-stream-token function');
 
