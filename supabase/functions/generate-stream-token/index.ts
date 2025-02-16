@@ -8,8 +8,18 @@ const streamChat = new StreamChat(
   Deno.env.get('STREAM_API_SECRET') || ''
 );
 
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+}
+
 serve(async (req) => {
   try {
+    // Handle CORS preflight requests
+    if (req.method === 'OPTIONS') {
+      return new Response(null, { headers: corsHeaders });
+    }
+
     // Create Supabase client
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
@@ -49,7 +59,10 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ token }),
       { 
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          ...corsHeaders,
+          "Content-Type": "application/json" 
+        },
         status: 200 
       },
     )
@@ -57,7 +70,10 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ error: error.message }),
       { 
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          ...corsHeaders,
+          "Content-Type": "application/json" 
+        },
         status: 500
       },
     )
