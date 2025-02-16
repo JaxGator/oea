@@ -5,10 +5,19 @@ import { StreamChat } from 'https://esm.sh/stream-chat@8.14.5'
 
 console.log('Starting generate-stream-token function');
 
-const streamChat = new StreamChat(
-  Deno.env.get('STREAM_API_KEY') || '',
-  Deno.env.get('STREAM_API_SECRET') || ''
-);
+// Check for required environment variables
+const streamApiKey = Deno.env.get('STREAM_API_KEY');
+const streamApiSecret = Deno.env.get('STREAM_API_SECRET');
+
+if (!streamApiKey || !streamApiSecret) {
+  console.error('Missing required environment variables:', {
+    hasStreamApiKey: !!streamApiKey,
+    hasStreamApiSecret: !!streamApiSecret
+  });
+  throw new Error('Missing required Stream Chat environment variables');
+}
+
+const streamChat = StreamChat.getInstance(streamApiKey, streamApiSecret);
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -26,8 +35,8 @@ serve(async (req) => {
 
     // Log environment variables (without exposing sensitive data)
     console.log('Environment check:', {
-      hasStreamApiKey: !!Deno.env.get('STREAM_API_KEY'),
-      hasStreamApiSecret: !!Deno.env.get('STREAM_API_SECRET'),
+      hasStreamApiKey: !!streamApiKey,
+      hasStreamApiSecret: !!streamApiSecret,
       hasSupabaseUrl: !!Deno.env.get('SUPABASE_URL'),
       hasSupabaseServiceKey: !!Deno.env.get('SUPABASE_SERVICE_ROLE_KEY'),
     });
@@ -91,7 +100,7 @@ serve(async (req) => {
 
     // Generate Stream Chat token
     console.log('Generating Stream Chat token for user:', userId);
-    const token = streamChat.createToken(userId)
+    const token = streamChat.createToken(userId);
 
     console.log('Successfully generated token');
     return new Response(
