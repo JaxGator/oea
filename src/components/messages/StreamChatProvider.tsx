@@ -1,6 +1,7 @@
 
 import { useEffect, PropsWithChildren, useState } from 'react';
-import { Chat, StreamChat } from 'stream-chat-react';
+import { Chat } from 'stream-chat-react';
+import { StreamChat } from 'stream-chat';
 import { getStreamChat } from '@/integrations/stream/client';
 import { useAuthState } from '@/hooks/useAuthState';
 import { supabase } from '@/integrations/supabase/client';
