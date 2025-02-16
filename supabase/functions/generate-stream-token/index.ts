@@ -5,6 +5,14 @@ import { StreamChat } from 'https://esm.sh/stream-chat@8.14.5'
 
 console.log('Starting generate-stream-token function');
 
+// Define CORS headers first so we can use them consistently
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Content-Type': 'application/json'
+}
+
 // Check for required environment variables
 const streamApiKey = Deno.env.get('STREAM_API_KEY');
 const streamApiSecret = Deno.env.get('STREAM_API_SECRET');
@@ -19,18 +27,26 @@ if (!streamApiKey || !streamApiSecret) {
 
 const streamChat = StreamChat.getInstance(streamApiKey, streamApiSecret);
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
-
 serve(async (req) => {
+  // Handle CORS preflight requests
+  if (req.method === 'OPTIONS') {
+    return new Response(null, {
+      headers: corsHeaders,
+      status: 204
+    });
+  }
+
   try {
     console.log('Received request:', req.method);
-    
-    // Handle CORS preflight requests
-    if (req.method === 'OPTIONS') {
-      return new Response(null, { headers: corsHeaders });
+
+    if (req.method !== 'POST') {
+      return new Response(
+        JSON.stringify({ error: 'Method not allowed' }),
+        { 
+          headers: corsHeaders,
+          status: 405 
+        }
+      );
     }
 
     // Log environment variables (without exposing sensitive data)
@@ -54,7 +70,7 @@ serve(async (req) => {
       return new Response(
         JSON.stringify({ error: 'No authorization header' }),
         { 
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          headers: corsHeaders,
           status: 401 
         }
       )
@@ -68,7 +84,7 @@ serve(async (req) => {
       return new Response(
         JSON.stringify({ error: 'Invalid token' }),
         { 
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          headers: corsHeaders,
           status: 401 
         }
       )
@@ -78,7 +94,7 @@ serve(async (req) => {
       return new Response(
         JSON.stringify({ error: 'User not found' }),
         { 
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          headers: corsHeaders,
           status: 401 
         }
       )
@@ -92,7 +108,7 @@ serve(async (req) => {
       return new Response(
         JSON.stringify({ error: 'User ID mismatch' }),
         { 
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          headers: corsHeaders,
           status: 403 
         }
       )
@@ -106,12 +122,9 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ token }),
       { 
-        headers: { 
-          ...corsHeaders,
-          "Content-Type": "application/json" 
-        },
+        headers: corsHeaders,
         status: 200 
-      },
+      }
     )
   } catch (error) {
     console.error('Function error:', {
@@ -127,12 +140,9 @@ serve(async (req) => {
         stack: error.stack 
       }),
       { 
-        headers: { 
-          ...corsHeaders,
-          "Content-Type": "application/json" 
-        },
+        headers: corsHeaders,
         status: 500
-      },
+      }
     )
   }
 })
