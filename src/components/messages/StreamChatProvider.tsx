@@ -61,6 +61,9 @@ export function StreamChatProvider({ children }: PropsWithChildren) {
           console.log('Token stored successfully');
         }
 
+        // Disconnect first to ensure clean state
+        await streamChat.disconnectUser();
+
         // Connect user to Stream Chat
         await streamChat.connectUser(
           {
@@ -92,7 +95,7 @@ export function StreamChatProvider({ children }: PropsWithChildren) {
   if (!user) return null;
 
   return (
-    <Chat client={streamChat} theme="str-chat__theme-light">
+    <Chat client={streamChat}>
       {children}
     </Chat>
   );
