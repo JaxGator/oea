@@ -2,9 +2,11 @@
 import { StreamChat } from 'stream-chat';
 import { supabase } from '@/integrations/supabase/client';
 
-// Create a function to initialize the Stream Chat client
-async function initializeStreamChat() {
-  try {
+let streamChat: StreamChat | null = null;
+
+// Function to get or initialize the Stream Chat client
+export async function getStreamChat() {
+  if (!streamChat) {
     const { data: { value: apiKey }, error } = await supabase
       .functions.invoke('get-stream-key');
 
@@ -13,20 +15,7 @@ async function initializeStreamChat() {
       throw new Error('Failed to fetch Stream API key');
     }
 
-    return new StreamChat(apiKey);
-  } catch (error) {
-    console.error('Error initializing Stream Chat:', error);
-    throw error;
-  }
-}
-
-// Export a singleton instance that will be initialized
-export let streamChat: StreamChat;
-
-// Function to get or initialize the Stream Chat client
-export async function getStreamChat() {
-  if (!streamChat) {
-    streamChat = await initializeStreamChat();
+    streamChat = new StreamChat(apiKey);
   }
   return streamChat;
 }

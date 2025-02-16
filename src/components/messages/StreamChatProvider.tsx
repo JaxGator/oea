@@ -18,10 +18,14 @@ export function StreamChatProvider({ children }: PropsWithChildren) {
   useEffect(() => {
     if (!user?.id) return;
 
+    let unmounted = false;
+
     const initializeStreamChat = async () => {
       try {
         setIsLoading(true);
         const streamChatClient = await getStreamChat();
+        
+        if (unmounted) return;
         
         console.log('Fetching Stream token for user:', user.id);
         
@@ -68,43 +72,65 @@ export function StreamChatProvider({ children }: PropsWithChildren) {
           console.log('Token stored successfully');
         }
 
-        // Disconnect first to ensure clean state
-        await streamChatClient.disconnectUser();
+        if (unmounted) return;
 
-        // Connect user to Stream Chat
-        await streamChatClient.connectUser(
-          {
-            id: user.id,
-            name: user.username || user.id,
-            image: user.avatar_url || undefined,
-          },
-          streamToken
-        );
-
-        setChatClient(streamChatClient);
-        console.log('Stream Chat initialized successfully for user:', user.id);
+        try {
+          // Connect user to Stream Chat
+          await streamChatClient.connectUser(
+            {
+              id: user.id,
+              name: user.username || user.id,
+              image: user.avatar_url || undefined,
+            },
+            streamToken
+          );
+          
+          if (!unmounted) {
+            setChatClient(streamChatClient);
+            console.log('Stream Chat initialized successfully for user:', user.id);
+          }
+        } catch (connectionError) {
+          console.error('Error connecting user:', connectionError);
+          // If there's a connection error, try disconnecting first then reconnecting
+          await streamChatClient.disconnectUser();
+          
+          if (!unmounted) {
+            await streamChatClient.connectUser(
+              {
+                id: user.id,
+                name: user.username || user.id,
+                image: user.avatar_url || undefined,
+              },
+              streamToken
+            );
+            setChatClient(streamChatClient);
+          }
+        }
       } catch (error) {
         console.error('Error initializing Stream Chat:', error);
-        toast({
-          title: "Chat Error",
-          description: "Failed to initialize chat. Please try again.",
-          variant: "destructive",
-        });
+        if (!unmounted) {
+          toast({
+            title: "Chat Error",
+            description: "Failed to initialize chat. Please try again.",
+            variant: "destructive",
+          });
+        }
       } finally {
-        setIsLoading(false);
+        if (!unmounted) {
+          setIsLoading(false);
+        }
       }
     };
 
     initializeStreamChat();
 
     return () => {
+      unmounted = true;
       // Cleanup function
-      const cleanup = async () => {
-        const streamChatClient = await getStreamChat();
-        await streamChatClient.disconnectUser();
+      if (chatClient) {
+        chatClient.disconnectUser();
         setChatClient(null);
-      };
-      cleanup();
+      }
     };
   }, [user, toast]);
 
