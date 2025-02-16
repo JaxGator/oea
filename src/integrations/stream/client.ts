@@ -1,14 +1,32 @@
 
 import { StreamChat } from 'stream-chat';
+import { supabase } from '@/integrations/supabase/client';
 
-const apiKey = import.meta.env.VITE_STREAM_API_KEY;
+// Create a function to initialize the Stream Chat client
+async function initializeStreamChat() {
+  try {
+    const { data: { value: apiKey }, error } = await supabase
+      .functions.invoke('get-stream-key');
 
-if (!apiKey) {
-  console.error('Stream API key is not set in environment variables');
-  throw new Error('Stream API key is required');
+    if (error || !apiKey) {
+      console.error('Error fetching Stream API key:', error);
+      throw new Error('Failed to fetch Stream API key');
+    }
+
+    return new StreamChat(apiKey);
+  } catch (error) {
+    console.error('Error initializing Stream Chat:', error);
+    throw error;
+  }
 }
 
-// Initialize Stream Chat client
-export const streamChat = new StreamChat(apiKey);
+// Export a singleton instance that will be initialized
+export let streamChat: StreamChat;
 
-console.log('Stream Chat client initialized with API key');
+// Function to get or initialize the Stream Chat client
+export async function getStreamChat() {
+  if (!streamChat) {
+    streamChat = await initializeStreamChat();
+  }
+  return streamChat;
+}

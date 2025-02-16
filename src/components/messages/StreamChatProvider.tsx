@@ -1,21 +1,26 @@
 
-import { useEffect, PropsWithChildren } from 'react';
+import { useEffect, PropsWithChildren, useState } from 'react';
 import { Chat } from 'stream-chat-react';
-import { streamChat } from '@/integrations/stream/client';
+import { getStreamChat } from '@/integrations/stream/client';
 import { useAuthState } from '@/hooks/useAuthState';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { Loader2 } from 'lucide-react';
 import 'stream-chat-react/dist/css/v2/index.css';
 
 export function StreamChatProvider({ children }: PropsWithChildren) {
   const { user } = useAuthState();
   const { toast } = useToast();
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     if (!user?.id) return;
 
     const initializeStreamChat = async () => {
       try {
+        setIsLoading(true);
+        const streamChatClient = await getStreamChat();
+        
         console.log('Fetching Stream token for user:', user.id);
         
         // Get or create Stream Chat token
@@ -62,10 +67,10 @@ export function StreamChatProvider({ children }: PropsWithChildren) {
         }
 
         // Disconnect first to ensure clean state
-        await streamChat.disconnectUser();
+        await streamChatClient.disconnectUser();
 
         // Connect user to Stream Chat
-        await streamChat.connectUser(
+        await streamChatClient.connectUser(
           {
             id: user.id,
             name: user.username || user.id,
@@ -82,17 +87,32 @@ export function StreamChatProvider({ children }: PropsWithChildren) {
           description: "Failed to initialize chat. Please try again.",
           variant: "destructive",
         });
+      } finally {
+        setIsLoading(false);
       }
     };
 
     initializeStreamChat();
 
     return () => {
-      streamChat.disconnectUser();
+      // Cleanup function
+      const cleanup = async () => {
+        const streamChatClient = await getStreamChat();
+        await streamChatClient.disconnectUser();
+      };
+      cleanup();
     };
   }, [user, toast]);
 
   if (!user) return null;
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
 
   return (
     <Chat client={streamChat}>
