@@ -21,9 +21,9 @@ export function StreamChatProvider({ children }: PropsWithChildren) {
           .from('stream_chat_users')
           .select('stream_chat_token')
           .eq('id', user.id)
-          .single();
+          .maybeSingle();
 
-        if (streamError && !streamError.message.includes('No rows found')) {
+        if (streamError) {
           throw streamError;
         }
 

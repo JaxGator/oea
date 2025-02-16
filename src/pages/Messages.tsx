@@ -1,5 +1,5 @@
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useAuthState } from "@/hooks/useAuthState";
 import { StreamChatProvider } from "@/components/messages/StreamChatProvider";
 import { Channel, ChannelList, MessageList, MessageInput, Thread, Window } from 'stream-chat-react';
@@ -9,7 +9,6 @@ import { Loader2 } from "lucide-react";
 function MessagesPage() {
   const { user, isLoading } = useAuthState();
   const navigate = useNavigate();
-  const [activeChannel, setActiveChannel] = useState('');
 
   useEffect(() => {
     if (!isLoading && !user) {
@@ -38,8 +37,8 @@ function MessagesPage() {
                   members: { $in: [user.id] },
                   type: 'messaging'
                 }}
-                sort={[{ field: 'last_message_at', direction: -1 }]}
-                watchers={{ id: user.id }}
+                options={{ state: true, watch: true }}
+                sort={{ last_message_at: -1 }}
               />
             </div>
             <div className="border rounded-lg overflow-hidden bg-card">
