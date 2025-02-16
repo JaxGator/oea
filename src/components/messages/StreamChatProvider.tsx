@@ -16,6 +16,8 @@ export function StreamChatProvider({ children }: PropsWithChildren) {
 
     const initializeStreamChat = async () => {
       try {
+        console.log('Fetching Stream token for user:', user.id);
+        
         // Get or create Stream Chat token
         const { data: streamData, error: streamError } = await supabase
           .from('stream_chat_users')
@@ -24,24 +26,39 @@ export function StreamChatProvider({ children }: PropsWithChildren) {
           .maybeSingle();
 
         if (streamError) {
+          console.error('Error fetching Stream token:', streamError);
           throw streamError;
         }
 
         let streamToken = streamData?.stream_chat_token;
+        console.log('Existing token found:', !!streamToken);
 
         if (!streamToken) {
+          console.log('No token found, generating new one...');
           // Call edge function to generate token
           const { data: tokenData, error: tokenError } = await supabase.functions.invoke('generate-stream-token', {
             body: { userId: user.id }
           });
 
-          if (tokenError) throw tokenError;
+          if (tokenError) {
+            console.error('Error generating token:', tokenError);
+            throw tokenError;
+          }
+          
           streamToken = tokenData.token;
+          console.log('New token generated successfully');
 
           // Store the token
-          await supabase
+          const { error: upsertError } = await supabase
             .from('stream_chat_users')
             .upsert({ id: user.id, stream_chat_token: streamToken });
+
+          if (upsertError) {
+            console.error('Error storing token:', upsertError);
+            throw upsertError;
+          }
+          
+          console.log('Token stored successfully');
         }
 
         // Connect user to Stream Chat
@@ -54,7 +71,7 @@ export function StreamChatProvider({ children }: PropsWithChildren) {
           streamToken
         );
 
-        console.log('Stream Chat initialized for user:', user.id);
+        console.log('Stream Chat initialized successfully for user:', user.id);
       } catch (error) {
         console.error('Error initializing Stream Chat:', error);
         toast({
