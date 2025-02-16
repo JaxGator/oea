@@ -38,8 +38,8 @@ function MessagesPage() {
                   members: { $in: [user.id] },
                   type: 'messaging'
                 }}
-                sort={{ last_message_at: -1 }}
-                onSelect={(channel) => setActiveChannel(channel?.id || '')}
+                sort={[{ field: 'last_message_at', direction: -1 }]}
+                watchers={{ id: user.id }}
               />
             </div>
             <div className="border rounded-lg overflow-hidden bg-card">
