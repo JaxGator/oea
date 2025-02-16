@@ -32,7 +32,9 @@ if (!streamApiKey || !streamApiSecret) {
 // Initialize Stream Chat with error handling
 let streamChat;
 try {
-  streamChat = StreamChat.getInstance(streamApiKey, streamApiSecret);
+  // Using the direct constructor with try-catch
+  streamChat = new StreamChat(streamApiKey);
+  streamChat.secret = streamApiSecret;
   console.log('StreamChat initialized successfully');
 } catch (error) {
   console.error('Error initializing StreamChat:', error);
