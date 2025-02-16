@@ -1,7 +1,7 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-import { StreamChat } from 'https://esm.sh/stream-chat@8.14.5?target=node'
+import jwt from 'https://esm.sh/jsonwebtoken@9.0.2'
 
 console.log('Starting generate-stream-token function');
 
@@ -29,14 +29,18 @@ if (!streamApiKey || !streamApiSecret) {
   throw new Error('Missing required Stream Chat environment variables');
 }
 
-// Initialize Stream Chat with error handling
-let streamChat;
-try {
-  streamChat = new StreamChat(streamApiKey, streamApiSecret);
-  console.log('StreamChat initialized successfully');
-} catch (error) {
-  console.error('Error initializing StreamChat:', error);
-  throw error;
+// Function to generate Stream Chat token
+function createStreamToken(userId: string) {
+  const jwtOptions = {
+    algorithm: 'HS256',
+    noTimestamp: true
+  };
+
+  const payload = {
+    user_id: userId
+  };
+
+  return jwt.sign(payload, streamApiSecret!, jwtOptions);
 }
 
 serve(async (req) => {
@@ -129,7 +133,7 @@ serve(async (req) => {
     // Generate Stream Chat token
     console.log('Generating Stream Chat token for user:', userId);
     try {
-      const token = streamChat.createToken(userId);
+      const token = createStreamToken(userId);
       console.log('Successfully generated token');
       return new Response(
         JSON.stringify({ token }),
