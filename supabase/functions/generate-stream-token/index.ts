@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { StreamChat } from 'https://esm.sh/stream-chat@8.14.5'
@@ -32,9 +31,7 @@ if (!streamApiKey || !streamApiSecret) {
 // Initialize Stream Chat with error handling
 let streamChat;
 try {
-  // Using the direct constructor with try-catch
-  streamChat = new StreamChat(streamApiKey);
-  streamChat.secret = streamApiSecret;
+  streamChat = new StreamChat(streamApiKey, streamApiSecret);
   console.log('StreamChat initialized successfully');
 } catch (error) {
   console.error('Error initializing StreamChat:', error);
