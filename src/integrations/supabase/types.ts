@@ -1398,6 +1398,27 @@ export type Database = {
         }
         Relationships: []
       }
+      stream_chat_users: {
+        Row: {
+          created_at: string
+          id: string
+          stream_chat_token: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id: string
+          stream_chat_token: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          stream_chat_token?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       typing_indicators: {
         Row: {
           chat_id: string
