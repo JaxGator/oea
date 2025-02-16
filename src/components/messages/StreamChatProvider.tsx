@@ -1,6 +1,6 @@
 
 import { useEffect, PropsWithChildren, useState } from 'react';
-import { Chat } from 'stream-chat-react';
+import { Chat, StreamChat } from 'stream-chat-react';
 import { getStreamChat } from '@/integrations/stream/client';
 import { useAuthState } from '@/hooks/useAuthState';
 import { supabase } from '@/integrations/supabase/client';
@@ -12,6 +12,7 @@ export function StreamChatProvider({ children }: PropsWithChildren) {
   const { user } = useAuthState();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(true);
+  const [chatClient, setChatClient] = useState<StreamChat | null>(null);
 
   useEffect(() => {
     if (!user?.id) return;
@@ -79,6 +80,7 @@ export function StreamChatProvider({ children }: PropsWithChildren) {
           streamToken
         );
 
+        setChatClient(streamChatClient);
         console.log('Stream Chat initialized successfully for user:', user.id);
       } catch (error) {
         console.error('Error initializing Stream Chat:', error);
@@ -99,6 +101,7 @@ export function StreamChatProvider({ children }: PropsWithChildren) {
       const cleanup = async () => {
         const streamChatClient = await getStreamChat();
         await streamChatClient.disconnectUser();
+        setChatClient(null);
       };
       cleanup();
     };
@@ -106,7 +109,7 @@ export function StreamChatProvider({ children }: PropsWithChildren) {
 
   if (!user) return null;
 
-  if (isLoading) {
+  if (isLoading || !chatClient) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
@@ -115,7 +118,7 @@ export function StreamChatProvider({ children }: PropsWithChildren) {
   }
 
   return (
-    <Chat client={streamChat}>
+    <Chat client={chatClient}>
       {children}
     </Chat>
   );
