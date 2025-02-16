@@ -17,15 +17,27 @@ const corsHeaders = {
 const streamApiKey = Deno.env.get('STREAM_API_KEY');
 const streamApiSecret = Deno.env.get('STREAM_API_SECRET');
 
+console.log('Stream credentials check:', {
+  hasApiKey: !!streamApiKey,
+  apiKeyLength: streamApiKey?.length,
+  hasSecret: !!streamApiSecret,
+  secretLength: streamApiSecret?.length
+});
+
 if (!streamApiKey || !streamApiSecret) {
-  console.error('Missing required environment variables:', {
-    hasStreamApiKey: !!streamApiKey,
-    hasStreamApiSecret: !!streamApiSecret
-  });
+  console.error('Missing required environment variables');
   throw new Error('Missing required Stream Chat environment variables');
 }
 
-const streamChat = StreamChat.getInstance(streamApiKey, streamApiSecret);
+// Initialize Stream Chat with error handling
+let streamChat;
+try {
+  streamChat = new StreamChat(streamApiKey, streamApiSecret);
+  console.log('StreamChat initialized successfully');
+} catch (error) {
+  console.error('Error initializing StreamChat:', error);
+  throw error;
+}
 
 serve(async (req) => {
   // Handle CORS preflight requests
@@ -116,16 +128,26 @@ serve(async (req) => {
 
     // Generate Stream Chat token
     console.log('Generating Stream Chat token for user:', userId);
-    const token = streamChat.createToken(userId);
-
-    console.log('Successfully generated token');
-    return new Response(
-      JSON.stringify({ token }),
-      { 
-        headers: corsHeaders,
-        status: 200 
-      }
-    )
+    try {
+      const token = streamChat.createToken(userId);
+      console.log('Successfully generated token');
+      return new Response(
+        JSON.stringify({ token }),
+        { 
+          headers: corsHeaders,
+          status: 200 
+        }
+      )
+    } catch (tokenError) {
+      console.error('Error generating token:', tokenError);
+      return new Response(
+        JSON.stringify({ error: 'Failed to generate token' }),
+        { 
+          headers: corsHeaders,
+          status: 500 
+        }
+      )
+    }
   } catch (error) {
     console.error('Function error:', {
       message: error.message,
