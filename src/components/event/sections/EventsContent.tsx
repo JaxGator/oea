@@ -14,6 +14,8 @@ interface EventsContentProps {
   onCancelRSVP: (eventId: string) => Promise<void>;
   isLoading?: boolean;
   onUpdate?: () => void;
+  userRSVPs?: Record<string, string>;
+  isAuthenticated: boolean;
 }
 
 export function EventsContent({
@@ -22,10 +24,12 @@ export function EventsContent({
   onRSVP,
   onCancelRSVP,
   isLoading = false,
-  onUpdate
+  onUpdate,
+  userRSVPs = {},
+  isAuthenticated
 }: EventsContentProps) {
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
-  const { profile, isAuthenticated } = useAuthState();
+  const { profile } = useAuthState();
 
   const handleEventSelect = (eventId: string) => {
     console.log('EventsContent - Event selected:', eventId);
@@ -59,6 +63,8 @@ export function EventsContent({
               selectedEventId={selectedEventId}
               isLoading={isLoading}
               onUpdate={onUpdate}
+              userRSVPs={userRSVPs}
+              isAuthenticated={isAuthenticated}
             />
           </ErrorBoundary>
         </div>
@@ -77,6 +83,8 @@ export function EventsContent({
                 onEventSelect={handleEventSelect}
                 selectedEventId={selectedEventId}
                 onUpdate={onUpdate}
+                userRSVPs={userRSVPs}
+                isAuthenticated={isAuthenticated}
               />
             </ErrorBoundary>
           </div>
