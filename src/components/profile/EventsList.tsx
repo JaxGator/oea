@@ -27,7 +27,7 @@ interface EventsListProps {
 }
 
 // Define the shape of the raw data from Supabase
-interface SupabaseRSVP {
+interface RawSupabaseRSVP {
   id: string;
   event_id: string;
   user_id: string;
@@ -38,7 +38,7 @@ interface SupabaseRSVP {
     id: string;
     username: string;
     full_name: string | null;
-  } | null;
+  };
   event_guests: {
     id: string;
     first_name: string;
@@ -59,7 +59,7 @@ export function EventsList({ events, isLoading, emptyMessage, isPastEvents = fal
     queryFn: async () => {
       if (!selectedEvent?.id) return null;
 
-      const { data, error } = await supabase
+      const { data: rawData, error } = await supabase
         .from('event_rsvps')
         .select(`
           id,
@@ -68,7 +68,7 @@ export function EventsList({ events, isLoading, emptyMessage, isPastEvents = fal
           response,
           status,
           created_at,
-          profiles (
+          profiles!inner (
             id,
             username,
             full_name
@@ -87,23 +87,25 @@ export function EventsList({ events, isLoading, emptyMessage, isPastEvents = fal
         return null;
       }
 
-      // Transform the Supabase response to match EventRSVP type
-      return (data as SupabaseRSVP[]).map(rsvp => ({
+      // Transform the raw data into EventRSVP type
+      const transformedData = (rawData as unknown as RawSupabaseRSVP[]).map(rsvp => ({
         id: rsvp.id,
         event_id: rsvp.event_id,
         user_id: rsvp.user_id,
         response: rsvp.response,
         status: rsvp.status,
         created_at: rsvp.created_at,
-        profiles: rsvp.profiles ? {
+        profiles: {
           username: rsvp.profiles.username,
           full_name: rsvp.profiles.full_name || rsvp.profiles.username
-        } : undefined,
+        },
         event_guests: rsvp.event_guests?.map(guest => ({
           id: guest.id,
           first_name: guest.first_name
         })) || []
-      })) as EventRSVP[];
+      }));
+
+      return transformedData as EventRSVP[];
     },
     enabled: !!selectedEvent?.id
   });
