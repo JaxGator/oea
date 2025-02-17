@@ -9,6 +9,8 @@ import { AddGuestsButton } from "@/components/event/actions/AddGuestsButton";
 import { useState } from "react";
 import { EventDialogs } from "@/components/event/dialogs/EventDialogs";
 import { useAuthState } from "@/hooks/useAuthState";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Event {
   id: string;
@@ -32,6 +34,19 @@ interface Event {
   reminder_intervals?: string[];
   requires_payment?: boolean;
   ticket_price?: number | null;
+  rsvps?: EventRSVP[];
+}
+
+interface EventRSVP {
+  id: string;
+  user_id: string;
+  response: string;
+  status: string;
+  profiles?: {
+    username: string;
+    full_name: string | null;
+  };
+  event_guests?: { first_name: string }[];
 }
 
 interface RSVP {
@@ -55,6 +70,32 @@ export function EventsList({ events, isLoading, emptyMessage, isPastEvents = fal
   const [showEditDialog, setShowEditDialog] = useState(false);
   const { profile } = useAuthState();
 
+  // Fetch event RSVPs when an event is selected
+  const { data: eventRSVPs } = useQuery({
+    queryKey: ['event-rsvps', selectedEvent?.id],
+    queryFn: async () => {
+      if (!selectedEvent?.id) return null;
+
+      const { data, error } = await supabase
+        .from('event_rsvps')
+        .select(`
+          id,
+          user_id,
+          response,
+          status,
+          profiles:profiles(username, full_name),
+          event_guests(first_name)
+        `)
+        .eq('event_id', selectedEvent.id)
+        .eq('response', 'attending')
+        .eq('status', 'confirmed');
+
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!selectedEvent?.id
+  });
+
   if (isLoading) {
     return (
       <div className="flex justify-center p-4">
@@ -77,13 +118,31 @@ export function EventsList({ events, isLoading, emptyMessage, isPastEvents = fal
   };
 
   const handleAddGuests = async (eventId: string, guests: { firstName: string }[]) => {
-    // This will be handled by the AddGuestsButton component's internal logic
     console.log('Adding guests for event:', eventId, guests);
   };
 
   const handleEditSuccess = () => {
     setShowEditDialog(false);
-    // Optionally, you could add a refetch mechanism here if needed
+  };
+
+  // Process attendee names from RSVPs and their guests
+  const getAttendeeNames = () => {
+    if (!eventRSVPs) return [];
+    
+    return eventRSVPs.flatMap(rsvp => {
+      const names = [];
+      // Add the main RSVP holder
+      if (rsvp.profiles?.username || rsvp.profiles?.full_name) {
+        names.push(rsvp.profiles.full_name || rsvp.profiles.username);
+      }
+      // Add their guests if any
+      if (rsvp.event_guests && rsvp.event_guests.length > 0) {
+        names.push(...rsvp.event_guests.map(guest => 
+          `${guest.first_name} (Guest of ${rsvp.profiles?.full_name || rsvp.profiles?.username})`
+        ));
+      }
+      return names;
+    });
   };
 
   return (
@@ -137,8 +196,8 @@ export function EventsList({ events, isLoading, emptyMessage, isPastEvents = fal
           setShowDetailsDialog={setShowDetailsDialog}
           showEditDialog={showEditDialog}
           setShowEditDialog={setShowEditDialog}
-          rsvpCount={0}
-          attendeeNames={[]}
+          rsvpCount={eventRSVPs?.length || 0}
+          attendeeNames={getAttendeeNames()}
           userRSVPStatus="attending"
           isAdmin={profile?.is_admin || false}
           canManageEvents={profile?.is_admin || false}
