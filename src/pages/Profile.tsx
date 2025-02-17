@@ -152,7 +152,22 @@ export default function Profile() {
             description,
             date,
             time,
-            location
+            location,
+            max_guests,
+            created_by,
+            created_at,
+            image_url,
+            is_featured,
+            waitlist_enabled,
+            waitlist_capacity,
+            is_published,
+            latitude,
+            longitude,
+            end_time,
+            reminder_enabled,
+            reminder_intervals,
+            requires_payment,
+            ticket_price
           ),
           event_guests (
             id,

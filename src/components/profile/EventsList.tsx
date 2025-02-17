@@ -13,9 +13,25 @@ import { useAuthState } from "@/hooks/useAuthState";
 interface Event {
   id: string;
   title: string;
+  description: string | null;
   date: string;
   time: string;
   location: string;
+  max_guests: number;
+  created_by: string;
+  created_at: string;
+  image_url: string;
+  is_featured?: boolean;
+  waitlist_enabled?: boolean;
+  waitlist_capacity?: number | null;
+  is_published?: boolean;
+  latitude?: number | null;
+  longitude?: number | null;
+  end_time?: string | null;
+  reminder_enabled?: boolean;
+  reminder_intervals?: string[];
+  requires_payment?: boolean;
+  ticket_price?: number | null;
 }
 
 interface RSVP {
@@ -121,8 +137,8 @@ export function EventsList({ events, isLoading, emptyMessage, isPastEvents = fal
           setShowDetailsDialog={setShowDetailsDialog}
           showEditDialog={showEditDialog}
           setShowEditDialog={setShowEditDialog}
-          rsvpCount={0} // You might want to fetch this data
-          attendeeNames={[]} // You might want to fetch this data
+          rsvpCount={0}
+          attendeeNames={[]}
           userRSVPStatus="attending"
           isAdmin={profile?.is_admin || false}
           canManageEvents={profile?.is_admin || false}
