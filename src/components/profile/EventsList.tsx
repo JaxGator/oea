@@ -52,6 +52,29 @@ export function EventsList({ events, isLoading, emptyMessage, isPastEvents = fal
   const [showEditDialog, setShowEditDialog] = useState(false);
   const { profile } = useAuthState();
 
+  // Fetch current user's RSVP status for the selected event
+  const { data: userRSVPStatus } = useQuery({
+    queryKey: ['user-rsvp', selectedEvent?.id],
+    queryFn: async () => {
+      if (!selectedEvent?.id || !profile?.id) return null;
+
+      const { data, error } = await supabase
+        .from('event_rsvps')
+        .select('response, status')
+        .eq('event_id', selectedEvent.id)
+        .eq('user_id', profile.id)
+        .single();
+
+      if (error) {
+        console.error('Error fetching user RSVP:', error);
+        return null;
+      }
+
+      return data?.response || null;
+    },
+    enabled: !!selectedEvent?.id && !!profile?.id
+  });
+
   // Fetch event RSVPs when an event is selected
   const { data: eventRSVPs } = useQuery({
     queryKey: ['event-rsvps', selectedEvent?.id],
@@ -218,7 +241,7 @@ export function EventsList({ events, isLoading, emptyMessage, isPastEvents = fal
           setShowEditDialog={setShowEditDialog}
           rsvpCount={eventRSVPs?.length || 0}
           attendeeNames={getAttendeeNames()}
-          userRSVPStatus="attending"
+          userRSVPStatus={userRSVPStatus}
           isAdmin={profile?.is_admin || false}
           canManageEvents={profile?.is_admin || false}
           isPastEvent={isPastEvents}
