@@ -13,6 +13,7 @@ interface EventCardProps {
   onUpdate?: () => void;
   isAuthChecking?: boolean;
   requireAuth?: boolean;
+  isAuthenticated?: boolean;
 }
 
 export function EventCard({ 
@@ -24,10 +25,9 @@ export function EventCard({
   isSelected = false,
   onUpdate,
   isAuthChecking = false,
-  requireAuth = false
+  requireAuth = false,
+  isAuthenticated = false
 }: EventCardProps) {
-  const { isAuthenticated } = useAuthState();
-
   console.log('EventCard - Authentication state:', { isAuthenticated });
 
   if (!event) {
