@@ -1,4 +1,3 @@
-
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ProfileForm } from "./ProfileForm";
 import { InterestsSection } from "./InterestsSection";
@@ -85,6 +84,7 @@ export function ProfileTabs({
           events={upcomingEvents}
           isLoading={eventsLoading}
           emptyMessage="No upcoming events found"
+          isPastEvents={false}
         />
       </TabsContent>
 
@@ -93,6 +93,7 @@ export function ProfileTabs({
           events={pastEvents}
           isLoading={eventsLoading}
           emptyMessage="No past events found"
+          isPastEvents={true}
         />
       </TabsContent>
     </Tabs>

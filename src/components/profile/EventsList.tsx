@@ -25,9 +25,10 @@ interface EventsListProps {
   events: RSVP[] | undefined;
   isLoading: boolean;
   emptyMessage: string;
+  isPastEvents?: boolean;
 }
 
-export function EventsList({ events, isLoading, emptyMessage }: EventsListProps) {
+export function EventsList({ events, isLoading, emptyMessage, isPastEvents = false }: EventsListProps) {
   const navigate = useNavigate();
   const { cancelRSVP } = useRSVPCancellation();
 
@@ -82,16 +83,20 @@ export function EventsList({ events, isLoading, emptyMessage }: EventsListProps)
             >
               View Details
             </Button>
-            <AddGuestsButton
-              onAddGuests={(guests) => handleAddGuests(rsvp.events.id, guests)}
-              currentGuests={rsvp.event_guests || []}
-            />
-            <Button
-              variant="destructive"
-              onClick={() => cancelRSVP(rsvp.events.id)}
-            >
-              Cancel RSVP
-            </Button>
+            {!isPastEvents && (
+              <>
+                <AddGuestsButton
+                  onAddGuests={(guests) => handleAddGuests(rsvp.events.id, guests)}
+                  currentGuests={rsvp.event_guests || []}
+                />
+                <Button
+                  variant="destructive"
+                  onClick={() => cancelRSVP(rsvp.events.id)}
+                >
+                  Cancel RSVP
+                </Button>
+              </>
+            )}
           </CardFooter>
         </Card>
       ))}
