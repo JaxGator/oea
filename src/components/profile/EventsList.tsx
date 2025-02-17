@@ -6,6 +6,9 @@ import { Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useRSVPCancellation } from "@/hooks/rsvp/useRSVPCancellation";
 import { AddGuestsButton } from "@/components/event/actions/AddGuestsButton";
+import { useState } from "react";
+import { EventDialogs } from "@/components/event/dialogs/EventDialogs";
+import { useAuthState } from "@/hooks/useAuthState";
 
 interface Event {
   id: string;
@@ -31,6 +34,10 @@ interface EventsListProps {
 export function EventsList({ events, isLoading, emptyMessage, isPastEvents = false }: EventsListProps) {
   const navigate = useNavigate();
   const { cancelRSVP } = useRSVPCancellation();
+  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+  const [showDetailsDialog, setShowDetailsDialog] = useState(false);
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const { profile } = useAuthState();
 
   if (isLoading) {
     return (
@@ -48,13 +55,19 @@ export function EventsList({ events, isLoading, emptyMessage, isPastEvents = fal
     );
   }
 
-  const handleViewDetails = (eventId: string) => {
-    navigate(`/events/${eventId}`);
+  const handleViewDetails = (event: Event) => {
+    setSelectedEvent(event);
+    setShowDetailsDialog(true);
   };
 
   const handleAddGuests = async (eventId: string, guests: { firstName: string }[]) => {
     // This will be handled by the AddGuestsButton component's internal logic
     console.log('Adding guests for event:', eventId, guests);
+  };
+
+  const handleEditSuccess = () => {
+    setShowEditDialog(false);
+    // Optionally, you could add a refetch mechanism here if needed
   };
 
   return (
@@ -79,7 +92,7 @@ export function EventsList({ events, isLoading, emptyMessage, isPastEvents = fal
           <CardFooter className="flex gap-2">
             <Button
               variant="outline"
-              onClick={() => handleViewDetails(rsvp.events.id)}
+              onClick={() => handleViewDetails(rsvp.events)}
             >
               View Details
             </Button>
@@ -100,6 +113,29 @@ export function EventsList({ events, isLoading, emptyMessage, isPastEvents = fal
           </CardFooter>
         </Card>
       ))}
+
+      {selectedEvent && (
+        <EventDialogs
+          event={selectedEvent}
+          showDetailsDialog={showDetailsDialog}
+          setShowDetailsDialog={setShowDetailsDialog}
+          showEditDialog={showEditDialog}
+          setShowEditDialog={setShowEditDialog}
+          rsvpCount={0} // You might want to fetch this data
+          attendeeNames={[]} // You might want to fetch this data
+          userRSVPStatus="attending"
+          isAdmin={profile?.is_admin || false}
+          canManageEvents={profile?.is_admin || false}
+          isPastEvent={isPastEvents}
+          isWixEvent={false}
+          canAddGuests={!isPastEvents}
+          currentGuests={[]}
+          onRSVP={() => {}}
+          onCancelRSVP={() => cancelRSVP(selectedEvent.id)}
+          handleEditSuccess={handleEditSuccess}
+          isAuthenticated={true}
+        />
+      )}
     </div>
   );
 }
