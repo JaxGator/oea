@@ -65,19 +65,24 @@ export function EventsList({ events, isLoading, emptyMessage, isPastEvents = fal
       if (error) throw error;
 
       // Transform the data to match the EventRSVP type
-      return (data || []).map(rsvp => ({
-        id: rsvp.id,
-        event_id: rsvp.event_id,
-        user_id: rsvp.user_id,
-        response: rsvp.response,
-        status: rsvp.status,
-        created_at: rsvp.created_at,
-        profiles: rsvp.profiles ? {
-          username: rsvp.profiles.username,
-          full_name: rsvp.profiles.full_name
-        } : undefined,
-        event_guests: rsvp.event_guests
-      })) as EventRSVP[];
+      return (data || []).map(rsvp => {
+        // Ensure profiles is treated as a single object, not an array
+        const profileData = rsvp.profiles as { username: string; full_name: string | null };
+        
+        return {
+          id: rsvp.id,
+          event_id: rsvp.event_id,
+          user_id: rsvp.user_id,
+          response: rsvp.response,
+          status: rsvp.status,
+          created_at: rsvp.created_at,
+          profiles: profileData ? {
+            username: profileData.username,
+            full_name: profileData.full_name
+          } : undefined,
+          event_guests: rsvp.event_guests
+        };
+      }) as EventRSVP[];
     },
     enabled: !!selectedEvent?.id
   });
