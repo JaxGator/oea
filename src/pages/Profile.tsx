@@ -6,6 +6,11 @@ import { ProfileHeader } from "@/components/profile/ProfileHeader";
 import { ProfileForm } from "@/components/profile/ProfileForm";
 import { InterestsSection } from "@/components/profile/InterestsSection";
 import { useAuthState } from "@/hooks/useAuthState";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { format } from "date-fns";
+import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { useQuery } from "@tanstack/react-query";
+import { Loader2 } from "lucide-react";
 
 export default function Profile() {
   const [loading, setLoading] = useState(true);
@@ -139,6 +144,42 @@ export default function Profile() {
     }
   }
 
+  const { data: userEvents, isLoading: eventsLoading } = useQuery({
+    queryKey: ['user-events', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return null;
+
+      const { data, error } = await supabase
+        .from('event_rsvps')
+        .select(`
+          *,
+          events (
+            id,
+            title,
+            description,
+            date,
+            time,
+            location
+          )
+        `)
+        .eq('user_id', user.id)
+        .eq('response', 'attending');
+
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user?.id
+  });
+
+  const now = new Date();
+  const upcomingEvents = userEvents?.filter(rsvp => 
+    new Date(`${rsvp.events?.date} ${rsvp.events?.time}`) > now
+  ) || [];
+  
+  const pastEvents = userEvents?.filter(rsvp => 
+    new Date(`${rsvp.events?.date} ${rsvp.events?.time}`) <= now
+  ) || [];
+
   if (loading || isLoading) {
     return (
       <div className="min-h-screen bg-[#222222] flex items-center justify-center">
@@ -171,30 +212,95 @@ export default function Profile() {
             fullName={fullName}
             username={username}
           />
-          <ProfileForm
-            username={username}
-            setUsername={setUsername}
-            fullName={fullName}
-            setFullName={setFullName}
-            avatarUrl={avatarUrl}
-            setAvatarUrl={setAvatarUrl}
-            email={email}
-            setEmail={setEmail}
-            newPassword={newPassword}
-            setNewPassword={setNewPassword}
-            onUpdateProfile={updateProfile}
-            onUpdateEmail={updateEmail}
-            onUpdatePassword={updatePassword}
-          />
-          {(profile?.is_approved || profile?.is_admin || profile?.is_member) && (
-            <InterestsSection
-              interests={interests}
-              onUpdateInterests={(newInterests) => {
-                setInterests(newInterests);
-                updateProfile();
-              }}
-            />
-          )}
+
+          <Tabs defaultValue="profile" className="w-full">
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="profile">Profile</TabsTrigger>
+              <TabsTrigger value="upcoming">Upcoming Events</TabsTrigger>
+              <TabsTrigger value="past">Past Events</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="profile">
+              <ProfileForm
+                username={username}
+                setUsername={setUsername}
+                fullName={fullName}
+                setFullName={setFullName}
+                avatarUrl={avatarUrl}
+                setAvatarUrl={setAvatarUrl}
+                email={email}
+                setEmail={setEmail}
+                newPassword={newPassword}
+                setNewPassword={setNewPassword}
+                onUpdateProfile={updateProfile}
+                onUpdateEmail={updateEmail}
+                onUpdatePassword={updatePassword}
+              />
+              {(profile?.is_approved || profile?.is_admin || profile?.is_member) && (
+                <InterestsSection
+                  interests={interests}
+                  onUpdateInterests={(newInterests) => {
+                    setInterests(newInterests);
+                    updateProfile();
+                  }}
+                />
+              )}
+            </TabsContent>
+
+            <TabsContent value="upcoming">
+              {eventsLoading ? (
+                <div className="flex justify-center p-4">
+                  <Loader2 className="h-6 w-6 animate-spin" />
+                </div>
+              ) : upcomingEvents.length === 0 ? (
+                <p className="text-center text-muted-foreground py-4">
+                  No upcoming events found
+                </p>
+              ) : (
+                <div className="space-y-4">
+                  {upcomingEvents.map((rsvp) => (
+                    <Card key={rsvp.id}>
+                      <CardHeader>
+                        <CardTitle>{rsvp.events?.title}</CardTitle>
+                        <CardDescription>
+                          {format(new Date(`${rsvp.events?.date} ${rsvp.events?.time}`), 'PPp')}
+                          <br />
+                          {rsvp.events?.location}
+                        </CardDescription>
+                      </CardHeader>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </TabsContent>
+
+            <TabsContent value="past">
+              {eventsLoading ? (
+                <div className="flex justify-center p-4">
+                  <Loader2 className="h-6 w-6 animate-spin" />
+                </div>
+              ) : pastEvents.length === 0 ? (
+                <p className="text-center text-muted-foreground py-4">
+                  No past events found
+                </p>
+              ) : (
+                <div className="space-y-4">
+                  {pastEvents.map((rsvp) => (
+                    <Card key={rsvp.id}>
+                      <CardHeader>
+                        <CardTitle>{rsvp.events?.title}</CardTitle>
+                        <CardDescription>
+                          {format(new Date(`${rsvp.events?.date} ${rsvp.events?.time}`), 'PPp')}
+                          <br />
+                          {rsvp.events?.location}
+                        </CardDescription>
+                      </CardHeader>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </TabsContent>
+          </Tabs>
         </div>
       </div>
     </div>
