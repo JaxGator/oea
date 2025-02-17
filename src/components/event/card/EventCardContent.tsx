@@ -4,7 +4,7 @@ import { EventDetailsSection } from "./sections/EventDetailsSection";
 import { EventActionsSection } from "./sections/EventActionsSection";
 
 interface EventCardContentProps {
-  event: Event;
+  event: Event & { attendeeCount?: number; attendeeNames?: string[] };
   rsvpCount: number;
   isAdmin: boolean;
   canManageEvents: boolean;
@@ -82,6 +82,19 @@ export function EventCardContent({
         onCancelEdit={onCancelEdit}
         onRSVPCountChange={onRSVPCountChange}
       />
+
+      <div className="mt-4">
+        {event.attendeeNames && event.attendeeNames.length > 0 && (
+          <div className="mb-4">
+            <h4 className="text-sm font-medium text-gray-700 mb-1">Event Attendees:</h4>
+            <ul className="text-sm text-gray-600">
+              {event.attendeeNames.map((name, index) => (
+                <li key={index}>{name}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </div>
 
       <EventActionsSection
         isAdmin={isAdmin}
