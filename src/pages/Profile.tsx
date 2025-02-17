@@ -153,13 +153,24 @@ export default function Profile() {
             date,
             time,
             location
+          ),
+          event_guests (
+            id,
+            first_name
           )
         `)
         .eq('user_id', user.id)
         .eq('response', 'attending');
 
       if (error) throw error;
-      return data;
+      
+      // Transform the event_guests data to match the expected format
+      return data.map(rsvp => ({
+        ...rsvp,
+        event_guests: rsvp.event_guests?.map(guest => ({
+          firstName: guest.first_name
+        }))
+      }));
     },
     enabled: !!user?.id
   });
