@@ -7,10 +7,13 @@ import { EventsHeader } from "@/components/event/sections/EventsHeader";
 import { EventsContent } from "@/components/event/sections/EventsContent";
 import { useQueryClient } from "@tanstack/react-query";
 import { endOfDay, parseISO, startOfDay, set } from "date-fns";
+import { EventCard } from "@/components/EventCard";
+import { supabase } from "@/integrations/supabase/client";
+import { useQuery } from "@tanstack/react-query";
 import type { Event, EventsPage } from "@/types/database";
 
 export default function Events() {
-  const { isAuthenticated } = useAuthState();
+  const { isAuthenticated, profile } = useAuthState();
   const [isCreateEventOpen, setIsCreateEventOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const queryClient = useQueryClient();
@@ -22,6 +25,33 @@ export default function Events() {
   } = useEvents(selectedDate);
 
   const { handleRSVP, cancelRSVP } = useRSVP();
+
+  // Fetch user's RSVP statuses
+  const { data: userRSVPs } = useQuery({
+    queryKey: ['user-rsvps', eventsData?.pages?.[0]?.data?.map(e => e.id)],
+    queryFn: async () => {
+      if (!profile?.id || !eventsData?.pages?.[0]?.data) return null;
+
+      const eventIds = eventsData.pages[0].data.map(e => e.id);
+      
+      const { data, error } = await supabase
+        .from('event_rsvps')
+        .select('event_id, response, status')
+        .eq('user_id', profile.id)
+        .in('event_id', eventIds);
+
+      if (error) {
+        console.error('Error fetching user RSVPs:', error);
+        return null;
+      }
+
+      return data.reduce((acc, rsvp) => ({
+        ...acc,
+        [rsvp.event_id]: rsvp.response
+      }), {} as Record<string, string>);
+    },
+    enabled: !!isAuthenticated && !!profile?.id && !!eventsData?.pages?.[0]?.data?.length
+  });
 
   const allEvents = eventsData?.pages?.flatMap(page => (page as EventsPage).data) || [];
   const totalCount = eventsData?.pages?.[0] ? (eventsData.pages[0] as EventsPage).count : 0;
@@ -84,6 +114,8 @@ export default function Events() {
           onCancelRSVP={cancelRSVP}
           isLoading={isEventsLoading}
           onUpdate={handleEventUpdate}
+          userRSVPs={userRSVPs || {}}
+          isAuthenticated={isAuthenticated}
         />
       </div>
     </div>
