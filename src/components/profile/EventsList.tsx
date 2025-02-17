@@ -38,10 +38,10 @@ interface RawEventRSVP {
     username: string;
     full_name: string | null;
   };
-  event_guests: Array<{
+  event_guests?: {
     id: string;
     first_name: string;
-  }>;
+  }[];
 }
 
 export function EventsList({ events, isLoading, emptyMessage, isPastEvents = false }: EventsListProps) {
@@ -58,7 +58,7 @@ export function EventsList({ events, isLoading, emptyMessage, isPastEvents = fal
     queryFn: async () => {
       if (!selectedEvent?.id) return null;
 
-      const { data, error } = await supabase
+      const { data: rawData, error } = await supabase
         .from('event_rsvps')
         .select(`
           id,
@@ -82,8 +82,18 @@ export function EventsList({ events, isLoading, emptyMessage, isPastEvents = fal
 
       if (error) throw error;
 
+      // Transform the raw data into the correct shape
+      const data = rawData?.map((raw: any) => ({
+        ...raw,
+        profiles: {
+          username: raw.profiles[0]?.username || '',
+          full_name: raw.profiles[0]?.full_name || ''
+        },
+        event_guests: raw.event_guests || []
+      })) as RawEventRSVP[];
+
       // Transform the data to match the EventRSVP type
-      return (data as RawEventRSVP[]).map(rsvp => ({
+      return data.map(rsvp => ({
         id: rsvp.id,
         event_id: rsvp.event_id,
         user_id: rsvp.user_id,
@@ -94,10 +104,10 @@ export function EventsList({ events, isLoading, emptyMessage, isPastEvents = fal
           username: rsvp.profiles.username,
           full_name: rsvp.profiles.full_name || ''
         },
-        event_guests: rsvp.event_guests.map(guest => ({
+        event_guests: rsvp.event_guests?.map(guest => ({
           id: guest.id,
           first_name: guest.first_name
-        }))
+        })) || []
       })) as EventRSVP[];
     },
     enabled: !!selectedEvent?.id
