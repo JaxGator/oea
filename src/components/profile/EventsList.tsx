@@ -11,43 +11,7 @@ import { EventDialogs } from "@/components/event/dialogs/EventDialogs";
 import { useAuthState } from "@/hooks/useAuthState";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-
-interface Event {
-  id: string;
-  title: string;
-  description: string | null;
-  date: string;
-  time: string;
-  location: string;
-  max_guests: number;
-  created_by: string;
-  created_at: string;
-  image_url: string;
-  is_featured?: boolean;
-  waitlist_enabled?: boolean;
-  waitlist_capacity?: number | null;
-  is_published?: boolean;
-  latitude?: number | null;
-  longitude?: number | null;
-  end_time?: string | null;
-  reminder_enabled?: boolean;
-  reminder_intervals?: string[];
-  requires_payment?: boolean;
-  ticket_price?: number | null;
-  rsvps?: EventRSVP[];
-}
-
-interface EventRSVP {
-  id: string;
-  user_id: string;
-  response: string;
-  status: string;
-  profiles?: {
-    username: string;
-    full_name: string | null;
-  };
-  event_guests?: { first_name: string }[];
-}
+import type { Event, EventRSVP } from "@/types/event";
 
 interface RSVP {
   id: string;
@@ -80,9 +44,11 @@ export function EventsList({ events, isLoading, emptyMessage, isPastEvents = fal
         .from('event_rsvps')
         .select(`
           id,
+          event_id,
           user_id,
           response,
           status,
+          created_at,
           profiles:profiles(username, full_name),
           event_guests(first_name)
         `)
@@ -91,7 +57,7 @@ export function EventsList({ events, isLoading, emptyMessage, isPastEvents = fal
         .eq('status', 'confirmed');
 
       if (error) throw error;
-      return data;
+      return data as EventRSVP[];
     },
     enabled: !!selectedEvent?.id
   });
@@ -132,13 +98,13 @@ export function EventsList({ events, isLoading, emptyMessage, isPastEvents = fal
     return eventRSVPs.flatMap(rsvp => {
       const names = [];
       // Add the main RSVP holder
-      if (rsvp.profiles?.username || rsvp.profiles?.full_name) {
+      if (rsvp.profiles && (rsvp.profiles.username || rsvp.profiles.full_name)) {
         names.push(rsvp.profiles.full_name || rsvp.profiles.username);
       }
       // Add their guests if any
       if (rsvp.event_guests && rsvp.event_guests.length > 0) {
         names.push(...rsvp.event_guests.map(guest => 
-          `${guest.first_name} (Guest of ${rsvp.profiles?.full_name || rsvp.profiles?.username})`
+          `${guest.first_name} (Guest of ${rsvp.profiles ? rsvp.profiles.full_name || rsvp.profiles.username : 'Unknown'})`
         ));
       }
       return names;
@@ -191,7 +157,10 @@ export function EventsList({ events, isLoading, emptyMessage, isPastEvents = fal
 
       {selectedEvent && (
         <EventDialogs
-          event={selectedEvent}
+          event={{
+            ...selectedEvent,
+            rsvps: eventRSVPs || []
+          }}
           showDetailsDialog={showDetailsDialog}
           setShowDetailsDialog={setShowDetailsDialog}
           showEditDialog={showEditDialog}
