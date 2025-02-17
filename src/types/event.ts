@@ -25,6 +25,8 @@ export interface Event {
   rsvps?: EventRSVP[];
   attendees?: EventRSVP[];
   guests?: EventGuest[];
+  attendeeCount?: number;
+  attendeeNames?: string[];
 }
 
 export type RSVPResponse = 'attending' | 'not_attending' | 'maybe';

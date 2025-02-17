@@ -51,15 +51,17 @@ export function EventCard({
     return null;
   }
 
+  const eventWithAttendees: Event = {
+    ...event,
+    time: event.time || '00:00:00', // Ensure time is always provided
+    attendeeCount,
+    attendeeNames
+  };
+
   return (
     <div className="h-full">
       <EventCardContainer 
-        event={{
-          ...event,
-          time: event.time || '00:00:00', // Ensure time is always provided
-          attendeeCount,
-          attendeeNames
-        }}
+        event={eventWithAttendees}
         onRSVP={onRSVP}
         onCancelRSVP={onCancelRSVP}
         userRSVPStatus={userRSVPStatus}
