@@ -49,15 +49,35 @@ export function EventsList({ events, isLoading, emptyMessage, isPastEvents = fal
           response,
           status,
           created_at,
-          profiles:profiles(username, full_name),
-          event_guests(first_name)
+          profiles!inner (
+            username,
+            full_name
+          ),
+          event_guests (
+            id,
+            first_name
+          )
         `)
         .eq('event_id', selectedEvent.id)
         .eq('response', 'attending')
         .eq('status', 'confirmed');
 
       if (error) throw error;
-      return data as EventRSVP[];
+
+      // Transform the data to match the EventRSVP type
+      return (data || []).map(rsvp => ({
+        id: rsvp.id,
+        event_id: rsvp.event_id,
+        user_id: rsvp.user_id,
+        response: rsvp.response,
+        status: rsvp.status,
+        created_at: rsvp.created_at,
+        profiles: rsvp.profiles ? {
+          username: rsvp.profiles.username,
+          full_name: rsvp.profiles.full_name
+        } : undefined,
+        event_guests: rsvp.event_guests
+      })) as EventRSVP[];
     },
     enabled: !!selectedEvent?.id
   });
@@ -98,7 +118,7 @@ export function EventsList({ events, isLoading, emptyMessage, isPastEvents = fal
     return eventRSVPs.flatMap(rsvp => {
       const names = [];
       // Add the main RSVP holder
-      if (rsvp.profiles && (rsvp.profiles.username || rsvp.profiles.full_name)) {
+      if (rsvp.profiles) {
         names.push(rsvp.profiles.full_name || rsvp.profiles.username);
       }
       // Add their guests if any
