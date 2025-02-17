@@ -26,6 +26,25 @@ interface EventsListProps {
   isPastEvents?: boolean;
 }
 
+// Define the shape of the raw data from Supabase
+interface SupabaseRSVP {
+  id: string;
+  event_id: string;
+  user_id: string;
+  response: string;
+  status: string;
+  created_at: string;
+  profiles: {
+    id: string;
+    username: string;
+    full_name: string | null;
+  } | null;
+  event_guests: {
+    id: string;
+    first_name: string;
+  }[] | null;
+}
+
 export function EventsList({ events, isLoading, emptyMessage, isPastEvents = false }: EventsListProps) {
   const navigate = useNavigate();
   const { cancelRSVP } = useRSVPCancellation();
@@ -49,7 +68,7 @@ export function EventsList({ events, isLoading, emptyMessage, isPastEvents = fal
           response,
           status,
           created_at,
-          profiles:profiles (
+          profiles (
             id,
             username,
             full_name
@@ -68,7 +87,23 @@ export function EventsList({ events, isLoading, emptyMessage, isPastEvents = fal
         return null;
       }
 
-      return data as EventRSVP[];
+      // Transform the Supabase response to match EventRSVP type
+      return (data as SupabaseRSVP[]).map(rsvp => ({
+        id: rsvp.id,
+        event_id: rsvp.event_id,
+        user_id: rsvp.user_id,
+        response: rsvp.response,
+        status: rsvp.status,
+        created_at: rsvp.created_at,
+        profiles: rsvp.profiles ? {
+          username: rsvp.profiles.username,
+          full_name: rsvp.profiles.full_name || rsvp.profiles.username
+        } : undefined,
+        event_guests: rsvp.event_guests?.map(guest => ({
+          id: guest.id,
+          first_name: guest.first_name
+        })) || []
+      })) as EventRSVP[];
     },
     enabled: !!selectedEvent?.id
   });
