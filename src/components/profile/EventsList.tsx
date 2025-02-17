@@ -26,24 +26,6 @@ interface EventsListProps {
   isPastEvents?: boolean;
 }
 
-// Define the shape of the raw data from Supabase
-interface RawEventRSVP {
-  id: string;
-  event_id: string;
-  user_id: string;
-  response: string;
-  status: string;
-  created_at: string;
-  profiles: {
-    username: string;
-    full_name: string | null;
-  };
-  event_guests?: {
-    id: string;
-    first_name: string;
-  }[];
-}
-
 export function EventsList({ events, isLoading, emptyMessage, isPastEvents = false }: EventsListProps) {
   const navigate = useNavigate();
   const { cancelRSVP } = useRSVPCancellation();
@@ -52,36 +34,13 @@ export function EventsList({ events, isLoading, emptyMessage, isPastEvents = fal
   const [showEditDialog, setShowEditDialog] = useState(false);
   const { profile } = useAuthState();
 
-  // Fetch current user's RSVP status for the selected event
-  const { data: userRSVPStatus } = useQuery({
-    queryKey: ['user-rsvp', selectedEvent?.id],
-    queryFn: async () => {
-      if (!selectedEvent?.id || !profile?.id) return null;
-
-      const { data, error } = await supabase
-        .from('event_rsvps')
-        .select('response, status')
-        .eq('event_id', selectedEvent.id)
-        .eq('user_id', profile.id)
-        .single();
-
-      if (error) {
-        console.error('Error fetching user RSVP:', error);
-        return null;
-      }
-
-      return data?.response || null;
-    },
-    enabled: !!selectedEvent?.id && !!profile?.id
-  });
-
   // Fetch event RSVPs when an event is selected
   const { data: eventRSVPs } = useQuery({
     queryKey: ['event-rsvps', selectedEvent?.id],
     queryFn: async () => {
       if (!selectedEvent?.id) return null;
 
-      const { data: rawData, error } = await supabase
+      const { data, error } = await supabase
         .from('event_rsvps')
         .select(`
           id,
@@ -90,7 +49,8 @@ export function EventsList({ events, isLoading, emptyMessage, isPastEvents = fal
           response,
           status,
           created_at,
-          profiles:profiles!inner (
+          profiles:profiles (
+            id,
             username,
             full_name
           ),
@@ -103,37 +63,41 @@ export function EventsList({ events, isLoading, emptyMessage, isPastEvents = fal
         .eq('response', 'attending')
         .eq('status', 'confirmed');
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching RSVPs:', error);
+        return null;
+      }
 
-      // Transform the raw data into the correct shape
-      const data = rawData?.map((raw: any) => ({
-        ...raw,
-        profiles: {
-          username: raw.profiles[0]?.username || '',
-          full_name: raw.profiles[0]?.full_name || ''
-        },
-        event_guests: raw.event_guests || []
-      })) as RawEventRSVP[];
-
-      // Transform the data to match the EventRSVP type
-      return data.map(rsvp => ({
-        id: rsvp.id,
-        event_id: rsvp.event_id,
-        user_id: rsvp.user_id,
-        response: rsvp.response,
-        status: rsvp.status,
-        created_at: rsvp.created_at,
-        profiles: {
-          username: rsvp.profiles.username,
-          full_name: rsvp.profiles.full_name || ''
-        },
-        event_guests: rsvp.event_guests?.map(guest => ({
-          id: guest.id,
-          first_name: guest.first_name
-        })) || []
-      })) as EventRSVP[];
+      return data as EventRSVP[];
     },
     enabled: !!selectedEvent?.id
+  });
+
+  // Fetch current user's RSVP status for all events
+  const { data: userRSVPs } = useQuery({
+    queryKey: ['user-rsvps', events?.map(e => e.events.id)],
+    queryFn: async () => {
+      if (!profile?.id || !events?.length) return null;
+
+      const eventIds = events.map(e => e.events.id);
+      
+      const { data, error } = await supabase
+        .from('event_rsvps')
+        .select('event_id, response, status')
+        .eq('user_id', profile.id)
+        .in('event_id', eventIds);
+
+      if (error) {
+        console.error('Error fetching user RSVPs:', error);
+        return null;
+      }
+
+      return data.reduce((acc, rsvp) => ({
+        ...acc,
+        [rsvp.event_id]: rsvp.response
+      }), {} as Record<string, string>);
+    },
+    enabled: !!profile?.id && !!events?.length
   });
 
   if (isLoading) {
@@ -171,14 +135,12 @@ export function EventsList({ events, isLoading, emptyMessage, isPastEvents = fal
     
     return eventRSVPs.flatMap(rsvp => {
       const names = [];
-      // Add the main RSVP holder
       if (rsvp.profiles) {
         names.push(rsvp.profiles.full_name || rsvp.profiles.username);
       }
-      // Add their guests if any
       if (rsvp.event_guests && rsvp.event_guests.length > 0) {
         names.push(...rsvp.event_guests.map(guest => 
-          `${guest.first_name} (Guest of ${rsvp.profiles ? rsvp.profiles.full_name || rsvp.profiles.username : 'Unknown'})`
+          `${guest.first_name} (Guest of ${rsvp.profiles?.full_name || rsvp.profiles?.username || 'Unknown'})`
         ));
       }
       return names;
@@ -241,7 +203,7 @@ export function EventsList({ events, isLoading, emptyMessage, isPastEvents = fal
           setShowEditDialog={setShowEditDialog}
           rsvpCount={eventRSVPs?.length || 0}
           attendeeNames={getAttendeeNames()}
-          userRSVPStatus={userRSVPStatus}
+          userRSVPStatus={userRSVPs?.[selectedEvent.id]}
           isAdmin={profile?.is_admin || false}
           canManageEvents={profile?.is_admin || false}
           isPastEvent={isPastEvents}
