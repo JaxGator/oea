@@ -12,6 +12,8 @@ interface EventListProps {
   selectedEventId?: string | null;
   isLoading?: boolean;
   onUpdate?: () => void;
+  userRSVPs?: Record<string, string>;
+  isAuthenticated: boolean;
 }
 
 export function EventList({ 
@@ -21,7 +23,9 @@ export function EventList({
   onEventSelect,
   selectedEventId,
   isLoading = false,
-  onUpdate
+  onUpdate,
+  userRSVPs = {},
+  isAuthenticated
 }: EventListProps) {
   const { isLoading: isAuthChecking } = useAuthState();
 
@@ -69,9 +73,7 @@ export function EventList({
   return (
     <div className="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3 animate-fade-in">
       {events.map((event) => {
-        const userRSVP = event.rsvps?.find(
-          rsvp => rsvp.user_id === event.created_by
-        );
+        const userRSVPStatus = userRSVPs[event.id];
         
         return (
           <div key={event.id} className="w-full">
@@ -79,7 +81,7 @@ export function EventList({
               event={event}
               onRSVP={onRSVP}
               onCancelRSVP={() => onCancelRSVP(event.id)}
-              userRSVPStatus={userRSVP?.response || null}
+              userRSVPStatus={userRSVPStatus}
               onSelect={() => {
                 console.log('EventList - Card clicked:', event.id);
                 onEventSelect?.(event.id);
@@ -88,6 +90,7 @@ export function EventList({
               isAuthChecking={isAuthChecking}
               requireAuth={true}
               onUpdate={onUpdate}
+              isAuthenticated={isAuthenticated}
             />
           </div>
         );
