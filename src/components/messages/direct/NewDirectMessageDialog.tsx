@@ -61,6 +61,37 @@ export function NewDirectMessageDialog() {
         return;
       }
 
+      // Get user profiles for both users
+      const { data: targetUser } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
+
+      const { data: currentUser } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', chatClient.userID!)
+        .single();
+
+      if (!targetUser || !currentUser) {
+        throw new Error('Could not find user profiles');
+      }
+
+      // Ensure both users exist in Stream Chat
+      await chatClient.upsertUsers([
+        {
+          id: currentUser.id,
+          name: currentUser.username || currentUser.full_name,
+          image: currentUser.avatar_url,
+        },
+        {
+          id: targetUser.id,
+          name: targetUser.username || targetUser.full_name,
+          image: targetUser.avatar_url,
+        }
+      ]);
+
       // Create a shorter unique channel ID using the first 8 characters of each UUID
       const members = [chatClient.userID!, userId].map(id => id.slice(0, 8)).sort();
       const channelId = `dm-${members.join('-')}`;
