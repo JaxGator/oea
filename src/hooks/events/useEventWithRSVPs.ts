@@ -9,19 +9,22 @@ export const useEventWithRSVPs = (eventId: string | undefined) => {
     queryFn: async () => {
       if (!eventId) throw new Error('Event ID is required');
 
+      console.log('Fetching event data for ID:', eventId);
+
       // Fetch event data with RSVPs and profiles in a single query
       const { data: eventData, error: eventError } = await supabase
         .from('events')
         .select(`
           *,
-          rsvps:event_rsvps (
+          rsvps:event_rsvps!inner (
             id,
             event_id,
             user_id,
             response,
             status,
             created_at,
-            profiles!event_rsvps_user_id_fkey (
+            profiles!inner (
+              id,
               username,
               full_name
             ),
@@ -34,8 +37,17 @@ export const useEventWithRSVPs = (eventId: string | undefined) => {
         .eq('id', eventId)
         .maybeSingle();
 
-      if (eventError) throw eventError;
-      if (!eventData) throw new Error('Event not found');
+      if (eventError) {
+        console.error('Error fetching event data:', eventError);
+        throw eventError;
+      }
+      
+      if (!eventData) {
+        console.error('No event data found for ID:', eventId);
+        throw new Error('Event not found');
+      }
+
+      console.log('Raw event data:', eventData);
 
       // Process the RSVPs to the expected format
       const rsvps = (eventData.rsvps as any[])?.map((rsvp): EventRSVP => ({
@@ -55,16 +67,17 @@ export const useEventWithRSVPs = (eventId: string | undefined) => {
         }))
       }));
 
-      console.log('Processed event data:', {
-        ...eventData,
-        rsvps: rsvps || []
-      });
+      console.log('Processed RSVPs:', rsvps);
 
       // Return the event with processed RSVPs
-      return {
+      const processedEvent = {
         ...eventData,
         rsvps: rsvps || []
       } as Event;
+
+      console.log('Final processed event:', processedEvent);
+
+      return processedEvent;
     },
     enabled: !!eventId
   });
