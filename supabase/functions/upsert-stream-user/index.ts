@@ -1,7 +1,7 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { corsHeaders } from "../_shared/cors.ts";
-import { connect } from "https://esm.sh/getstream@8.1.5";
+import { StreamChat } from "https://esm.sh/stream-chat@8.14.1";
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -35,15 +35,21 @@ serve(async (req) => {
       timestamp: new Date().toISOString()
     });
 
-    // Initialize client using Stream's server-side SDK
-    const client = connect(STREAM_API_KEY, STREAM_API_SECRET);
-    const userClient = client.feed('user', user.id);
-
     try {
-      // Create token using the server-side client
-      const token = client.createUserToken(user.id);
+      // Initialize Stream Chat client
+      const serverClient = StreamChat.getInstance(STREAM_API_KEY, STREAM_API_SECRET);
 
-      console.log('Token generated:', {
+      // First update user
+      await serverClient.upsertUser({
+        id: user.id,
+        name: user.name || user.id,
+        image: user.image,
+      });
+
+      // Then generate token
+      const token = serverClient.createToken(user.id);
+
+      console.log('User upserted and token generated:', {
         userId: user.id,
         hasToken: !!token,
         timestamp: new Date().toISOString()
