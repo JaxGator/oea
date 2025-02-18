@@ -22,41 +22,59 @@ serve(async (req) => {
       throw new Error('Stream API credentials are not configured');
     }
 
-    const { user } = await req.json();
+    // Parse request body and log it for debugging
+    const requestBody = await req.json();
+    console.log('Request body:', {
+      body: requestBody,
+      timestamp: new Date().toISOString()
+    });
+
+    const { user } = requestBody;
 
     if (!user?.id) {
-      throw new Error('User ID is required');
+      console.error('Invalid user data:', {
+        user,
+        timestamp: new Date().toISOString()
+      });
+      throw new Error('Valid user ID is required');
     }
 
-    console.log('Creating Stream client for user:', {
+    console.log('Processing request for user:', {
       userId: user.id,
-      hasName: !!user.name,
+      name: user.name,
       hasImage: !!user.image,
       timestamp: new Date().toISOString()
     });
 
     try {
-      // Initialize Stream Chat client with explicit new instance
+      // Initialize Stream Chat client
       const serverClient = new StreamChat(STREAM_API_KEY, STREAM_API_SECRET);
+      console.log('Stream client initialized');
 
-      // First update user
-      const updateResponse = await serverClient.upsertUsers([{
+      // Update user
+      const userData = {
         id: user.id,
         name: user.name || user.id,
         image: user.image,
-      }]);
+      };
 
-      console.log('User update response:', {
-        updateResponse,
+      console.log('Upserting user:', {
+        userData,
         timestamp: new Date().toISOString()
       });
 
-      // Then generate token with explicit user id
+      await serverClient.upsertUsers([userData]);
+
+      // Generate token
       const token = serverClient.createToken(user.id);
 
-      console.log('User upserted and token generated:', {
+      if (!token) {
+        throw new Error('Failed to generate user token');
+      }
+
+      console.log('Operation successful:', {
         userId: user.id,
-        hasToken: !!token,
+        hasToken: true,
         timestamp: new Date().toISOString()
       });
 
