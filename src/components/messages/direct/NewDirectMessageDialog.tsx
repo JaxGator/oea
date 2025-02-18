@@ -118,6 +118,9 @@ export function NewDirectMessageDialog() {
         description: `You can now message ${username}`,
       });
 
+      // Navigate to the chat view with the created channel
+      navigate(`/messages/${channelId}`);
+
       // Force a refresh of the channel list
       await chatClient.queryChannels({
         type: 'messaging',
