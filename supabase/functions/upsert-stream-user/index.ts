@@ -20,7 +20,7 @@ async function upsertStreamUser(user: { id: string; name?: string; image?: strin
     new TextEncoder().encode(`${STREAM_API_KEY}:${STREAM_API_SECRET}`)
   );
 
-  const response = await fetch('https://chat.stream-io-api.com/v2.0/users', {
+  const response = await fetch('https://chat.stream-io-api.com/users', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -39,7 +39,8 @@ async function upsertStreamUser(user: { id: string; name?: string; image?: strin
   console.log('Stream API Response:', {
     status: response.status,
     headers: Object.fromEntries(response.headers.entries()),
-    data: responseData
+    data: responseData,
+    requestUrl: 'https://chat.stream-io-api.com/users'
   });
 
   if (!response.ok) {
@@ -48,7 +49,13 @@ async function upsertStreamUser(user: { id: string; name?: string; image?: strin
       statusText: response.statusText,
       data: responseData,
       url: response.url,
-      headers: Object.fromEntries(response.headers.entries())
+      headers: Object.fromEntries(response.headers.entries()),
+      requestBody: {
+        id: user.id,
+        role: 'user',
+        name: user.name || user.id,
+        image: user.image
+      }
     });
     throw new Error(`Stream API error: ${JSON.stringify(responseData)}`);
   }
