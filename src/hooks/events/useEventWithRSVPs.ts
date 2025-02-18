@@ -22,7 +22,8 @@ export const useEventWithRSVPs = (eventId: string | undefined) => {
             status,
             created_at,
             profiles!event_rsvps_user_id_fkey (
-              username
+              username,
+              full_name
             ),
             event_guests (
               id,
@@ -45,7 +46,8 @@ export const useEventWithRSVPs = (eventId: string | undefined) => {
         status: rsvp.status,
         created_at: rsvp.created_at,
         profiles: rsvp.profiles ? {
-          username: rsvp.profiles.username
+          username: rsvp.profiles.username,
+          full_name: rsvp.profiles.full_name
         } : null,
         event_guests: rsvp.event_guests?.map(guest => ({
           id: guest.id,
