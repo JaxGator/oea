@@ -38,6 +38,7 @@ export function NewDirectMessageDialog() {
 
   const handleSelectUser = async (userId: string, username: string) => {
     if (!chatClient) {
+      console.error('Chat client not initialized');
       toast({
         title: "Error",
         description: "Chat client not initialized",
@@ -47,13 +48,14 @@ export function NewDirectMessageDialog() {
     }
 
     try {
-      console.log('Creating chat with user:', userId);
+      console.log('Starting chat creation process with user:', userId);
       
       const { data: canMessage } = await supabase.rpc('can_message_user', {
         target_user_id: userId
       });
 
       if (!canMessage) {
+        console.log('Cannot message user:', userId);
         toast({
           title: "Cannot send message",
           description: "You cannot message this user.",
@@ -76,8 +78,11 @@ export function NewDirectMessageDialog() {
         .single();
 
       if (!targetUser || !currentUser) {
+        console.error('Could not find user profiles:', { targetUser, currentUser });
         throw new Error('Could not find user profiles');
       }
+
+      console.log('Found user profiles:', { targetUser, currentUser });
 
       // Ensure both users exist in Stream Chat
       await chatClient.upsertUsers([
@@ -93,42 +98,59 @@ export function NewDirectMessageDialog() {
         }
       ]);
 
-      // Create a shorter unique channel ID using the first 8 characters of each UUID
-      const members = [chatClient.userID!, userId].map(id => id.slice(0, 8)).sort();
-      const channelId = `dm-${members.join('-')}`;
+      console.log('Users upserted to Stream Chat');
+
+      // Create channel ID using full UUIDs to ensure uniqueness
+      const channelId = `messaging_${[chatClient.userID!, userId].sort().join('_')}`;
       
       console.log('Creating channel with ID:', channelId);
       
-      // Create or get the channel
+      try {
+        // First try to get existing channel
+        const existingChannel = chatClient.channel('messaging', channelId);
+        const { channel: queriedChannel } = await existingChannel.query();
+        
+        if (queriedChannel) {
+          console.log('Found existing channel:', queriedChannel);
+          setOpen(false);
+          navigate(`/messages/${channelId}`);
+          return;
+        }
+      } catch (error) {
+        console.log('No existing channel found, creating new one');
+      }
+
+      // Create new channel
       const channel = chatClient.channel('messaging', channelId, {
-        members: [chatClient.userID!, userId], // Use full IDs for members
-        name: username, // Set the channel name to the recipient's username
+        members: [chatClient.userID!, userId],
+        name: username,
       });
 
-      // Watch the channel before creating it
-      await channel.watch();
-      
-      // Then create the channel if it doesn't exist
-      const { channel: createdChannel } = await channel.create();
-      
-      console.log('Channel created successfully:', createdChannel);
+      console.log('Attempting to create channel...');
 
-      // Close the dialog first
-      setOpen(false);
+      try {
+        // Watch the channel
+        await channel.watch();
+        console.log('Channel watch successful');
+        
+        // Create the channel
+        const { channel: createdChannel } = await channel.create();
+        console.log('Channel created successfully:', createdChannel);
 
-      // Force a refresh of the channel list
-      await chatClient.queryChannels({
-        type: 'messaging',
-        members: { $in: [chatClient.userID!] }
-      });
+        // Close dialog and update UI
+        setOpen(false);
 
-      // Use replace instead of push to avoid navigation stack issues
-      navigate(`/messages/${channelId}`, { replace: true });
-      
-      toast({
-        title: "Chat created",
-        description: `You can now message ${username}`,
-      });
+        // Navigate to the new channel
+        navigate(`/messages/${channelId}`);
+        
+        toast({
+          title: "Chat created",
+          description: `You can now message ${username}`,
+        });
+      } catch (channelError) {
+        console.error('Error during channel creation:', channelError);
+        throw channelError;
+      }
 
     } catch (error) {
       console.error('Error creating chat:', error);
