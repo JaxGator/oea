@@ -10,6 +10,8 @@ const STREAM_API_SECRET = Deno.env.get('STREAM_API_SECRET') ?? '';
 async function upsertStreamUser(user: { id: string; name?: string; image?: string }) {
   console.log('Attempting to upsert user:', { 
     userId: user.id,
+    hasName: !!user.name,
+    hasImage: !!user.image,
     hasApiKey: !!STREAM_API_KEY,
     hasApiSecret: !!STREAM_API_SECRET 
   });
@@ -18,31 +20,35 @@ async function upsertStreamUser(user: { id: string; name?: string; image?: strin
     new TextEncoder().encode(`${STREAM_API_KEY}:${STREAM_API_SECRET}`)
   );
 
-  const response = await fetch('https://chat.stream-io-api.com/api/v1.0/users', {
+  const response = await fetch('https://chat.stream-io-api.com/v2.0/users', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       'Authorization': `Basic ${credentials}`,
+      'Stream-Auth-Type': 'basic',
     },
     body: JSON.stringify({
-      users: {
-        [user.id]: {
-          id: user.id,
-          name: user.name || user.id,
-          image: user.image,
-        }
-      }
+      id: user.id,
+      role: 'user',
+      name: user.name || user.id,
+      image: user.image
     })
   });
 
   const responseData = await response.json();
-  console.log('Stream API Response:', responseData);
+  console.log('Stream API Response:', {
+    status: response.status,
+    headers: Object.fromEntries(response.headers.entries()),
+    data: responseData
+  });
 
   if (!response.ok) {
     console.error('Stream API Error Details:', {
       status: response.status,
       statusText: response.statusText,
-      data: responseData
+      data: responseData,
+      url: response.url,
+      headers: Object.fromEntries(response.headers.entries())
     });
     throw new Error(`Stream API error: ${JSON.stringify(responseData)}`);
   }
