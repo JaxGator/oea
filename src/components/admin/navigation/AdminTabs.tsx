@@ -50,8 +50,13 @@ export function AdminTabs() {
         "relative whitespace-nowrap group",
         "px-2.5 py-1.5 sm:px-4 sm:py-2",
         "transition-all duration-200",
-        "data-[state=active]:bg-background/95",
-        "data-[state=active]:text-primary-foreground"
+        "data-[state=active]:bg-primary",
+        "data-[state=active]:text-white",
+        "hover:bg-primary/10",
+        "focus-visible:outline-2",
+        "focus-visible:outline-primary",
+        "focus-visible:outline-offset-2",
+        "focus-visible:ring-0"
       )}
     >
       <span className="flex items-center gap-1 sm:gap-2">
@@ -64,7 +69,9 @@ export function AdminTabs() {
             className={cn(
               "transition-all group-hover:bg-primary/20",
               "h-5 w-5 sm:h-6 sm:w-6 rounded-full p-0",
-              "flex items-center justify-center text-xs sm:text-sm"
+              "flex items-center justify-center text-xs sm:text-sm",
+              "group-data-[state=active]:bg-white",
+              "group-data-[state=active]:text-primary"
             )}
           >
             {count}
