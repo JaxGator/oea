@@ -9,15 +9,15 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useChatContext } from "stream-chat-react";
 
 export function NewDirectMessageDialog() {
   const [open, setOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [isCreatingChat, setIsCreatingChat] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
-  const location = useLocation();
   const { client: chatClient } = useChatContext();
 
   const { data: users, isLoading } = useQuery({
@@ -41,30 +41,31 @@ export function NewDirectMessageDialog() {
       console.error('Chat client not initialized');
       toast({
         title: "Error",
-        description: "Chat client not initialized",
+        description: "Chat client not initialized. Please try refreshing the page.",
         variant: "destructive"
       });
       return;
     }
 
+    if (isCreatingChat) {
+      console.log('Already creating a chat, please wait...');
+      return;
+    }
+
     try {
+      setIsCreatingChat(true);
       console.log('Starting chat creation process with user:', userId);
-      
+
+      // Check if we can message the user
       const { data: canMessage } = await supabase.rpc('can_message_user', {
         target_user_id: userId
       });
 
       if (!canMessage) {
-        console.log('Cannot message user:', userId);
-        toast({
-          title: "Cannot send message",
-          description: "You cannot message this user.",
-          variant: "destructive"
-        });
-        return;
+        throw new Error('Cannot message this user');
       }
 
-      // Get user profiles for both users
+      // Get user profiles
       const { data: targetUser } = await supabase
         .from('profiles')
         .select('*')
@@ -78,47 +79,12 @@ export function NewDirectMessageDialog() {
         .single();
 
       if (!targetUser || !currentUser) {
-        console.error('Could not find user profiles:', { targetUser, currentUser });
         throw new Error('Could not find user profiles');
       }
 
-      console.log('Found user profiles:', { targetUser, currentUser });
-
-      // Ensure both users exist in Stream Chat
-      await chatClient.upsertUsers([
-        {
-          id: currentUser.id,
-          name: currentUser.username || currentUser.full_name,
-          image: currentUser.avatar_url,
-        },
-        {
-          id: targetUser.id,
-          name: targetUser.username || targetUser.full_name,
-          image: targetUser.avatar_url,
-        }
-      ]);
-
-      console.log('Users upserted to Stream Chat');
-
-      // Create channel ID using full UUIDs to ensure uniqueness
-      const channelId = `messaging_${[chatClient.userID!, userId].sort().join('_')}`;
-      
+      // Create unique channel ID
+      const channelId = `messaging:${[chatClient.userID!, userId].sort().join('_')}`;
       console.log('Creating channel with ID:', channelId);
-      
-      try {
-        // First try to get existing channel
-        const existingChannel = chatClient.channel('messaging', channelId);
-        const { channel: queriedChannel } = await existingChannel.query();
-        
-        if (queriedChannel) {
-          console.log('Found existing channel:', queriedChannel);
-          setOpen(false);
-          navigate(`/messages/${channelId}`);
-          return;
-        }
-      } catch (error) {
-        console.log('No existing channel found, creating new one');
-      }
 
       // Create new channel
       const channel = chatClient.channel('messaging', channelId, {
@@ -126,39 +92,33 @@ export function NewDirectMessageDialog() {
         name: username,
       });
 
-      console.log('Attempting to create channel...');
+      // Create the channel first
+      const { channel: createdChannel } = await channel.create();
+      console.log('Channel created:', createdChannel);
 
-      try {
-        // Watch the channel
-        await channel.watch();
-        console.log('Channel watch successful');
-        
-        // Create the channel
-        const { channel: createdChannel } = await channel.create();
-        console.log('Channel created successfully:', createdChannel);
+      // Then watch it
+      await channel.watch();
+      console.log('Channel watch successful');
 
-        // Close dialog and update UI
-        setOpen(false);
-
-        // Navigate to the new channel
-        navigate(`/messages/${channelId}`);
-        
-        toast({
-          title: "Chat created",
-          description: `You can now message ${username}`,
-        });
-      } catch (channelError) {
-        console.error('Error during channel creation:', channelError);
-        throw channelError;
-      }
-
+      // Update UI
+      setOpen(false);
+      
+      // Navigate to the new channel
+      navigate(`/messages/${channelId}`, { replace: true });
+      
+      toast({
+        title: "Chat created",
+        description: `You can now message ${username}`,
+      });
     } catch (error) {
-      console.error('Error creating chat:', error);
+      console.error('Error in chat creation:', error);
       toast({
         title: "Error",
-        description: "Failed to create chat. Please try again.",
+        description: error instanceof Error ? error.message : "Failed to create chat. Please try again.",
         variant: "destructive"
       });
+    } finally {
+      setIsCreatingChat(false);
     }
   };
 
@@ -199,7 +159,8 @@ export function NewDirectMessageDialog() {
                   <button
                     key={user.id}
                     onClick={() => handleSelectUser(user.id, user.username)}
-                    className="w-full flex items-center space-x-3 p-2 hover:bg-accent rounded-lg transition-colors"
+                    disabled={isCreatingChat}
+                    className="w-full flex items-center space-x-3 p-2 hover:bg-accent rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <Avatar className="h-8 w-8">
                       <AvatarImage src={user.avatar_url || ''} />
