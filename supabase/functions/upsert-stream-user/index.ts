@@ -1,7 +1,7 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { corsHeaders } from "../_shared/cors.ts";
-import { StreamChat } from "https://esm.sh/stream-chat@8.14.1";
+import { StreamChat } from "https://esm.sh/v135/stream-chat@8.14.1";
 
 serve(async (req) => {
   // Handle CORS preflight requests
@@ -39,43 +39,48 @@ serve(async (req) => {
       timestamp: new Date().toISOString()
     });
 
-    // Initialize Stream client
-    const serverClient = StreamChat.getInstance(STREAM_API_KEY, STREAM_API_SECRET);
+    try {
+      // Initialize Stream client with specific version
+      const serverClient = new StreamChat(STREAM_API_KEY, STREAM_API_SECRET);
 
-    // Create or update the user
-    await serverClient.upsertUser({
-      id: user.id,
-      name: user.name || user.id,
-      image: user.image,
-    });
+      // Create or update the user
+      await serverClient.upsertUser({
+        id: user.id,
+        name: user.name || user.id,
+        image: user.image,
+      });
 
-    console.log('User upserted successfully:', {
-      userId: user.id,
-      timestamp: new Date().toISOString()
-    });
+      console.log('User upserted successfully:', {
+        userId: user.id,
+        timestamp: new Date().toISOString()
+      });
 
-    // Generate user token
-    const token = serverClient.createToken(user.id);
+      // Generate user token
+      const token = serverClient.createToken(user.id);
 
-    if (!token) {
-      throw new Error('Failed to generate user token');
+      console.log('Token generated successfully for user:', {
+        userId: user.id,
+        hasToken: !!token,
+        timestamp: new Date().toISOString()
+      });
+
+      return new Response(
+        JSON.stringify({
+          result: { token }
+        }),
+        {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 200,
+        }
+      );
+    } catch (streamError) {
+      console.error('Stream operation failed:', {
+        error: streamError.message,
+        stack: streamError.stack,
+        timestamp: new Date().toISOString()
+      });
+      throw streamError;
     }
-
-    console.log('Token generated successfully for user:', {
-      userId: user.id,
-      hasToken: !!token,
-      timestamp: new Date().toISOString()
-    });
-
-    return new Response(
-      JSON.stringify({
-        result: { token }
-      }),
-      {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200,
-      }
-    );
   } catch (error) {
     console.error('Error in upsert-stream-user:', {
       error: error.message,
