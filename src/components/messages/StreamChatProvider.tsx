@@ -26,8 +26,14 @@ export function StreamChatProvider({ children }: PropsWithChildren) {
         
         // Get Stream client instance
         const client = await getStreamChat();
-        
+
         if (unmounted) return;
+
+        console.log('Initializing chat with user:', {
+          id: user.id,
+          username: user.username,
+          avatar: user.avatar_url
+        });
 
         // Get user token from our backend
         const { data: streamResponse, error: streamError } = await supabase.functions
@@ -41,9 +47,17 @@ export function StreamChatProvider({ children }: PropsWithChildren) {
             }
           });
 
-        if (streamError || !streamResponse?.result?.token) {
-          throw new Error(streamError?.message || 'Failed to get Stream token');
+        if (streamError) {
+          console.error('Stream token error:', streamError);
+          throw streamError;
         }
+
+        if (!streamResponse?.result?.token) {
+          console.error('No token in response:', streamResponse);
+          throw new Error('Failed to get Stream token');
+        }
+
+        console.log('Got Stream token, connecting user...');
 
         // Connect user to Stream
         await client.connectUser(

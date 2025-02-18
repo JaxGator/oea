@@ -24,83 +24,48 @@ serve(async (req) => {
 
     // Parse request body and log it for debugging
     const requestBody = await req.json();
-    console.log('Request body:', {
-      body: requestBody,
-      timestamp: new Date().toISOString()
-    });
+    console.log('Request body:', requestBody);
 
     const { user } = requestBody;
 
     if (!user?.id) {
-      console.error('Invalid user data:', {
-        user,
-        timestamp: new Date().toISOString()
-      });
+      console.error('Invalid user data:', user);
       throw new Error('Valid user ID is required');
     }
 
-    console.log('Processing request for user:', {
-      userId: user.id,
-      name: user.name,
-      hasImage: !!user.image,
-      timestamp: new Date().toISOString()
-    });
-
-    try {
-      // Initialize Stream Chat client
-      const serverClient = new StreamChat(STREAM_API_KEY, STREAM_API_SECRET);
-      console.log('Stream client initialized');
-
-      // Update user
-      const userData = {
-        id: user.id,
-        name: user.name || user.id,
-        image: user.image,
-      };
-
-      console.log('Upserting user:', {
-        userData,
-        timestamp: new Date().toISOString()
-      });
-
-      await serverClient.upsertUsers([userData]);
-
-      // Generate token
-      const token = serverClient.createToken(user.id);
-
-      if (!token) {
-        throw new Error('Failed to generate user token');
-      }
-
-      console.log('Operation successful:', {
-        userId: user.id,
-        hasToken: true,
-        timestamp: new Date().toISOString()
-      });
-
-      return new Response(
-        JSON.stringify({
-          result: { token }
-        }),
-        {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 200,
-        }
-      );
-    } catch (streamError) {
-      console.error('Stream operation failed:', {
-        error: streamError.message,
-        stack: streamError.stack,
-        timestamp: new Date().toISOString()
-      });
-      throw streamError;
+    // Initialize Stream Chat client
+    const serverClient = StreamChat.getInstance(STREAM_API_KEY, STREAM_API_SECRET);
+    
+    if (!serverClient) {
+      throw new Error('Failed to initialize Stream client');
     }
-  } catch (error) {
-    console.error('Error in upsert-stream-user:', {
-      error: error.message,
-      stack: error.stack,
-      timestamp: new Date().toISOString()
+
+    // Create the user first
+    await serverClient.upsertUser({
+      id: user.id,
+      name: user.name || user.id,
+      image: user.image,
     });
+
+    // Generate user token
+    const token = serverClient.createUserToken(user.id);
+
+    console.log('Operation successful:', {
+      userId: user.id,
+      hasToken: !!token
+    });
+
+    return new Response(
+      JSON.stringify({
+        result: { token }
+      }),
+      {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200,
+      }
+    );
+  } catch (error) {
+    console.error('Error in upsert-stream-user:', error);
     
     return new Response(
       JSON.stringify({
