@@ -46,6 +46,8 @@ export function NewDirectMessageDialog() {
     }
 
     try {
+      console.log('Creating chat with user:', userId);
+      
       const { data: canMessage } = await supabase.rpc('can_message_user', {
         target_user_id: userId
       });
@@ -60,23 +62,35 @@ export function NewDirectMessageDialog() {
       }
 
       // Create a unique channel ID for the conversation
-      const channelId = [chatClient.userID, userId].sort().join('-');
+      const members = [chatClient.userID!, userId].sort();
+      const channelId = members.join('-');
+      
+      console.log('Creating channel with ID:', channelId);
       
       // Create or get the channel
       const channel = chatClient.channel('messaging', channelId, {
-        members: [chatClient.userID!, userId],
+        members,
         name: username, // Set the channel name to the recipient's username
       });
 
-      await channel.create();
-      
-      // Watch the channel to receive updates
+      // Watch the channel before creating it
       await channel.watch();
-
+      
+      // Then create the channel if it doesn't exist
+      const { channel: createdChannel } = await channel.create();
+      
+      console.log('Channel created successfully:', createdChannel);
+      
       setOpen(false);
       toast({
         title: "Chat created",
         description: `You can now message ${username}`,
+      });
+
+      // Force a refresh of the channel list
+      await chatClient.queryChannels({
+        type: 'messaging',
+        members: { $in: [chatClient.userID!] }
       });
 
     } catch (error) {
