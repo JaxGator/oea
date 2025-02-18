@@ -3,7 +3,6 @@ import { Event } from "@/types/event";
 import { EventCard } from "@/components/EventCard";
 import { useAuthState } from "@/hooks/useAuthState";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useEventWithRSVPs } from "@/hooks/events/useEventWithRSVPs";
 import { useMemo } from "react";
 
 interface EventListProps {
@@ -30,19 +29,6 @@ export function EventList({
   isAuthenticated
 }: EventListProps) {
   const { isLoading: isAuthChecking } = useAuthState();
-
-  // Create an array of event data with RSVPs
-  const eventsWithRSVPs = useMemo(() => {
-    return events.map(event => {
-      // Get the user's RSVP status for this event
-      const userRSVPStatus = userRSVPs[event.id];
-      
-      return {
-        event,
-        userRSVPStatus
-      };
-    });
-  }, [events, userRSVPs]);
 
   if (!Array.isArray(events)) {
     console.error("Events is not an array:", events);
@@ -87,13 +73,13 @@ export function EventList({
 
   return (
     <div className="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3 animate-fade-in">
-      {eventsWithRSVPs.map(({ event, userRSVPStatus }) => (
+      {events.map((event) => (
         <div key={event.id} className="w-full">
           <EventCard
             event={event}
             onRSVP={onRSVP}
             onCancelRSVP={() => onCancelRSVP(event.id)}
-            userRSVPStatus={userRSVPStatus}
+            userRSVPStatus={userRSVPs[event.id]}
             onSelect={() => {
               console.log('EventList - Card clicked:', event.id);
               onEventSelect?.(event.id);

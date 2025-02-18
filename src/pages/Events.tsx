@@ -7,7 +7,6 @@ import { EventsHeader } from "@/components/event/sections/EventsHeader";
 import { EventsContent } from "@/components/event/sections/EventsContent";
 import { useQueryClient } from "@tanstack/react-query";
 import { endOfDay, parseISO, startOfDay, set } from "date-fns";
-import { EventCard } from "@/components/EventCard";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import type { Event, EventsPage } from "@/types/database";
@@ -25,6 +24,54 @@ export default function Events() {
   } = useEvents(selectedDate);
 
   const { handleRSVP, cancelRSVP } = useRSVP();
+
+  // Fetch RSVPs for all events
+  const { data: eventsWithRSVPs } = useQuery({
+    queryKey: ['events-with-rsvps'],
+    queryFn: async () => {
+      if (!eventsData?.pages?.[0]?.data) return [];
+
+      const eventIds = eventsData.pages[0].data.map(e => e.id);
+      
+      const { data: rsvpsData, error } = await supabase
+        .from('event_rsvps')
+        .select(`
+          event_id,
+          response,
+          status,
+          profiles:profiles!inner (
+            username,
+            full_name
+          ),
+          event_guests (
+            id,
+            first_name
+          )
+        `)
+        .in('event_id', eventIds);
+
+      if (error) {
+        console.error('Error fetching RSVPs:', error);
+        return [];
+      }
+
+      // Group RSVPs by event
+      const rsvpsByEvent = rsvpsData.reduce((acc, rsvp) => {
+        if (!acc[rsvp.event_id]) {
+          acc[rsvp.event_id] = [];
+        }
+        acc[rsvp.event_id].push(rsvp);
+        return acc;
+      }, {} as Record<string, any[]>);
+
+      // Merge events with their RSVPs
+      return eventsData.pages[0].data.map(event => ({
+        ...event,
+        rsvps: rsvpsByEvent[event.id] || []
+      }));
+    },
+    enabled: !!eventsData?.pages?.[0]?.data?.length
+  });
 
   // Fetch user's RSVP statuses
   const { data: userRSVPs } = useQuery({
@@ -53,7 +100,7 @@ export default function Events() {
     enabled: !!isAuthenticated && !!profile?.id && !!eventsData?.pages?.[0]?.data?.length
   });
 
-  const allEvents = eventsData?.pages?.flatMap(page => (page as EventsPage).data) || [];
+  const allEvents = eventsWithRSVPs || eventsData?.pages?.flatMap(page => (page as EventsPage).data) || [];
   const totalCount = eventsData?.pages?.[0] ? (eventsData.pages[0] as EventsPage).count : 0;
 
   const filteredEvents = selectedDate ? allEvents : allEvents;
@@ -71,7 +118,6 @@ export default function Events() {
     return endOfDay(eventDate) < startOfToday;
   }).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()) as Event[];
 
-  // Helper function to determine if an event is past
   const isEventPast = (event: Event) => {
     const [hours, minutes] = event.time.split(':').map(Number);
     const eventDateTime = set(parseISO(event.date), {
