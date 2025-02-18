@@ -1,10 +1,9 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { corsHeaders } from "../_shared/cors.ts";
-import { StreamChat } from "https://esm.sh/stream-chat@8.14.1";
+import { connect } from "https://esm.sh/getstream@8.1.5";
 
 serve(async (req) => {
-  // Handle CORS
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
   }
@@ -33,31 +32,25 @@ serve(async (req) => {
       throw new Error('Valid user ID is required');
     }
 
-    const serverClient = new StreamChat(STREAM_API_KEY, STREAM_API_SECRET);
+    // Initialize Stream client
+    const client = connect(STREAM_API_KEY, STREAM_API_SECRET);
     console.log('Stream client initialized');
 
-    // Create or update the user
-    await serverClient.upsertUser({
-      id: user.id,
-      name: user.name || user.id,
-      image: user.image,
-    });
+    // Create user token
+    const userToken = client.createUserToken(user.id);
 
-    // Generate user token
-    const token = serverClient.createToken(user.id);
-
-    if (!token) {
+    if (!userToken) {
       throw new Error('Failed to generate user token');
     }
 
     console.log('Operation successful:', {
       userId: user.id,
-      hasToken: !!token
+      hasToken: !!userToken
     });
 
     return new Response(
       JSON.stringify({
-        result: { token }
+        result: { token: userToken }
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
