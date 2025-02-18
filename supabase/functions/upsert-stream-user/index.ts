@@ -1,7 +1,7 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { corsHeaders } from "../_shared/cors.ts";
-import { StreamChat } from "https://esm.sh/stream-chat@8.14.1";
+import { StreamChat } from "https://esm.sh/v135/stream-chat@8.14.1";
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -33,44 +33,58 @@ serve(async (req) => {
       throw new Error('Valid user ID is required');
     }
 
-    // Initialize Stream Chat client using constructor
-    const serverClient = new StreamChat(STREAM_API_KEY, STREAM_API_SECRET);
-    
-    if (!serverClient) {
-      throw new Error('Failed to initialize Stream client');
-    }
+    try {
+      // Initialize Stream Chat client
+      const serverClient = StreamChat.getInstance(STREAM_API_KEY);
+      serverClient.secret = STREAM_API_SECRET;
+      
+      console.log('Stream client initialized, creating user:', {
+        id: user.id,
+        name: user.name || user.id
+      });
 
-    console.log('Stream client initialized, creating user:', {
-      id: user.id,
-      name: user.name || user.id
-    });
+      // Create the user first
+      await serverClient.upsertUser({
+        id: user.id,
+        name: user.name || user.id,
+        image: user.image,
+      });
 
-    // Create the user first
-    await serverClient.upsertUser({
-      id: user.id,
-      name: user.name || user.id,
-      image: user.image,
-    });
+      // Generate user token
+      const token = serverClient.createToken(user.id);
 
-    // Generate user token
-    const token = serverClient.createToken(user.id);
-
-    console.log('Operation successful:', {
-      userId: user.id,
-      hasToken: !!token
-    });
-
-    return new Response(
-      JSON.stringify({
-        result: { token }
-      }),
-      {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200,
+      if (!token) {
+        throw new Error('Failed to generate user token');
       }
-    );
+
+      console.log('Operation successful:', {
+        userId: user.id,
+        hasToken: !!token
+      });
+
+      return new Response(
+        JSON.stringify({
+          result: { token }
+        }),
+        {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 200,
+        }
+      );
+    } catch (streamError) {
+      console.error('Stream operation failed:', {
+        error: streamError.message,
+        stack: streamError.stack,
+        timestamp: new Date().toISOString()
+      });
+      throw streamError;
+    }
   } catch (error) {
-    console.error('Error in upsert-stream-user:', error);
+    console.error('Error in upsert-stream-user:', {
+      error: error.message,
+      stack: error.stack,
+      timestamp: new Date().toISOString()
+    });
     
     return new Response(
       JSON.stringify({
