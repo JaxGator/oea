@@ -39,7 +39,7 @@ export default function Events() {
           event_id,
           response,
           status,
-          profiles:profiles!inner (
+          profiles:profiles (
             username,
             full_name
           ),
@@ -70,7 +70,9 @@ export default function Events() {
         rsvps: rsvpsByEvent[event.id] || []
       }));
     },
-    enabled: !!eventsData?.pages?.[0]?.data?.length
+    enabled: !!eventsData?.pages?.[0]?.data?.length,
+    retry: 3,
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000)
   });
 
   // Fetch user's RSVP statuses
@@ -81,23 +83,30 @@ export default function Events() {
 
       const eventIds = eventsData.pages[0].data.map(e => e.id);
       
-      const { data, error } = await supabase
-        .from('event_rsvps')
-        .select('event_id, response, status')
-        .eq('user_id', profile.id)
-        .in('event_id', eventIds);
+      try {
+        const { data, error } = await supabase
+          .from('event_rsvps')
+          .select('event_id, response, status')
+          .eq('user_id', profile.id)
+          .in('event_id', eventIds);
 
-      if (error) {
-        console.error('Error fetching user RSVPs:', error);
+        if (error) {
+          console.error('Error fetching user RSVPs:', error);
+          return null;
+        }
+
+        return data.reduce((acc, rsvp) => ({
+          ...acc,
+          [rsvp.event_id]: rsvp.response
+        }), {} as Record<string, string>);
+      } catch (error) {
+        console.error('Failed to fetch RSVPs:', error);
         return null;
       }
-
-      return data.reduce((acc, rsvp) => ({
-        ...acc,
-        [rsvp.event_id]: rsvp.response
-      }), {} as Record<string, string>);
     },
-    enabled: !!isAuthenticated && !!profile?.id && !!eventsData?.pages?.[0]?.data?.length
+    enabled: !!isAuthenticated && !!profile?.id && !!eventsData?.pages?.[0]?.data?.length,
+    retry: 3,
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000)
   });
 
   const allEvents = eventsWithRSVPs || eventsData?.pages?.flatMap(page => (page as EventsPage).data) || [];
