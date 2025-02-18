@@ -3,6 +3,7 @@ import { Event } from "@/types/event";
 import { EventCard } from "@/components/EventCard";
 import { useAuthState } from "@/hooks/useAuthState";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useEventWithRSVPs } from "@/hooks/events/useEventWithRSVPs";
 
 interface EventListProps {
   events: Event[];
@@ -75,10 +76,16 @@ export function EventList({
       {events.map((event) => {
         const userRSVPStatus = userRSVPs[event.id];
         
+        // Fetch full event data with RSVPs
+        const { data: fullEventData } = useEventWithRSVPs(event.id);
+        const eventWithRSVPs = fullEventData || event;
+        
+        console.log('EventList - Full event data:', eventWithRSVPs);
+        
         return (
           <div key={event.id} className="w-full">
             <EventCard
-              event={event}
+              event={eventWithRSVPs}
               onRSVP={onRSVP}
               onCancelRSVP={() => onCancelRSVP(event.id)}
               userRSVPStatus={userRSVPStatus}
