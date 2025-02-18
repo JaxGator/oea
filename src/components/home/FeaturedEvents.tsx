@@ -1,44 +1,81 @@
 
 import React from 'react';
-import { useFeaturedEvents } from "@/hooks/useFeaturedEvents";
-import { UpcomingEventsSection } from "./UpcomingEventsSection";
-import { Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
+import { EventCard } from "@/components/EventCard";
+import { Event } from "@/types/event";
+import { CalendarDays, Loader2 } from "lucide-react";
+import { useAuthState } from "@/hooks/useAuthState";
 
-export const FeaturedEvents = () => {
-  const { events = [], isLoading, error, userRSVPs, handleRSVP, handleCancelRSVP } = useFeaturedEvents();
+interface UpcomingEventsSectionProps {
+  events: Event[];
+  userRSVPs: Record<string, string | null>;
+  handleRSVP: (eventId: string) => void;
+  handleCancelRSVP: (eventId: string) => void;
+  isLoading: boolean;
+}
 
-  console.log('FeaturedEvents render:', { events, isLoading, error, userRSVPs });
+export const UpcomingEventsSection = ({
+  events,
+  userRSVPs,
+  handleRSVP,
+  handleCancelRSVP,
+  isLoading,
+}: UpcomingEventsSectionProps) => {
+  const navigate = useNavigate();
+  const { isAuthenticated } = useAuthState();
 
-  // Filter out past events and limit to 3 upcoming events
-  const upcomingEvents = events
-    ?.filter(event => {
-      const eventDate = new Date(event.date);
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      return eventDate >= today;
-    })
-    .sort((a, b) => {
-      // Sort featured events first
-      if (a.is_featured && !b.is_featured) return -1;
-      if (!a.is_featured && b.is_featured) return 1;
-      // Then sort by date
-      return new Date(a.date).getTime() - new Date(b.date).getTime();
-    })
-    .slice(0, 3);
+  console.log('UpcomingEventsSection render:', { events, isLoading, userRSVPs, isAuthenticated });
 
   return (
-    <section className="py-4 bg-[#F1F0FB]" aria-labelledby="featured-events-heading">
-      <div className="container mx-auto px-4">
-        <h2 id="featured-events-heading" className="sr-only">Featured Events</h2>
-        <UpcomingEventsSection 
-          key={upcomingEvents?.map(e => `${e.id}-${e.date}-${e.time}`).join('-')} // Using guaranteed fields for the key
-          events={upcomingEvents}
-          userRSVPs={userRSVPs || {}}
-          handleRSVP={handleRSVP}
-          handleCancelRSVP={handleCancelRSVP}
-          isLoading={isLoading}
-        />
+    <div className="py-1">
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-2">
+          <CalendarDays className="h-6 w-6" />
+          <h3 id="upcoming-events-heading" className="text-2xl font-bold text-gray-900">
+            Upcoming Events
+          </h3>
+        </div>
+        <Button 
+          onClick={() => navigate("/events")}
+          variant="outline"
+          className="bg-[#0d97d1] hover:bg-[#0d97d1]/90 text-white border-[#0d97d1] hover:border-[#0d97d1]/90 whitespace-nowrap"
+        >
+          View All
+        </Button>
       </div>
-    </section>
+      
+      {isLoading ? (
+        <div className="flex justify-center items-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
+        </div>
+      ) : events.length === 0 ? (
+        <div className="text-center py-8 bg-white rounded-lg shadow">
+          <CalendarDays className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+          <p className="text-gray-500 text-lg">
+            No upcoming events found.
+          </p>
+          <p className="text-gray-400 mt-2">
+            Check back soon for new events!
+          </p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {events.map((event) => (
+            <div key={event.id}>
+              <EventCard 
+                event={event} 
+                onRSVP={handleRSVP}
+                onCancelRSVP={handleCancelRSVP}
+                userRSVPStatus={userRSVPs[event.id]}
+                isAuthChecking={false}
+                requireAuth={!isAuthenticated}
+                isAuthenticated={isAuthenticated}
+              />
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
   );
 };
