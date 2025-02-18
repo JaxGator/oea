@@ -3,23 +3,45 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { corsHeaders } from "../_shared/cors.ts";
 import { StreamChat } from "https://esm.sh/stream-chat@8.14.1";
 
-const STREAM_API_KEY = Deno.env.get('STREAM_API_KEY') ?? '';
-const STREAM_API_SECRET = Deno.env.get('STREAM_API_SECRET') ?? '';
-
-async function upsertStreamUser(user: { id: string; name?: string; image?: string }) {
-  if (!STREAM_API_KEY || !STREAM_API_SECRET) {
-    throw new Error('Stream API credentials not configured');
+serve(async (req) => {
+  // Handle CORS preflight requests
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', { headers: corsHeaders });
   }
 
-  console.log('Creating/updating Stream user:', {
-    userId: user.id,
-    hasName: !!user.name,
-    hasImage: !!user.image
-  });
-
-  const serverClient = StreamChat.getInstance(STREAM_API_KEY, STREAM_API_SECRET);
-
   try {
+    const STREAM_API_KEY = Deno.env.get('STREAM_API_KEY');
+    const STREAM_API_SECRET = Deno.env.get('STREAM_API_SECRET');
+
+    // Log environment status (without exposing actual keys)
+    console.log('Environment check:', {
+      hasApiKey: !!STREAM_API_KEY,
+      hasApiSecret: !!STREAM_API_SECRET,
+      timestamp: new Date().toISOString()
+    });
+
+    // Validate credentials
+    if (!STREAM_API_KEY || !STREAM_API_SECRET) {
+      throw new Error('Stream API credentials are not configured');
+    }
+
+    const { user } = await req.json();
+
+    // Validate user data
+    if (!user?.id) {
+      throw new Error('User ID is required');
+    }
+
+    console.log('Creating Stream client with user:', {
+      userId: user.id,
+      hasName: !!user.name,
+      hasImage: !!user.image,
+      timestamp: new Date().toISOString()
+    });
+
+    // Initialize Stream client
+    const serverClient = StreamChat.getInstance(STREAM_API_KEY, STREAM_API_SECRET);
+
     // Create or update the user
     await serverClient.upsertUser({
       id: user.id,
@@ -27,43 +49,44 @@ async function upsertStreamUser(user: { id: string; name?: string; image?: strin
       image: user.image,
     });
 
-    // Generate a token for the user
+    console.log('User upserted successfully:', {
+      userId: user.id,
+      timestamp: new Date().toISOString()
+    });
+
+    // Generate user token
     const token = serverClient.createToken(user.id);
 
-    return { token };
-  } catch (error) {
-    console.error('Stream operation failed:', error);
-    throw error;
-  }
-}
-
-serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders });
-  }
-
-  try {
-    const { user } = await req.json();
-
-    if (!user?.id) {
-      throw new Error('User ID is required');
+    if (!token) {
+      throw new Error('Failed to generate user token');
     }
 
-    const result = await upsertStreamUser(user);
-    
+    console.log('Token generated successfully for user:', {
+      userId: user.id,
+      hasToken: !!token,
+      timestamp: new Date().toISOString()
+    });
+
     return new Response(
-      JSON.stringify({ result }),
+      JSON.stringify({
+        result: { token }
+      }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200,
       }
     );
   } catch (error) {
-    console.error('Error in upsert-stream-user:', error);
+    console.error('Error in upsert-stream-user:', {
+      error: error.message,
+      stack: error.stack,
+      timestamp: new Date().toISOString()
+    });
     
     return new Response(
-      JSON.stringify({ 
-        error: error instanceof Error ? error.message : 'Unknown error'
+      JSON.stringify({
+        error: error.message,
+        details: 'Failed to create/update user in Stream'
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
