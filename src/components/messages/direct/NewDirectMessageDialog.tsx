@@ -82,8 +82,8 @@ export function NewDirectMessageDialog() {
         throw new Error('Could not find user profiles');
       }
 
-      // Create unique channel ID
-      const channelId = `messaging:${[chatClient.userID!, userId].sort().join('_')}`;
+      // Create unique channel ID without colons
+      const channelId = `dm_${[chatClient.userID!, userId].sort().join('_')}`;
       console.log('Creating channel with ID:', channelId);
 
       // Create new channel
@@ -104,7 +104,7 @@ export function NewDirectMessageDialog() {
       setOpen(false);
       
       // Navigate to the new channel
-      navigate(`/messages/${channelId}`, { replace: true });
+      navigate(`/messages/${channelId}`);
       
       toast({
         title: "Chat created",
