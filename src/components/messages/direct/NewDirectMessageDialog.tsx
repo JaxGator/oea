@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -36,6 +35,13 @@ export function NewDirectMessageDialog() {
     enabled: open
   });
 
+  const createChannelId = (id1: string, id2: string): string => {
+    const shortId1 = id1.substring(0, 8);
+    const shortId2 = id2.substring(0, 8);
+    const sortedIds = [shortId1, shortId2].sort();
+    return `dm_${sortedIds.join('_')}`;
+  };
+
   const handleSelectUser = async (userId: string, username: string) => {
     if (!chatClient) {
       console.error('Chat client not initialized');
@@ -56,7 +62,6 @@ export function NewDirectMessageDialog() {
       setIsCreatingChat(true);
       console.log('Starting chat creation process with user:', userId);
 
-      // Check if we can message the user
       const { data: canMessage } = await supabase.rpc('can_message_user', {
         target_user_id: userId
       });
@@ -65,7 +70,6 @@ export function NewDirectMessageDialog() {
         throw new Error('Cannot message this user');
       }
 
-      // Get user profiles
       const { data: targetUser } = await supabase
         .from('profiles')
         .select('*')
@@ -82,28 +86,22 @@ export function NewDirectMessageDialog() {
         throw new Error('Could not find user profiles');
       }
 
-      // Create unique channel ID without colons
-      const channelId = `dm_${[chatClient.userID!, userId].sort().join('_')}`;
+      const channelId = createChannelId(chatClient.userID!, userId);
       console.log('Creating channel with ID:', channelId);
 
-      // Create new channel
       const channel = chatClient.channel('messaging', channelId, {
         members: [chatClient.userID!, userId],
         name: username,
       });
 
-      // Create the channel first
       const { channel: createdChannel } = await channel.create();
       console.log('Channel created:', createdChannel);
 
-      // Then watch it
       await channel.watch();
       console.log('Channel watch successful');
 
-      // Update UI
       setOpen(false);
       
-      // Navigate to the new channel
       navigate(`/messages/${channelId}`);
       
       toast({
