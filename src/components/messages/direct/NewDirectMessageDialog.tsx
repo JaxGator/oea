@@ -61,15 +61,15 @@ export function NewDirectMessageDialog() {
         return;
       }
 
-      // Create a unique channel ID for the conversation
-      const members = [chatClient.userID!, userId].sort();
-      const channelId = members.join('-');
+      // Create a shorter unique channel ID using the first 8 characters of each UUID
+      const members = [chatClient.userID!, userId].map(id => id.slice(0, 8)).sort();
+      const channelId = `dm-${members.join('-')}`;
       
       console.log('Creating channel with ID:', channelId);
       
       // Create or get the channel
       const channel = chatClient.channel('messaging', channelId, {
-        members,
+        members: [chatClient.userID!, userId], // Use full IDs for members
         name: username, // Set the channel name to the recipient's username
       });
 
