@@ -1,7 +1,33 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { StreamChat } from "https://esm.sh/stream-chat@8.14.1"
 import { corsHeaders } from "../_shared/cors.ts";
+
+const STREAM_API_KEY = Deno.env.get('STREAM_API_KEY') ?? '';
+const STREAM_API_SECRET = Deno.env.get('STREAM_API_SECRET') ?? '';
+
+// Initialize the Stream client using fetch for server-side operations
+async function upsertStreamUser(user: { id: string; name?: string; image?: string }) {
+  const response = await fetch('https://chat.stream-io-api.com/users', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Basic ${btoa(`${STREAM_API_KEY}:${STREAM_API_SECRET}`)}`,
+      'Stream-Auth-Type': 'jwt'
+    },
+    body: JSON.stringify({
+      id: user.id,
+      name: user.name || user.id,
+      image: user.image
+    })
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(`Stream API error: ${JSON.stringify(error)}`);
+  }
+
+  return response.json();
+}
 
 serve(async (req) => {
   // Handle CORS
@@ -16,29 +42,13 @@ serve(async (req) => {
       throw new Error('User data is required')
     }
 
-    const streamApiKey = Deno.env.get('STREAM_API_KEY');
-    const streamApiSecret = Deno.env.get('STREAM_API_SECRET');
+    console.log('Attempting to create/update user:', user.id);
 
-    if (!streamApiKey || !streamApiSecret) {
-      throw new Error('Stream API credentials are not configured');
-    }
-
-    console.log('Initializing Stream Chat with API key:', streamApiKey);
-
-    // Initialize Stream Chat with server-side API key and secret
-    const serverClient = StreamChat.getInstance(streamApiKey, streamApiSecret);
-
-    // Upsert the user
-    await serverClient.upsertUser({
-      id: user.id,
-      name: user.name || user.id,
-      image: user.image,
-    });
-
+    const result = await upsertStreamUser(user);
     console.log('Successfully created/updated user:', user.id);
 
     return new Response(
-      JSON.stringify({ message: 'User created successfully' }),
+      JSON.stringify({ message: 'User created successfully', result }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200,
@@ -50,7 +60,7 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         error: error.message,
-        details: 'Check if Stream API credentials are properly configured'
+        details: 'Failed to create/update user in Stream'
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
