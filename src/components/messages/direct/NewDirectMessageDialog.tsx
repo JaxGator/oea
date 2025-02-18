@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -86,6 +87,19 @@ export function NewDirectMessageDialog() {
         throw new Error('Could not find user profiles');
       }
 
+      // Ensure target user exists in Stream Chat
+      try {
+        await chatClient.upsertUser({
+          id: targetUser.id,
+          name: targetUser.username || targetUser.id,
+          image: targetUser.avatar_url || undefined,
+        });
+        console.log('Target user created/updated in Stream Chat');
+      } catch (error) {
+        console.error('Error creating target user in Stream:', error);
+        throw new Error('Failed to create target user in chat system');
+      }
+
       const channelId = createChannelId(chatClient.userID!, userId);
       console.log('Creating channel with ID:', channelId);
 
@@ -101,7 +115,6 @@ export function NewDirectMessageDialog() {
       console.log('Channel watch successful');
 
       setOpen(false);
-      
       navigate(`/messages/${channelId}`);
       
       toast({
