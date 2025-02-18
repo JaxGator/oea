@@ -4,6 +4,7 @@ import { EventLocationMap } from "./details/EventLocationMap";
 import { useEventLocations } from "@/hooks/useEventLocations";
 import { useMapboxToken } from "@/hooks/useMapboxToken";
 import { Skeleton } from "@/components/ui/skeleton";
+import { AttendeeList } from "./details/AttendeeList";
 
 interface EventDetailsProps {
   event: Event;
@@ -14,6 +15,17 @@ export function EventDetails({ event }: EventDetailsProps) {
   const { mapToken, isLoading: isTokenLoading, error: tokenError } = useMapboxToken();
   const locations = useEventLocations([event]);
   const location = locations?.[0];
+
+  const attendeeNames = event.rsvps
+    ?.filter(rsvp => rsvp.response === 'attending' && rsvp.status === 'confirmed')
+    .map(rsvp => ({
+      name: rsvp.profiles?.username || 'Unknown',
+      guests: rsvp.event_guests?.map(guest => guest.first_name) || []
+    }))
+    .flatMap(({name, guests}) => [
+      name,
+      ...guests.map(guestName => `${guestName} (Guest of ${name})`)
+    ]) || [];
 
   // Render function to handle the loading state
   const renderLoadingState = () => (
