@@ -1,7 +1,7 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { corsHeaders } from "../_shared/cors.ts";
-import { StreamChat } from "https://esm.sh/stream-chat@8.14.1/dist/browser/client.js";
+import { StreamChat } from "https://esm.sh/stream-chat@8.14.1";
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -52,16 +52,13 @@ serve(async (req) => {
       });
 
       // Then generate token with explicit user id
-      const token = serverClient.createToken(user.id, Math.floor(Date.now() / 1000) + (60 * 60)); // 1 hour expiry
+      const token = serverClient.createToken(user.id);
 
       console.log('User upserted and token generated:', {
         userId: user.id,
         hasToken: !!token,
         timestamp: new Date().toISOString()
       });
-
-      // Clean up client connection
-      await serverClient.disconnectUser();
 
       return new Response(
         JSON.stringify({
