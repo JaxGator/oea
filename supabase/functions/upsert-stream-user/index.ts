@@ -33,12 +33,17 @@ serve(async (req) => {
       throw new Error('Valid user ID is required');
     }
 
-    // Initialize Stream Chat client
-    const serverClient = StreamChat.getInstance(STREAM_API_KEY, STREAM_API_SECRET);
+    // Initialize Stream Chat client using constructor
+    const serverClient = new StreamChat(STREAM_API_KEY, STREAM_API_SECRET);
     
     if (!serverClient) {
       throw new Error('Failed to initialize Stream client');
     }
+
+    console.log('Stream client initialized, creating user:', {
+      id: user.id,
+      name: user.name || user.id
+    });
 
     // Create the user first
     await serverClient.upsertUser({
@@ -48,7 +53,7 @@ serve(async (req) => {
     });
 
     // Generate user token
-    const token = serverClient.createUserToken(user.id);
+    const token = serverClient.createToken(user.id);
 
     console.log('Operation successful:', {
       userId: user.id,
@@ -70,7 +75,8 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({
         error: error.message,
-        details: 'Failed to create/update user in Stream'
+        details: 'Failed to create/update user in Stream',
+        stack: error.stack
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
