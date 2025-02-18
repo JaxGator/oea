@@ -9,7 +9,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useChatContext } from "stream-chat-react";
 
 export function NewDirectMessageDialog() {
@@ -17,6 +17,7 @@ export function NewDirectMessageDialog() {
   const [searchTerm, setSearchTerm] = useState("");
   const { toast } = useToast();
   const navigate = useNavigate();
+  const location = useLocation();
   const { client: chatClient } = useChatContext();
 
   const { data: users, isLoading } = useQuery({
@@ -111,20 +112,22 @@ export function NewDirectMessageDialog() {
       const { channel: createdChannel } = await channel.create();
       
       console.log('Channel created successfully:', createdChannel);
-      
-      setOpen(false);
-      toast({
-        title: "Chat created",
-        description: `You can now message ${username}`,
-      });
 
-      // Navigate to the chat view with the created channel
-      navigate(`/messages/${channelId}`);
+      // Close the dialog first
+      setOpen(false);
 
       // Force a refresh of the channel list
       await chatClient.queryChannels({
         type: 'messaging',
         members: { $in: [chatClient.userID!] }
+      });
+
+      // Use replace instead of push to avoid navigation stack issues
+      navigate(`/messages/${channelId}`, { replace: true });
+      
+      toast({
+        title: "Chat created",
+        description: `You can now message ${username}`,
       });
 
     } catch (error) {
