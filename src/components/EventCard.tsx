@@ -28,23 +28,26 @@ export function EventCard({
   requireAuth = false,
   isAuthenticated = false
 }: EventCardProps) {
-  console.log('EventCard - Authentication state:', { isAuthenticated });
+  console.log('EventCard - Event data:', event);
+  console.log('EventCard - RSVPs:', event.rsvps);
 
-  // Add attendee processing here for the card view
-  const attendeeCount = event.rsvps?.filter(rsvp => 
-    rsvp.response === 'attending' && rsvp.status === 'confirmed'
-  ).length || 0;
-
-  const attendeeNames = event.rsvps
+  // Process attendees from RSVPs
+  const processedAttendees = event.rsvps
     ?.filter(rsvp => rsvp.response === 'attending' && rsvp.status === 'confirmed')
     .map(rsvp => ({
       name: rsvp.profiles?.username || 'Unknown',
       guests: rsvp.event_guests?.map(guest => guest.first_name) || []
-    }))
-    .flatMap(({name, guests}) => [
+    }));
+
+  console.log('EventCard - Processed attendees:', processedAttendees);
+
+  const attendeeNames = processedAttendees
+    ?.flatMap(({name, guests}) => [
       name,
       ...guests.map(guestName => `${guestName} (Guest of ${name})`)
     ]) || [];
+
+  console.log('EventCard - Final attendee names:', attendeeNames);
 
   if (!event) {
     console.error("Event object is undefined");
@@ -54,7 +57,7 @@ export function EventCard({
   const eventWithAttendees: Event = {
     ...event,
     time: event.time || '00:00:00', // Ensure time is always provided
-    attendeeCount,
+    attendeeCount: processedAttendees?.length || 0,
     attendeeNames
   };
 
