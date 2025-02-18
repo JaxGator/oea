@@ -1,6 +1,6 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { StreamChat } from 'stream-chat';
+import { StreamChat } from "https://esm.sh/stream-chat@8.14.1"
 import { corsHeaders } from "../_shared/cors.ts";
 
 serve(async (req) => {
