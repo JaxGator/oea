@@ -1,12 +1,11 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { encode as base64Encode } from "https://deno.land/std@0.168.0/encoding/base64.ts";
 import { corsHeaders } from "../_shared/cors.ts";
+import { StreamChat } from "https://esm.sh/stream-chat@8.14.1";
 
 const STREAM_API_KEY = Deno.env.get('STREAM_API_KEY') ?? '';
 const STREAM_API_SECRET = Deno.env.get('STREAM_API_SECRET') ?? '';
 
-// Initialize the Stream client using fetch for server-side operations
 async function upsertStreamUser(user: { id: string; name?: string; image?: string }) {
   console.log('Attempting to upsert user:', { 
     userId: user.id,
@@ -16,60 +15,36 @@ async function upsertStreamUser(user: { id: string; name?: string; image?: strin
     hasApiSecret: !!STREAM_API_SECRET 
   });
 
-  const credentials = base64Encode(
-    new TextEncoder().encode(`${STREAM_API_KEY}:${STREAM_API_SECRET}`)
-  );
-
-  const apiEndpoint = `https://chat.stream-io-api.com/app/users`;
-  
-  const response = await fetch(apiEndpoint, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Basic ${credentials}`,
-      'Stream-Auth-Type': 'basic',
-    },
-    body: JSON.stringify({
+  try {
+    // Initialize the Stream server client
+    const serverClient = StreamChat.getInstance(STREAM_API_KEY, STREAM_API_SECRET);
+    
+    // Upsert the user
+    await serverClient.upsertUser({
       id: user.id,
       role: 'user',
       name: user.name || user.id,
       image: user.image
-    })
-  });
-
-  const responseData = await response.json();
-  console.log('Stream API Response:', {
-    status: response.status,
-    endpoint: apiEndpoint,
-    headers: Object.fromEntries(response.headers.entries()),
-    data: responseData
-  });
-
-  if (!response.ok) {
-    console.error('Stream API Error Details:', {
-      status: response.status,
-      statusText: response.statusText,
-      data: responseData,
-      url: response.url,
-      endpoint: apiEndpoint,
-      headers: Object.fromEntries(response.headers.entries()),
-      requestBody: {
-        id: user.id,
-        role: 'user',
-        name: user.name || user.id,
-        image: user.image
-      }
     });
-    throw new Error(`Stream API error: ${JSON.stringify(responseData)}`);
-  }
 
-  return responseData;
+    // Generate a user token
+    const token = serverClient.createToken(user.id);
+
+    console.log('Successfully created/updated Stream user:', {
+      userId: user.id,
+      hasToken: !!token
+    });
+
+    return { token };
+  } catch (error) {
+    console.error('Stream operation failed:', error);
+    throw error;
+  }
 }
 
 serve(async (req) => {
-  // Handle CORS
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders })
+    return new Response('ok', { headers: corsHeaders });
   }
 
   try {
@@ -90,11 +65,10 @@ serve(async (req) => {
     }
 
     const result = await upsertStreamUser(user);
-    console.log('Successfully created/updated user:', user.id);
-
+    
     return new Response(
       JSON.stringify({ 
-        message: 'User created successfully', 
+        message: 'User created and token generated successfully', 
         result 
       }),
       {
@@ -107,7 +81,7 @@ serve(async (req) => {
     
     return new Response(
       JSON.stringify({ 
-        error: error.message,
+        error: error instanceof Error ? error.message : 'Unknown error',
         details: 'Failed to create/update user in Stream'
       }),
       {

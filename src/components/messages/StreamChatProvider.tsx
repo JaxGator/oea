@@ -27,84 +27,51 @@ export function StreamChatProvider({ children }: PropsWithChildren) {
         
         if (unmounted) return;
         
-        console.log('Fetching Stream token for user:', user.id);
+        console.log('Initializing Stream Chat for user:', user.id);
         
-        // Get or create Stream Chat token
-        const { data: streamData, error: streamError } = await supabase
-          .from('stream_chat_users')
-          .select('stream_chat_token')
-          .eq('id', user.id)
-          .maybeSingle();
+        // Call the upsert-stream-user function to get a token
+        const { data: streamResponse, error: streamError } = await supabase.functions
+          .invoke('upsert-stream-user', {
+            body: { 
+              user: {
+                id: user.id,
+                name: user.username || user.id,
+                image: user.avatar_url,
+              }
+            }
+          });
 
         if (streamError) {
-          console.error('Error fetching Stream token:', streamError);
+          console.error('Error upserting Stream user:', streamError);
           throw streamError;
         }
 
-        let streamToken = streamData?.stream_chat_token;
-        console.log('Existing token found:', !!streamToken);
-
-        if (!streamToken) {
-          console.log('No token found, generating new one...');
-          // Call edge function to generate token
-          const { data: tokenData, error: tokenError } = await supabase.functions.invoke('generate-stream-token', {
-            body: { userId: user.id }
-          });
-
-          if (tokenError) {
-            console.error('Error generating token:', tokenError);
-            throw tokenError;
-          }
-          
-          streamToken = tokenData.token;
-          console.log('New token generated successfully');
-
-          // Store the token
-          const { error: upsertError } = await supabase
-            .from('stream_chat_users')
-            .upsert({ id: user.id, stream_chat_token: streamToken });
-
-          if (upsertError) {
-            console.error('Error storing token:', upsertError);
-            throw upsertError;
-          }
-          
-          console.log('Token stored successfully');
+        if (!streamResponse?.result?.token) {
+          throw new Error('No token received from Stream');
         }
 
-        if (unmounted) return;
+        console.log('Received Stream token, connecting user...');
 
         try {
-          // Connect user to Stream Chat
+          // Connect user to Stream Chat with the received token
           await streamChatClient.connectUser(
             {
               id: user.id,
               name: user.username || user.id,
               image: user.avatar_url || undefined,
             },
-            streamToken
+            streamResponse.result.token
           );
           
           if (!unmounted) {
             setChatClient(streamChatClient);
-            console.log('Stream Chat initialized successfully for user:', user.id);
+            console.log('Stream Chat initialized successfully');
           }
         } catch (connectionError) {
           console.error('Error connecting user:', connectionError);
           // If there's a connection error, try disconnecting first then reconnecting
           await streamChatClient.disconnectUser();
-          
-          if (!unmounted) {
-            await streamChatClient.connectUser(
-              {
-                id: user.id,
-                name: user.username || user.id,
-                image: user.avatar_url || undefined,
-              },
-              streamToken
-            );
-            setChatClient(streamChatClient);
-          }
+          throw connectionError;
         }
       } catch (error) {
         console.error('Error initializing Stream Chat:', error);
