@@ -1,7 +1,7 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { corsHeaders } from "../_shared/cors.ts";
-import { StreamChat } from "https://esm.sh/stream-chat@8.14.1";
+import { StreamChat } from "https://esm.sh/stream-chat@8.14.1/dist/browser/client.js";
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -36,24 +36,32 @@ serve(async (req) => {
     });
 
     try {
-      // Initialize Stream Chat client
-      const serverClient = StreamChat.getInstance(STREAM_API_KEY, STREAM_API_SECRET);
+      // Initialize Stream Chat client with explicit new instance
+      const serverClient = new StreamChat(STREAM_API_KEY, STREAM_API_SECRET);
 
       // First update user
-      await serverClient.upsertUser({
+      const updateResponse = await serverClient.upsertUsers([{
         id: user.id,
         name: user.name || user.id,
         image: user.image,
+      }]);
+
+      console.log('User update response:', {
+        updateResponse,
+        timestamp: new Date().toISOString()
       });
 
-      // Then generate token
-      const token = serverClient.createToken(user.id);
+      // Then generate token with explicit user id
+      const token = serverClient.createToken(user.id, Math.floor(Date.now() / 1000) + (60 * 60)); // 1 hour expiry
 
       console.log('User upserted and token generated:', {
         userId: user.id,
         hasToken: !!token,
         timestamp: new Date().toISOString()
       });
+
+      // Clean up client connection
+      await serverClient.disconnectUser();
 
       return new Response(
         JSON.stringify({
@@ -67,6 +75,7 @@ serve(async (req) => {
     } catch (streamError) {
       console.error('Stream operation failed:', {
         error: streamError.message,
+        stack: streamError.stack,
         timestamp: new Date().toISOString()
       });
       throw streamError;
@@ -74,6 +83,7 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error in upsert-stream-user:', {
       error: error.message,
+      stack: error.stack,
       timestamp: new Date().toISOString()
     });
     
