@@ -87,13 +87,19 @@ export function NewDirectMessageDialog() {
         throw new Error('Could not find user profiles');
       }
 
-      // Ensure target user exists in Stream Chat
+      // Create target user in Stream Chat using server-side function
       try {
-        await chatClient.upsertUser({
-          id: targetUser.id,
-          name: targetUser.username || targetUser.id,
-          image: targetUser.avatar_url || undefined,
+        const { error } = await supabase.functions.invoke('upsert-stream-user', {
+          body: {
+            user: {
+              id: targetUser.id,
+              name: targetUser.username || targetUser.id,
+              image: targetUser.avatar_url,
+            }
+          }
         });
+
+        if (error) throw error;
         console.log('Target user created/updated in Stream Chat');
       } catch (error) {
         console.error('Error creating target user in Stream:', error);
