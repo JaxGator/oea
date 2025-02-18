@@ -1,6 +1,6 @@
 
 import { useEffect, PropsWithChildren, useState } from 'react';
-import { Chat } from 'stream-chat-react';
+import { Chat, LoadingIndicator } from 'stream-chat-react';
 import { StreamChat } from 'stream-chat';
 import { getStreamChat } from '@/integrations/stream/client';
 import { useAuthState } from '@/hooks/useAuthState';
@@ -20,16 +20,16 @@ export function StreamChatProvider({ children }: PropsWithChildren) {
 
     let unmounted = false;
 
-    const initializeStreamChat = async () => {
+    const initializeChat = async () => {
       try {
         setIsLoading(true);
-        const streamChatClient = await getStreamChat();
+        
+        // Get Stream client instance
+        const client = await getStreamChat();
         
         if (unmounted) return;
-        
-        console.log('Initializing Stream Chat for user:', user.id);
-        
-        // Call the upsert-stream-user function to get a token
+
+        // Get user token from our backend
         const { data: streamResponse, error: streamError } = await supabase.functions
           .invoke('upsert-stream-user', {
             body: { 
@@ -41,40 +41,35 @@ export function StreamChatProvider({ children }: PropsWithChildren) {
             }
           });
 
-        if (streamError) {
-          console.error('Error upserting Stream user:', streamError);
-          throw streamError;
+        if (streamError || !streamResponse?.result?.token) {
+          throw new Error(streamError?.message || 'Failed to get Stream token');
         }
 
-        if (!streamResponse?.result?.token) {
-          throw new Error('No token received from Stream');
-        }
+        // Connect user to Stream
+        await client.connectUser(
+          {
+            id: user.id,
+            name: user.username || user.id,
+            image: user.avatar_url,
+          },
+          streamResponse.result.token
+        );
 
-        console.log('Received Stream token, connecting user...');
+        // Watch for connection changes
+        client.on('connection.changed', (event) => {
+          console.log('Connection changed:', event);
+        });
 
-        try {
-          // Connect user to Stream Chat with the received token
-          await streamChatClient.connectUser(
-            {
-              id: user.id,
-              name: user.username || user.id,
-              image: user.avatar_url || undefined,
-            },
-            streamResponse.result.token
-          );
-          
-          if (!unmounted) {
-            setChatClient(streamChatClient);
-            console.log('Stream Chat initialized successfully');
-          }
-        } catch (connectionError) {
-          console.error('Error connecting user:', connectionError);
-          // If there's a connection error, try disconnecting first then reconnecting
-          await streamChatClient.disconnectUser();
-          throw connectionError;
+        client.on('connection.recovered', () => {
+          console.log('Connection recovered');
+        });
+
+        if (!unmounted) {
+          setChatClient(client);
+          console.log('Stream Chat initialized successfully');
         }
       } catch (error) {
-        console.error('Error initializing Stream Chat:', error);
+        console.error('Stream Chat initialization error:', error);
         if (!unmounted) {
           toast({
             title: "Chat Error",
@@ -89,14 +84,14 @@ export function StreamChatProvider({ children }: PropsWithChildren) {
       }
     };
 
-    initializeStreamChat();
+    initializeChat();
 
     return () => {
       unmounted = true;
-      // Cleanup function
       if (chatClient) {
-        chatClient.disconnectUser();
-        setChatClient(null);
+        chatClient.disconnectUser().then(() => {
+          console.log('User disconnected from Stream');
+        });
       }
     };
   }, [user, toast]);
@@ -112,7 +107,7 @@ export function StreamChatProvider({ children }: PropsWithChildren) {
   }
 
   return (
-    <Chat client={chatClient}>
+    <Chat client={chatClient} theme="str-chat__theme-light">
       {children}
     </Chat>
   );

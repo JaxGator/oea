@@ -15,7 +15,18 @@ export async function getStreamChat() {
       throw new Error('Failed to fetch Stream API key');
     }
 
-    streamChat = new StreamChat(apiKey);
+    streamChat = StreamChat.getInstance(apiKey);
   }
   return streamChat;
+}
+
+// Helper function to get a user token
+export async function getStreamUserToken(userId: string) {
+  const { data, error } = await supabase.functions
+    .invoke('upsert-stream-user', {
+      body: { userId }
+    });
+
+  if (error) throw error;
+  return data.token;
 }

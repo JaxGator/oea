@@ -7,33 +7,28 @@ const STREAM_API_KEY = Deno.env.get('STREAM_API_KEY') ?? '';
 const STREAM_API_SECRET = Deno.env.get('STREAM_API_SECRET') ?? '';
 
 async function upsertStreamUser(user: { id: string; name?: string; image?: string }) {
-  console.log('Attempting to upsert user:', { 
+  if (!STREAM_API_KEY || !STREAM_API_SECRET) {
+    throw new Error('Stream API credentials not configured');
+  }
+
+  console.log('Creating/updating Stream user:', {
     userId: user.id,
     hasName: !!user.name,
-    hasImage: !!user.image,
-    hasApiKey: !!STREAM_API_KEY,
-    hasApiSecret: !!STREAM_API_SECRET 
+    hasImage: !!user.image
   });
 
+  const serverClient = StreamChat.getInstance(STREAM_API_KEY, STREAM_API_SECRET);
+
   try {
-    // Initialize the Stream server client
-    const serverClient = StreamChat.getInstance(STREAM_API_KEY, STREAM_API_SECRET);
-    
-    // Upsert the user
+    // Create or update the user
     await serverClient.upsertUser({
       id: user.id,
-      role: 'user',
       name: user.name || user.id,
-      image: user.image
+      image: user.image,
     });
 
-    // Generate a user token
+    // Generate a token for the user
     const token = serverClient.createToken(user.id);
-
-    console.log('Successfully created/updated Stream user:', {
-      userId: user.id,
-      hasToken: !!token
-    });
 
     return { token };
   } catch (error) {
@@ -49,28 +44,15 @@ serve(async (req) => {
 
   try {
     const { user } = await req.json();
-    console.log('Received request with user data:', { 
-      userId: user?.id,
-      hasName: !!user?.name,
-      hasImage: !!user?.image 
-    });
 
-    if (!user || !user.id) {
-      throw new Error('User data is required');
-    }
-
-    if (!STREAM_API_KEY || !STREAM_API_SECRET) {
-      console.error('Missing Stream API credentials');
-      throw new Error('Stream API credentials are not configured');
+    if (!user?.id) {
+      throw new Error('User ID is required');
     }
 
     const result = await upsertStreamUser(user);
     
     return new Response(
-      JSON.stringify({ 
-        message: 'User created and token generated successfully', 
-        result 
-      }),
+      JSON.stringify({ result }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200,
@@ -81,8 +63,7 @@ serve(async (req) => {
     
     return new Response(
       JSON.stringify({ 
-        error: error instanceof Error ? error.message : 'Unknown error',
-        details: 'Failed to create/update user in Stream'
+        error: error instanceof Error ? error.message : 'Unknown error'
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
