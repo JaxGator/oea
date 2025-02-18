@@ -37,15 +37,15 @@ export function EventCard({
     .map(rsvp => ({
       name: rsvp.profiles?.username || 'Unknown',
       guests: rsvp.event_guests?.map(guest => guest.first_name) || []
-    }));
+    })) || [];
 
   console.log('EventCard - Processed attendees:', processedAttendees);
 
   const attendeeNames = processedAttendees
-    ?.flatMap(({name, guests}) => [
+    .flatMap(({name, guests}) => [
       name,
       ...guests.map(guestName => `${guestName} (Guest of ${name})`)
-    ]) || [];
+    ]);
 
   console.log('EventCard - Final attendee names:', attendeeNames);
 
@@ -57,7 +57,7 @@ export function EventCard({
   const eventWithAttendees: Event = {
     ...event,
     time: event.time || '00:00:00', // Ensure time is always provided
-    attendeeCount: processedAttendees?.length || 0,
+    attendeeCount: processedAttendees.length,
     attendeeNames
   };
 
