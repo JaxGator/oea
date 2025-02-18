@@ -48,7 +48,7 @@ export default function EventDetails() {
   const attendeeNames = event.rsvps
     ?.filter(rsvp => rsvp.response === 'attending' && rsvp.status === 'confirmed')
     .map(rsvp => ({
-      name: rsvp.profiles?.full_name || rsvp.profiles?.username || 'Unknown',
+      name: rsvp.profiles?.username || 'Unknown',
       guests: rsvp.event_guests?.map(guest => guest.first_name) || []
     }))
     .flatMap(({name, guests}) => [
