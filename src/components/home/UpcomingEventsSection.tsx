@@ -25,7 +25,7 @@ export const UpcomingEventsSection = ({
   const navigate = useNavigate();
   const { isAuthenticated } = useAuthState();
 
-  console.log('UpcomingEventsSection render:', { events, isLoading, userRSVPs });
+  console.log('UpcomingEventsSection render:', { events, isLoading, userRSVPs, isAuthenticated });
 
   return (
     <div className="py-1">
@@ -70,6 +70,7 @@ export const UpcomingEventsSection = ({
                 userRSVPStatus={userRSVPs[event.id]}
                 isAuthChecking={false}
                 requireAuth={!isAuthenticated}
+                isAuthenticated={isAuthenticated}
               />
             </div>
           ))}
