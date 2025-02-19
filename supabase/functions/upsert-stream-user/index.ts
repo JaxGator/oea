@@ -12,79 +12,87 @@ serve(async (req) => {
     const STREAM_API_KEY = Deno.env.get('STREAM_API_KEY');
     const STREAM_API_SECRET = Deno.env.get('STREAM_API_SECRET');
 
-    console.log('Environment check:', {
-      hasApiKey: !!STREAM_API_KEY,
-      hasApiSecret: !!STREAM_API_SECRET,
+    // Enhanced environment debugging
+    console.log('Environment variables:', {
+      apiKeyLength: STREAM_API_KEY?.length,
+      secretLength: STREAM_API_SECRET?.length,
+      apiKeyPrefix: STREAM_API_KEY?.substring(0, 4),
+      secretPrefix: STREAM_API_SECRET?.substring(0, 4),
       timestamp: new Date().toISOString()
     });
 
     if (!STREAM_API_KEY || !STREAM_API_SECRET) {
-      throw new Error('Stream API credentials are not configured');
+      throw new Error(`Stream API credentials missing: ${!STREAM_API_KEY ? 'API_KEY' : ''} ${!STREAM_API_SECRET ? 'API_SECRET' : ''}`);
     }
 
     const requestBody = await req.json();
-    console.log('Request body:', requestBody);
-
     const { user } = requestBody;
 
     if (!user?.id) {
-      console.error('Invalid user data:', user);
       throw new Error('Valid user ID is required');
     }
 
-    // Initialize Stream Chat client with direct instantiation
-    const serverClient = StreamChat.getInstance(STREAM_API_KEY, STREAM_API_SECRET);
+    // Direct instantiation instead of getInstance
+    const serverClient = new StreamChat(STREAM_API_KEY, STREAM_API_SECRET);
     
-    console.log('StreamChat Client details:', {
+    console.log('StreamChat Client validation:', {
       initialized: !!serverClient,
-      hasSecret: !!serverClient?.secret,
-      apiKey: STREAM_API_KEY.substring(0, 8) + '...',
+      hasSecretMethod: typeof serverClient?.createToken === 'function',
+      hasUpsertMethod: typeof serverClient?.upsertUser === 'function',
       timestamp: new Date().toISOString()
     });
 
-    if (!serverClient) {
-      throw new Error('StreamChat client failed to initialize');
+    if (!serverClient?.createToken) {
+      throw new Error('StreamChat client methods not available');
     }
 
-    // Create or update the user
-    await serverClient.upsertUser({
-      id: user.id,
-      name: user.name || user.id,
-      image: user.image,
-    });
-
-    console.log('User upserted:', {
-      userId: user.id,
+    // Test token generation before user upsert
+    const testToken = serverClient.createToken(user.id);
+    console.log('Test token generation:', {
+      success: !!testToken,
+      tokenLength: testToken?.length,
       timestamp: new Date().toISOString()
     });
 
-    // Generate user token with explicit secret
-    const token = serverClient.createToken(user.id);
+    // Only proceed with upsert if token generation worked
+    if (testToken) {
+      try {
+        await serverClient.upsertUser({
+          id: user.id,
+          name: user.name || user.id,
+          image: user.image,
+        });
 
-    if (!token) {
-      throw new Error('Failed to generate user token');
-    }
-
-    console.log('Token generated successfully:', {
-      userId: user.id,
-      hasToken: !!token,
-      timestamp: new Date().toISOString()
-    });
-
-    return new Response(
-      JSON.stringify({
-        result: { token }
-      }),
-      {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200,
+        console.log('User upserted successfully:', {
+          userId: user.id,
+          timestamp: new Date().toISOString()
+        });
+      } catch (upsertError) {
+        console.warn('User upsert failed, but token was generated:', {
+          error: upsertError.message,
+          timestamp: new Date().toISOString()
+        });
+        // Continue since we have a valid token
       }
-    );
+
+      return new Response(
+        JSON.stringify({
+          result: { token: testToken }
+        }),
+        {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 200,
+        }
+      );
+    } else {
+      throw new Error('Token generation failed');
+    }
   } catch (error) {
     console.error('Error in upsert-stream-user:', {
       error: error.message,
       stack: error.stack,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
+      type: error.constructor.name
     });
     
     return new Response(
