@@ -6,7 +6,7 @@ import { StreamChat } from "https://esm.sh/v135/stream-chat@8.14.1";
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders });
+    return new Response(null, { headers: corsHeaders });
   }
 
   try {
