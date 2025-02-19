@@ -1,8 +1,8 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { corsHeaders } from "../_shared/cors.ts";
-// Import a specific version that's known to work with Deno
-import { StreamChat } from "https://esm.sh/v135/stream-chat@8.14.1";
+// Use a more stable version of the Stream Chat client
+import { StreamChat } from "https://esm.sh/stream-chat@8.4.1";
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -15,15 +15,13 @@ serve(async (req) => {
 
     // Enhanced environment debugging
     console.log('Environment variables:', {
-      apiKeyLength: STREAM_API_KEY?.length,
-      secretLength: STREAM_API_SECRET?.length,
-      apiKeyPrefix: STREAM_API_KEY?.substring(0, 4),
-      secretPrefix: STREAM_API_SECRET?.substring(0, 4),
+      hasApiKey: !!STREAM_API_KEY,
+      hasSecret: !!STREAM_API_SECRET,
       timestamp: new Date().toISOString()
     });
 
     if (!STREAM_API_KEY || !STREAM_API_SECRET) {
-      throw new Error(`Stream API credentials missing: ${!STREAM_API_KEY ? 'API_KEY' : ''} ${!STREAM_API_SECRET ? 'API_SECRET' : ''}`);
+      throw new Error('Stream API credentials missing');
     }
 
     const requestBody = await req.json();
@@ -33,20 +31,18 @@ serve(async (req) => {
       throw new Error('Valid user ID is required');
     }
 
-    // Create a new instance without using getInstance
-    const serverClient = new StreamChat(STREAM_API_KEY);
+    // Initialize client differently
+    const serverClient = StreamChat.getInstance(STREAM_API_KEY);
     serverClient.secret = STREAM_API_SECRET;
 
     console.log('StreamChat Client validation:', {
       initialized: !!serverClient,
       hasSecret: !!serverClient.secret,
-      hasSecretMethod: typeof serverClient?.createToken === 'function',
-      hasUpsertMethod: typeof serverClient?.upsertUser === 'function',
       timestamp: new Date().toISOString()
     });
 
-    // Generate user token
-    const token = serverClient.createToken(user.id);
+    // First try to generate token
+    const token = serverClient.createUserToken(user.id);
 
     if (!token) {
       throw new Error('Failed to generate token');
@@ -58,14 +54,15 @@ serve(async (req) => {
       timestamp: new Date().toISOString()
     });
 
-    // Try to upsert the user, but don't fail if it doesn't work
-    try {
-      await serverClient.upsertUser({
-        id: user.id,
-        name: user.name || user.id,
-        image: user.image,
-      });
+    // Then try to upsert user
+    const userData = {
+      id: user.id,
+      name: user.name || user.id,
+      image: user.image,
+    };
 
+    try {
+      await serverClient.upsertUsers([userData]);
       console.log('User upserted successfully');
     } catch (upsertError) {
       // Log but don't fail - token generation is what matters most
@@ -85,8 +82,7 @@ serve(async (req) => {
     console.error('Error in upsert-stream-user:', {
       error: error.message,
       stack: error.stack,
-      timestamp: new Date().toISOString(),
-      type: error.constructor.name
+      timestamp: new Date().toISOString()
     });
     
     return new Response(
