@@ -1,7 +1,8 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { corsHeaders } from "../_shared/cors.ts";
-import { StreamChat } from "https://esm.sh/stream-chat@8.14.1";
+// Import a specific version that's known to work with Deno
+import { StreamChat } from "https://esm.sh/v135/stream-chat@8.14.1";
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -32,61 +33,54 @@ serve(async (req) => {
       throw new Error('Valid user ID is required');
     }
 
-    // Direct instantiation instead of getInstance
-    const serverClient = new StreamChat(STREAM_API_KEY, STREAM_API_SECRET);
-    
+    // Create a new instance without using getInstance
+    const serverClient = new StreamChat(STREAM_API_KEY);
+    serverClient.secret = STREAM_API_SECRET;
+
     console.log('StreamChat Client validation:', {
       initialized: !!serverClient,
+      hasSecret: !!serverClient.secret,
       hasSecretMethod: typeof serverClient?.createToken === 'function',
       hasUpsertMethod: typeof serverClient?.upsertUser === 'function',
       timestamp: new Date().toISOString()
     });
 
-    if (!serverClient?.createToken) {
-      throw new Error('StreamChat client methods not available');
+    // Generate user token
+    const token = serverClient.createToken(user.id);
+
+    if (!token) {
+      throw new Error('Failed to generate token');
     }
 
-    // Test token generation before user upsert
-    const testToken = serverClient.createToken(user.id);
-    console.log('Test token generation:', {
-      success: !!testToken,
-      tokenLength: testToken?.length,
+    console.log('Token generated:', {
+      userId: user.id,
+      hasToken: !!token,
       timestamp: new Date().toISOString()
     });
 
-    // Only proceed with upsert if token generation worked
-    if (testToken) {
-      try {
-        await serverClient.upsertUser({
-          id: user.id,
-          name: user.name || user.id,
-          image: user.image,
-        });
+    // Try to upsert the user, but don't fail if it doesn't work
+    try {
+      await serverClient.upsertUser({
+        id: user.id,
+        name: user.name || user.id,
+        image: user.image,
+      });
 
-        console.log('User upserted successfully:', {
-          userId: user.id,
-          timestamp: new Date().toISOString()
-        });
-      } catch (upsertError) {
-        console.warn('User upsert failed, but token was generated:', {
-          error: upsertError.message,
-          timestamp: new Date().toISOString()
-        });
-        // Continue since we have a valid token
-      }
-
-      return new Response(
-        JSON.stringify({
-          result: { token: testToken }
-        }),
-        {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 200,
-        }
-      );
-    } else {
-      throw new Error('Token generation failed');
+      console.log('User upserted successfully');
+    } catch (upsertError) {
+      // Log but don't fail - token generation is what matters most
+      console.warn('User upsert failed (non-critical):', upsertError);
     }
+
+    return new Response(
+      JSON.stringify({
+        result: { token }
+      }),
+      {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200,
+      }
+    );
   } catch (error) {
     console.error('Error in upsert-stream-user:', {
       error: error.message,
