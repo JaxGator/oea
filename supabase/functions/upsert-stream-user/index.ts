@@ -1,7 +1,7 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { corsHeaders } from "../_shared/cors.ts";
-import { connect } from "https://esm.sh/getstream@8.1.5";
+import { StreamChat } from "https://esm.sh/stream-chat@8.14.1";
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -32,25 +32,48 @@ serve(async (req) => {
       throw new Error('Valid user ID is required');
     }
 
-    // Initialize Stream client
-    const client = connect(STREAM_API_KEY, STREAM_API_SECRET);
-    console.log('Stream client initialized');
+    // Initialize Stream Chat client with direct instantiation
+    const serverClient = StreamChat.getInstance(STREAM_API_KEY, STREAM_API_SECRET);
+    
+    console.log('StreamChat Client details:', {
+      initialized: !!serverClient,
+      hasSecret: !!serverClient?.secret,
+      apiKey: STREAM_API_KEY.substring(0, 8) + '...',
+      timestamp: new Date().toISOString()
+    });
 
-    // Create user token
-    const userToken = client.createUserToken(user.id);
+    if (!serverClient) {
+      throw new Error('StreamChat client failed to initialize');
+    }
 
-    if (!userToken) {
+    // Create or update the user
+    await serverClient.upsertUser({
+      id: user.id,
+      name: user.name || user.id,
+      image: user.image,
+    });
+
+    console.log('User upserted:', {
+      userId: user.id,
+      timestamp: new Date().toISOString()
+    });
+
+    // Generate user token with explicit secret
+    const token = serverClient.createToken(user.id);
+
+    if (!token) {
       throw new Error('Failed to generate user token');
     }
 
-    console.log('Operation successful:', {
+    console.log('Token generated successfully:', {
       userId: user.id,
-      hasToken: !!userToken
+      hasToken: !!token,
+      timestamp: new Date().toISOString()
     });
 
     return new Response(
       JSON.stringify({
-        result: { token: userToken }
+        result: { token }
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
