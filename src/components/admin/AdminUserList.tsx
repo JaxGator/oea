@@ -1,157 +1,97 @@
-import { useState, useCallback } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
+import { UserFilters } from "@/components/admin/user-management/UserFilters";
+import { AdminUserTableWrapper } from "@/components/admin/user-management/AdminUserTableWrapper";
+import { UserListContainer } from "@/components/admin/user-management/UserListContainer";
+import { AdminUserActions } from "./AdminUserActions";
+import { UserListHeader } from "@/components/admin/user-management/UserListHeader";
+import { useUserList } from "@/hooks/admin/useUserList";
+import { Button } from "@/components/ui/button";
+import { Download } from "lucide-react";
+import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Member } from "@/components/members/types";
-import { UserListHeader } from "./user-management/UserListHeader";
-import { UserListContent } from "./user-management/UserListContent";
-import { EditMemberHandler } from "./user-management/EditMemberHandler";
-import { DeleteUserDialog } from "./user-management/DeleteUserDialog";
-import { useToast } from "@/hooks/use-toast";
-
-export interface UserFilters {
-  isAdmin: boolean;
-  isApproved: boolean;
-  isMember: boolean;
-}
 
 export function AdminUserList() {
-  const [selectedMember, setSelectedMember] = useState<Member | null>(null);
-  const [userToDelete, setUserToDelete] = useState<string | null>(null);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
-  const [filters, setFilters] = useState<UserFilters>({
-    isAdmin: false,
-    isApproved: false,
-    isMember: false,
-  });
-  const { toast } = useToast();
+  const { filters, setFilters, searchTerm, setSearchTerm, filteredUsers, isLoading } = useUserList();
+	const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
-  const { data: members = [], isLoading, error, refetch } = useQuery({
-    queryKey: ['members', searchTerm, filters, currentPage],
-    queryFn: async () => {
-      let query = supabase
-        .from('profiles')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (searchTerm) {
-        query = query.ilike('username', `%${searchTerm}%`);
-      }
-
-      if (filters.isAdmin) {
-        query = query.eq('is_admin', true);
-      }
-      if (filters.isApproved) {
-        query = query.eq('is_approved', true);
-      }
-      if (filters.isMember) {
-        query = query.eq('is_member', true);
-      }
-
-      const { data, error } = await query;
-
-      if (error) {
-        console.error('Error fetching members:', error);
-        throw error;
-      }
-
-      return data || [];
-    },
-    staleTime: 0, // Always fetch fresh data
-    gcTime: 0, // Don't cache the data (renamed from cacheTime)
-  });
-
-  const handleSearch = useCallback((term: string) => {
-    setSearchTerm(term);
-    setCurrentPage(1);
-  }, []);
-
-  const handleFilterChange = useCallback((newFilters: UserFilters) => {
-    setFilters(newFilters);
-    setCurrentPage(1);
-  }, []);
-
-  const handleEditMember = useCallback((member: Member) => {
-    console.log('AdminUserList: Setting selected member for edit:', member);
-    setSelectedMember(member);
-  }, []);
-
-  const handleDeleteUser = useCallback(async (userId: string) => {
+  const handleExportUsers = async () => {
     try {
-      const { error } = await supabase.functions.invoke('admin-user-management', {
-        body: { action: 'delete', userId }
-      });
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) {
+        throw new Error('Not authenticated');
+      }
 
-      if (error) throw error;
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/export-users`,
+        {
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to export users');
+      }
+
+      // Get the CSV content
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'users.csv';
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
 
       toast({
         title: "Success",
-        description: "User deleted successfully",
+        description: "Users exported successfully",
       });
-
-      refetch();
     } catch (error) {
-      console.error('Error deleting user:', error);
+      console.error('Export error:', error);
       toast({
         title: "Error",
-        description: "Failed to delete user",
+        description: error.message || "Failed to export users",
         variant: "destructive",
       });
-    } finally {
-      setUserToDelete(null);
     }
-  }, [refetch, toast]);
-
-  const handleUpdateStatus = useCallback(async (username: string) => {
-    console.log('Update status for:', username);
-    // Status update logic will be implemented later
-  }, []);
-
-  const handleUpdateComplete = useCallback(async () => {
-    console.log('AdminUserList: Update completed, refreshing data');
-    await refetch();
-    setSelectedMember(null);
-  }, [refetch]);
-
-  const totalPages = Math.ceil((members?.length || 0) / 10);
+  };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold tracking-tight">Users</h2>
+        <Button 
+          onClick={handleExportUsers}
+          className="flex items-center gap-2"
+          variant="secondary"
+        >
+          <Download className="h-4 w-4" />
+          Export Users
+        </Button>
+      </div>
+      
       <UserListHeader
-        onSearch={handleSearch}
+        onSearch={setSearchTerm}
         filters={filters}
-        onFilterChange={handleFilterChange}
-        onUserCreated={refetch}
+        onFilterChange={setFilters}
+        onUserCreated={() => {
+          queryClient.invalidateQueries({ queryKey: ['users'] });
+          navigate(0);
+        }}
       />
 
-      <UserListContent
-        members={members}
-        isLoading={isLoading}
-        error={error as Error}
-        onEditMember={handleEditMember}
-        onDeleteMember={setUserToDelete}
-        onViewMember={handleEditMember}
-        currentPage={currentPage}
-        totalPages={totalPages}
-        onPageChange={setCurrentPage}
-      />
-
-      {selectedMember && (
-        <EditMemberHandler
-          member={selectedMember}
-          onClose={() => setSelectedMember(null)}
-          onUpdate={handleUpdateComplete}
+      <UserListContainer>
+        <AdminUserTableWrapper
+          users={filteredUsers}
+          isLoading={isLoading}
         />
-      )}
-
-      {userToDelete && (
-        <DeleteUserDialog
-          open={true}
-          onOpenChange={(open) => !open && setUserToDelete(null)}
-          onConfirm={() => handleDeleteUser(userToDelete)}
-          username={members.find(m => m.id === userToDelete)?.username || 'Unknown User'}
-        />
-      )}
+      </UserListContainer>
     </div>
   );
 }
