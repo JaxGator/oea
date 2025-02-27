@@ -1,8 +1,9 @@
+
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Member } from "../types";
 import { useSession } from "@/hooks/auth/useSession";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 export function useMessageSending(recipient: Member, onSuccess: () => void) {
   const [isSending, setIsSending] = useState(false);
@@ -10,11 +11,7 @@ export function useMessageSending(recipient: Member, onSuccess: () => void) {
 
   const sendMessage = async (content: string) => {
     if (!user) {
-      toast({
-        title: "Error",
-        description: "You must be logged in to send messages",
-        variant: "destructive",
-      });
+      toast.error("You must be logged in to send messages");
       return;
     }
 
@@ -46,11 +43,7 @@ export function useMessageSending(recipient: Member, onSuccess: () => void) {
       onSuccess();
     } catch (error) {
       console.error('Error sending message:', error);
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to send message",
-        variant: "destructive",
-      });
+      toast.error(error instanceof Error ? error.message : "Failed to send message");
     } finally {
       setIsSending(false);
     }

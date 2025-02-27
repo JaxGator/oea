@@ -1,39 +1,52 @@
-import { PostgrestError } from '@supabase/supabase-js';
-import { toast } from '@/hooks/use-toast';
 
-export const handleSupabaseError = (error: PostgrestError | null, context?: string) => {
-  if (error) {
-    const errorDetails = {
-      message: error.message,
-      details: error.details,
-      hint: error.hint,
-      code: error.code,
-      context,
-      timestamp: new Date().toISOString()
-    };
-    
-    console.error('Database error:', errorDetails);
-    
-    toast({
-      title: "Database Error",
-      description: error.message || "An unexpected error occurred",
-      variant: "destructive",
-    });
-    
-    throw error;
-  }
-};
+import { toast } from "sonner";
+import { PostgrestError, AuthError } from "@supabase/supabase-js";
 
-export const assertData = <T>(data: T | null, error: PostgrestError | null, context?: string): asserts data is T => {
-  handleSupabaseError(error, context);
-  if (!data) {
-    const message = 'No data returned from query';
-    console.error(message, { context });
-    toast({
-      title: "Error",
-      description: message,
-      variant: "destructive",
-    });
-    throw new Error(message);
+export function handleDatabaseError(error: PostgrestError | null, defaultMessage = "An error occurred"): void {
+  if (!error) return;
+
+  console.error("Database error:", {
+    code: error.code,
+    message: error.message,
+    details: error.details,
+    hint: error.hint
+  });
+
+  // Handle specific error codes
+  if (error.code === "23505") {
+    toast.error("This record already exists");
+    return;
   }
-};
+
+  if (error.code === "42501") {
+    toast.error("You don't have permission to perform this action");
+    return;
+  }
+
+  // Generic error handler
+  toast.error(error.message || defaultMessage);
+}
+
+export function handleAuthError(error: AuthError | null, defaultMessage = "Authentication error"): void {
+  if (!error) return;
+
+  console.error("Auth error:", {
+    name: error.name,
+    message: error.message,
+    status: error.status
+  });
+
+  // Special handling for common auth errors
+  if (error.message.includes("Email not confirmed")) {
+    toast.error("Please confirm your email address before signing in");
+    return;
+  }
+
+  if (error.message.includes("Invalid login credentials")) {
+    toast.error("Invalid email or password");
+    return;
+  }
+
+  // Generic auth error handler
+  toast.error(error.message || defaultMessage);
+}

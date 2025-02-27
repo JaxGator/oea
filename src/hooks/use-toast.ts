@@ -93,24 +93,30 @@ export function useToast() {
       
       const toastType = variant === "destructive" ? "error" : "default";
       
-      const toastAction = action ? {
-        action: {
-          label: typeof action.props?.children === 'string' ? action.props.children : 'Action',
-          onClick: action.props?.onClick || (() => {}),
+      let actionConfig = {};
+      if (action && typeof action === 'object' && 'props' in action) {
+        const actionProps = action.props as any;
+        if (actionProps) {
+          actionConfig = {
+            action: {
+              label: typeof actionProps.children === 'string' ? actionProps.children : 'Action',
+              onClick: actionProps.onClick || (() => {}),
+            }
+          };
         }
-      } : {};
+      }
       
       if (toastType === "error") {
         toast.error(title as string, {
           description: description as string,
           id,
-          ...toastAction
+          ...actionConfig
         });
       } else {
         toast(title as string, {
           description: description as string,
           id,
-          ...toastAction
+          ...actionConfig
         });
       }
       

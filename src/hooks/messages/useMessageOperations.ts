@@ -1,7 +1,7 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useAuthState } from "@/hooks/useAuthState";
 
 export function useMessageOperations() {
@@ -26,18 +26,11 @@ export function useMessageOperations() {
       if (user?.id) {
         queryClient.invalidateQueries({ queryKey: ['messages', user.id] });
       }
-      toast({
-        title: "Message deleted",
-        description: "The message has been deleted successfully.",
-      });
+      toast.success("Message deleted");
     },
     onError: (error) => {
       console.error('Error in deleteMessage mutation:', error);
-      toast({
-        title: "Error",
-        description: "Failed to delete message. Please try again.",
-        variant: "destructive",
-      });
+      toast.error("Failed to delete message. Please try again.");
     },
   });
 
@@ -59,18 +52,11 @@ export function useMessageOperations() {
       if (user?.id) {
         queryClient.invalidateQueries({ queryKey: ['messages', user.id] });
       }
-      toast({
-        title: "Message updated",
-        description: "The message has been updated successfully.",
-      });
+      toast.success("Message updated");
     },
     onError: (error) => {
       console.error('Error in editMessage mutation:', error);
-      toast({
-        title: "Error",
-        description: "Failed to update message. Please try again.",
-        variant: "destructive",
-      });
+      toast.error("Failed to update message. Please try again.");
     },
   });
 

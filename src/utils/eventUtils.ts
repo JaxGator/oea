@@ -1,87 +1,125 @@
+
+import { format, parse, isAfter, isBefore, addDays } from "date-fns";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { EventFormValues } from "@/components/event/EventFormTypes";
-import { toast } from "@/hooks/use-toast";
 
-export const validateUserPermissions = async () => {
-  const { data: { user } } = await supabase.auth.getUser();
-  
-  if (!user) {
-    toast({
-      title: "Error",
-      description: "You must be logged in to manage events",
-      variant: "destructive",
-    });
-    return null;
+export const updateEventRSVPStatus = async (eventId: string, newStatus: string) => {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      toast.error("You must be logged in to RSVP");
+      return;
+    }
+
+    const { error } = await supabase
+      .from('event_rsvps')
+      .upsert({
+        event_id: eventId,
+        user_id: user.id,
+        response: newStatus,
+        updated_at: new Date().toISOString()
+      });
+
+    if (error) throw error;
+    
+    toast.success(`You are now ${newStatus === 'attending' ? 'attending' : 'not attending'} this event`);
+    
+    return true;
+  } catch (error) {
+    console.error("Error updating RSVP status:", error);
+    toast.error("Failed to update your RSVP status");
+    return false;
   }
-
-  const { data: profile, error: profileError } = await supabase
-    .from('profiles')
-    .select('id, is_admin')
-    .eq('id', user.id)
-    .single();
-
-  if (profileError || !profile) {
-    toast({
-      title: "Error",
-      description: "Please complete your profile before managing events",
-      variant: "destructive",
-    });
-    return null;
-  }
-
-  if (!profile.is_admin) {
-    toast({
-      title: "Error",
-      description: "Only admins can manage events",
-      variant: "destructive",
-    });
-    return null;
-  }
-
-  return profile;
 };
 
-export const createEventData = (data: EventFormValues) => ({
-  title: data.title,
-  description: data.description,
-  date: data.date,
-  time: data.time,
-  location: data.location,
-  max_guests: data.max_guests,
-  image_url: data.image_url,
-  reminder_enabled: data.reminder_enabled,
-  reminder_intervals: data.reminder_intervals,
-  waitlist_enabled: data.waitlist_enabled,
-  waitlist_capacity: data.waitlist_capacity,
-  is_featured: data.is_featured
-});
+export const cancelEventRSVP = async (eventId: string) => {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      toast.error("You must be logged in to cancel an RSVP");
+      return;
+    }
 
-export const updateEvent = async (eventId: string, eventData: ReturnType<typeof createEventData>) => {
-  const { error } = await supabase
-    .from("events")
-    .update(eventData)
-    .eq("id", eventId);
+    const { error } = await supabase
+      .from('event_rsvps')
+      .delete()
+      .eq('event_id', eventId)
+      .eq('user_id', user.id);
 
-  if (error) throw error;
-  
-  toast({
-    title: "Success",
-    description: "Event updated successfully",
-  });
+    if (error) throw error;
+    
+    toast.success("Your RSVP has been cancelled");
+    
+    return true;
+  } catch (error) {
+    console.error("Error cancelling RSVP:", error);
+    toast.error("Failed to cancel your RSVP");
+    return false;
+  }
 };
 
-export const createEvent = async (eventData: ReturnType<typeof createEventData>, userId: string) => {
-  const { error } = await supabase
-    .from("events")
-    .insert({
-      ...eventData,
-      created_by: userId,
-    });
+export const joinEventWaitlist = async (eventId: string) => {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      toast.error("You must be logged in to join the waitlist");
+      return false;
+    }
 
-  if (error) throw error;
-  
-  toast({
-    title: "Success",
-    description: "Event created successfully",
-  });
+    // First check if already on waitlist
+    const { data: existingEntry, error: checkError } = await supabase
+      .from('event_waitlist')
+      .select('id')
+      .match({ event_id: eventId, user_id: user.id })
+      .maybeSingle();
+
+    if (checkError) throw checkError;
+
+    if (existingEntry) {
+      toast.error("You are already on the waitlist for this event");
+      return false;
+    }
+
+    // Add to waitlist
+    const { error } = await supabase
+      .from('event_waitlist')
+      .insert({
+        event_id: eventId,
+        user_id: user.id,
+        joined_at: new Date().toISOString()
+      });
+
+    if (error) throw error;
+
+    toast.success("You have been added to the waitlist");
+    return true;
+  } catch (error) {
+    console.error("Error joining waitlist:", error);
+    toast.error("Failed to join the waitlist");
+    return false;
+  }
+};
+
+export const leaveEventWaitlist = async (eventId: string) => {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      toast.error("You must be logged in to leave the waitlist");
+      return false;
+    }
+
+    const { error } = await supabase
+      .from('event_waitlist')
+      .delete()
+      .match({ event_id: eventId, user_id: user.id });
+
+    if (error) throw error;
+
+    toast.success("You have been removed from the waitlist");
+    return true;
+  } catch (error) {
+    console.error("Error leaving waitlist:", error);
+    toast.error("Failed to leave the waitlist");
+    return false;
+  }
 };

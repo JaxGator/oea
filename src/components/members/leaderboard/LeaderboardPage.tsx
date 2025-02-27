@@ -1,99 +1,63 @@
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+
+import { useEffect, useState } from "react";
 import { LeaderboardTable } from "./LeaderboardTable";
 import { LeaderboardFilters } from "./LeaderboardFilters";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Loader2 } from "lucide-react";
-import { toast } from "@/hooks/use-toast";
-
-type TimeFilter = "all" | "monthly" | "weekly";
+import { LeaderboardMetrics } from "./LeaderboardMetrics";
+import { supabase } from "@/integrations/supabase/client";
+import { LoadingScreen } from "@/components/ui/loading-screen";
+import { toast } from "sonner";
 
 export function LeaderboardPage() {
-  const [timeFilter, setTimeFilter] = useState<TimeFilter>("all");
-  const [filters, setFilters] = useState({
-    isAdmin: false,
-    isApproved: false,
-    isMember: false
-  });
+  const [timeRange, setTimeRange] = useState("month");
+  const [members, setMembers] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const { data: leaderboardData, isLoading, error } = useQuery({
-    queryKey: ["leaderboard", timeFilter],
-    queryFn: async () => {
-      console.log("Fetching leaderboard data with filters:", { timeFilter });
-      
-      let query = supabase
-        .from("leaderboard_metrics")
-        .select(`
-          *,
-          profiles:user_id (
-            username,
-            avatar_url,
-            full_name
-          )
-        `)
-        .gt('events_attended', 0)
-        .order('events_attended', { ascending: false });
+  useEffect(() => {
+    const fetchLeaderboardData = async () => {
+      setIsLoading(true);
+      try {
+        // Call the appropriate stored procedure based on time range
+        let functionName = "get_monthly_leaderboard";
+        if (timeRange === "week") {
+          functionName = "get_weekly_leaderboard";
+        } else if (timeRange === "year") {
+          functionName = "get_yearly_leaderboard";
+        } else if (timeRange === "all") {
+          functionName = "get_all_time_leaderboard";
+        }
 
-      const { data, error } = await query;
+        const { data, error } = await supabase.rpc(functionName);
 
-      if (error) {
+        if (error) {
+          throw error;
+        }
+
+        console.log(`Leaderboard data (${timeRange}):`, data);
+        setMembers(data || []);
+      } catch (error) {
         console.error("Error fetching leaderboard data:", error);
-        toast({
-          title: "Error",
-          description: "Failed to load leaderboard data",
-          variant: "destructive",
-        });
-        throw error;
+        toast.error("Failed to load leaderboard data");
+      } finally {
+        setIsLoading(false);
       }
+    };
 
-      console.log("Raw leaderboard data received:", data);
-      
-      // Filter out users with no metrics
-      const filteredData = data.filter(item => item.events_attended > 0);
-
-      console.log("Filtered leaderboard data:", filteredData);
-      return filteredData;
-    },
-  });
-
-  if (error) {
-    console.error("Leaderboard error:", error);
-    return (
-      <div className="p-4 text-red-500">
-        Error loading leaderboard data. Please try again.
-      </div>
-    );
-  }
+    fetchLeaderboardData();
+  }, [timeRange]);
 
   if (isLoading) {
-    return (
-      <div className="flex justify-center items-center min-h-[400px]">
-        <Loader2 className="h-8 w-8 animate-spin" />
-      </div>
-    );
+    return <LoadingScreen />;
   }
 
   return (
-    <Card className="w-full">
-      <CardHeader>
-        <CardTitle>Leaderboard</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="mt-4">
-          <LeaderboardFilters
-            filters={filters}
-            onFilterChange={setFilters}
-            timeFilter={timeFilter}
-            onTimeFilterChange={setTimeFilter}
-          />
-        </div>
-        <LeaderboardTable
-          data={leaderboardData || []}
-          category="attendance"
-          timeFilter={timeFilter}
-        />
-      </CardContent>
-    </Card>
+    <div className="container mx-auto py-6 space-y-8">
+      <h1 className="text-3xl font-bold">Member Leaderboard</h1>
+      <LeaderboardMetrics data={members} timeRange={timeRange} />
+      <LeaderboardFilters
+        timeRange={timeRange}
+        setTimeRange={setTimeRange}
+      />
+      <LeaderboardTable members={members} timeRange={timeRange} />
+    </div>
   );
 }

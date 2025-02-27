@@ -1,82 +1,88 @@
-import { useEffect, useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { toast } from '@/hooks/use-toast';
 
-export function useGalleryImageValidation() {
-  const [validatedUrls, setValidatedUrls] = useState<string[]>([]);
-  const [isValidating, setIsValidating] = useState(true);
+import { useState } from "react";
+import { toast } from "sonner";
 
-  const validateImageUrl = async (url: string): Promise<boolean> => {
+interface UseGalleryImageValidationProps {
+  maxSizeMB?: number;
+  allowedTypes?: string[];
+}
+
+export function useGalleryImageValidation({
+  maxSizeMB = 5,
+  allowedTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"],
+}: UseGalleryImageValidationProps = {}) {
+  const [validating, setValidating] = useState(false);
+
+  const validateImage = async (file: File): Promise<boolean> => {
+    setValidating(true);
+
     try {
-      const response = await fetch(url, { method: 'HEAD' });
-      return response.ok;
-    } catch (error) {
-      console.error('Image validation error:', error);
-      return false;
-    }
-  };
-
-  const validateAndFetchImages = async () => {
-    try {
-      console.log('Fetching gallery images for validation...');
-      
-      const { data: galleryData, error: dbError } = await supabase
-        .from('gallery_images')
-        .select('*')
-        .order('display_order', { ascending: true });
-
-      if (dbError) throw dbError;
-
-      if (!galleryData || galleryData.length === 0) {
-        setValidatedUrls([]);
-        setIsValidating(false);
-        return;
+      // Check file type
+      if (!allowedTypes.includes(file.type)) {
+        const allowedExtensions = allowedTypes
+          .map((type) => type.split("/")[1])
+          .join(", ");
+        toast.error(
+          `Unsupported file type. Please upload ${allowedExtensions} files.`
+        );
+        return false;
       }
 
-      const urls = await Promise.all(
-        galleryData.map(async (image) => {
-          const { data: urlData } = supabase.storage
-            .from('gallery')
-            .getPublicUrl(image.file_name);
+      // Check file size
+      const maxSizeBytes = maxSizeMB * 1024 * 1024;
+      if (file.size > maxSizeBytes) {
+        toast.error(`File too large. Maximum size is ${maxSizeMB}MB.`);
+        return false;
+      }
 
-          if (!urlData?.publicUrl) {
-            console.error('Failed to generate URL for:', image.file_name);
-            return null;
+      // Check image dimensions
+      return new Promise((resolve) => {
+        const img = new Image();
+        const objectUrl = URL.createObjectURL(file);
+
+        img.onload = () => {
+          URL.revokeObjectURL(objectUrl);
+
+          // Check for minimum dimensions (e.g. 200x200)
+          if (img.width < 200 || img.height < 200) {
+            toast.error(
+              "Image too small. Minimum dimensions are 200x200 pixels."
+            );
+            resolve(false);
+            return;
           }
 
-          const isValid = await validateImageUrl(urlData.publicUrl);
-          
-          if (!isValid) {
-            console.error('Invalid image URL:', urlData.publicUrl);
-            return null;
+          // Check for maximum dimensions (e.g. 4000x4000)
+          if (img.width > 4000 || img.height > 4000) {
+            toast.error(
+              "Image too large. Maximum dimensions are 4000x4000 pixels."
+            );
+            resolve(false);
+            return;
           }
 
-          return urlData.publicUrl;
-        })
-      );
+          resolve(true);
+        };
 
-      const validUrls = urls.filter((url): url is string => url !== null);
-      console.log('Valid gallery URLs:', validUrls);
-      setValidatedUrls(validUrls);
-    } catch (error) {
-      console.error('Gallery validation error:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load gallery images. Please try again later.",
-        variant: "destructive",
+        img.onerror = () => {
+          URL.revokeObjectURL(objectUrl);
+          toast.error("Invalid image file. Please try another file.");
+          resolve(false);
+        };
+
+        img.src = objectUrl;
       });
+    } catch (error) {
+      console.error("Image validation error:", error);
+      toast.error("Failed to validate image");
+      return false;
     } finally {
-      setIsValidating(false);
+      setValidating(false);
     }
   };
 
-  useEffect(() => {
-    validateAndFetchImages();
-  }, []);
-
   return {
-    validatedUrls,
-    isValidating,
-    refetch: validateAndFetchImages
+    validateImage,
+    validating,
   };
 }
