@@ -1,4 +1,5 @@
-import { Link } from "react-router-dom";
+
+import { Link, NavLink } from "react-router-dom";
 import { useAuthState } from "@/hooks/useAuthState";
 import { UserMenu } from "./navigation/UserMenu";
 import { SearchDialog } from "./search/SearchDialog";
@@ -20,7 +21,7 @@ export function DesktopNavigation() {
     <nav className="hidden md:block bg-gray-900 text-white p-4" role="navigation" aria-label="Main navigation">
       <div className="container mx-auto flex justify-between items-center">
         <div className="flex items-center space-x-8">
-          <Link to="/">
+          <Link to="/" prefetch="intent">
             <img
               src="/lovable-uploads/609edf01-3169-439a-80f5-f6f15de7a5a6.png"
               alt="Logo"
@@ -43,15 +44,17 @@ export function DesktopNavigation() {
                   {label}
                 </a>
               ) : (
-                <Link
+                <NavLink
                   key={path}
                   to={path}
-                  className={`hover:text-primary-100 transition-colors ${path === '/members' ? 'text-[#FFD700]' : ''}`}
+                  className={({ isActive }) => 
+                    `hover:text-primary-100 transition-colors ${isActive ? 'text-primary' : ''} ${path === '/members' ? 'text-[#FFD700]' : ''}`
+                  }
                   role="menuitem"
                   tabIndex={0}
                 >
                   {label}
-                </Link>
+                </NavLink>
               )
             )}
           </div>

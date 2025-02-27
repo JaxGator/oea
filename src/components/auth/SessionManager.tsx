@@ -1,5 +1,5 @@
 
-import { ReactNode, useEffect, useState } from "react";
+import { ReactNode, useEffect, useState, useRef } from "react";
 import { QueryClient } from "@tanstack/react-query";
 import { useSessionManager } from "@/hooks/useSessionManager";
 import { supabase } from "@/integrations/supabase/client";
@@ -17,6 +17,7 @@ export function SessionManager({ children, queryClient }: SessionManagerProps) {
   const navigate = useNavigate();
   const location = useLocation();
   const [isInitialized, setIsInitialized] = useState(false);
+  const initializationAttempted = useRef(false);
   useSessionManager(queryClient);
 
   useEffect(() => {
@@ -26,6 +27,9 @@ export function SessionManager({ children, queryClient }: SessionManagerProps) {
     const RETRY_DELAY = 1000;
 
     const checkInitialSession = async () => {
+      if (initializationAttempted.current) return;
+      initializationAttempted.current = true;
+      
       try {
         console.log('Checking initial session...');
         const { data: { session }, error } = await supabase.auth.getSession();
@@ -37,6 +41,7 @@ export function SessionManager({ children, queryClient }: SessionManagerProps) {
               retryCount++;
               console.log(`Retrying session check (${retryCount}/${MAX_RETRIES})...`);
               setTimeout(checkInitialSession, RETRY_DELAY);
+              initializationAttempted.current = false;
               return;
             }
           }
@@ -64,6 +69,8 @@ export function SessionManager({ children, queryClient }: SessionManagerProps) {
 
         console.log('Initial session found:', session.user.id);
         if (mounted) {
+          // Ensure any query data is refreshed when session is initialized
+          queryClient.invalidateQueries();
           setIsInitialized(true);
         }
       } catch (err) {

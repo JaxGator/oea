@@ -13,9 +13,25 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
+import { useEffect, useState } from "react";
 
 export function AdminTabs() {
   const isMobile = useIsMobile();
+  const [activeTab, setActiveTab] = useState("users");
+
+  // Pre-fetch data for other tabs to improve tab switching performance
+  useEffect(() => {
+    // When a tab becomes active, prefetch data for the next possible tabs
+    const prefetchAdjacentTabData = () => {
+      if (activeTab === "users") {
+        // Prefetch payments and gallery data
+        void supabase.from('payments').select('count', { count: 'exact', head: true });
+        void supabase.from('gallery_images').select('count', { count: 'exact', head: true });
+      }
+    };
+    
+    prefetchAdjacentTabData();
+  }, [activeTab]);
 
   const { data: userCount, isLoading: isLoadingUsers } = useQuery({
     queryKey: ['admin-unapproved-users-count'],
@@ -58,6 +74,7 @@ export function AdminTabs() {
         "focus-visible:outline-offset-2",
         "focus-visible:ring-0"
       )}
+      onClick={() => setActiveTab(value)}
     >
       <span className="flex items-center gap-1 sm:gap-2">
         {isMobile ? label.slice(0, 3) : label}
@@ -82,7 +99,7 @@ export function AdminTabs() {
   );
 
   return (
-    <Tabs defaultValue="users" className="w-full">
+    <Tabs defaultValue="users" value={activeTab} onValueChange={setActiveTab} className="w-full">
       <div className="relative overflow-x-auto scrollbar-hide">
         <div className="absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-gray-100 to-transparent pointer-events-none sm:hidden" />
         <TabsList className="w-full flex-nowrap min-w-max bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 p-1">

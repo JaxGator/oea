@@ -1,6 +1,6 @@
 
-import { useEffect } from "react";
-import { Outlet } from "react-router-dom";
+import { useEffect, Suspense } from "react";
+import { Outlet, useLocation } from "react-router-dom";
 import { DesktopNavigation } from "../DesktopNavigation";
 import { MobileNavigation } from "../MobileNavigation";
 import { useMaintenanceMode } from "@/hooks/useMaintenanceMode";
@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Toaster } from "@/components/ui/sonner";
 import { Footer } from "@/components/home/Footer";
 import { useQuery } from "@tanstack/react-query";
+import { Loader2 } from "lucide-react";
 
 const skipLinkStyles = `
   sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 
@@ -16,8 +17,15 @@ const skipLinkStyles = `
   z-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary
 `;
 
+const LoadingFallback = () => (
+  <div className="min-h-screen flex items-center justify-center">
+    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+  </div>
+);
+
 export function AppLayout() {
   const { isMaintenanceMode } = useMaintenanceMode();
+  const location = useLocation();
 
   // Fetch Google Analytics ID
   const { data: gaId } = useQuery({
@@ -31,6 +39,11 @@ export function AppLayout() {
       return data?.value;
     }
   });
+
+  useEffect(() => {
+    // Scroll to top on route change
+    window.scrollTo(0, 0);
+  }, [location.pathname]);
 
   useEffect(() => {
     const initializeGA = async () => {
@@ -110,7 +123,9 @@ export function AppLayout() {
 
       {/* Main Content */}
       <main id="main-content" className="flex-1" tabIndex={-1}>
-        <Outlet />
+        <Suspense fallback={<LoadingFallback />}>
+          <Outlet />
+        </Suspense>
       </main>
 
       {/* Footer */}

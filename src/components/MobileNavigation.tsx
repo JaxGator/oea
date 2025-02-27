@@ -1,5 +1,6 @@
+
 import { Menu } from "lucide-react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, NavLink, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useAuthState } from "@/hooks/useAuthState";
@@ -78,12 +79,12 @@ export function MobileNavigation() {
                     <span className="font-medium">{label}</span>
                   </button>
                 ) : (
-                  <Link
+                  <NavLink
                     key={path}
                     to={path}
                     onClick={() => setIsOpen(false)}
-                    className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-colors ${
-                      location.pathname === path
+                    className={({ isActive }) => `flex items-center gap-3 rounded-lg px-3 py-2 transition-colors ${
+                      isActive
                         ? "bg-primary text-primary-foreground"
                         : "hover:bg-primary/10"
                     }`}
@@ -92,7 +93,7 @@ export function MobileNavigation() {
                   >
                     {Icon && <Icon className="h-5 w-5" />}
                     <span className="font-medium">{label}</span>
-                  </Link>
+                  </NavLink>
                 )
               )}
             {user && (
