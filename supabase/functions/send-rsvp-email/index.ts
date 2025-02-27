@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "npm:resend@2.0.0";
 import { format } from "npm:date-fns@3.0.0";
@@ -189,12 +188,22 @@ serve(async (req) => {
 
     console.log("Sending email to:", profile.email);
 
-    // Send email using Resend
+    // Before sending email, check if we're in development/testing mode
+    const isTestMode = !Deno.env.get("PRODUCTION_MODE");
+    
+    if (isTestMode) {
+      console.log("Running in test mode - redirecting email to verified address");
+      // Override the recipient email with the verified testing email
+      profile.email = "jason.ponder7975@gmail.com";
+    }
+
+    // Send email using Resend with modified from address
     const { data: emailData, error: sendError } = await resend.emails.send({
-      from: "Event Team <onboarding@resend.dev>",
+      from: "Lovable Events <onboarding@resend.dev>",
       to: [profile.email],
       subject: subject,
       html: htmlContent,
+      replyTo: "no-reply@lovable.dev"
     });
 
     if (sendError) {
@@ -206,7 +215,13 @@ serve(async (req) => {
 
     // Return success response
     return new Response(
-      JSON.stringify({ success: true, message: "Email sent successfully", data: emailData }),
+      JSON.stringify({
+        success: true,
+        message: isTestMode 
+          ? "Email sent successfully (test mode - redirected to verified email)"
+          : "Email sent successfully",
+        data: emailData
+      }),
       {
         status: 200,
         headers: { 
@@ -219,7 +234,6 @@ serve(async (req) => {
   } catch (error) {
     console.error("Error in send-rsvp-email function:", error);
     
-    // Return error response
     return new Response(
       JSON.stringify({ 
         success: false, 
