@@ -32,12 +32,7 @@ export function EventEditDialog({
     setIsClosing(false);
   };
 
-  // Prevent dialog from closing when clicking outside
   const handleOpenChange = (open: boolean) => {
-    if (!open && !isClosing) {
-      // Only allow closing via the cancel or submit buttons
-      return;
-    }
     setShowDialog(open);
   };
 
@@ -57,12 +52,6 @@ export function EventEditDialog({
     >
       <DialogContent 
         className="max-w-4xl max-h-[90vh] overflow-y-auto"
-        onPointerDownOutside={(e) => {
-          e.preventDefault();
-        }}
-        onInteractOutside={(e) => {
-          e.preventDefault();
-        }}
       >
         <DialogHeader>
           <DialogTitle>
