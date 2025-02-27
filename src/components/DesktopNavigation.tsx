@@ -21,7 +21,7 @@ export function DesktopNavigation() {
     <nav className="hidden md:block bg-gray-900 text-white p-4" role="navigation" aria-label="Main navigation">
       <div className="container mx-auto flex justify-between items-center">
         <div className="flex items-center space-x-8">
-          <Link to="/" prefetch="intent">
+          <Link to="/">
             <img
               src="/lovable-uploads/609edf01-3169-439a-80f5-f6f15de7a5a6.png"
               alt="Logo"
