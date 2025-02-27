@@ -22,10 +22,18 @@ export function EventEditDialog({
   isWixEvent = false
 }: EventEditDialogProps) {
   const [isClosing, setIsClosing] = useState(false);
+  const [localShowDialog, setLocalShowDialog] = useState(showDialog);
+  
+  // Sync the local state with the parent state
+  useEffect(() => {
+    setLocalShowDialog(showDialog);
+  }, [showDialog]);
+  
   console.log("EventEditDialog initialized with:", { 
     eventId: initialData?.id,
     eventTitle: initialData?.title,
-    showDialog
+    showDialog,
+    localShowDialog
   });
 
   const handleSuccess = () => {
@@ -34,6 +42,7 @@ export function EventEditDialog({
     if (onSuccess) {
       onSuccess();
     }
+    setLocalShowDialog(false);
     setShowDialog(false);
     setIsClosing(false);
     
@@ -47,25 +56,40 @@ export function EventEditDialog({
 
   const handleOpenChange = (open: boolean) => {
     console.log("EventEditDialog: handleOpenChange", open);
-    setShowDialog(open);
+    if (!isClosing) {
+      setLocalShowDialog(open);
+      setShowDialog(open);
+    }
   };
 
   // Cleanup on unmount
   useEffect(() => {
     return () => {
-      if (showDialog) {
+      if (localShowDialog) {
         setShowDialog(false);
       }
     };
-  }, [showDialog, setShowDialog]);
+  }, [localShowDialog, setShowDialog]);
 
   return (
     <Dialog 
-      open={showDialog} 
+      open={localShowDialog} 
       onOpenChange={handleOpenChange}
     >
       <DialogContent 
         className="max-w-4xl max-h-[90vh] overflow-y-auto"
+        onEscapeKeyDown={(e) => {
+          // Prevent escape from closing if we're in the middle of an operation
+          if (isClosing) {
+            e.preventDefault();
+          }
+        }}
+        onPointerDownOutside={(e) => {
+          // Prevent clicking outside from closing if we're in the middle of an operation
+          if (isClosing) {
+            e.preventDefault();
+          }
+        }}
       >
         <DialogHeader>
           <DialogTitle>

@@ -15,10 +15,12 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { useAdminStatus } from "@/hooks/events/useAdminStatus";
 import { useAuthState } from "@/hooks/useAuthState";
+import { useState } from "react";
 
 export function EventForm({ onSuccess, initialData, isPastEvent, isWixEvent }: EventFormProps) {
   const { isAdmin, canManageEvents } = useAdminStatus();
   const { user } = useAuthState();
+  const [localSubmitting, setLocalSubmitting] = useState(false);
   
   const form = useForm<EventFormValues>({
     resolver: zodResolver(eventSchema),
@@ -52,21 +54,33 @@ export function EventForm({ onSuccess, initialData, isPastEvent, isWixEvent }: E
       return;
     }
     
-    console.log('EventForm - Submitting form', { 
-      userId: user.id,
-      isAdmin,
-      canManageEvents,
-      isEditing: !!initialData,
-      eventCreator: initialData?.created_by,
-      isCreator: initialData?.created_by === user.id
-    });
+    // Prevent multiple submissions
+    if (localSubmitting || isSubmitting) {
+      console.log('Submission already in progress, ignoring duplicate submit');
+      return;
+    }
     
-    const eventData = {
-      ...data,
-      created_by: initialData?.created_by || user.id,
-    };
+    setLocalSubmitting(true);
     
-    await handleFormSubmit(eventData, initialData);
+    try {
+      console.log('EventForm - Submitting form', { 
+        userId: user.id,
+        isAdmin,
+        canManageEvents,
+        isEditing: !!initialData,
+        eventCreator: initialData?.created_by,
+        isCreator: initialData?.created_by === user.id
+      });
+      
+      const eventData = {
+        ...data,
+        created_by: initialData?.created_by || user.id,
+      };
+      
+      await handleFormSubmit(eventData, initialData);
+    } finally {
+      setLocalSubmitting(false);
+    }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -81,7 +95,12 @@ export function EventForm({ onSuccess, initialData, isPastEvent, isWixEvent }: E
       <form 
         onSubmit={(e) => {
           e.preventDefault();
-          form.handleSubmit(onSubmit)(e);
+          if (!localSubmitting && !isSubmitting) {
+            console.log('Form submission triggered');
+            form.handleSubmit(onSubmit)(e);
+          } else {
+            console.log('Ignoring submission - already in progress');
+          }
         }}
         className="space-y-4"
         onKeyDown={handleKeyPress}
@@ -112,9 +131,11 @@ export function EventForm({ onSuccess, initialData, isPastEvent, isWixEvent }: E
         <Button 
           type="submit" 
           className="w-full bg-[#0d97d1] hover:bg-[#0d97d1]/90"
-          disabled={isSubmitting}
+          disabled={localSubmitting || isSubmitting}
         >
-          {initialData ? "Update Event" : "Create Event"}
+          {localSubmitting || isSubmitting ? 
+            (initialData ? "Updating Event..." : "Creating Event...") : 
+            (initialData ? "Update Event" : "Create Event")}
         </Button>
       </form>
     </Form>

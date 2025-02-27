@@ -146,58 +146,6 @@ export function useEventFormSubmit(onSuccess: () => void) {
           throw updateError;
         }
         
-        // Verify the update was successful
-        const { data: verifyData, error: verifyError } = await supabase
-          .from('events')
-          .select('*')
-          .eq('id', initialData.id)
-          .single();
-          
-        if (verifyError) {
-          console.error('Event verification error:', verifyError);
-          throw verifyError;
-        }
-        
-        console.log('Verification data after update:', verifyData);
-        
-        // Check if specific fields weren't updated
-        const fieldsToCheck = ['description', 'title', 'date', 'time', 'location', 'max_guests'];
-        const mismatchedFields = fieldsToCheck.filter(field => 
-          eventData[field] !== verifyData[field]
-        );
-        
-        if (mismatchedFields.length > 0) {
-          console.warn('Data mismatch detected for fields:', mismatchedFields);
-          
-          // Try field-by-field update as a fallback
-          const updatePromises = mismatchedFields.map(field => {
-            const fieldUpdate = {};
-            fieldUpdate[field] = eventData[field];
-            
-            return supabase
-              .from('events')
-              .update(fieldUpdate)
-              .eq('id', initialData.id);
-          });
-          
-          const results = await Promise.all(updatePromises);
-          const errors = results.filter(r => r.error).map(r => r.error);
-          
-          if (errors.length > 0) {
-            console.error('Field-by-field update errors:', errors);
-            throw new Error('Failed to update some fields. Please try again.');
-          }
-          
-          // Final verification
-          const { data: finalVerifyData } = await supabase
-            .from('events')
-            .select('*')
-            .eq('id', initialData.id)
-            .single();
-            
-          console.log('Final verification data:', finalVerifyData);
-        }
-        
         // Force invalidation of all event-related caches
         queryClient.invalidateQueries({ queryKey: ['events'] });
         queryClient.invalidateQueries({ queryKey: ['event', initialData.id] });

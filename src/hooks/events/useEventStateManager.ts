@@ -9,6 +9,7 @@ export function useEventStateManager(event: any, onUpdate?: () => void) {
   const [showDetailsDialog, setShowDetailsDialog] = useState(false);
   const [editedRSVPCount, setEditedRSVPCount] = useState(String(event?.imported_rsvp_count || ""));
   const [isEditingRSVP, setIsEditingRSVP] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
   const queryClient = useQueryClient();
 
   const handleEditSuccess = useCallback(() => {
@@ -33,7 +34,11 @@ export function useEventStateManager(event: any, onUpdate?: () => void) {
   }, [event?.id, onUpdate, queryClient]);
 
   const handleDelete = useCallback(async () => {
+    if (isProcessing) return;
+    
     try {
+      setIsProcessing(true);
+      
       const { error } = await supabase
         .from('events')
         .delete()
@@ -50,11 +55,17 @@ export function useEventStateManager(event: any, onUpdate?: () => void) {
     } catch (error: any) {
       console.error("Error deleting event:", error);
       toast.error(error.message || "Error deleting event");
+    } finally {
+      setIsProcessing(false);
     }
-  }, [event.id, onUpdate, queryClient]);
+  }, [event.id, onUpdate, queryClient, isProcessing]);
 
   const handleTogglePublish = useCallback(async () => {
+    if (isProcessing) return;
+    
     try {
+      setIsProcessing(true);
+      
       const { error } = await supabase
         .from('events')
         .update({ is_published: !event.is_published })
@@ -71,8 +82,10 @@ export function useEventStateManager(event: any, onUpdate?: () => void) {
     } catch (error: any) {
       console.error("Error updating event publish status:", error);
       toast.error(error.message || "Error updating event");
+    } finally {
+      setIsProcessing(false);
     }
-  }, [event.id, event.is_published, onUpdate, queryClient]);
+  }, [event.id, event.is_published, onUpdate, queryClient, isProcessing]);
 
   const handleEditRSVP = useCallback(() => {
     setIsEditingRSVP(true);
@@ -80,7 +93,11 @@ export function useEventStateManager(event: any, onUpdate?: () => void) {
   }, [event?.imported_rsvp_count]);
 
   const handleSaveRSVP = useCallback(async () => {
+    if (isProcessing) return;
+    
     try {
+      setIsProcessing(true);
+      
       const count = parseInt(editedRSVPCount, 10);
       if (isNaN(count) || count < 0) {
         throw new Error("RSVP count must be a positive number");
@@ -103,8 +120,10 @@ export function useEventStateManager(event: any, onUpdate?: () => void) {
     } catch (error: any) {
       console.error("Error updating RSVP count:", error);
       toast.error(error.message || "Error updating RSVP count");
+    } finally {
+      setIsProcessing(false);
     }
-  }, [editedRSVPCount, event.id, onUpdate, queryClient]);
+  }, [editedRSVPCount, event.id, onUpdate, queryClient, isProcessing]);
 
   const handleCancelEdit = useCallback(() => {
     setIsEditingRSVP(false);
@@ -124,6 +143,7 @@ export function useEventStateManager(event: any, onUpdate?: () => void) {
     showDetailsDialog,
     editedRSVPCount,
     isEditingRSVP,
+    isProcessing,
     setShowEditDialog,
     setShowDetailsDialog,
     handleEditSuccess,
