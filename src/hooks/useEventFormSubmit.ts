@@ -51,7 +51,8 @@ export function useEventFormSubmit(onSuccess: () => void) {
         canManageEvents,
         isUpdating: !!initialData?.id,
         eventCreator: initialData?.created_by,
-        isCreator: initialData?.created_by === user?.id
+        isCreator: initialData?.created_by === user?.id,
+        eventData: formData
       });
 
       // Clean up the form data
@@ -87,17 +88,21 @@ export function useEventFormSubmit(onSuccess: () => void) {
         reminder_enabled: cleanedData.reminder_enabled,
         reminder_intervals: cleanedData.reminder_intervals,
         is_featured: isAdmin ? cleanedData.is_featured : (initialData?.is_featured || false),
+        is_published: initialData?.is_published ?? true,
         ...(coordinates && {
           latitude: coordinates.latitude,
           longitude: coordinates.longitude
+        }),
+        ...(initialData?.latitude && !coordinates && {
+          latitude: initialData.latitude,
+          longitude: initialData.longitude
         })
       };
 
       console.log('Event data to be saved:', {
         isUpdate: !!initialData?.id,
         eventId: initialData?.id,
-        data: eventData,
-        description: eventData.description?.substring(0, 50) + '...'
+        data: eventData
       });
 
       if (initialData?.id) {
@@ -106,12 +111,14 @@ export function useEventFormSubmit(onSuccess: () => void) {
           throw new Error('You do not have permission to edit this event');
         }
 
-        // Try using service role API for update if available
+        console.log('Updating event with ID:', initialData.id);
+
+        // Use upsert to handle both insert and update scenarios
         const { data: updateData, error: updateError } = await supabase
           .from('events')
           .update(eventData)
           .eq('id', initialData.id)
-          .select();
+          .select('*');
 
         if (updateError) {
           console.error('Event update error:', updateError);
@@ -120,7 +127,7 @@ export function useEventFormSubmit(onSuccess: () => void) {
         
         console.log('Event update response:', updateData);
         
-        // Double-check that the update was actually applied by fetching the event
+        // Verify the update was successful
         const { data: verifyData, error: verifyError } = await supabase
           .from('events')
           .select('*')
@@ -132,20 +139,21 @@ export function useEventFormSubmit(onSuccess: () => void) {
           throw verifyError;
         }
         
-        console.log('Verification data after update:', {
-          title: verifyData.title,
-          description: verifyData.description?.substring(0, 50) + '...',
-          date: verifyData.date,
-          time: verifyData.time
-        });
+        console.log('Verification data after update:', verifyData);
         
-        console.log('Event updated successfully:', initialData.id);
+        if (verifyData.title !== eventData.title || verifyData.description !== eventData.description) {
+          console.warn('Update verification failed - data mismatch between update and fetch');
+        }
+        
         toast.success('Event updated successfully');
         
-        // Force reload
+        // Force reload to show changes
         setTimeout(() => {
-          window.location.reload();
+          window.location.href = `/event/${initialData.id}?t=${Date.now()}`;
         }, 1000);
+        
+        // Call the success callback
+        onSuccess();
       } else {
         // For new events, set the creator to the current user
         const newEventData = {
@@ -170,9 +178,10 @@ export function useEventFormSubmit(onSuccess: () => void) {
         
         console.log('Event created successfully:', insertData);
         toast.success('Event created successfully');
+        
+        // Call the success callback
+        onSuccess();
       }
-
-      onSuccess();
     } catch (error: any) {
       console.error('Error submitting event:', error);
       toast.error(error.message || 'Failed to save event');

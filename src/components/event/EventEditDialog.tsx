@@ -22,17 +22,31 @@ export function EventEditDialog({
   isWixEvent = false
 }: EventEditDialogProps) {
   const [isClosing, setIsClosing] = useState(false);
+  console.log("EventEditDialog initialized with:", { 
+    eventId: initialData?.id,
+    eventTitle: initialData?.title,
+    showDialog
+  });
 
   const handleSuccess = () => {
+    console.log("EventEditDialog: handleSuccess called");
     setIsClosing(true);
     if (onSuccess) {
       onSuccess();
     }
     setShowDialog(false);
     setIsClosing(false);
+    
+    // Force a page reload to ensure data is refreshed
+    if (initialData?.id) {
+      setTimeout(() => {
+        window.location.reload();
+      }, 500);
+    }
   };
 
   const handleOpenChange = (open: boolean) => {
+    console.log("EventEditDialog: handleOpenChange", open);
     setShowDialog(open);
   };
 
