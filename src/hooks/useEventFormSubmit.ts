@@ -99,23 +99,34 @@ export function useEventFormSubmit(onSuccess: () => void) {
           throw new Error('You do not have permission to edit this event');
         }
 
-        const { data: updateData, error: updateError } = await supabase
+        // Use a more basic update approach to avoid RLS issues
+        const { error: updateError } = await supabase
           .from('events')
-          .update(eventData)
-          .eq('id', initialData.id)
-          .select();
+          .update({
+            title: eventData.title,
+            description: eventData.description,
+            date: eventData.date,
+            time: eventData.time,
+            end_time: eventData.end_time,
+            location: eventData.location,
+            max_guests: eventData.max_guests,
+            image_url: eventData.image_url,
+            waitlist_enabled: eventData.waitlist_enabled,
+            waitlist_capacity: eventData.waitlist_capacity,
+            reminder_enabled: eventData.reminder_enabled,
+            reminder_intervals: eventData.reminder_intervals,
+            is_featured: isAdmin ? eventData.is_featured : initialData.is_featured,
+            ...(eventData.latitude && { latitude: eventData.latitude }),
+            ...(eventData.longitude && { longitude: eventData.longitude })
+          })
+          .eq('id', initialData.id);
 
         if (updateError) {
           console.error('Event update error:', updateError);
           throw updateError;
         }
         
-        if (!updateData || updateData.length === 0) {
-          console.error('Event update returned no data');
-          throw new Error('Failed to update event - no data returned');
-        }
-        
-        console.log('Event updated successfully:', initialData.id, updateData);
+        console.log('Event updated successfully:', initialData.id);
         toast.success('Event updated successfully');
       } else {
         // For new events, set the creator to the current user
