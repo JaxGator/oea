@@ -57,6 +57,22 @@ export function useEventFormSubmit(onSuccess: () => void) {
         eventData: formData
       });
 
+      // Check if user is allowed to update this event
+      if (initialData?.id) {
+        const canEdit = isAdmin || canManageEvents || initialData.created_by === user?.id;
+        console.log('Checking edit permissions:', {
+          isAdmin,
+          canManageEvents,
+          eventCreatedBy: initialData.created_by,
+          currentUserId: user?.id,
+          canEdit
+        });
+        
+        if (!canEdit) {
+          throw new Error('You do not have permission to edit this event');
+        }
+      }
+
       // Clean up the form data
       const cleanedData = {
         ...formData,
@@ -108,14 +124,9 @@ export function useEventFormSubmit(onSuccess: () => void) {
       });
 
       if (initialData?.id) {
-        // Check if user is allowed to update this event
-        if (!isAdmin && !canManageEvents && initialData.created_by !== user?.id) {
-          throw new Error('You do not have permission to edit this event');
-        }
-
         console.log('Updating event with ID:', initialData.id);
 
-        // First attempt with upsert
+        // Try direct update first
         const { error: updateError } = await supabase
           .from('events')
           .update(eventData)
@@ -123,10 +134,19 @@ export function useEventFormSubmit(onSuccess: () => void) {
 
         if (updateError) {
           console.error('Event update error:', updateError);
+          
+          // If there's a permission error, try another approach for members
+          if (updateError.code === '42501' || updateError.message.includes('permission')) {
+            console.log('Permission issue detected. Trying with RLS bypass function...');
+            
+            // We could implement a Supabase function here if needed
+            throw new Error('Permission denied. Please contact an admin if you believe you should have access.');
+          }
+          
           throw updateError;
         }
         
-        // Verify the update was successful by directly fetching the event
+        // Verify the update was successful
         const { data: verifyData, error: verifyError } = await supabase
           .from('events')
           .select('*')
@@ -140,27 +160,38 @@ export function useEventFormSubmit(onSuccess: () => void) {
         
         console.log('Verification data after update:', verifyData);
         
-        // Check if the update was actually applied in the database
-        if (verifyData.description !== eventData.description) {
-          console.warn('Data mismatch detected. Trying alternative update method...');
+        // Check if specific fields weren't updated
+        const fieldsToCheck = ['description', 'title', 'date', 'time', 'location', 'max_guests'];
+        const mismatchedFields = fieldsToCheck.filter(field => 
+          eventData[field] !== verifyData[field]
+        );
+        
+        if (mismatchedFields.length > 0) {
+          console.warn('Data mismatch detected for fields:', mismatchedFields);
           
-          // Try an alternative update approach
-          const { error: altUpdateError } = await supabase
-            .from('events')
-            .update({
-              description: eventData.description  // Explicitly set the description
-            })
-            .eq('id', initialData.id);
+          // Try field-by-field update as a fallback
+          const updatePromises = mismatchedFields.map(field => {
+            const fieldUpdate = {};
+            fieldUpdate[field] = eventData[field];
             
-          if (altUpdateError) {
-            console.error('Alternative update error:', altUpdateError);
-            throw altUpdateError;
+            return supabase
+              .from('events')
+              .update(fieldUpdate)
+              .eq('id', initialData.id);
+          });
+          
+          const results = await Promise.all(updatePromises);
+          const errors = results.filter(r => r.error).map(r => r.error);
+          
+          if (errors.length > 0) {
+            console.error('Field-by-field update errors:', errors);
+            throw new Error('Failed to update some fields. Please try again.');
           }
           
           // Final verification
           const { data: finalVerifyData } = await supabase
             .from('events')
-            .select('description')
+            .select('*')
             .eq('id', initialData.id)
             .single();
             
