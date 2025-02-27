@@ -81,6 +81,6 @@ export const useEventWithRSVPs = (eventId: string | undefined) => {
     },
     enabled: !!eventId,
     staleTime: 0, // Always fetch fresh data
-    cacheTime: 0  // Don't cache the data
+    gcTime: 0     // Don't cache the data (renamed from cacheTime)
   });
 };
