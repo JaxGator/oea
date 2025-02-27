@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useAdminStatus } from "@/hooks/events/useAdminStatus";
 import { useAuthState } from "@/hooks/useAuthState";
+import { executeQuery } from "@/utils/database";
 
 async function geocodeLocation(location: string) {
   try {
@@ -98,30 +99,44 @@ export function useEventFormSubmit(onSuccess: () => void) {
           throw new Error('You do not have permission to edit this event');
         }
 
-        const { error: updateError } = await supabase
+        const { data: updateData, error: updateError } = await supabase
           .from('events')
           .update(eventData)
-          .eq('id', initialData.id);
+          .eq('id', initialData.id)
+          .select();
 
         if (updateError) {
           console.error('Event update error:', updateError);
           throw updateError;
         }
-        console.log('Event updated successfully:', initialData.id);
+        
+        if (!updateData || updateData.length === 0) {
+          console.error('Event update returned no data');
+          throw new Error('Failed to update event - no data returned');
+        }
+        
+        console.log('Event updated successfully:', initialData.id, updateData);
         toast.success('Event updated successfully');
       } else {
         // For new events, set the creator to the current user
         eventData.created_by = user?.id;
         
-        const { error: insertError } = await supabase
+        const { data: insertData, error: insertError } = await supabase
           .from('events')
-          .insert([eventData]);
+          .insert([eventData])
+          .select();
 
         if (insertError) {
           console.error('Event creation error:', insertError);
           throw insertError;
         }
-        console.log('Event created successfully');
+        
+        if (!insertData || insertData.length === 0) {
+          console.error('Event creation returned no data');
+          throw new Error('Failed to create event - no data returned');
+        }
+        
+        console.log('Event created successfully:', insertData);
         toast.success('Event created successfully');
       }
 
