@@ -1,209 +1,238 @@
 
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { Resend } from "npm:resend@2.0.0";
+import { format } from "npm:date-fns@3.0.0";
 
-const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
-const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
-const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+// Initialize Resend with API key
+const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
+// Set up CORS headers
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-interface EmailRequest {
+interface RSVPEmailRequest {
   eventId: string;
   userId: string;
-  type: 'confirmation' | 'cancellation';
+  type: "confirmation" | "cancellation" | "reminder";
+  eventDetails?: {
+    title: string;
+    date: string;
+    time: string;
+    location: string;
+  } | null;
+  userProfile?: {
+    full_name: string;
+    email: string;
+  } | null;
+  guestCount?: number;
 }
 
-const formatTime = (timeStr: string): string => {
-  const [hours, minutes] = timeStr.split(':');
-  const hour = parseInt(hours, 10);
-  const ampm = hour >= 12 ? 'PM' : 'AM';
-  const hour12 = hour % 12 || 12;
-  return `${hour12}:${minutes} ${ampm}`;
+// Create a Supabase client for the function
+const createClient = () => {
+  const supabaseUrl = Deno.env.get("SUPABASE_URL") as string;
+  const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") as string;
+  
+  // We need to create our own fetch function with Deno compatibility
+  const fetch = (url: string, options: any) => {
+    return globalThis.fetch(url, options);
+  };
+  
+  // Import the Supabase JS library dynamically
+  return import("npm:@supabase/supabase-js@2.38.4").then(({ createClient }) =>
+    createClient(supabaseUrl, supabaseKey, { 
+      global: { fetch },
+      auth: { persistSession: false }
+    })
+  );
 };
 
-const handler = async (req: Request): Promise<Response> => {
-  console.log('Edge function invoked with method:', req.method);
-
+serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
-    return new Response(null, { 
-      headers: {
-        ...corsHeaders,
-        'Access-Control-Allow-Methods': 'POST, OPTIONS',
-      }
-    });
+    return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    // Validate request method
-    if (req.method !== "POST") {
-      throw new Error(`HTTP method ${req.method} is not allowed`);
-    }
+    // Parse the request body
+    const requestData: RSVPEmailRequest = await req.json();
+    console.log("Received request body:", JSON.stringify(requestData, null, 2));
 
-    // Validate RESEND_API_KEY
-    if (!RESEND_API_KEY) {
-      console.error('RESEND_API_KEY is not configured');
-      throw new Error('Email service is not configured');
-    }
+    const { eventId, userId, type, eventDetails, userProfile, guestCount = 0 } = requestData;
 
-    if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
-      console.error('Supabase credentials missing');
-      throw new Error('Database configuration missing');
-    }
+    // Create Supabase client
+    const supabase = await createClient();
 
-    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
-
-    // Parse and validate request body
-    let body;
-    try {
-      body = await req.json() as EmailRequest;
-      console.log('Received request body:', body);
-    } catch (error) {
-      console.error('Error parsing request body:', error);
-      throw new Error('Invalid request body');
-    }
-
-    const { eventId, userId, type } = body;
-    
-    if (!eventId || !userId || !type) {
-      throw new Error('Missing required fields');
-    }
-
-    console.log(`Processing ${type} email for event ${eventId} and user ${userId}`);
-
-    // Fetch event details
-    const { data: event, error: eventError } = await supabase
-      .from('events')
-      .select('*')
-      .eq('id', eventId)
-      .single();
-
-    if (eventError) {
-      console.error('Error fetching event:', eventError);
-      throw new Error(`Event not found: ${eventError.message}`);
-    }
+    // Fetch data if not provided in request
+    let event = eventDetails;
+    let profile = userProfile;
 
     if (!event) {
-      console.error('Event not found for ID:', eventId);
-      throw new Error('Event not found');
+      // Fetch event data
+      const { data: eventData, error: eventError } = await supabase
+        .from("events")
+        .select("title, date, time, location")
+        .eq("id", eventId)
+        .single();
+
+      if (eventError) {
+        console.error("Error fetching event data:", eventError);
+        throw new Error("Failed to fetch event data");
+      }
+
+      event = eventData;
     }
 
-    // Fetch user profile
-    const { data: profile, error: profileError } = await supabase
-      .from('profiles')
-      .select('email, full_name')
-      .eq('id', userId)
-      .single();
+    if (!profile) {
+      // Fetch user data
+      const { data: userData, error: userError } = await supabase
+        .from("profiles")
+        .select("email, full_name")
+        .eq("id", userId)
+        .single();
 
-    if (profileError) {
-      console.error('Error fetching profile:', profileError);
-      throw new Error(`User profile not found: ${profileError.message}`);
+      if (userError) {
+        console.error("Error fetching user data:", userError);
+        throw new Error("Failed to fetch user data");
+      }
+
+      profile = userData;
     }
 
-    if (!profile || !profile.email) {
-      console.error('Profile or email not found for ID:', userId);
-      throw new Error('User email not found');
+    if (!profile?.email) {
+      // Fetch user email from auth if not in profile
+      const { data: authData, error: authError } = await supabase.auth.admin.getUserById(userId);
+      
+      if (authError) {
+        console.error("Error fetching auth user:", authError);
+        throw new Error("Failed to fetch user email");
+      }
+      
+      if (!profile) {
+        profile = { email: authData.user.email, full_name: authData.user.email.split('@')[0] };
+      } else {
+        profile.email = authData.user.email;
+      }
     }
 
-    // Format date and time
-    const eventDate = new Date(event.date).toLocaleDateString('en-US', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
-    
-    const eventTime = formatTime(event.time);
+    // Format the event date
+    const formattedDate = event.date 
+      ? format(new Date(event.date), "EEEE, MMMM d, yyyy")
+      : 'Date to be announced';
 
-    // Get email template
-    const templateName = type === 'confirmation' ? 'rsvp_confirmation' : 'rsvp_cancellation';
-    console.log('Attempting to fetch template:', templateName);
-    
-    const { data: template, error: templateError } = await supabase
-      .from('message_templates')
-      .select('*')
-      .eq('name', templateName)
-      .maybeSingle();
+    // Create appropriate email content based on type
+    let subject = '';
+    let htmlContent = '';
 
-    if (templateError) {
-      console.error('Error fetching template:', templateError);
-      throw new Error(`Template fetch error: ${templateError.message}`);
+    if (type === "confirmation") {
+      subject = `RSVP Confirmation: ${event.title}`;
+      htmlContent = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <h2 style="color: #4a5568;">RSVP Confirmation</h2>
+          <p>Hello ${profile.full_name || "there"},</p>
+          <p>Thank you for your RSVP to <strong>${event.title}</strong>. We're looking forward to seeing you!</p>
+          
+          <div style="background-color: #f7fafc; border-left: 4px solid #4299e1; padding: 15px; margin: 20px 0;">
+            <h3 style="margin-top: 0; color: #2d3748;">Event Details</h3>
+            <p><strong>Date:</strong> ${formattedDate}</p>
+            <p><strong>Time:</strong> ${event.time || "TBA"}</p>
+            <p><strong>Location:</strong> ${event.location}</p>
+            ${guestCount > 0 ? `<p><strong>Guests:</strong> ${guestCount}</p>` : ''}
+          </div>
+          
+          <p>If you need to cancel or modify your RSVP, please visit the event page on our website.</p>
+          <p>We look forward to seeing you there!</p>
+          <p>Best regards,<br>The Event Team</p>
+        </div>
+      `;
+    } else if (type === "cancellation") {
+      subject = `RSVP Cancellation: ${event.title}`;
+      htmlContent = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <h2 style="color: #4a5568;">RSVP Cancellation</h2>
+          <p>Hello ${profile.full_name || "there"},</p>
+          <p>Your RSVP for <strong>${event.title}</strong> has been canceled as requested.</p>
+          
+          <div style="background-color: #f7fafc; border-left: 4px solid #fc8181; padding: 15px; margin: 20px 0;">
+            <h3 style="margin-top: 0; color: #2d3748;">Event Details</h3>
+            <p><strong>Date:</strong> ${formattedDate}</p>
+            <p><strong>Time:</strong> ${event.time || "TBA"}</p>
+            <p><strong>Location:</strong> ${event.location}</p>
+          </div>
+          
+          <p>If you wish to RSVP again, please visit the event page on our website.</p>
+          <p>Best regards,<br>The Event Team</p>
+        </div>
+      `;
+    } else if (type === "reminder") {
+      subject = `Event Reminder: ${event.title}`;
+      htmlContent = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <h2 style="color: #4a5568;">Event Reminder</h2>
+          <p>Hello ${profile.full_name || "there"},</p>
+          <p>This is a friendly reminder about <strong>${event.title}</strong> that you've RSVP'd to.</p>
+          
+          <div style="background-color: #f7fafc; border-left: 4px solid #68d391; padding: 15px; margin: 20px 0;">
+            <h3 style="margin-top: 0; color: #2d3748;">Event Details</h3>
+            <p><strong>Date:</strong> ${formattedDate}</p>
+            <p><strong>Time:</strong> ${event.time || "TBA"}</p>
+            <p><strong>Location:</strong> ${event.location}</p>
+            ${guestCount > 0 ? `<p><strong>Guests:</strong> ${guestCount}</p>` : ''}
+          </div>
+          
+          <p>We look forward to seeing you there!</p>
+          <p>Best regards,<br>The Event Team</p>
+        </div>
+      `;
     }
 
-    if (!template) {
-      console.error('Template not found:', templateName);
-      throw new Error(`Email template '${templateName}' not found`);
-    }
+    console.log("Sending email to:", profile.email);
 
-    console.log('Successfully found template:', template.name);
-
-    // Replace template variables
-    let emailContent = template.content
-      .replace('{event_title}', event.title)
-      .replace('{event_date}', eventDate)
-      .replace('{event_time}', eventTime)
-      .replace('{event_location}', event.location)
-      .replace('{user_name}', profile.full_name || 'User');
-
-    let emailSubject = template.subject
-      .replace('{event_title}', event.title)
-      .replace('{user_name}', profile.full_name || 'User');
-
-    console.log('Sending email with Resend API...');
-    
     // Send email using Resend
-    const res = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${RESEND_API_KEY}`,
-      },
-      body: JSON.stringify({
-        from: "OEA Events <events@resend.dev>",
-        to: profile.email,
-        subject: emailSubject,
-        html: emailContent,
-      }),
+    const { data: emailData, error: sendError } = await resend.emails.send({
+      from: "Event Team <onboarding@resend.dev>",
+      to: [profile.email],
+      subject: subject,
+      html: htmlContent,
     });
 
-    if (!res.ok) {
-      const resendError = await res.json();
-      console.error('Resend API error:', resendError);
-      throw new Error(`Failed to send email: ${resendError.message || 'Unknown error'}`);
+    if (sendError) {
+      console.error("Error sending email:", sendError);
+      throw sendError;
     }
 
-    const resendResponse = await res.json();
-    console.log('Resend API response:', resendResponse);
+    console.log("Email sent successfully:", emailData);
 
+    // Return success response
     return new Response(
-      JSON.stringify({ success: true, data: resendResponse }), 
-      { 
+      JSON.stringify({ success: true, message: "Email sent successfully", data: emailData }),
+      {
+        status: 200,
         headers: { 
-          ...corsHeaders, 
-          "Content-Type": "application/json" 
-        } 
+          "Content-Type": "application/json",
+          ...corsHeaders 
+        },
       }
     );
+
   } catch (error) {
-    console.error('Error in send-rsvp-email function:', error);
+    console.error("Error in send-rsvp-email function:", error);
+    
+    // Return error response
     return new Response(
       JSON.stringify({ 
-        error: error.message || 'Internal server error',
-        details: error.stack
+        success: false, 
+        message: "Failed to send email", 
+        error: error.message 
       }),
-      { 
+      {
         status: 500,
         headers: { 
-          ...corsHeaders, 
-          "Content-Type": "application/json" 
-        }
+          "Content-Type": "application/json",
+          ...corsHeaders 
+        },
       }
     );
   }
-};
-
-serve(handler);
+});

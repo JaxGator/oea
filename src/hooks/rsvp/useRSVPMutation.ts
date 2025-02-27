@@ -25,6 +25,18 @@ export const useRSVPMutation = () => {
 
       console.log('Starting RSVP process:', { eventId, userId: user.id, guestCount: guests.length });
 
+      // Fetch event details to include in the email
+      const { data: eventData, error: eventError } = await supabase
+        .from('events')
+        .select('title, date, time, location')
+        .eq('id', eventId)
+        .single();
+        
+      if (eventError) {
+        console.error('Error fetching event details:', eventError);
+        // Continue anyway as this is not critical
+      }
+
       // Check if user already has an RSVP for this event
       const { data: existingRSVP, error: checkError } = await supabase
         .from('event_rsvps')
@@ -111,14 +123,37 @@ export const useRSVPMutation = () => {
         }
       }
 
+      // Fetch user profile data for the email
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('full_name, email')
+        .eq('id', user.id)
+        .single();
+        
+      if (profileError) {
+        console.error('Error fetching profile data:', profileError);
+        // Continue anyway as we can send the email without it
+      }
+
       // Send confirmation email
       try {
-        console.log('Sending confirmation email');
-        const { error: emailError } = await supabase.functions.invoke('send-rsvp-email', {
+        console.log('Sending confirmation email with event details:', {
+          eventId,
+          userId: user.id,
+          eventTitle: eventData?.title,
+          eventDate: eventData?.date,
+          userEmail: profileData?.email,
+          userName: profileData?.full_name
+        });
+        
+        const { data: emailData, error: emailError } = await supabase.functions.invoke('send-rsvp-email', {
           body: {
             eventId,
             userId: user.id,
-            type: 'confirmation'
+            type: 'confirmation',
+            eventDetails: eventData || null,
+            userProfile: profileData || null,
+            guestCount: guests.length
           }
         });
 
@@ -129,6 +164,7 @@ export const useRSVPMutation = () => {
             description: "Your RSVP was recorded but there was an issue sending the confirmation email.",
           });
         } else {
+          console.log('Email sent successfully:', emailData);
           toast({
             title: "Success",
             description: "Your RSVP has been recorded and a confirmation email has been sent",
