@@ -1,3 +1,4 @@
+
 import { ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuthState } from "@/hooks/useAuthState";
@@ -25,6 +26,7 @@ export function EventRSVPHandler({ eventId, onRSVP, children }: EventRSVPHandler
       return;
     }
 
+    console.log('EventRSVPHandler - Calling onRSVP with:', { eventId, guestCount: guests?.length });
     onRSVP(eventId, guests);
   };
 
