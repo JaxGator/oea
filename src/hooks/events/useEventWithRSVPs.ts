@@ -79,6 +79,8 @@ export const useEventWithRSVPs = (eventId: string | undefined) => {
 
       return processedEvent;
     },
-    enabled: !!eventId
+    enabled: !!eventId,
+    staleTime: 0, // Always fetch fresh data
+    cacheTime: 0  // Don't cache the data
   });
 };

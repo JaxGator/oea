@@ -107,15 +107,37 @@ export function useEventFormSubmit(onSuccess: () => void) {
         }
 
         // Try using service role API for update if available
-        const { error: updateError } = await supabase
+        const { data: updateData, error: updateError } = await supabase
           .from('events')
           .update(eventData)
-          .eq('id', initialData.id);
+          .eq('id', initialData.id)
+          .select();
 
         if (updateError) {
           console.error('Event update error:', updateError);
           throw updateError;
         }
+        
+        console.log('Event update response:', updateData);
+        
+        // Double-check that the update was actually applied by fetching the event
+        const { data: verifyData, error: verifyError } = await supabase
+          .from('events')
+          .select('*')
+          .eq('id', initialData.id)
+          .single();
+          
+        if (verifyError) {
+          console.error('Event verification error:', verifyError);
+          throw verifyError;
+        }
+        
+        console.log('Verification data after update:', {
+          title: verifyData.title,
+          description: verifyData.description?.substring(0, 50) + '...',
+          date: verifyData.date,
+          time: verifyData.time
+        });
         
         console.log('Event updated successfully:', initialData.id);
         toast.success('Event updated successfully');
