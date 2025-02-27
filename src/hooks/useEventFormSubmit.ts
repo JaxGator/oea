@@ -80,6 +80,12 @@ export function useEventFormSubmit(onSuccess: () => void) {
         })
       };
 
+      // Preserve the original created_by field when updating
+      if (initialData?.id) {
+        // Make sure we don't change the creator when updating
+        eventData.created_by = initialData.created_by;
+      }
+
       console.log('Event data to be saved:', {
         isUpdate: !!initialData?.id,
         eventId: initialData?.id,
@@ -87,6 +93,11 @@ export function useEventFormSubmit(onSuccess: () => void) {
       });
 
       if (initialData?.id) {
+        // Check if user is allowed to update this event
+        if (!isAdmin && !canManageEvents && initialData.created_by !== user?.id) {
+          throw new Error('You do not have permission to edit this event');
+        }
+
         const { error: updateError } = await supabase
           .from('events')
           .update(eventData)
@@ -99,6 +110,9 @@ export function useEventFormSubmit(onSuccess: () => void) {
         console.log('Event updated successfully:', initialData.id);
         toast.success('Event updated successfully');
       } else {
+        // For new events, set the creator to the current user
+        eventData.created_by = user?.id;
+        
         const { error: insertError } = await supabase
           .from('events')
           .insert([eventData]);
