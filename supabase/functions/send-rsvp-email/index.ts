@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "npm:resend@2.0.0";
 import { format } from "npm:date-fns@3.0.0";
@@ -142,7 +143,7 @@ serve(async (req) => {
           
           <p>If you need to cancel or modify your RSVP, please visit the event page on our website.</p>
           <p>We look forward to seeing you there!</p>
-          <p>Best regards,<br>The Event Team</p>
+          <p>Best regards,<br>The Outdoor Energy Adventures Team</p>
         </div>
       `;
     } else if (type === "cancellation") {
@@ -161,7 +162,7 @@ serve(async (req) => {
           </div>
           
           <p>If you wish to RSVP again, please visit the event page on our website.</p>
-          <p>Best regards,<br>The Event Team</p>
+          <p>Best regards,<br>The Outdoor Energy Adventures Team</p>
         </div>
       `;
     } else if (type === "reminder") {
@@ -181,29 +182,20 @@ serve(async (req) => {
           </div>
           
           <p>We look forward to seeing you there!</p>
-          <p>Best regards,<br>The Event Team</p>
+          <p>Best regards,<br>The Outdoor Energy Adventures Team</p>
         </div>
       `;
     }
 
     console.log("Sending email to:", profile.email);
 
-    // Before sending email, check if we're in development/testing mode
-    const isTestMode = !Deno.env.get("PRODUCTION_MODE");
-    
-    if (isTestMode) {
-      console.log("Running in test mode - redirecting email to verified address");
-      // Override the recipient email with the verified testing email
-      profile.email = "jason.ponder7975@gmail.com";
-    }
-
-    // Send email using Resend with modified from address
+    // Send email using Resend with the verified domain
     const { data: emailData, error: sendError } = await resend.emails.send({
-      from: "Lovable Events <onboarding@resend.dev>",
+      from: "Outdoor Energy Adventures <events@updates.outdoorenergyadventures.com>",
       to: [profile.email],
       subject: subject,
       html: htmlContent,
-      replyTo: "no-reply@lovable.dev"
+      replyTo: "noreply@outdoorenergyadventures.com"
     });
 
     if (sendError) {
@@ -217,9 +209,7 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({
         success: true,
-        message: isTestMode 
-          ? "Email sent successfully (test mode - redirected to verified email)"
-          : "Email sent successfully",
+        message: "Email sent successfully",
         data: emailData
       }),
       {
