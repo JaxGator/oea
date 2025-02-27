@@ -5,7 +5,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useAdminStatus } from "@/hooks/events/useAdminStatus";
 import { useAuthState } from "@/hooks/useAuthState";
-import { executeQuery } from "@/utils/database";
 
 async function geocodeLocation(location: string) {
   try {
@@ -73,24 +72,32 @@ export function useEventFormSubmit(onSuccess: () => void) {
         coordinates = await geocodeLocation(cleanedData.location);
       }
       
+      // Prepare event data but don't override created_by or id
       const eventData = {
-        ...cleanedData,
+        title: cleanedData.title,
+        description: cleanedData.description,
+        date: cleanedData.date,
+        time: cleanedData.time,
+        end_time: cleanedData.end_time,
+        location: cleanedData.location,
+        max_guests: cleanedData.max_guests,
+        image_url: cleanedData.image_url,
+        waitlist_enabled: cleanedData.waitlist_enabled,
+        waitlist_capacity: cleanedData.waitlist_capacity,
+        reminder_enabled: cleanedData.reminder_enabled,
+        reminder_intervals: cleanedData.reminder_intervals,
+        is_featured: isAdmin ? cleanedData.is_featured : (initialData?.is_featured || false),
         ...(coordinates && {
           latitude: coordinates.latitude,
           longitude: coordinates.longitude
         })
       };
 
-      // Preserve the original created_by field when updating
-      if (initialData?.id) {
-        // Make sure we don't change the creator when updating
-        eventData.created_by = initialData.created_by;
-      }
-
       console.log('Event data to be saved:', {
         isUpdate: !!initialData?.id,
         eventId: initialData?.id,
-        createdBy: eventData.created_by
+        data: eventData,
+        description: eventData.description?.substring(0, 50) + '...'
       });
 
       if (initialData?.id) {
@@ -99,26 +106,10 @@ export function useEventFormSubmit(onSuccess: () => void) {
           throw new Error('You do not have permission to edit this event');
         }
 
-        // Use a more basic update approach to avoid RLS issues
+        // Try using service role API for update if available
         const { error: updateError } = await supabase
           .from('events')
-          .update({
-            title: eventData.title,
-            description: eventData.description,
-            date: eventData.date,
-            time: eventData.time,
-            end_time: eventData.end_time,
-            location: eventData.location,
-            max_guests: eventData.max_guests,
-            image_url: eventData.image_url,
-            waitlist_enabled: eventData.waitlist_enabled,
-            waitlist_capacity: eventData.waitlist_capacity,
-            reminder_enabled: eventData.reminder_enabled,
-            reminder_intervals: eventData.reminder_intervals,
-            is_featured: isAdmin ? eventData.is_featured : initialData.is_featured,
-            ...(eventData.latitude && { latitude: eventData.latitude }),
-            ...(eventData.longitude && { longitude: eventData.longitude })
-          })
+          .update(eventData)
           .eq('id', initialData.id);
 
         if (updateError) {
@@ -128,13 +119,21 @@ export function useEventFormSubmit(onSuccess: () => void) {
         
         console.log('Event updated successfully:', initialData.id);
         toast.success('Event updated successfully');
+        
+        // Force reload
+        setTimeout(() => {
+          window.location.reload();
+        }, 1000);
       } else {
         // For new events, set the creator to the current user
-        eventData.created_by = user?.id;
+        const newEventData = {
+          ...eventData,
+          created_by: user?.id
+        };
         
         const { data: insertData, error: insertError } = await supabase
           .from('events')
-          .insert([eventData])
+          .insert([newEventData])
           .select();
 
         if (insertError) {
