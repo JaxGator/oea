@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useAdminStatus } from "@/hooks/events/useAdminStatus";
 import { useAuthState } from "@/hooks/useAuthState";
+import { useQueryClient } from "@tanstack/react-query";
 
 async function geocodeLocation(location: string) {
   try {
@@ -37,6 +38,7 @@ export function useEventFormSubmit(onSuccess: () => void) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { isAdmin, canManageEvents } = useAdminStatus();
   const { user } = useAuthState();
+  const queryClient = useQueryClient();
 
   const handleSubmit = async (formData: EventFormValues, initialData?: any) => {
     // Prevent duplicate submissions
@@ -113,47 +115,31 @@ export function useEventFormSubmit(onSuccess: () => void) {
 
         console.log('Updating event with ID:', initialData.id);
 
-        // Use upsert to handle both insert and update scenarios
-        const { data: updateData, error: updateError } = await supabase
+        // Update the event in the database
+        const { error: updateError } = await supabase
           .from('events')
           .update(eventData)
-          .eq('id', initialData.id)
-          .select('*');
+          .eq('id', initialData.id);
 
         if (updateError) {
           console.error('Event update error:', updateError);
           throw updateError;
         }
         
-        console.log('Event update response:', updateData);
-        
-        // Verify the update was successful
-        const { data: verifyData, error: verifyError } = await supabase
-          .from('events')
-          .select('*')
-          .eq('id', initialData.id)
-          .single();
-          
-        if (verifyError) {
-          console.error('Event verification error:', verifyError);
-          throw verifyError;
-        }
-        
-        console.log('Verification data after update:', verifyData);
-        
-        if (verifyData.title !== eventData.title || verifyData.description !== eventData.description) {
-          console.warn('Update verification failed - data mismatch between update and fetch');
-        }
+        // Force invalidation of all event-related caches
+        queryClient.invalidateQueries({ queryKey: ['events'] });
+        queryClient.invalidateQueries({ queryKey: ['event', initialData.id] });
+        queryClient.invalidateQueries({ queryKey: ['featuredEvents'] });
         
         toast.success('Event updated successfully');
         
-        // Force reload to show changes
-        setTimeout(() => {
-          window.location.href = `/event/${initialData.id}?t=${Date.now()}`;
-        }, 1000);
-        
         // Call the success callback
         onSuccess();
+        
+        // Force a page reload after a short delay
+        setTimeout(() => {
+          window.location.href = `/events?updated=${Date.now()}`;
+        }, 500);
       } else {
         // For new events, set the creator to the current user
         const newEventData = {
@@ -161,6 +147,7 @@ export function useEventFormSubmit(onSuccess: () => void) {
           created_by: user?.id
         };
         
+        // Insert the new event
         const { data: insertData, error: insertError } = await supabase
           .from('events')
           .insert([newEventData])
@@ -176,11 +163,20 @@ export function useEventFormSubmit(onSuccess: () => void) {
           throw new Error('Failed to create event - no data returned');
         }
         
+        // Force invalidation of all event-related caches
+        queryClient.invalidateQueries({ queryKey: ['events'] });
+        queryClient.invalidateQueries({ queryKey: ['featuredEvents'] });
+        
         console.log('Event created successfully:', insertData);
         toast.success('Event created successfully');
         
         // Call the success callback
         onSuccess();
+        
+        // Navigate to events page after a short delay
+        setTimeout(() => {
+          window.location.href = `/events?created=${Date.now()}`;
+        }, 500);
       }
     } catch (error: any) {
       console.error('Error submitting event:', error);
