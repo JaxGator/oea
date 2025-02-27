@@ -3,6 +3,8 @@ import { useState } from "react";
 import { EventFormValues } from "@/components/event/EventFormTypes";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useAdminStatus } from "@/hooks/events/useAdminStatus";
+import { useAuthState } from "@/hooks/useAuthState";
 
 async function geocodeLocation(location: string) {
   try {
@@ -33,6 +35,8 @@ async function geocodeLocation(location: string) {
 
 export function useEventFormSubmit(onSuccess: () => void) {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { isAdmin, canManageEvents } = useAdminStatus();
+  const { user } = useAuthState();
 
   const handleSubmit = async (formData: EventFormValues, initialData?: any) => {
     // Prevent duplicate submissions
@@ -40,6 +44,15 @@ export function useEventFormSubmit(onSuccess: () => void) {
     
     try {
       setIsSubmitting(true);
+      
+      console.log('Event submission - User status:', { 
+        userId: user?.id,
+        isAdmin,
+        canManageEvents,
+        isUpdating: !!initialData?.id,
+        eventCreator: initialData?.created_by,
+        isCreator: initialData?.created_by === user?.id
+      });
 
       // Clean up the form data
       const cleanedData = {
@@ -67,20 +80,34 @@ export function useEventFormSubmit(onSuccess: () => void) {
         })
       };
 
+      console.log('Event data to be saved:', {
+        isUpdate: !!initialData?.id,
+        eventId: initialData?.id,
+        createdBy: eventData.created_by
+      });
+
       if (initialData?.id) {
         const { error: updateError } = await supabase
           .from('events')
           .update(eventData)
           .eq('id', initialData.id);
 
-        if (updateError) throw updateError;
+        if (updateError) {
+          console.error('Event update error:', updateError);
+          throw updateError;
+        }
+        console.log('Event updated successfully:', initialData.id);
         toast.success('Event updated successfully');
       } else {
         const { error: insertError } = await supabase
           .from('events')
           .insert([eventData]);
 
-        if (insertError) throw insertError;
+        if (insertError) {
+          console.error('Event creation error:', insertError);
+          throw insertError;
+        }
+        console.log('Event created successfully');
         toast.success('Event created successfully');
       }
 

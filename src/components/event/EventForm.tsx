@@ -17,7 +17,7 @@ import { useAdminStatus } from "@/hooks/events/useAdminStatus";
 import { useAuthState } from "@/hooks/useAuthState";
 
 export function EventForm({ onSuccess, initialData, isPastEvent, isWixEvent }: EventFormProps) {
-  const { isAdmin } = useAdminStatus();
+  const { isAdmin, canManageEvents } = useAdminStatus();
   const { user } = useAuthState();
   
   const form = useForm<EventFormValues>({
@@ -51,6 +51,15 @@ export function EventForm({ onSuccess, initialData, isPastEvent, isWixEvent }: E
       console.error('No user ID available');
       return;
     }
+    
+    console.log('EventForm - Submitting form', { 
+      userId: user.id,
+      isAdmin,
+      canManageEvents,
+      isEditing: !!initialData,
+      eventCreator: initialData?.created_by,
+      isCreator: initialData?.created_by === user.id
+    });
     
     const eventData = {
       ...data,
