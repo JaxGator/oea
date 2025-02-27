@@ -1,28 +1,29 @@
 
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
-import { Check } from "lucide-react";
+import { Check, Trash2 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
+import { useState } from "react";
+import { Badge } from "@/components/ui/badge";
 
 interface AdminNotification {
   id: string;
   type: string;
   message: string;
-  metadata: {
-    source: string;
-    timestamp: string;
-  };
+  metadata: any;
   created_at: string;
   is_read: boolean;
 }
 
 export function AdminNotificationList() {
   const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const [isDeleting, setIsDeleting] = useState(false);
 
-  const { data: notifications = [], refetch } = useQuery({
+  const { data: notifications = [], isLoading, error } = useQuery({
     queryKey: ['admin-notifications'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -31,7 +32,7 @@ export function AdminNotificationList() {
         .order('created_at', { ascending: false });
 
       if (error) {
-        console.error('Error fetching notifications:', error);
+        console.error('Error fetching admin notifications:', error);
         toast({
           title: "Error",
           description: "Failed to load notifications",
@@ -44,21 +45,24 @@ export function AdminNotificationList() {
     },
   });
 
-  const markAsRead = async (id: string) => {
-    try {
+  const markAsReadMutation = useMutation({
+    mutationFn: async (id: string) => {
       const { error } = await supabase
         .from('admin_notifications')
         .update({ is_read: true })
         .eq('id', id);
 
       if (error) throw error;
-
-      await refetch();
+      return id;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-notifications'] });
       toast({
         title: "Success",
         description: "Notification marked as read",
       });
-    } catch (error) {
+    },
+    onError: (error) => {
       console.error('Error marking notification as read:', error);
       toast({
         title: "Error",
@@ -66,9 +70,116 @@ export function AdminNotificationList() {
         variant: "destructive",
       });
     }
+  });
+
+  const deleteNotificationMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from('admin_notifications')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+      return id;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-notifications'] });
+      toast({
+        title: "Success",
+        description: "Notification deleted",
+      });
+    },
+    onError: (error) => {
+      console.error('Error deleting notification:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete notification",
+        variant: "destructive",
+      });
+    },
+    onSettled: () => {
+      setIsDeleting(false);
+    }
+  });
+
+  const deleteAllReadNotifications = async () => {
+    if (isDeleting) return;
+    
+    try {
+      setIsDeleting(true);
+      
+      const { error } = await supabase
+        .from('admin_notifications')
+        .delete()
+        .eq('is_read', true);
+
+      if (error) throw error;
+      
+      queryClient.invalidateQueries({ queryKey: ['admin-notifications'] });
+      toast({
+        title: "Success",
+        description: "All read notifications deleted",
+      });
+    } catch (error) {
+      console.error('Error deleting read notifications:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete notifications",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
-  if (!notifications.length) {
+  // Get notifications from auth events as well
+  const { data: authNotifications = [] } = useQuery({
+    queryKey: ['auth-notifications'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('auth_notifications')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching auth notifications:', error);
+        return [];
+      }
+
+      return data || [];
+    },
+  });
+
+  // Combine both notification types
+  const allNotifications = [
+    ...notifications,
+    ...authNotifications.map((n: any) => ({
+      id: n.id,
+      type: 'auth',
+      message: n.message || 'Authentication event',
+      metadata: n.metadata,
+      created_at: n.created_at,
+      is_read: n.is_read || false
+    }))
+  ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+
+  if (isLoading) {
+    return (
+      <div className="text-center py-4">
+        Loading notifications...
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-4 text-red-500">
+        Failed to load notifications
+      </div>
+    );
+  }
+
+  if (allNotifications.length === 0) {
     return (
       <div className="text-center py-4 text-gray-500">
         No notifications
@@ -76,41 +187,87 @@ export function AdminNotificationList() {
     );
   }
 
+  const readCount = allNotifications.filter(n => n.is_read).length;
+
   return (
-    <ScrollArea className="h-[300px] w-full">
-      <div className="space-y-4 p-4">
-        {notifications.map((notification) => (
-          <div
-            key={notification.id}
-            className={`p-4 rounded-lg border ${
-              notification.is_read ? 'bg-gray-50' : 'bg-white'
-            }`}
+    <div className="space-y-4">
+      {readCount > 0 && (
+        <div className="flex justify-end">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={deleteAllReadNotifications}
+            disabled={isDeleting}
           >
-            <div className="flex items-start justify-between">
-              <div className="space-y-1">
-                <p className="text-sm font-medium">{notification.message}</p>
-                <p className="text-xs text-gray-500">
-                  {formatDistanceToNow(new Date(notification.created_at), { addSuffix: true })}
-                </p>
-                {notification.metadata?.source && (
-                  <p className="text-xs text-gray-400">
-                    via {notification.metadata.source}
+            <Trash2 className="mr-2 h-4 w-4" />
+            Clear Read Notifications
+          </Button>
+        </div>
+      )}
+      
+      <ScrollArea className="h-[400px] w-full">
+        <div className="space-y-3 p-1">
+          {allNotifications.map((notification) => (
+            <div
+              key={notification.id}
+              className={`p-4 rounded-lg border ${
+                notification.is_read ? 'bg-gray-50' : 'bg-white border-blue-200'
+              }`}
+            >
+              <div className="flex items-start justify-between">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <p className="text-sm font-medium">{notification.message}</p>
+                    <Badge variant={notification.type === 'auth' ? 'secondary' : 'default'}>
+                      {notification.type}
+                    </Badge>
+                    {!notification.is_read && (
+                      <Badge variant="destructive" className="px-1.5 py-0 text-[10px]">
+                        NEW
+                      </Badge>
+                    )}
+                  </div>
+                  <p className="text-xs text-gray-500">
+                    {formatDistanceToNow(new Date(notification.created_at), { addSuffix: true })}
                   </p>
-                )}
+                  
+                  {notification.metadata && (
+                    <div className="mt-2 text-xs bg-gray-50 p-2 rounded border text-gray-700 font-mono">
+                      {typeof notification.metadata === 'string' ? (
+                        notification.metadata
+                      ) : (
+                        <pre>{JSON.stringify(notification.metadata, null, 2)}</pre>
+                      )}
+                    </div>
+                  )}
+                </div>
+                <div className="flex space-x-1">
+                  {!notification.is_read && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => markAsReadMutation.mutate(notification.id)}
+                      disabled={markAsReadMutation.isPending}
+                      title="Mark as read"
+                    >
+                      <Check className="h-4 w-4" />
+                    </Button>
+                  )}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => deleteNotificationMutation.mutate(notification.id)}
+                    disabled={deleteNotificationMutation.isPending}
+                    title="Delete notification"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
-              {!notification.is_read && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => markAsRead(notification.id)}
-                >
-                  <Check className="h-4 w-4" />
-                </Button>
-              )}
             </div>
-          </div>
-        ))}
-      </div>
-    </ScrollArea>
+          ))}
+        </div>
+      </ScrollArea>
+    </div>
   );
 }

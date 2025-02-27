@@ -5,10 +5,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { AuthError } from "./AuthError";
 import { SupabaseAuthConfig } from "./SupabaseAuthConfig";
 import { WelcomeMessage } from "./WelcomeMessage";
+import { useToast } from "@/hooks/use-toast";
 
 export function AuthForm() {
   const [authError, setAuthError] = useState<string | null>(null);
   const location = useLocation();
+  const { toast } = useToast();
 
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
@@ -17,6 +19,14 @@ export function AuthForm() {
 
     if (error) {
       console.error('Auth error:', { error, errorDescription });
+      
+      // Create a notification for the admin
+      createAuthNotification({
+        error,
+        errorDescription,
+        timestamp: new Date().toISOString()
+      });
+      
       if (error === 'access_denied' && searchParams.get('error_code') === 'otp_expired') {
         setAuthError('The password reset link has expired. Please request a new one.');
       } else {
@@ -36,6 +46,29 @@ export function AuthForm() {
     handleAuthState();
   }, [location]);
 
+  // Function to create auth notifications in the database
+  const createAuthNotification = async (details: any) => {
+    try {
+      const errorMessage = details.errorDescription || `Auth error: ${details.error}`;
+      
+      const { error } = await supabase
+        .from('auth_notifications')
+        .insert([{
+          message: errorMessage,
+          metadata: details,
+          is_read: false
+        }]);
+        
+      if (error) {
+        console.error('Failed to create auth notification:', error);
+      } else {
+        console.log('Auth notification created successfully');
+      }
+    } catch (err) {
+      console.error('Error creating auth notification:', err);
+    }
+  };
+
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       console.log('Auth state change:', event);
@@ -43,12 +76,20 @@ export function AuthForm() {
       if (event === 'SIGNED_OUT') {
         setAuthError(null);
       }
+      
+      // Log sign-in attempts (successful or failed)
+      if (event === 'SIGNED_IN') {
+        toast({
+          title: "Signed in successfully",
+          description: `Welcome back, ${session?.user?.email}`,
+        });
+      }
     });
 
     return () => {
       subscription.unsubscribe();
     };
-  }, []);
+  }, [toast]);
 
   return (
     <div className="w-full max-w-md">

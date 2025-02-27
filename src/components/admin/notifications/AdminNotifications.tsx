@@ -41,7 +41,24 @@ export function AdminNotifications() {
     },
   });
 
-  const totalNotifications = unapprovedUsers.length + unreadNotifications.length;
+  // Also get auth notifications
+  const { data: authNotifications = [] } = useQuery({
+    queryKey: ['unread-auth-notifications'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('auth_notifications')
+        .select('*')
+        .eq('is_read', false);
+
+      if (error) {
+        console.error('Error fetching auth notifications:', error);
+        return [];
+      }
+      return data || [];
+    },
+  });
+
+  const totalNotifications = unapprovedUsers.length + unreadNotifications.length + authNotifications.length;
 
   if (totalNotifications === 0) return null;
 
@@ -77,9 +94,11 @@ export function AdminNotifications() {
               </Button>
             </div>
           )}
-          {unreadNotifications.length > 0 && (
+          {(unreadNotifications.length > 0 || authNotifications.length > 0) && (
             <div className="space-y-2">
-              <h4 className="text-sm font-semibold">Recent Notifications</h4>
+              <h4 className="text-sm font-semibold">
+                Recent Notifications ({unreadNotifications.length + authNotifications.length})
+              </h4>
               <AdminNotificationList />
             </div>
           )}
