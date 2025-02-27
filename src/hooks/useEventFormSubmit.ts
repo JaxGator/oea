@@ -115,7 +115,7 @@ export function useEventFormSubmit(onSuccess: () => void) {
 
         console.log('Updating event with ID:', initialData.id);
 
-        // Update the event in the database
+        // First attempt with upsert
         const { error: updateError } = await supabase
           .from('events')
           .update(eventData)
@@ -126,10 +126,52 @@ export function useEventFormSubmit(onSuccess: () => void) {
           throw updateError;
         }
         
+        // Verify the update was successful by directly fetching the event
+        const { data: verifyData, error: verifyError } = await supabase
+          .from('events')
+          .select('*')
+          .eq('id', initialData.id)
+          .single();
+          
+        if (verifyError) {
+          console.error('Event verification error:', verifyError);
+          throw verifyError;
+        }
+        
+        console.log('Verification data after update:', verifyData);
+        
+        // Check if the update was actually applied in the database
+        if (verifyData.description !== eventData.description) {
+          console.warn('Data mismatch detected. Trying alternative update method...');
+          
+          // Try an alternative update approach
+          const { error: altUpdateError } = await supabase
+            .from('events')
+            .update({
+              description: eventData.description  // Explicitly set the description
+            })
+            .eq('id', initialData.id);
+            
+          if (altUpdateError) {
+            console.error('Alternative update error:', altUpdateError);
+            throw altUpdateError;
+          }
+          
+          // Final verification
+          const { data: finalVerifyData } = await supabase
+            .from('events')
+            .select('description')
+            .eq('id', initialData.id)
+            .single();
+            
+          console.log('Final verification data:', finalVerifyData);
+        }
+        
         // Force invalidation of all event-related caches
         queryClient.invalidateQueries({ queryKey: ['events'] });
         queryClient.invalidateQueries({ queryKey: ['event', initialData.id] });
         queryClient.invalidateQueries({ queryKey: ['featuredEvents'] });
+        queryClient.invalidateQueries();  // Invalidate all queries for good measure
         
         toast.success('Event updated successfully');
         
@@ -137,6 +179,7 @@ export function useEventFormSubmit(onSuccess: () => void) {
         onSuccess();
         
         // Force a page reload after a short delay
+        window.localStorage.setItem('event_just_updated', 'true');
         setTimeout(() => {
           window.location.href = `/events?updated=${Date.now()}`;
         }, 500);
