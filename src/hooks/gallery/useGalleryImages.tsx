@@ -1,7 +1,8 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { ImageType } from '@/components/admin/gallery/types/gallery';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 export function useGalleryImages() {
   const [images, setImages] = useState<ImageType[]>([]);
@@ -58,11 +59,7 @@ export function useGalleryImages() {
       setImages(validImages);
     } catch (error) {
       console.error('Error fetching gallery images:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load gallery images. Please try again.",
-        variant: "destructive",
-      });
+      toast.error("Failed to load gallery images. Please try again.");
     } finally {
       setIsLoading(false);
     }

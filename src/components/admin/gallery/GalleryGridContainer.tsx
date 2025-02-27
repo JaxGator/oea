@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { GalleryItem } from "./GalleryItem";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useSession } from "@/hooks/auth/useSession";
 
 interface GalleryGridContainerProps {
@@ -44,17 +44,10 @@ export function GalleryGridContainer({ images, onImageDelete }: GalleryGridConta
       }
 
       onImageDelete();
-      toast({
-        title: "Success",
-        description: "Image deleted successfully",
-      });
+      toast.success("Image deleted successfully");
     } catch (error) {
       console.error('Error deleting image:', error);
-      toast({
-        title: "Error",
-        description: "Failed to delete image. Please try again.",
-        variant: "destructive",
-      });
+      toast.error("Failed to delete image. Please try again.");
     } finally {
       setDeletingImages(prev => {
         const next = new Set(prev);

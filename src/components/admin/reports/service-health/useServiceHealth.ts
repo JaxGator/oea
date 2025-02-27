@@ -1,6 +1,7 @@
+
 import { useQuery } from "@tanstack/react-query";
 import { ServiceHealthStatus } from "./types";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { checkServiceHealth } from "./services/healthCheckService";
 import { checkSupabaseHealth } from "./services/supabaseHealthCheck";
 import { SERVICE_ENDPOINTS } from "./config/serviceEndpoints";
@@ -37,11 +38,7 @@ async function fetchServiceHealth(): Promise<ServiceHealthStatus> {
     };
   } catch (error) {
     console.error('Service health check error:', error);
-    toast({
-      title: "Service Health Check Error",
-      description: "Unable to check service health status",
-      variant: "destructive",
-    });
+    toast.error("Unable to check service health status");
     
     return {
       supabase: {

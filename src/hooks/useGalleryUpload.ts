@@ -1,7 +1,8 @@
+
 import { useState } from "react";
 import { useSession } from "@/hooks/auth/useSession";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 export function useGalleryUpload(onUploadComplete?: () => void) {
   const [isUploading, setIsUploading] = useState(false);
@@ -9,11 +10,7 @@ export function useGalleryUpload(onUploadComplete?: () => void) {
 
   const uploadImage = async (file: File) => {
     if (!user) {
-      toast({
-        title: "Error",
-        description: "You must be logged in to upload images",
-        variant: "destructive",
-      });
+      toast.error("You must be logged in to upload images");
       return;
     }
 
@@ -57,19 +54,12 @@ export function useGalleryUpload(onUploadComplete?: () => void) {
         throw uploadError;
       }
 
-      toast({
-        title: "Success",
-        description: "Image uploaded successfully",
-      });
+      toast.success("Image uploaded successfully");
 
       onUploadComplete?.();
     } catch (error) {
       console.error('Upload error:', error);
-      toast({
-        title: "Error",
-        description: "Failed to upload image. Please try again.",
-        variant: "destructive",
-      });
+      toast.error("Failed to upload image. Please try again.");
     } finally {
       setIsUploading(false);
     }

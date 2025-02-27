@@ -5,12 +5,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { AuthError } from "./AuthError";
 import { SupabaseAuthConfig } from "./SupabaseAuthConfig";
 import { WelcomeMessage } from "./WelcomeMessage";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 export function AuthForm() {
   const [authError, setAuthError] = useState<string | null>(null);
   const location = useLocation();
-  const { toast } = useToast();
 
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
@@ -79,9 +78,8 @@ export function AuthForm() {
       
       // Log sign-in attempts (successful or failed)
       if (event === 'SIGNED_IN') {
-        toast({
-          title: "Signed in successfully",
-          description: `Welcome back, ${session?.user?.email}`,
+        toast.success("Signed in successfully", {
+          description: `Welcome back, ${session?.user?.email}`
         });
       }
     });
@@ -89,7 +87,7 @@ export function AuthForm() {
     return () => {
       subscription.unsubscribe();
     };
-  }, [toast]);
+  }, []);
 
   return (
     <div className="w-full max-w-md">

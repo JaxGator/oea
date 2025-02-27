@@ -5,7 +5,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { Check, Trash2 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 
@@ -19,7 +19,6 @@ interface AdminNotification {
 }
 
 export function AdminNotificationList() {
-  const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -33,11 +32,7 @@ export function AdminNotificationList() {
 
       if (error) {
         console.error('Error fetching admin notifications:', error);
-        toast({
-          title: "Error",
-          description: "Failed to load notifications",
-          variant: "destructive",
-        });
+        toast.error("Failed to load notifications");
         throw error;
       }
 
@@ -57,18 +52,11 @@ export function AdminNotificationList() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-notifications'] });
-      toast({
-        title: "Success",
-        description: "Notification marked as read",
-      });
+      toast.success("Notification marked as read");
     },
     onError: (error) => {
       console.error('Error marking notification as read:', error);
-      toast({
-        title: "Error",
-        description: "Failed to update notification",
-        variant: "destructive",
-      });
+      toast.error("Failed to update notification");
     }
   });
 
@@ -84,18 +72,11 @@ export function AdminNotificationList() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-notifications'] });
-      toast({
-        title: "Success",
-        description: "Notification deleted",
-      });
+      toast.success("Notification deleted");
     },
     onError: (error) => {
       console.error('Error deleting notification:', error);
-      toast({
-        title: "Error",
-        description: "Failed to delete notification",
-        variant: "destructive",
-      });
+      toast.error("Failed to delete notification");
     },
     onSettled: () => {
       setIsDeleting(false);
@@ -116,17 +97,10 @@ export function AdminNotificationList() {
       if (error) throw error;
       
       queryClient.invalidateQueries({ queryKey: ['admin-notifications'] });
-      toast({
-        title: "Success",
-        description: "All read notifications deleted",
-      });
+      toast.success("All read notifications deleted");
     } catch (error) {
       console.error('Error deleting read notifications:', error);
-      toast({
-        title: "Error",
-        description: "Failed to delete notifications",
-        variant: "destructive",
-      });
+      toast.error("Failed to delete notifications");
     } finally {
       setIsDeleting(false);
     }

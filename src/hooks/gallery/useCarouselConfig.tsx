@@ -1,6 +1,7 @@
+
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 export function useCarouselConfig() {
   const [carouselEnabled, setCarouselEnabled] = useState(false);
@@ -20,11 +21,7 @@ export function useCarouselConfig() {
       setCarouselEnabled(data?.value === 'true');
     } catch (error) {
       console.error('Error fetching carousel config:', error);
-      toast({
-        title: "Error",
-        description: "Failed to fetch carousel configuration",
-        variant: "destructive",
-      });
+      toast.error("Failed to fetch carousel configuration");
     }
   };
 
@@ -45,17 +42,10 @@ export function useCarouselConfig() {
 
       console.log('Carousel configuration updated successfully');
       setCarouselEnabled(enabled);
-      toast({
-        title: "Success",
-        description: `Gallery carousel ${enabled ? 'enabled' : 'disabled'}`,
-      });
+      toast.success(`Gallery carousel ${enabled ? 'enabled' : 'disabled'}`);
     } catch (error) {
       console.error('Error updating carousel config:', error);
-      toast({
-        title: "Error",
-        description: "Failed to update carousel settings",
-        variant: "destructive",
-      });
+      toast.error("Failed to update carousel settings");
       setCarouselEnabled(!enabled);
     }
   };

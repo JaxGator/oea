@@ -1,5 +1,6 @@
+
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 export async function handleImageDelete(imageUrl: string, onSuccess: (imageUrl: string) => void) {
   try {
@@ -33,16 +34,9 @@ export async function handleImageDelete(imageUrl: string, onSuccess: (imageUrl: 
     }
 
     onSuccess(imageUrl);
-    toast({
-      title: "Success",
-      description: "Image deleted successfully",
-    });
+    toast.success("Image deleted successfully");
   } catch (error) {
     console.error('Error deleting image:', error);
-    toast({
-      title: "Error",
-      description: error instanceof Error ? error.message : "Failed to delete image",
-      variant: "destructive",
-    });
+    toast.error(error instanceof Error ? error.message : "Failed to delete image");
   }
 }

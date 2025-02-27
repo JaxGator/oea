@@ -1,8 +1,9 @@
+
 import { useAdminCheck } from "@/hooks/auth/useAdminCheck";
 import { LoadingScreen } from "@/components/ui/loading-screen";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 interface RequireAdminProps {
   children: React.ReactNode;
@@ -22,11 +23,7 @@ export function RequireAdmin({ children }: RequireAdminProps) {
         timestamp: new Date().toISOString()
       });
 
-      toast({
-        title: "Access Denied",
-        description: "You must be an admin to access this area",
-        variant: "destructive",
-      });
+      toast.error("You must be an admin to access this area");
       
       navigate("/");
     }

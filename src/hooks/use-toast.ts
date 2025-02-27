@@ -1,6 +1,6 @@
 
 import { type ToastActionElement, type ToastProps } from "@/components/ui/toast"
-import { toast as sonnerToast, Toast } from "sonner"
+import { toast as sonnerToast } from "sonner"
 
 type ToastOptions = Omit<ToastProps, "children">
 
@@ -56,12 +56,6 @@ function reducer(state: ToasterToastState, action: any): ToasterToastState {
     case "DISMISS_TOAST": {
       const { id } = action
 
-      // If the user-provided onDismiss, call it
-      if (id) {
-        const toast = state.toasts.find((t) => t.id === id)
-        if (toast?.onDismiss) toast.onDismiss()
-      }
-
       return {
         ...state,
         toasts: state.toasts.filter((t) => t.id !== id),
@@ -101,8 +95,8 @@ export function useToast() {
       
       const toastAction = action ? {
         action: {
-          label: action.props.children,
-          onClick: action.props.onClick,
+          label: typeof action.props?.children === 'string' ? action.props.children : 'Action',
+          onClick: action.props?.onClick || (() => {}),
         }
       } : {};
       
