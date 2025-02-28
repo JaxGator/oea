@@ -1,8 +1,6 @@
 
 import { useEffect, useState } from "react";
 import { LeaderboardTable } from "./LeaderboardTable";
-import { LeaderboardFilters } from "./LeaderboardFilters";
-import { LeaderboardMetrics } from "./LeaderboardMetrics";
 import { supabase } from "@/integrations/supabase/client";
 import { LoadingScreen } from "@/components/ui/loading-screen";
 import { toast } from "sonner";
@@ -52,12 +50,11 @@ export function LeaderboardPage() {
   return (
     <div className="container mx-auto py-6 space-y-8">
       <h1 className="text-3xl font-bold">Member Leaderboard</h1>
-      <LeaderboardMetrics data={members} timeRange={timeRange} />
-      <LeaderboardFilters
-        timeRange={timeRange}
-        setTimeRange={setTimeRange}
+      <LeaderboardTable 
+        data={members}
+        category="attendance"
+        timeFilter={timeRange === "week" ? "weekly" : timeRange === "month" ? "monthly" : "all"}
       />
-      <LeaderboardTable members={members} timeRange={timeRange} />
     </div>
   );
 }

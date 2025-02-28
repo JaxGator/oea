@@ -1,6 +1,7 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from "sonner";
+import { PostgrestSingleResponse } from '@supabase/supabase-js';
 
 export const uploadFile = async (
   file: File,
@@ -70,4 +71,18 @@ export const deleteFile = async (
     toast.error("Failed to delete file");
     return false;
   }
+};
+
+// Add the missing handleQueryResult function
+export const handleQueryResult = <T>(
+  response: PostgrestSingleResponse<T>,
+  errorMessage = "An error occurred"
+): T | null => {
+  if (response.error) {
+    console.error("Supabase query error:", response.error);
+    toast.error(errorMessage);
+    return null;
+  }
+  
+  return response.data;
 };

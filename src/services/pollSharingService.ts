@@ -1,73 +1,106 @@
 
-import { supabase } from "@/integrations/supabase/client";
-import { handleQueryResult } from "@/utils/supabase-helpers";
-import type { Database } from "@/types/database.types";
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
+import { handleQueryResult } from '@/utils/supabase-helpers';
 
-export interface PollSharing {
-  shareToken: string | null;
-  existingShares: string[];
+export async function getPublicPollData(pollId: string) {
+  const response = await supabase
+    .from('polls')
+    .select(`
+      id, 
+      title, 
+      description, 
+      closes_at,
+      created_at,
+      poll_options (
+        id,
+        text,
+        poll_id,
+        poll_votes (
+          id,
+          user_id
+        )
+      )
+    `)
+    .eq('id', pollId)
+    .eq('is_public', true)
+    .single();
+
+  return handleQueryResult(response, "Could not load poll data");
 }
 
-export const pollSharingService = {
-  async getPollShareToken(pollId: string): Promise<string | null> {
-    const response = await supabase
+export async function getPublicPollVoters(pollId: string) {
+  const response = await supabase
+    .from('poll_votes')
+    .select(`
+      id,
+      poll_option_id,
+      profiles: user_id (
+        id,
+        username,
+        avatar_url,
+        full_name
+      )
+    `)
+    .eq('poll_id', pollId);
+
+  return handleQueryResult(response, "Could not load poll voters");
+}
+
+export async function castPublicVote(pollId: string, optionId: string, userId: string) {
+  try {
+    // Check if poll is public
+    const { data: poll, error: pollError } = await supabase
       .from('polls')
-      .select('share_token')
-      .eq('id', pollId as string)
-      .maybeSingle();
+      .select('is_public, closes_at')
+      .eq('id', pollId)
+      .single();
 
-    if (response.error) {
-      console.error('Error fetching share token:', response.error);
-      throw response.error;
+    if (pollError) throw new Error("Poll not found");
+    
+    if (!poll.is_public) {
+      throw new Error("This poll is not public");
     }
-    return response.data?.share_token ?? null;
-  },
-
-  async getPollShares(pollId: string): Promise<string[]> {
-    const { data, error } = await supabase
-      .from('poll_shares')
-      .select('shared_with')
-      .eq('poll_id', pollId);
-
-    if (error) {
-      console.error('Error fetching poll shares:', error);
-      throw error;
+    
+    if (poll.closes_at && new Date(poll.closes_at) < new Date()) {
+      throw new Error("This poll has closed");
     }
-    return (data || []).map(share => share.shared_with);
-  },
 
-  async sharePoll(pollId: string, selectedUsers: string[], shareUrl: string) {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error('No authenticated user');
+    // Check if user has already voted in this poll
+    const { data: existingVotes, error: votesError } = await supabase
+      .from('poll_votes')
+      .select('id')
+      .eq('poll_id', pollId)
+      .eq('user_id', userId);
 
-    // Create poll shares
-    const { error: shareError } = await supabase
-      .from('poll_shares')
-      .insert(selectedUsers.map(userId => ({
+    if (votesError) throw votesError;
+    
+    if (existingVotes && existingVotes.length > 0) {
+      // Delete existing vote
+      const { error: deleteError } = await supabase
+        .from('poll_votes')
+        .delete()
+        .eq('poll_id', pollId)
+        .eq('user_id', userId);
+        
+      if (deleteError) throw deleteError;
+    }
+
+    // Insert the new vote
+    const { error: insertError } = await supabase
+      .from('poll_votes')
+      .insert({
         poll_id: pollId,
-        shared_with: userId,
-        shared_by: user.id
-      })));
+        poll_option_id: optionId,
+        user_id: userId
+      });
 
-    if (shareError) {
-      console.error('Error sharing poll:', shareError);
-      throw shareError;
-    }
+    if (insertError) throw insertError;
 
-    // Create notifications
-    const { error: notificationError } = await supabase
-      .from('notifications')
-      .insert(selectedUsers.map(userId => ({
-        user_id: userId,
-        type: 'poll_share',
-        title: 'New Poll Shared',
-        message: `A poll has been shared with you. Click to view: ${shareUrl}`,
-        related_entity_id: pollId
-      })));
-
-    if (notificationError) {
-      console.error('Error creating notifications:', notificationError);
-      throw notificationError;
-    }
+    return true;
+  } catch (error) {
+    console.error('Error casting vote:', error);
+    toast.error(error instanceof Error ? error.message : "Failed to cast vote");
+    return false;
   }
-};
+}
