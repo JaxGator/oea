@@ -1,6 +1,7 @@
+
 import { useEffect } from 'react';
 import { useAuthState } from '@/hooks/useAuthState';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 export function useAdminCheck() {
   const { profile, isLoading, error } = useAuthState();

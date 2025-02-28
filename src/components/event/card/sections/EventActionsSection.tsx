@@ -21,7 +21,7 @@ interface EventActionsSectionProps {
   canJoinWaitlist?: boolean;
   isWixEvent?: boolean;
   requireAuth?: boolean;
-  event: { id: string; title: string };
+  event: { id: string; title: string; created_by?: string };
   showDelete?: boolean;
   isAuthenticated?: boolean;
 }
@@ -50,6 +50,16 @@ export function EventActionsSection({
   showDelete = false,
   isAuthenticated = false
 }: EventActionsSectionProps) {
+  console.log('EventActionsSection - Admin status:', {
+    isAdmin,
+    canManageEvents,
+    isPastEvent,
+    showPublishToggle,
+    isWixEvent,
+    showDelete,
+    eventCreator: event.created_by
+  });
+  
   if (isAuthChecking) {
     return (
       <div className="animate-pulse">
