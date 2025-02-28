@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
-import { pollSharingService } from "@/services/pollSharingService";
+import * as pollSharingService from "@/services/pollSharingService";
 
 export function usePollSharing(pollId: string) {
   const { toast } = useToast();
