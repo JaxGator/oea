@@ -1,125 +1,107 @@
 
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
-}
-
-const FUNCTION_NAME = 'send-admin-message';
-
-interface MessageRequest {
-  message: string;
 }
 
 serve(async (req) => {
-  console.log(`[${FUNCTION_NAME}] Function started`);
-  
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    console.log(`[${FUNCTION_NAME}] Handling CORS preflight request`);
-    return new Response(null, {
-      status: 204,
-      headers: corsHeaders
-    });
+    return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const supabaseUrl = Deno.env.get('SUPABASE_URL');
-    const supabaseServiceRole = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    const supabaseClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    )
 
-    if (!supabaseUrl || !supabaseServiceRole) {
-      console.error(`[${FUNCTION_NAME}] Missing environment variables`);
-      throw new Error('Server configuration error');
+    // Get the request body
+    const { message } = await req.json()
+
+    if (!message) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'Message is required' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+      )
     }
 
-    const supabaseAdmin = createClient(
-      supabaseUrl,
-      supabaseServiceRole
-    );
+    // Get the user who sent the message
+    const { data: { user } } = await supabaseClient.auth.getUser(
+      req.headers.get('Authorization')?.replace('Bearer ', '') || ''
+    )
 
-    let requestBody: MessageRequest;
-    try {
-      requestBody = await req.json();
-      console.log(`[${FUNCTION_NAME}] Received request:`, { messageLength: requestBody?.message?.length });
-    } catch (error) {
-      console.error(`[${FUNCTION_NAME}] Invalid request body:`, error);
-      throw new Error('Invalid request format');
+    console.log('User info:', user)
+
+    // Get the user's profile
+    let senderInfo = 'Anonymous user'
+    if (user?.id) {
+      const { data: profile } = await supabaseClient
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single()
+
+      console.log('Profile info:', profile)
+
+      if (profile) {
+        senderInfo = profile.full_name || profile.username || user.email || 'Unknown user'
+      }
     }
 
-    const { message } = requestBody;
-
-    if (!message?.trim()) {
-      console.error(`[${FUNCTION_NAME}] Validation failed: Message is required`);
-      throw new Error('Message is required');
-    }
-
-    // Get all admin users
-    const { data: adminProfiles, error: adminError } = await supabaseAdmin
-      .from('profiles')
-      .select('id')
-      .eq('is_admin', true);
-
-    if (adminError || !adminProfiles?.length) {
-      console.error(`[${FUNCTION_NAME}] Error fetching admin profiles:`, adminError);
-      throw new Error('Failed to fetch administrators');
-    }
-
-    console.log(`[${FUNCTION_NAME}] Found ${adminProfiles.length} admin(s), creating notifications`);
-
-    // Create admin notifications
-    const { error: notificationError } = await supabaseAdmin
+    // Save to admin_notifications table
+    const { error: adminNotificationError } = await supabaseClient
       .from('admin_notifications')
-      .insert(
-        adminProfiles.map(admin => ({
-          type: 'contact_message',
-          message: message,
-          metadata: {
-            source: 'contact_form',
-            timestamp: new Date().toISOString()
-          },
-          user_id: admin.id
-        }))
-      );
+      .insert({
+        type: 'contact',
+        message: `Message from ${senderInfo}`,
+        metadata: {
+          message,
+          sender: senderInfo,
+          sender_id: user?.id,
+          timestamp: new Date().toISOString(),
+          user_details: user ? {
+            id: user.id,
+            email: user.email,
+          } : null
+        }
+      })
 
-    if (notificationError) {
-      console.error(`[${FUNCTION_NAME}] Error creating notifications:`, notificationError);
-      throw new Error('Failed to create notifications');
+    if (adminNotificationError) {
+      console.error('Error creating admin notification:', adminNotificationError)
+      return new Response(
+        JSON.stringify({ success: false, error: 'Failed to send message to administrator' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
+      )
     }
 
-    console.log(`[${FUNCTION_NAME}] Successfully created notifications for ${adminProfiles.length} admin(s)`);
+    // Also insert into auth_notifications for better display
+    const { error: authNotificationError } = await supabaseClient
+      .from('auth_notifications')
+      .insert({
+        type: 'contact',
+        message: `Message from ${senderInfo}`,
+        metadata: message, // Store the full message text here
+        is_read: false
+      })
+
+    if (authNotificationError) {
+      console.error('Error creating auth notification:', authNotificationError)
+      // Don't fail on this error, just log it
+    }
 
     return new Response(
-      JSON.stringify({ 
-        success: true,
-        notified: adminProfiles.length
-      }),
-      { 
-        headers: {
-          ...corsHeaders,
-          'Content-Type': 'application/json'
-        },
-        status: 200 
-      }
-    );
-
+      JSON.stringify({ success: true }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
+    )
   } catch (error) {
-    console.error(`[${FUNCTION_NAME}] Error:`, error);
-    
+    console.error('Error processing request:', error)
     return new Response(
-      JSON.stringify({ 
-        error: error instanceof Error ? error.message : 'An unexpected error occurred',
-        success: false
-      }), 
-      { 
-        headers: {
-          ...corsHeaders,
-          'Content-Type': 'application/json'
-        },
-        status: error instanceof Error && error.message === 'Invalid request format' ? 400 : 500
-      }
-    );
+      JSON.stringify({ success: false, error: 'Internal server error' }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
+    )
   }
-});
+})

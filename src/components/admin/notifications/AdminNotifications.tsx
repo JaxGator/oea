@@ -45,16 +45,22 @@ export function AdminNotifications() {
   const { data: authNotifications = [] } = useQuery({
     queryKey: ['unread-auth-notifications'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('auth_notifications')
-        .select('*')
-        .eq('is_read', false);
+      try {
+        const { data, error } = await supabase
+          .from('auth_notifications')
+          .select('*')
+          .eq('is_read', false);
 
-      if (error) {
-        console.error('Error fetching auth notifications:', error);
+        if (error) {
+          console.error('Error fetching auth notifications:', error);
+          return [];
+        }
+        console.log('Unread auth notifications:', data);
+        return data || [];
+      } catch (err) {
+        console.error('Exception fetching auth notifications:', err);
         return [];
       }
-      return data || [];
     },
   });
 

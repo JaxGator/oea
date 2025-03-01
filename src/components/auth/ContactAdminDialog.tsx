@@ -55,6 +55,24 @@ export function ContactAdminDialog() {
           throw new Error(data?.error || 'Failed to send message');
         }
 
+        // Also create a local auth_notification record for immediate feedback
+        try {
+          const { error: authNotifError } = await supabase
+            .from('auth_notifications')
+            .insert({
+              type: 'contact',
+              message: 'User contact message', 
+              metadata: trimmedMessage, // Store full message in metadata
+              is_read: false
+            });
+
+          if (authNotifError) {
+            console.error('Error creating local auth notification:', authNotifError);
+          }
+        } catch (authErr) {
+          console.error('Failed to create auth notification:', authErr);
+        }
+
         toast({
           title: "Message Sent",
           description: "An administrator will respond to your message soon.",
