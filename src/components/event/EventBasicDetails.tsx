@@ -1,10 +1,11 @@
+
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { UseFormReturn } from "react-hook-form";
 import { EventFormValues } from "./EventFormTypes";
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
-import { useRef } from 'react';
+import { useRef, useEffect } from 'react';
 
 interface EventBasicDetailsProps {
   form: UseFormReturn<EventFormValues>;
@@ -30,6 +31,24 @@ const formats = [
 export function EventBasicDetails({ form }: EventBasicDetailsProps) {
   const quillRef = useRef<ReactQuill>(null);
 
+  // Ensure proper initialization of ReactQuill
+  useEffect(() => {
+    // Short timeout to ensure the editor is mounted before we try to access it
+    const timer = setTimeout(() => {
+      if (quillRef.current && quillRef.current.getEditor) {
+        try {
+          const editor = quillRef.current.getEditor();
+          // Force a refresh of the editor
+          editor.update();
+        } catch (e) {
+          console.error('Error initializing Quill editor:', e);
+        }
+      }
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, []);
+  
   return (
     <>
       <FormField
@@ -39,7 +58,12 @@ export function EventBasicDetails({ form }: EventBasicDetailsProps) {
           <FormItem>
             <FormLabel>Title</FormLabel>
             <FormControl>
-              <Input placeholder="Event title" {...field} />
+              <Input 
+                placeholder="Event title" 
+                {...field} 
+                value={field.value || ''}
+                onChange={(e) => field.onChange(e.target.value)}
+              />
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -59,7 +83,10 @@ export function EventBasicDetails({ form }: EventBasicDetailsProps) {
                   modules={modules}
                   formats={formats}
                   value={field.value || ''}
-                  onChange={field.onChange}
+                  onChange={(content) => {
+                    console.log('Quill content updated:', content);
+                    field.onChange(content);
+                  }}
                   className="bg-white h-full"
                   style={{ minHeight: '250px' }}
                 />

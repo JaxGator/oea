@@ -17,7 +17,7 @@ export const eventSchema = z.object({
   is_featured: z.boolean().default(false),
   latitude: z.number().optional(),
   longitude: z.number().optional(),
-  created_by: z.string(),
+  created_by: z.string().nonempty("User ID is required"),
 });
 
 export type EventFormValues = z.infer<typeof eventSchema>;

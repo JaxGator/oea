@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -11,6 +12,7 @@ import { useState, useEffect } from "react";
 import { EventForm } from "./event/EventForm";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 interface CreateEventDialogProps {
   open?: boolean;
@@ -21,7 +23,7 @@ interface CreateEventDialogProps {
 export function CreateEventDialog({ open, onOpenChange, onSuccess }: CreateEventDialogProps) {
   const [dialogOpen, setDialogOpen] = useState(open || false);
   const [canCreateEvents, setCanCreateEvents] = useState(false);
-  const { toast } = useToast();
+  const { toast: uiToast } = useToast();
 
   useEffect(() => {
     setDialogOpen(open ?? false);
@@ -29,7 +31,7 @@ export function CreateEventDialog({ open, onOpenChange, onSuccess }: CreateEvent
 
   const handleOpenChange = (newOpen: boolean) => {
     setDialogOpen(newOpen);
-    onOpenChange?.(newOpen);
+    if (onOpenChange) onOpenChange(newOpen);
   };
 
   useEffect(() => {
@@ -55,7 +57,7 @@ export function CreateEventDialog({ open, onOpenChange, onSuccess }: CreateEvent
 
         if (profileError) {
           console.error('Profile error:', profileError);
-          toast({
+          uiToast({
             title: "Error",
             description: "Failed to check user permissions",
             variant: "destructive",
@@ -81,7 +83,20 @@ export function CreateEventDialog({ open, onOpenChange, onSuccess }: CreateEvent
     });
 
     return () => subscription.unsubscribe();
-  }, [toast]);
+  }, [uiToast]);
+
+  const handleEventSuccess = () => {
+    console.log('Event created successfully');
+    toast.success('Event created successfully');
+    
+    // Close the dialog
+    handleOpenChange(false);
+    
+    // Call the parent success handler
+    if (onSuccess) {
+      onSuccess();
+    }
+  };
 
   if (!canCreateEvents) return null;
 
@@ -98,10 +113,7 @@ export function CreateEventDialog({ open, onOpenChange, onSuccess }: CreateEvent
           <DialogTitle>Create New Event</DialogTitle>
         </DialogHeader>
         <div className="py-4">
-          <EventForm onSuccess={() => {
-            onSuccess?.();
-            handleOpenChange(false);
-          }} />
+          <EventForm onSuccess={handleEventSuccess} />
         </div>
       </DialogContent>
     </Dialog>

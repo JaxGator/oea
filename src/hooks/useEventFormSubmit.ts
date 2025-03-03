@@ -11,7 +11,10 @@ async function geocodeLocation(location: string) {
   try {
     const { data: { token }, error: tokenError } = await supabase.functions.invoke('get-mapbox-token');
     
-    if (tokenError) throw tokenError;
+    if (tokenError) {
+      console.error('Error getting Mapbox token:', tokenError);
+      return null;
+    }
 
     const query = encodeURIComponent(location);
     const response = await fetch(
@@ -19,7 +22,8 @@ async function geocodeLocation(location: string) {
     );
     
     if (!response.ok) {
-      throw new Error('Geocoding failed');
+      console.error('Geocoding fetch error:', response.status, response.statusText);
+      return null;
     }
 
     const data = await response.json();
@@ -27,6 +31,8 @@ async function geocodeLocation(location: string) {
       const [longitude, latitude] = data.features[0].center;
       return { latitude, longitude };
     }
+    
+    console.log('No geocoding results found for:', location);
     return null;
   } catch (error) {
     console.error('Geocoding error:', error);
@@ -47,15 +53,18 @@ export function useEventFormSubmit(onSuccess: () => void) {
     try {
       setIsSubmitting(true);
       
+      console.log('Event submission - Form data:', formData);
       console.log('Event submission - User status:', { 
         userId: user?.id,
         isAdmin,
         canManageEvents,
         isUpdating: !!initialData?.id,
-        eventCreator: initialData?.created_by,
-        isCreator: initialData?.created_by === user?.id,
-        eventData: formData
+        eventCreator: initialData?.created_by
       });
+
+      if (!user?.id) {
+        throw new Error('You must be logged in to create or edit an event');
+      }
 
       // Check if user is allowed to update this event
       if (initialData?.id) {
@@ -73,25 +82,29 @@ export function useEventFormSubmit(onSuccess: () => void) {
         }
       }
 
+      // Validate required fields
+      if (!formData.title) throw new Error('Title is required');
+      if (!formData.date) throw new Error('Date is required');
+      if (!formData.time) throw new Error('Start time is required');
+      if (!formData.location) throw new Error('Location is required');
+      if (!formData.max_guests || formData.max_guests < 1) throw new Error('Maximum guests must be at least 1');
+
       // Clean up the form data
       const cleanedData = {
         ...formData,
         end_time: formData.end_time || null,
-        time: formData.time || null
+        waitlist_capacity: formData.waitlist_enabled ? formData.waitlist_capacity : null
       };
-
-      // Validate required time field
-      if (!cleanedData.time) {
-        throw new Error('Start time is required');
-      }
 
       // Only geocode if location has changed
       let coordinates = null;
       if (!initialData || initialData.location !== cleanedData.location) {
+        console.log('Geocoding location:', cleanedData.location);
         coordinates = await geocodeLocation(cleanedData.location);
+        console.log('Geocoding result:', coordinates);
       }
       
-      // Prepare event data but don't override created_by or id
+      // Prepare event data
       const eventData = {
         title: cleanedData.title,
         description: cleanedData.description,
@@ -114,71 +127,60 @@ export function useEventFormSubmit(onSuccess: () => void) {
         ...(initialData?.latitude && !coordinates && {
           latitude: initialData.latitude,
           longitude: initialData.longitude
-        })
+        }),
+        created_by: cleanedData.created_by || user.id
       };
 
-      console.log('Event data to be saved:', {
-        isUpdate: !!initialData?.id,
-        eventId: initialData?.id,
-        data: eventData
-      });
+      console.log('Event data to be saved:', eventData);
+      console.log('Is update operation:', !!initialData?.id);
 
       if (initialData?.id) {
         console.log('Updating event with ID:', initialData.id);
 
-        // Try direct update first
-        const { error: updateError } = await supabase
+        // Update existing event
+        const { data: updateData, error: updateError } = await supabase
           .from('events')
           .update(eventData)
-          .eq('id', initialData.id);
+          .eq('id', initialData.id)
+          .select();
 
         if (updateError) {
           console.error('Event update error:', updateError);
-          
-          // If there's a permission error, try another approach for members
-          if (updateError.code === '42501' || updateError.message.includes('permission')) {
-            console.log('Permission issue detected. Trying with RLS bypass function...');
-            
-            // We could implement a Supabase function here if needed
-            throw new Error('Permission denied. Please contact an admin if you believe you should have access.');
-          }
-          
-          throw updateError;
+          throw new Error(`Failed to update event: ${updateError.message}`);
         }
+        
+        console.log('Update response:', updateData);
         
         // Force invalidation of all event-related caches
         queryClient.invalidateQueries({ queryKey: ['events'] });
         queryClient.invalidateQueries({ queryKey: ['event', initialData.id] });
         queryClient.invalidateQueries({ queryKey: ['featuredEvents'] });
-        queryClient.invalidateQueries();  // Invalidate all queries for good measure
         
         toast.success('Event updated successfully');
         
         // Call the success callback
-        onSuccess();
-        
-        // Force a page reload after a short delay
-        window.localStorage.setItem('event_just_updated', 'true');
-        setTimeout(() => {
-          window.location.href = `/events?updated=${Date.now()}`;
-        }, 500);
+        if (onSuccess) onSuccess();
       } else {
-        // For new events, set the creator to the current user
-        const newEventData = {
+        // Insert new event
+        console.log('Creating new event with data:', {
           ...eventData,
-          created_by: user?.id
-        };
+          created_by: user.id
+        });
         
-        // Insert the new event
         const { data: insertData, error: insertError } = await supabase
           .from('events')
-          .insert([newEventData])
+          .insert([{
+            ...eventData,
+            created_by: user.id
+          }])
           .select();
 
         if (insertError) {
           console.error('Event creation error:', insertError);
-          throw insertError;
+          throw new Error(`Failed to create event: ${insertError.message}`);
         }
+        
+        console.log('Insert response:', insertData);
         
         if (!insertData || insertData.length === 0) {
           console.error('Event creation returned no data');
@@ -189,20 +191,15 @@ export function useEventFormSubmit(onSuccess: () => void) {
         queryClient.invalidateQueries({ queryKey: ['events'] });
         queryClient.invalidateQueries({ queryKey: ['featuredEvents'] });
         
-        console.log('Event created successfully:', insertData);
         toast.success('Event created successfully');
         
         // Call the success callback
-        onSuccess();
-        
-        // Navigate to events page after a short delay
-        setTimeout(() => {
-          window.location.href = `/events?created=${Date.now()}`;
-        }, 500);
+        if (onSuccess) onSuccess();
       }
     } catch (error: any) {
       console.error('Error submitting event:', error);
       toast.error(error.message || 'Failed to save event');
+      throw error; // Re-throw to allow the form component to handle it
     } finally {
       setIsSubmitting(false);
     }

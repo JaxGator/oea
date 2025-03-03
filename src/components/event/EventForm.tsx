@@ -15,7 +15,8 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { useAdminStatus } from "@/hooks/events/useAdminStatus";
 import { useAuthState } from "@/hooks/useAuthState";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { toast } from "sonner";
 
 export function EventForm({ onSuccess, initialData, isPastEvent, isWixEvent }: EventFormProps) {
   const { isAdmin, canManageEvents } = useAdminStatus();
@@ -24,7 +25,7 @@ export function EventForm({ onSuccess, initialData, isPastEvent, isWixEvent }: E
   
   const form = useForm<EventFormValues>({
     resolver: zodResolver(eventSchema),
-    mode: "onSubmit", // Only validate on form submission
+    mode: "onSubmit",
     defaultValues: {
       title: initialData?.title || "",
       description: initialData?.description || "",
@@ -43,14 +44,22 @@ export function EventForm({ onSuccess, initialData, isPastEvent, isWixEvent }: E
       longitude: initialData?.longitude,
       created_by: initialData?.created_by || user?.id || "",
     },
-    reValidateMode: "onSubmit" // Only revalidate on form submission
+    reValidateMode: "onSubmit"
   });
+
+  // Make sure created_by is set when user loads
+  useEffect(() => {
+    if (user?.id && !form.getValues('created_by')) {
+      form.setValue('created_by', user.id);
+    }
+  }, [user, form]);
 
   const { handleSubmit: handleFormSubmit, isSubmitting } = useEventFormSubmit(onSuccess);
 
   const onSubmit = async (data: EventFormValues) => {
     if (!user?.id) {
       console.error('No user ID available');
+      toast.error('You must be logged in to create an event');
       return;
     }
     
@@ -63,7 +72,8 @@ export function EventForm({ onSuccess, initialData, isPastEvent, isWixEvent }: E
     setLocalSubmitting(true);
     
     try {
-      console.log('EventForm - Submitting form', { 
+      console.log('EventForm - Submitting form with data:', { 
+        ...data,
         userId: user.id,
         isAdmin,
         canManageEvents,
@@ -78,6 +88,9 @@ export function EventForm({ onSuccess, initialData, isPastEvent, isWixEvent }: E
       };
       
       await handleFormSubmit(eventData, initialData);
+    } catch (error) {
+      console.error('Form submission error:', error);
+      toast.error('Failed to save event. Please try again.');
     } finally {
       setLocalSubmitting(false);
     }
