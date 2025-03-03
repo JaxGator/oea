@@ -124,41 +124,20 @@ export const useSessionManager = (queryClient: any) => {
       return subscription;
     };
 
-    // Handle visibility changes
-    const handleVisibilityChange = () => {
-      if (document.hidden) {
-        // Clear the interval when tab is not visible
-        if (refreshTimerRef.current) {
-          clearInterval(refreshTimerRef.current);
-          refreshTimerRef.current = undefined;
-        }
-      } else {
-        // Restart the interval when tab becomes visible
-        checkSession();
-        refreshTimerRef.current = setInterval(checkSession, 4 * 60 * 1000);
-      }
-    };
-
     // Initial session check
     checkSession();
 
     // Set up auth listener
     const subscription = setupAuthListener();
 
-    // Set up visibility change listener
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-
-    // Set up periodic session checks only when tab is visible
-    if (!document.hidden) {
-      refreshTimerRef.current = setInterval(checkSession, 4 * 60 * 1000);
-    }
+    // We're removing the visibility change handler and periodic refresh timer
+    // to prevent automatic refreshes when switching tabs
 
     return () => {
       mounted = false;
       if (refreshTimerRef.current) {
         clearInterval(refreshTimerRef.current);
       }
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
       subscription.unsubscribe();
     };
   }, [checkSession, navigate, location.pathname, queryClient]);
