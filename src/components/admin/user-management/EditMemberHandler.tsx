@@ -105,17 +105,18 @@ export const EditMemberHandler = memo(function EditMemberHandler({
     try {
       console.log('EditMemberHandler: Starting update with data:', updatedData);
       setIsLoading(true);
-
-      // Use the admin_update_user RPC function to update the user
-      const { error } = await supabase.rpc('admin_update_user', {
-        admin_id: (await supabase.auth.getUser()).data.user?.id,
-        target_user_id: updatedData.id,
-        new_username: updatedData.username || '',
-        new_full_name: updatedData.full_name || '',
-        new_avatar_url: updatedData.avatar_url || '',
-        new_is_admin: Boolean(updatedData.is_admin),
-        new_is_approved: Boolean(updatedData.is_approved),
-        new_is_member: Boolean(updatedData.is_member)
+      
+      const { error } = await supabase.functions.invoke('admin-user-management', {
+        body: {
+          userId: updatedData.id,
+          username: updatedData.username || '',
+          fullName: updatedData.full_name || '',
+          avatarUrl: updatedData.avatar_url || '',
+          isAdmin: Boolean(updatedData.is_admin),
+          isApproved: Boolean(updatedData.is_approved),
+          isMember: Boolean(updatedData.is_member),
+          email: updatedData.email || undefined
+        }
       });
 
       if (error) throw error;
@@ -149,7 +150,7 @@ export const EditMemberHandler = memo(function EditMemberHandler({
     setIsOpen(open);
   };
 
-  if (isLoading) {
+  if (isLoading && !memberData) {
     return (
       <div className="flex items-center justify-center p-4">
         <Loader2 className="h-6 w-6 animate-spin" />
@@ -159,7 +160,6 @@ export const EditMemberHandler = memo(function EditMemberHandler({
 
   // Only render dialog when we have valid member data
   if (!memberData?.id || !memberData?.username) {
-    console.log('EditMemberHandler: Invalid member data:', memberData);
     return null;
   }
 

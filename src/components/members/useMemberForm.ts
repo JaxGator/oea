@@ -48,7 +48,7 @@ export function useMemberForm(member: Member | null, onUpdate: () => void, onClo
       setIsMember(Boolean(member.is_member));
       setAvatarUrl(member.avatar_url || '');
     }
-  }, [member]);
+  }, [member?.id]); // Only update when the member ID changes
 
   const handleSubmit = async () => {
     console.log("useMemberForm: handleSubmit called");

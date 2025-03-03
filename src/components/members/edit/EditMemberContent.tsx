@@ -48,7 +48,7 @@ export function EditMemberContent({
         is_admin: isAdmin,
         is_approved: isApproved,
         is_member: isMember,
-        email: email
+        email
       };
       console.log('Submitting updated member:', updatedMember);
       await onUpdate(updatedMember);
