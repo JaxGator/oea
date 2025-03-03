@@ -16,7 +16,9 @@ export function EditMemberContent({
   onUpdate, 
   onClose 
 }: EditMemberContentProps) {
-  const { isSubmitting } = useEditMember();
+  console.log('EditMemberContent render with member ID:', member.id);
+  const { isSubmitting, setIsSubmitting } = useEditMember();
+  
   const {
     avatarUrl,
     setAvatarUrl,
@@ -35,24 +37,32 @@ export function EditMemberContent({
     isMember,
     setIsMember,
     handleSubmit,
-  } = useMemberForm(member, () => {
-    const updatedMember: Member = {
-      ...member,
-      username,
-      full_name: fullName,
-      avatar_url: avatarUrl,
-      is_admin: isAdmin,
-      is_approved: isApproved,
-      is_member: isMember,
-    };
-    onUpdate(updatedMember);
+  } = useMemberForm(member, async () => {
+    try {
+      setIsSubmitting(true);
+      const updatedMember: Member = {
+        ...member,
+        username,
+        full_name: fullName,
+        avatar_url: avatarUrl,
+        is_admin: isAdmin,
+        is_approved: isApproved,
+        is_member: isMember,
+        email: email
+      };
+      console.log('Submitting updated member:', updatedMember);
+      await onUpdate(updatedMember);
+      onClose();
+    } finally {
+      setIsSubmitting(false);
+    }
   }, onClose);
 
   return (
     <div className="space-y-6">
       <MemberAvatarUpload
         memberId={member.id}
-        username={member.username}
+        username={member.username || 'user'}
         avatarUrl={avatarUrl || member.avatar_url || ''}
         onAvatarUpdate={setAvatarUrl}
       />

@@ -19,6 +19,7 @@ export const EditMemberHandler = memo(function EditMemberHandler({
 }: EditMemberHandlerProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [memberData, setMemberData] = useState<Member | null>(null);
+  const [isOpen, setIsOpen] = useState(false);
   const { toast } = useToast();
 
   const fetchMemberData = useCallback(async () => {
@@ -72,6 +73,7 @@ export const EditMemberHandler = memo(function EditMemberHandler({
 
       console.log('EditMemberHandler: Member data fetched:', enrichedData);
       setMemberData(enrichedData);
+      setIsOpen(true); // Only open dialog after data is loaded
     } catch (error) {
       console.error('EditMemberHandler: Error fetching member data:', error);
       toast({
@@ -90,6 +92,7 @@ export const EditMemberHandler = memo(function EditMemberHandler({
       fetchMemberData();
     } else {
       setMemberData(null);
+      setIsOpen(false);
     }
   }, [member?.id, fetchMemberData]);
 
@@ -103,6 +106,7 @@ export const EditMemberHandler = memo(function EditMemberHandler({
       console.log('EditMemberHandler: Starting update with data:', updatedData);
       setIsLoading(true);
 
+      // Use the admin_update_user RPC function to update the user
       const { error } = await supabase.rpc('admin_update_user', {
         admin_id: (await supabase.auth.getUser()).data.user?.id,
         target_user_id: updatedData.id,
@@ -124,6 +128,7 @@ export const EditMemberHandler = memo(function EditMemberHandler({
         description: "Member updated successfully",
       });
       
+      setIsOpen(false);
       onClose();
     } catch (error) {
       console.error('EditMemberHandler: Error in handleUpdateComplete:', error);
@@ -136,6 +141,13 @@ export const EditMemberHandler = memo(function EditMemberHandler({
       setIsLoading(false);
     }
   }, [onUpdate, onClose, toast]);
+
+  const handleOpenChange = (open: boolean) => {
+    if (!open) {
+      onClose();
+    }
+    setIsOpen(open);
+  };
 
   if (isLoading) {
     return (
@@ -154,8 +166,8 @@ export const EditMemberHandler = memo(function EditMemberHandler({
   return (
     <EditMemberDialog
       member={memberData}
-      open={true}
-      onOpenChange={onClose}
+      open={isOpen}
+      onOpenChange={handleOpenChange}
       onUpdate={handleUpdateComplete}
     />
   );

@@ -36,13 +36,28 @@ export function useMemberForm(member: Member | null, onUpdate: () => void, onClo
   const [isMember, setIsMember] = useState(safeMember.is_member);
   const [avatarUrl, setAvatarUrl] = useState(safeMember.avatar_url || '');
 
+  // Update form when member changes
+  useEffect(() => {
+    if (member) {
+      setUsername(member.username || '');
+      setFullName(member.full_name || '');
+      setEmail(member.email || '');
+      setPassword('');
+      setIsAdmin(Boolean(member.is_admin));
+      setIsApproved(Boolean(member.is_approved));
+      setIsMember(Boolean(member.is_member));
+      setAvatarUrl(member.avatar_url || '');
+    }
+  }, [member]);
+
   const handleSubmit = async () => {
+    console.log("useMemberForm: handleSubmit called");
     try {
       if (!member?.id) {
         throw new Error('Member ID is required for updates');
       }
 
-      const { error } = await supabase.functions.invoke('admin-user-management', {
+      const { data, error } = await supabase.functions.invoke('admin-user-management', {
         body: {
           userId: member.id,
           username,
@@ -61,6 +76,7 @@ export function useMemberForm(member: Member | null, onUpdate: () => void, onClo
         throw error;
       }
 
+      console.log('Member updated successfully:', data);
       await onUpdate();
       
       toast({
@@ -69,8 +85,6 @@ export function useMemberForm(member: Member | null, onUpdate: () => void, onClo
           ? "Member updated successfully (including password)" 
           : "Member updated successfully",
       });
-
-      onClose();
     } catch (error) {
       console.error('Error updating member:', error);
       toast({

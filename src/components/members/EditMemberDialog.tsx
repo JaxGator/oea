@@ -1,3 +1,4 @@
+
 import {
   Dialog,
   DialogContent,
@@ -21,6 +22,8 @@ export function EditMemberDialog({
   onOpenChange, 
   onUpdate 
 }: EditMemberDialogProps) {
+  console.log('EditMemberDialog rendered with member:', member.id, 'open:', open);
+  
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
