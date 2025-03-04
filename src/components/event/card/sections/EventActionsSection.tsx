@@ -6,6 +6,7 @@ import { EventDetailsActions } from "./actions/EventDetailsActions";
 import { useEventActions } from "@/hooks/events/useEventActions";
 import { useAuthState } from "@/hooks/useAuthState";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface EventActionsSectionProps {
   isAdmin: boolean;
@@ -62,6 +63,7 @@ export function EventActionsSection({
 }: EventActionsSectionProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { user } = useAuthState();
+  const isMobile = useIsMobile();
   
   // Enhanced event actions with permission checks
   const { isLoading: isActionLoading } = useEventActions({
@@ -126,7 +128,7 @@ export function EventActionsSection({
         canJoinWaitlist={canJoinWaitlist}
       />
       
-      <div className="flex flex-wrap items-center justify-between gap-2 mt-4">
+      <div className={`flex ${isMobile ? 'flex-col' : 'flex-wrap items-center justify-between'} gap-2 mt-4`}>
         <AdminActions
           isAdmin={isAdmin}
           canManageEvents={canManageEvents || isCreator}

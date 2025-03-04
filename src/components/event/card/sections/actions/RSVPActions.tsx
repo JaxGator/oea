@@ -45,22 +45,50 @@ export function RSVPActions({
 
   // Show login prompt if not authenticated
   if (!isAuthenticated) {
-    return <Button onClick={() => window.location.href = '/auth'}>
+    return <Button 
+        onClick={() => window.location.href = '/auth'}
+        className="w-full sm:w-auto"
+      >
         Sign In to RSVP
       </Button>;
   }
 
   // Show cancel button if already RSVP'd
   if (userRSVPStatus === 'attending') {
-    return <>
-        <Button variant="destructive" onClick={onCancelRSVP} disabled={isSubmitting}>
-          {isSubmitting ? <>
+    return <div className="flex flex-col sm:flex-row gap-2 w-full">
+        <Button 
+          variant="destructive" 
+          onClick={onCancelRSVP} 
+          disabled={isSubmitting}
+          className="w-full sm:w-auto"
+          aria-busy={isSubmitting}
+        >
+          {isSubmitting ? (
+            <span className="flex items-center gap-2">
               Cancelling...
-              <Loader2 className="ml-2 h-4 w-4 animate-spin" />
-            </> : 'Cancel RSVP'}
+              <Loader2 className="h-4 w-4 animate-spin" />
+            </span>
+          ) : 'Cancel RSVP'}
         </Button>
-        {canAddGuests && <EventGuestDialog open={showGuestDialog} onOpenChange={setShowGuestDialog} onSave={onRSVP} currentGuests={currentGuests} eventTitle={eventTitle} />}
-      </>;
+        {canAddGuests && (
+          <>
+            <Button 
+              variant="outline" 
+              onClick={() => setShowGuestDialog(true)}
+              className="w-full sm:w-auto"
+            >
+              Manage Guests
+            </Button>
+            <EventGuestDialog 
+              open={showGuestDialog} 
+              onOpenChange={setShowGuestDialog} 
+              onSave={onRSVP} 
+              currentGuests={currentGuests} 
+              eventTitle={eventTitle} 
+            />
+          </>
+        )}
+      </div>;
   }
   
   // Show waitlist status if user is on the waitlist
@@ -71,38 +99,57 @@ export function RSVPActions({
             You're on the waitlist. We'll notify you if a spot becomes available.
           </AlertDescription>
         </Alert>
-        <Button variant="destructive" onClick={onCancelRSVP} disabled={isSubmitting}>
-          {isSubmitting ? <>
+        <Button 
+          variant="destructive" 
+          onClick={onCancelRSVP} 
+          disabled={isSubmitting}
+          className="w-full sm:w-auto"
+          aria-busy={isSubmitting}
+        >
+          {isSubmitting ? (
+            <span className="flex items-center gap-2">
               Cancelling...
-              <Loader2 className="ml-2 h-4 w-4 animate-spin" />
-            </> : 'Leave Waitlist'}
+              <Loader2 className="h-4 w-4 animate-spin" />
+            </span>
+          ) : 'Leave Waitlist'}
         </Button>
       </>;
   }
 
   // Show RSVP options if not already RSVP'd
-  return <>
+  return <div className="flex flex-col sm:flex-row gap-2 w-full">
       {canAddGuests ? (
         <Button 
           onClick={() => setShowGuestDialog(true)} 
           disabled={isSubmitting || (isFullyBooked && !canJoinWaitlist)}
           variant={isFullyBooked && canJoinWaitlist ? "warning" : "success"}
+          className="w-full sm:w-auto"
+          aria-busy={isSubmitting}
         >
-          {isFullyBooked && canJoinWaitlist ? 'Add Guests to Waitlist' : 'RSVP'}
+          {isSubmitting ? (
+            <span className="flex items-center gap-2">
+              {isFullyBooked && canJoinWaitlist ? 'Processing...' : 'Processing...'}
+              <Loader2 className="h-4 w-4 animate-spin" />
+            </span>
+          ) : (isFullyBooked && canJoinWaitlist ? 'Add Guests to Waitlist' : 'RSVP with Guests')}
         </Button>
       ) : (
         <Button 
           onClick={() => onRSVP()} 
           disabled={(isFullyBooked && !canJoinWaitlist) || isSubmitting}
           variant={isFullyBooked && canJoinWaitlist ? "warning" : "success"}
+          className="w-full sm:w-auto"
+          aria-busy={isSubmitting}
         >
-          {isSubmitting ? <>
+          {isSubmitting ? (
+            <span className="flex items-center gap-2">
               {isFullyBooked && canJoinWaitlist ? 'Joining Waitlist...' : 'Reserving Spot...'}
-              <Loader2 className="ml-2 h-4 w-4 animate-spin" />
-            </> : isFullyBooked ? (canJoinWaitlist ? 'Join Waitlist' : 'Event Full') : 'RSVP'}
+              <Loader2 className="h-4 w-4 animate-spin" />
+            </span>
+          ) : (isFullyBooked ? (canJoinWaitlist ? 'Join Waitlist' : 'Event Full') : 'RSVP')}
         </Button>
       )}
       
       {canAddGuests && <EventGuestDialog open={showGuestDialog} onOpenChange={setShowGuestDialog} onSave={onRSVP} currentGuests={currentGuests} eventTitle={eventTitle} />}
-    </>;
+    </div>;
 }
