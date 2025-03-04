@@ -8,7 +8,14 @@ import { EventFormProps } from "../EventFormTypes";
 import { useAuthState } from "@/hooks/useAuthState";
 import { EventFormContent } from "./EventFormContent";
 
-export function EventFormWrapper({ onSuccess, initialData, isPastEvent, isWixEvent }: EventFormProps) {
+export function EventFormWrapper({ 
+  onSuccess, 
+  initialData, 
+  isPastEvent, 
+  isWixEvent,
+  forceAdmin,
+  forceCanManage
+}: EventFormProps) {
   const { user, isAuthenticated, isLoading: authLoading } = useAuthState();
   const [verifyingSession, setVerifyingSession] = useState(true);
   const [sessionConfirmed, setSessionConfirmed] = useState(false);
@@ -67,23 +74,27 @@ export function EventFormWrapper({ onSuccess, initialData, isPastEvent, isWixEve
       isApproved: user?.is_approved,
       sessionConfirmed,
       verifyingSession,
-      authLoading
+      authLoading,
+      forceAdmin,
+      forceCanManage
     });
-  }, [user, isAuthenticated, sessionConfirmed, verifyingSession, authLoading]);
+  }, [user, isAuthenticated, sessionConfirmed, verifyingSession, authLoading, forceAdmin, forceCanManage]);
 
   // Check permissions for editing events
   useEffect(() => {
     if (initialData?.id && user?.id) {
       const isCreator = initialData.created_by === user.id;
-      const isAdmin = user.is_admin || false;
-      const canManageEvents = isAdmin || (user.is_approved || false);
+      const isAdmin = (user.is_admin || false) || (forceAdmin || false);
+      const canManageEvents = isAdmin || (user.is_approved || false) || (forceCanManage || false);
       const canEdit = isAdmin || canManageEvents || isCreator;
       
       console.log("Permission check in EventFormWrapper:", {
         userId: user.id,
         eventCreator: initialData.created_by,
         isAdmin,
+        forceAdmin,
         canManageEvents,
+        forceCanManage,
         isCreator,
         canEdit
       });
@@ -99,7 +110,7 @@ export function EventFormWrapper({ onSuccess, initialData, isPastEvent, isWixEve
         });
       }
     }
-  }, [initialData, user]);
+  }, [initialData, user, forceAdmin, forceCanManage]);
 
   // Loading state while verifying session
   if (verifyingSession || authLoading) {
@@ -146,6 +157,8 @@ export function EventFormWrapper({ onSuccess, initialData, isPastEvent, isWixEve
       isWixEvent={isWixEvent}
       hasPermissionToEdit={hasPermissionToEdit}
       user={user}
+      forceAdmin={forceAdmin}
+      forceCanManage={forceCanManage}
     />
   );
 }

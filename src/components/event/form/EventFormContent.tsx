@@ -22,6 +22,8 @@ import type { Profile } from "@/types/auth";
 interface EventFormContentProps extends EventFormProps {
   hasPermissionToEdit: boolean;
   user: Profile | null;
+  forceAdmin?: boolean;
+  forceCanManage?: boolean;
 }
 
 export function EventFormContent({ 
@@ -30,10 +32,15 @@ export function EventFormContent({
   isPastEvent, 
   isWixEvent, 
   hasPermissionToEdit,
-  user
+  user,
+  forceAdmin,
+  forceCanManage
 }: EventFormContentProps) {
   const { isAdmin } = useAdminStatus();
   const [localSubmitting, setLocalSubmitting] = useState(false);
+  
+  // Determine effective admin status using both hook and forced status
+  const effectiveIsAdmin = isAdmin || forceAdmin;
   
   const form = useForm<EventFormValues>({
     resolver: zodResolver(eventSchema),
@@ -66,6 +73,15 @@ export function EventFormContent({
   }, [user, form]);
 
   const { handleSubmit: handleFormSubmit, isSubmitting } = useEventFormSubmit(onSuccess);
+
+  useEffect(() => {
+    console.log("EventFormContent - Admin status:", {
+      hookIsAdmin: isAdmin,
+      forceAdmin,
+      effectiveIsAdmin,
+      timestamp: new Date().toISOString()
+    });
+  }, [isAdmin, forceAdmin, effectiveIsAdmin]);
 
   const onSubmit = async (data: EventFormValues) => {
     try {
@@ -108,7 +124,7 @@ export function EventFormContent({
       console.log('EventForm - Submitting form with data:', { 
         ...data,
         userId: user.id,
-        isAdmin,
+        isAdmin: effectiveIsAdmin,
         isEditing: !!initialData,
         eventCreator: initialData?.created_by,
         isCreator: initialData?.created_by === user.id
@@ -147,7 +163,7 @@ export function EventFormContent({
         <EventReminderSettings form={form} disabled={isPastEvent} />
         <EventWaitlistSettings form={form} disabled={isPastEvent} />
         
-        {isAdmin && (
+        {effectiveIsAdmin && (
           <div className="flex items-center space-x-2">
             <Switch
               id="is_featured"

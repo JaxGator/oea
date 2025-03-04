@@ -47,4 +47,6 @@ export interface EventFormProps {
   initialData?: EventFormData;
   isPastEvent?: boolean;
   isWixEvent?: boolean;
+  forceAdmin?: boolean;
+  forceCanManage?: boolean;
 }
