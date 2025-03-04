@@ -1,6 +1,5 @@
 
 import { Form } from "@/components/ui/form";
-import { Button } from "@/components/ui/button";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { EventFormProps, EventFormValues, eventSchema } from "../EventFormTypes";
@@ -10,14 +9,11 @@ import { EventLocationCapacity } from "../EventLocationCapacity";
 import { EventImageUpload } from "../EventImageUpload";
 import { EventReminderSettings } from "../EventReminderSettings";
 import { EventWaitlistSettings } from "../EventWaitlistSettings";
-import { useEventFormSubmit } from "@/hooks/useEventFormSubmit";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
-import { useAdminStatus } from "@/hooks/events/useAdminStatus";
-import { useState, useEffect } from "react";
-import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
+import { useEffect } from "react";
 import type { Profile } from "@/types/auth";
+import { EventFormAdminSection } from "./EventFormAdminSection";
+import { EventFormSubmitButton } from "./EventFormSubmitButton";
+import { useEventFormSubmission } from "@/hooks/events/useEventFormSubmission";
 
 interface EventFormContentProps extends EventFormProps {
   hasPermissionToEdit: boolean;
@@ -36,13 +32,7 @@ export function EventFormContent({
   forceAdmin,
   forceCanManage
 }: EventFormContentProps) {
-  const { isAdmin } = useAdminStatus();
-  const [localSubmitting, setLocalSubmitting] = useState(false);
-  
-  // CRITICAL: Always consider forced admin status or user admin status
-  const effectiveIsAdmin = isAdmin || forceAdmin || !!user?.is_admin;
-  const effectiveCanManage = effectiveIsAdmin || forceCanManage || !!user?.is_approved || !!user?.is_member;
-  
+  // Initialize the form with default values
   const form = useForm<EventFormValues>({
     resolver: zodResolver(eventSchema),
     mode: "onBlur",
@@ -66,6 +56,7 @@ export function EventFormContent({
     }
   });
 
+  // Set creator ID when user is loaded
   useEffect(() => {
     if (user?.id) {
       if (initialData?.id && initialData?.created_by) {
@@ -78,104 +69,24 @@ export function EventFormContent({
     }
   }, [user, form, initialData]);
 
-  const { handleSubmit: handleFormSubmit, isSubmitting } = useEventFormSubmit(onSuccess);
-
-  useEffect(() => {
-    console.log("EventFormContent - Admin status:", {
-      hookIsAdmin: isAdmin,
-      forceAdmin,
-      effectiveIsAdmin,
-      userIsAdmin: user?.is_admin,
-      userIsMember: user?.is_member,
-      userIsApproved: user?.is_approved,
-      hasPermissionToEdit,
-      timestamp: new Date().toISOString()
-    });
-  }, [isAdmin, forceAdmin, effectiveIsAdmin, user?.is_admin, user?.is_member, user?.is_approved, hasPermissionToEdit]);
-
-  const onSubmit = async (data: EventFormValues) => {
-    try {
-      const { data: sessionData } = await supabase.auth.getSession();
-      const hasValidSession = !!sessionData.session;
-      
-      console.log("Form submission - Session check:", {
-        hasValidSession,
-        userId: sessionData.session?.user?.id,
-        timestamp: new Date().toISOString()
-      });
-      
-      if (!hasValidSession) {
-        console.error('Not authenticated while submitting form - direct check');
-        toast.error('You must be logged in to create or edit events');
-        return;
-      }
-      
-      const userId = user?.id || sessionData.session?.user?.id;
-      
-      if (!userId) {
-        console.error('No user ID available');
-        toast.error('You must be logged in to create an event');
-        return;
-      }
-      
-      // CRITICAL: Ensure admin status checks are accurate
-      const isAdmin = !!user?.is_admin || forceAdmin;
-      const isMember = !!user?.is_member;
-      const isApproved = !!user?.is_approved;
-      
-      const canManageEvents = isAdmin || isMember || isApproved || forceCanManage;
-      
-      console.log("Form submission - Permission check:", {
-        isAdmin,
-        isMember,
-        isApproved,
-        forceAdmin,
-        forceCanManage,
-        canManageEvents,
-        hasPermissionToEdit
-      });
-      
-      // CRITICAL FIX: Always let admins and members bypass permission checks
-      if (initialData?.id && !hasPermissionToEdit && !canManageEvents) {
-        toast.error('You do not have permission to edit this event');
-        return;
-      }
-      
-      if (localSubmitting || isSubmitting) {
-        console.log('Submission already in progress, ignoring duplicate submit');
-        return;
-      }
-      
-      setLocalSubmitting(true);
-      
-      console.log('EventForm - Submitting form with data:', { 
-        ...data,
-        userId,
-        isAdmin: effectiveIsAdmin,
-        canManageEvents: effectiveCanManage,
-        isEditing: !!initialData,
-        eventCreator: initialData?.created_by,
-        isCreator: initialData?.created_by === userId
-      });
-      
-      const eventData = {
-        ...data,
-        created_by: initialData?.id ? (initialData.created_by || userId) : userId,
-      };
-      
-      console.log("Final event data:", eventData);
-      
-      await handleFormSubmit(eventData, initialData);
-    } catch (error) {
-      console.error('Form submission error:', error);
-    } finally {
-      setLocalSubmitting(false);
-    }
-  };
+  // Use the extracted submission logic hook
+  const { 
+    onSubmit, 
+    isSubmitting, 
+    effectiveIsAdmin, 
+    effectiveCanManage 
+  } = useEventFormSubmission({
+    onSuccess,
+    initialData,
+    user,
+    hasPermissionToEdit,
+    forceAdmin,
+    forceCanManage
+  });
 
   // IMPORTANT: For admin/members, never show permission warning
   const showPermissionWarning = initialData?.id && !hasPermissionToEdit && 
-    !(!!user?.is_admin || !!user?.is_member || !!user?.is_approved || forceAdmin || forceCanManage);
+    !effectiveCanManage;
 
   return (
     <Form {...form}>
@@ -194,26 +105,16 @@ export function EventFormContent({
         <EventReminderSettings form={form} disabled={isPastEvent} />
         <EventWaitlistSettings form={form} disabled={isPastEvent} />
         
-        {effectiveIsAdmin && (
-          <div className="flex items-center space-x-2">
-            <Switch
-              id="is_featured"
-              checked={form.watch("is_featured")}
-              onCheckedChange={(checked) => form.setValue("is_featured", checked)}
-            />
-            <Label htmlFor="is_featured">Feature this event</Label>
-          </div>
-        )}
+        <EventFormAdminSection 
+          form={form} 
+          isAdmin={effectiveIsAdmin} 
+        />
 
-        <Button 
-          type="submit" 
-          className="w-full bg-[#0d97d1] hover:bg-[#0d97d1]/90"
-          disabled={localSubmitting || isSubmitting || showPermissionWarning}
-        >
-          {localSubmitting || isSubmitting ? 
-            (initialData ? "Updating Event..." : "Creating Event...") : 
-            (initialData ? "Update Event" : "Create Event")}
-        </Button>
+        <EventFormSubmitButton 
+          isSubmitting={isSubmitting}
+          initialData={initialData}
+          showPermissionWarning={showPermissionWarning}
+        />
       </form>
     </Form>
   );
