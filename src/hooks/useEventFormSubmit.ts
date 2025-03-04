@@ -17,7 +17,6 @@ export function useEventFormSubmit(onSuccess: () => void) {
   useEffect(() => {
     const verifyAuth = async () => {
       try {
-        setCheckedAuth(true);
         const { data } = await supabase.auth.getSession();
         const isAuthVerified = !!data.session;
         
@@ -58,7 +57,10 @@ export function useEventFormSubmit(onSuccess: () => void) {
         throw new Error('No active session');
       }
       
-      if (!user?.id) {
+      // Get the user ID from either the current user or the session
+      const userId = user?.id || sessionData.session?.user?.id;
+      
+      if (!userId) {
         console.error('Authentication failed: No user ID available', { 
           isAuthenticated, 
           user,
@@ -71,9 +73,9 @@ export function useEventFormSubmit(onSuccess: () => void) {
       // More detailed logging for debugging
       console.log('Authentication verified:', { 
         isAuthenticated, 
-        userId: user.id,
-        isAdmin: user.is_admin,
-        isApproved: user.is_approved,
+        userId,
+        isAdmin: user?.is_admin,
+        isApproved: user?.is_approved,
         actionType: initialData?.id ? 'update' : 'create',
         sessionUserId: sessionData.session?.user?.id
       });
@@ -82,20 +84,30 @@ export function useEventFormSubmit(onSuccess: () => void) {
       validateEventData(formData);
       const cleanedData = cleanEventData(formData);
       
-      console.log('Processing event submission with data:', cleanedData);
+      // Ensure created_by is set properly for new events
+      if (!initialData?.id && !cleanedData.created_by) {
+        cleanedData.created_by = userId;
+      }
+      
+      console.log('Processing event submission with data:', {
+        ...cleanedData,
+        created_by: cleanedData.created_by || userId
+      });
       
       let result;
       
       // Check if this is an update or create operation
       if (initialData?.id) {
         // This is an update operation
-        const isAdmin = user.is_admin || false;
-        const canManageEvents = isAdmin || user.is_approved;
+        const isAdmin = (user?.is_admin || false);
+        const canManageEvents = isAdmin || (user?.is_approved || false);
         
         // Check permissions before attempting update
-        if (!canEditEvent(user.id, isAdmin, canManageEvents, initialData.created_by || '')) {
+        const hasPermission = canEditEvent(userId, isAdmin, canManageEvents, initialData.created_by || '');
+        
+        if (!hasPermission) {
           console.error('Permission denied: user cannot edit this event', {
-            userId: user.id,
+            userId,
             isAdmin,
             canManageEvents,
             eventCreator: initialData.created_by
@@ -105,16 +117,22 @@ export function useEventFormSubmit(onSuccess: () => void) {
         }
         
         console.log(`Updating event with ID: ${initialData.id}`, {
-          userId: user.id,
+          userId,
           isAdmin,
           canManageEvents,
           hasPermission: true
         });
         
+        // Preserve the original created_by field for updates
+        if (initialData.created_by) {
+          cleanedData.created_by = initialData.created_by;
+        }
+        
         result = await updateEvent(initialData.id, cleanedData);
       } else {
         // This is a create operation
-        console.log('Creating new event');
+        console.log('Creating new event with user ID:', userId);
+        cleanedData.created_by = userId;
         result = await createEvent(cleanedData);
       }
       

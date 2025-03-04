@@ -23,6 +23,7 @@ export function canEditEvent(
     timestamp: new Date().toISOString()
   });
   
+  // First, ensure we have a valid userId
   if (!userId) {
     console.log("Edit permission denied: No user ID provided");
     return false;

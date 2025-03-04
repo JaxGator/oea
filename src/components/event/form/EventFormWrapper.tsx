@@ -20,6 +20,7 @@ export function EventFormWrapper({
   const [verifyingSession, setVerifyingSession] = useState(true);
   const [sessionConfirmed, setSessionConfirmed] = useState(false);
   const [hasPermissionToEdit, setHasPermissionToEdit] = useState(true);
+  const [sessionUserId, setSessionUserId] = useState<string | null>(null);
   
   // Direct session check
   useEffect(() => {
@@ -34,25 +35,29 @@ export function EventFormWrapper({
         }
         
         const hasSession = !!data.session;
+        const userId = data.session?.user?.id || null;
+        
         setSessionConfirmed(hasSession);
+        setSessionUserId(userId);
         
         console.log("EventForm - Direct session check:", {
           hasSession,
-          userId: data.session?.user?.id,
+          userId,
           timestamp: new Date().toISOString()
         });
         
         // If we have a session and user appears to be admin, confirm admin status
-        if (hasSession && user?.is_admin) {
+        if (hasSession && userId && (user?.is_admin || forceAdmin)) {
           const { data: profileData } = await supabase
             .from('profiles')
             .select('is_admin, is_approved')
-            .eq('id', data.session.user.id)
+            .eq('id', userId)
             .single();
             
           console.log("Admin status confirmation:", {
             directCheck: profileData?.is_admin,
-            userObject: user?.is_admin
+            userObject: user?.is_admin,
+            forceAdmin
           });
         }
       } catch (err) {
@@ -63,13 +68,14 @@ export function EventFormWrapper({
     };
     
     checkSession();
-  }, [user?.is_admin, user?.id]);
+  }, [user?.is_admin, user?.id, forceAdmin]);
   
   // Log authentication status for debugging
   useEffect(() => {
     console.log('EventForm - Auth status:', {
       isAuthenticated,
       userId: user?.id,
+      sessionUserId,
       isAdmin: user?.is_admin,
       isApproved: user?.is_approved,
       sessionConfirmed,
@@ -78,18 +84,19 @@ export function EventFormWrapper({
       forceAdmin,
       forceCanManage
     });
-  }, [user, isAuthenticated, sessionConfirmed, verifyingSession, authLoading, forceAdmin, forceCanManage]);
+  }, [user, isAuthenticated, sessionConfirmed, verifyingSession, authLoading, forceAdmin, forceCanManage, sessionUserId]);
 
   // Check permissions for editing events
   useEffect(() => {
-    if (initialData?.id && user?.id) {
-      const isCreator = initialData.created_by === user.id;
-      const isAdmin = (user.is_admin || false) || (forceAdmin || false);
-      const canManageEvents = isAdmin || (user.is_approved || false) || (forceCanManage || false);
+    if (initialData?.id && (user?.id || sessionUserId)) {
+      const effectiveUserId = user?.id || sessionUserId;
+      const isCreator = initialData.created_by === effectiveUserId;
+      const isAdmin = (user?.is_admin || false) || (forceAdmin || false);
+      const canManageEvents = isAdmin || (user?.is_approved || false) || (forceCanManage || false);
       const canEdit = isAdmin || canManageEvents || isCreator;
       
       console.log("Permission check in EventFormWrapper:", {
-        userId: user.id,
+        userId: effectiveUserId,
         eventCreator: initialData.created_by,
         isAdmin,
         forceAdmin,
@@ -103,14 +110,14 @@ export function EventFormWrapper({
       
       if (!canEdit) {
         console.warn("User does not have permission to edit this event", {
-          userId: user.id,
+          userId: effectiveUserId,
           eventCreator: initialData.created_by,
           isAdmin,
           canManageEvents
         });
       }
     }
-  }, [initialData, user, forceAdmin, forceCanManage]);
+  }, [initialData, user, forceAdmin, forceCanManage, sessionUserId]);
 
   // Loading state while verifying session
   if (verifyingSession || authLoading) {
@@ -123,7 +130,7 @@ export function EventFormWrapper({
   }
 
   // Authentication warning state
-  if (!isAuthenticated || !sessionConfirmed) {
+  if (!isAuthenticated && !sessionConfirmed) {
     return (
       <Alert className="border-red-500 text-red-800 bg-red-50">
         <InfoIcon className="h-4 w-4" />
@@ -149,6 +156,9 @@ export function EventFormWrapper({
     );
   }
 
+  // Use either the user from useAuthState or the session user ID
+  const effectiveUser = user || (sessionUserId ? { id: sessionUserId } as any : null);
+
   return (
     <EventFormContent
       onSuccess={onSuccess}
@@ -156,7 +166,7 @@ export function EventFormWrapper({
       isPastEvent={isPastEvent}
       isWixEvent={isWixEvent}
       hasPermissionToEdit={hasPermissionToEdit}
-      user={user}
+      user={effectiveUser}
       forceAdmin={forceAdmin}
       forceCanManage={forceCanManage}
     />

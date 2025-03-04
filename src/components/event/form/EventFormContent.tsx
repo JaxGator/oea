@@ -65,12 +65,20 @@ export function EventFormContent({
     }
   });
 
-  // Make sure created_by is set when user loads
+  // Ensure created_by is set correctly on mount and whenever user changes
   useEffect(() => {
-    if (user?.id && !form.getValues('created_by')) {
-      form.setValue('created_by', user.id);
+    if (user?.id) {
+      // For updates, preserve the original creator
+      if (initialData?.id && initialData?.created_by) {
+        console.log("Preserving original event creator:", initialData.created_by);
+        form.setValue('created_by', initialData.created_by);
+      } else if (!form.getValues('created_by')) {
+        // For new events, set current user as creator
+        console.log("Setting current user as event creator:", user.id);
+        form.setValue('created_by', user.id);
+      }
     }
-  }, [user, form]);
+  }, [user, form, initialData]);
 
   const { handleSubmit: handleFormSubmit, isSubmitting } = useEventFormSubmit(onSuccess);
 
@@ -101,7 +109,10 @@ export function EventFormContent({
         return;
       }
       
-      if (!user?.id) {
+      // Get user ID from either the current user or the session
+      const userId = user?.id || sessionData.session?.user?.id;
+      
+      if (!userId) {
         console.error('No user ID available');
         toast.error('You must be logged in to create an event');
         return;
@@ -123,17 +134,20 @@ export function EventFormContent({
       
       console.log('EventForm - Submitting form with data:', { 
         ...data,
-        userId: user.id,
+        userId,
         isAdmin: effectiveIsAdmin,
         isEditing: !!initialData,
         eventCreator: initialData?.created_by,
-        isCreator: initialData?.created_by === user.id
+        isCreator: initialData?.created_by === userId
       });
       
+      // Ensure created_by is preserved for updates or set for new events
       const eventData = {
         ...data,
-        created_by: initialData?.created_by || user.id,
+        created_by: initialData?.id ? (initialData.created_by || userId) : userId,
       };
+      
+      console.log("Final event data:", eventData);
       
       await handleFormSubmit(eventData, initialData);
     } catch (error) {
