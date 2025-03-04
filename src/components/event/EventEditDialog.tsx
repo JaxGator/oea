@@ -6,6 +6,7 @@ import { useEffect, useState, useCallback } from "react";
 import { Loader2 } from "lucide-react";
 import { useAuthState } from "@/hooks/useAuthState";
 import { useEventPermissions } from "@/hooks/events/useEventPermissions";
+import { Button } from "@/components/ui/button";
 
 interface EventEditDialogProps {
   initialData: Event;
@@ -30,12 +31,11 @@ export function EventEditDialog({
 }: EventEditDialogProps) {
   const [isClosing, setIsClosing] = useState(false);
   const [localShowDialog, setLocalShowDialog] = useState(showDialog);
-  const { user } = useAuthState();
+  const { user, isAuthenticated } = useAuthState();
   
   const { 
     verifyingAuth, 
     hasValidPermission, 
-    isAuthenticated,
     checkPermissions
   } = useEventPermissions(initialData, forceAdmin, forceCanManage);
   
@@ -136,12 +136,12 @@ export function EventEditDialog({
       return (
         <div className="text-center py-6">
           <p className="text-red-500">You must be logged in to edit events</p>
-          <button 
+          <Button 
             onClick={() => window.location.href = '/auth'} 
             className="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
           >
             Sign In
-          </button>
+          </Button>
         </div>
       );
     }

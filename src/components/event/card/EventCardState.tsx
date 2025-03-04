@@ -1,3 +1,4 @@
+
 import { Event } from "@/types/event";
 import { useEventRSVPData } from "@/hooks/events/useEventRSVPData";
 import { useEventGuestData } from "@/hooks/events/useEventGuestData";
@@ -53,15 +54,18 @@ export function EventCardState({
   
   useGuestListUpdates(event.id, refetchGuests);
   
+  // Use the authenticated state from props if provided, otherwise use the value from useAuthState
+  const effectiveIsAuthenticated = isAuthenticated;
+  
   // Force isAdmin to true if the user profile has admin status
   const effectiveIsAdmin = isAdmin || !!user?.is_admin;
   
-  // Update: Ensure that approved members can manage events (not just admins)
+  // Ensure that approved members can manage events (not just admins)
   // If user is approved or a member, they can manage events
   const effectiveCanManage = effectiveIsAdmin || canManageEvents || !!(user?.is_approved) || !!(user?.is_member);
   
   useEffect(() => {
-    console.log("EventCardState - Admin status:", {
+    console.log("EventCardState - Auth status:", {
       hookIsAdmin: isAdmin,
       userIsAdmin: user?.is_admin,
       effectiveIsAdmin,
@@ -69,9 +73,10 @@ export function EventCardState({
       userIsApproved: user?.is_approved,
       userIsMember: user?.is_member,
       effectiveCanManage,
+      isAuthenticated: effectiveIsAuthenticated,
       timestamp: new Date().toISOString()
     });
-  }, [isAdmin, user?.is_admin, effectiveIsAdmin, canManageEvents, user?.is_approved, user?.is_member, effectiveCanManage]);
+  }, [isAdmin, user?.is_admin, effectiveIsAdmin, canManageEvents, user?.is_approved, user?.is_member, effectiveCanManage, effectiveIsAuthenticated]);
   
   const {
     showEditDialog,
@@ -110,15 +115,17 @@ export function EventCardState({
   const isPastEvent = eventDateTime < now;
   const isWixEvent = !!event.imported_rsvp_count;
   
-  // Update: Allow admins, approved members, and the event creator to add guests
-  const canAddGuests = effectiveIsAdmin || effectiveCanManage || userRSVPStatus === 'attending';
+  // Allow admins, approved members, and the event creator to add guests
+  // Also check authentication status before allowing guest additions
+  const canAddGuests = effectiveIsAuthenticated && (effectiveIsAdmin || effectiveCanManage || userRSVPStatus === 'attending');
 
   console.log('EventCardState - Event timing:', {
     eventDate: event.date,
     eventTime: event.time,
     eventDateTime,
     now,
-    isPastEvent
+    isPastEvent,
+    canAddGuests
   });
 
   return children({
@@ -143,6 +150,6 @@ export function EventCardState({
     handleSaveRSVP,
     handleCancelEdit,
     handleRSVPCountChange,
-    isAuthenticated
+    isAuthenticated: effectiveIsAuthenticated
   });
 }

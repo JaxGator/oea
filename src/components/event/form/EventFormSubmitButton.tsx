@@ -2,6 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useAuthState } from "@/hooks/useAuthState";
 
 interface EventFormSubmitButtonProps {
   isSubmitting: boolean;
@@ -14,7 +15,19 @@ export function EventFormSubmitButton({
   initialData, 
   showPermissionWarning 
 }: EventFormSubmitButtonProps) {
+  const { isAuthenticated } = useAuthState();
   const buttonText = getButtonText(isSubmitting, initialData);
+  
+  // If user is not authenticated, show auth required message instead of submit button
+  if (!isAuthenticated) {
+    return (
+      <Alert className="bg-yellow-50 border-yellow-200">
+        <AlertDescription className="text-yellow-800">
+          Please sign in to create or edit events.
+        </AlertDescription>
+      </Alert>
+    );
+  }
   
   return (
     <div className="space-y-4">

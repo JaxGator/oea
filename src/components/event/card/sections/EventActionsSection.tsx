@@ -4,6 +4,7 @@ import { RSVPActions } from "./actions/RSVPActions";
 import { AdminActions } from "./actions/AdminActions";
 import { EventDetailsActions } from "./actions/EventDetailsActions";
 import { useEventActions } from "@/hooks/events/useEventActions";
+import { useAuthState } from "@/hooks/useAuthState";
 
 interface EventActionsSectionProps {
   isAdmin: boolean;
@@ -59,12 +60,16 @@ export function EventActionsSection({
   isWixEvent = false
 }: EventActionsSectionProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { user } = useAuthState();
   
-  // Use our enhanced event actions hook for this event
+  // Enhanced event actions with permission checks
   const { isLoading: isActionLoading } = useEventActions({
     eventId: event.id,
     createdBy: event.created_by || ''
   });
+
+  // Check if the current user is the creator of this event
+  const isCreator = user?.id === event.created_by;
 
   const handleRSVP = async (guests?: { firstName: string }[]) => {
     setIsSubmitting(true);
@@ -111,7 +116,7 @@ export function EventActionsSection({
       <div className="flex flex-wrap items-center justify-between gap-2 mt-4">
         <AdminActions
           isAdmin={isAdmin}
-          canManageEvents={canManageEvents}
+          canManageEvents={canManageEvents || isCreator}
           isPastEvent={isPastEvent}
           isWixEvent={isWixEvent}
           showDelete={showDelete}
