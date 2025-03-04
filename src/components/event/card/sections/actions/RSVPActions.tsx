@@ -1,7 +1,9 @@
+
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 import { useState } from "react";
 import { EventGuestDialog } from "@/components/event/guests/EventGuestDialog";
+
 interface RSVPActionsProps {
   isAuthenticated: boolean;
   userRSVPStatus: string | null;
@@ -17,7 +19,9 @@ interface RSVPActionsProps {
     firstName: string;
   }[]) => void;
   onCancelRSVP: () => void;
+  canJoinWaitlist?: boolean;
 }
+
 export function RSVPActions({
   isAuthenticated,
   userRSVPStatus,
@@ -28,7 +32,8 @@ export function RSVPActions({
   currentGuests,
   eventTitle,
   onRSVP,
-  onCancelRSVP
+  onCancelRSVP,
+  canJoinWaitlist = false
 }: RSVPActionsProps) {
   const [showGuestDialog, setShowGuestDialog] = useState(false);
 
@@ -63,7 +68,7 @@ export function RSVPActions({
           {isSubmitting ? <>
               Reserving Spot...
               <Loader2 className="ml-2 h-4 w-4 animate-spin" />
-            </> : isFullyBooked ? 'Event Full' : 'RSVP'}
+            </> : isFullyBooked ? (canJoinWaitlist ? 'Join Waitlist' : 'Event Full') : 'RSVP'}
         </Button>}
       
       {canAddGuests && <EventGuestDialog open={showGuestDialog} onOpenChange={setShowGuestDialog} onSave={onRSVP} currentGuests={currentGuests} eventTitle={eventTitle} />}
