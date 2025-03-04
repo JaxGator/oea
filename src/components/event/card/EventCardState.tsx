@@ -55,7 +55,7 @@ export function EventCardState({
   useGuestListUpdates(event.id, refetchGuests);
   
   // Use the authenticated state from props if provided, otherwise use the value from useAuthState
-  const effectiveIsAuthenticated = isAuthenticated;
+  const effectiveIsAuthenticated = isAuthenticated !== undefined ? isAuthenticated : user !== null;
   
   // Force isAdmin to true if the user profile has admin status
   const effectiveIsAdmin = isAdmin || !!user?.is_admin;

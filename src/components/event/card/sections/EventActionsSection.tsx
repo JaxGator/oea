@@ -111,6 +111,7 @@ export function EventActionsSection({
         eventTitle={event.title}
         onRSVP={handleRSVP}
         onCancelRSVP={handleCancelRSVP}
+        canJoinWaitlist={canJoinWaitlist}
       />
       
       <div className="flex flex-wrap items-center justify-between gap-2 mt-4">

@@ -32,7 +32,7 @@ export function EventFormSubmitButton({
   return (
     <div className="space-y-4">
       {showPermissionWarning && (
-        <Alert variant="destructive">
+        <Alert variant="warning">
           <AlertDescription>
             You don't have permission to edit this event. Only admins, approved members, and the event creator can make changes.
           </AlertDescription>
@@ -41,7 +41,7 @@ export function EventFormSubmitButton({
       
       <Button 
         type="submit" 
-        className="w-full bg-[#0d97d1] hover:bg-[#0d97d1]/90"
+        className="w-full"
         disabled={isSubmitting || showPermissionWarning}
       >
         {isSubmitting && (
