@@ -1,3 +1,4 @@
+
 import { Form } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import { useForm } from "react-hook-form";
@@ -38,6 +39,7 @@ export function EventFormContent({
   const { isAdmin } = useAdminStatus();
   const [localSubmitting, setLocalSubmitting] = useState(false);
   
+  // CRITICAL: Always consider forced admin status or user admin status
   const effectiveIsAdmin = isAdmin || forceAdmin || !!user?.is_admin;
   const effectiveCanManage = effectiveIsAdmin || forceCanManage || !!user?.is_approved || !!user?.is_member;
   
@@ -116,6 +118,7 @@ export function EventFormContent({
         return;
       }
       
+      // CRITICAL: Ensure admin status checks are accurate
       const isAdmin = !!user?.is_admin || forceAdmin;
       const isMember = !!user?.is_member;
       const isApproved = !!user?.is_approved;
@@ -132,6 +135,7 @@ export function EventFormContent({
         hasPermissionToEdit
       });
       
+      // CRITICAL FIX: Always let admins and members bypass permission checks
       if (initialData?.id && !hasPermissionToEdit && !canManageEvents) {
         toast.error('You do not have permission to edit this event');
         return;
@@ -169,6 +173,7 @@ export function EventFormContent({
     }
   };
 
+  // IMPORTANT: For admin/members, never show permission warning
   const showPermissionWarning = initialData?.id && !hasPermissionToEdit && 
     !(!!user?.is_admin || !!user?.is_member || !!user?.is_approved || forceAdmin || forceCanManage);
 

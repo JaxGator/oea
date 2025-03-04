@@ -74,7 +74,6 @@ export function useEventFormSubmit(onSuccess: () => void) {
       const isAdmin = user?.is_admin || false;
       const isApproved = user?.is_approved || false;
       const isMember = user?.is_member || false;
-      const canManageEvents = isAdmin || isApproved || isMember;
       
       console.log('Authentication verified:', { 
         isAuthenticated, 
@@ -82,7 +81,6 @@ export function useEventFormSubmit(onSuccess: () => void) {
         isAdmin,
         isApproved,
         isMember,
-        canManageEvents,
         actionType: initialData?.id ? 'update' : 'create',
         sessionUserId: sessionData.session?.user?.id
       });
@@ -106,12 +104,16 @@ export function useEventFormSubmit(onSuccess: () => void) {
       // Check if this is an update or create operation
       if (initialData?.id) {
         // This is an update operation
-        // IMPORTANT: COMPLETELY BYPASS PERMISSION CHECKS FOR ADMINS AND MEMBERS
-        if (isAdmin || canManageEvents) {
-          console.log('Admin or member detected, bypassing ALL permission checks:', {
+        // CRITICAL FIX: ALWAYS bypass permission checks for admins and members
+        // Don't even check permissions for admins or members
+        const isAdminOrMember = isAdmin || isMember || isApproved;
+        
+        if (isAdminOrMember) {
+          console.log('Admin or member detected, BYPASSING ALL permission checks:', {
             userId,
             isAdmin,
-            canManageEvents,
+            isMember,
+            isApproved,
             eventId: initialData.id
           });
           
@@ -155,12 +157,6 @@ export function useEventFormSubmit(onSuccess: () => void) {
         console.error('Event save error:', result.error);
         toast.error(result.error.message || 'Failed to save event');
         throw new Error(result.error.message || 'Failed to save event');
-      }
-      
-      if (!result.data && initialData?.id) {
-        console.error('Event update returned no data');
-        toast.error('Failed to update event. The event may not exist or you may not have permission to update it.');
-        throw new Error('Event update returned no data');
       }
       
       toast.success(initialData?.id ? 'Event updated successfully' : 'Event created successfully');

@@ -30,7 +30,7 @@ export function canEditEvent(
   }
   
   // CRITICAL: Admin or anyone with canManageEvents should ALWAYS be able to edit ANY event
-  // This includes admins, members and approved users
+  // This includes admins, members and approved users - ALWAYS GRANT ACCESS TO THEM
   if (isAdmin || canManageEvents) {
     console.log(`Edit permission GRANTED for admin/member: User is ${isAdmin ? 'admin' : 'member with manage events permission'}`);
     return true;
