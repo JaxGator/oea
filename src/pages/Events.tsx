@@ -10,6 +10,7 @@ import { endOfDay, parseISO, startOfDay, set } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import type { Event, EventsPage } from "@/types/database";
+import { toast } from "sonner";
 
 export default function Events() {
   const { isAuthenticated, profile } = useAuthState();
@@ -33,42 +34,49 @@ export default function Events() {
 
       const eventIds = eventsData.pages[0].data.map(e => e.id);
       
-      const { data: rsvpsData, error } = await supabase
-        .from('event_rsvps')
-        .select(`
-          event_id,
-          response,
-          status,
-          profiles:profiles (
-            username,
-            full_name
-          ),
-          event_guests (
-            id,
-            first_name
-          )
-        `)
-        .in('event_id', eventIds);
+      if (eventIds.length === 0) return [];
+      
+      try {
+        const { data: rsvpsData, error } = await supabase
+          .from('event_rsvps')
+          .select(`
+            event_id,
+            response,
+            status,
+            profiles:profiles (
+              username,
+              full_name
+            ),
+            event_guests (
+              id,
+              first_name
+            )
+          `)
+          .in('event_id', eventIds);
 
-      if (error) {
-        console.error('Error fetching RSVPs:', error);
-        return [];
-      }
-
-      // Group RSVPs by event
-      const rsvpsByEvent = rsvpsData.reduce((acc, rsvp) => {
-        if (!acc[rsvp.event_id]) {
-          acc[rsvp.event_id] = [];
+        if (error) {
+          console.error('Error fetching RSVPs:', error);
+          return [];
         }
-        acc[rsvp.event_id].push(rsvp);
-        return acc;
-      }, {} as Record<string, any[]>);
 
-      // Merge events with their RSVPs
-      return eventsData.pages[0].data.map(event => ({
-        ...event,
-        rsvps: rsvpsByEvent[event.id] || []
-      }));
+        // Group RSVPs by event
+        const rsvpsByEvent = rsvpsData.reduce((acc, rsvp) => {
+          if (!acc[rsvp.event_id]) {
+            acc[rsvp.event_id] = [];
+          }
+          acc[rsvp.event_id].push(rsvp);
+          return acc;
+        }, {} as Record<string, any[]>);
+
+        // Merge events with their RSVPs
+        return eventsData.pages[0].data.map(event => ({
+          ...event,
+          rsvps: rsvpsByEvent[event.id] || []
+        }));
+      } catch (error) {
+        console.error('Failed to fetch RSVPs:', error);
+        return eventsData.pages[0].data || [];
+      }
     },
     enabled: !!eventsData?.pages?.[0]?.data?.length,
     retry: 3,
@@ -82,6 +90,8 @@ export default function Events() {
       if (!profile?.id || !eventsData?.pages?.[0]?.data) return null;
 
       const eventIds = eventsData.pages[0].data.map(e => e.id);
+      
+      if (eventIds.length === 0) return {};
       
       try {
         const { data, error } = await supabase
@@ -142,6 +152,7 @@ export default function Events() {
 
   if (error) {
     console.error("Events loading error:", error);
+    toast.error("Failed to load events. Please try again.");
     return (
       <div className="min-h-screen bg-[#F1F0FB] flex items-center justify-center animate-fade-in">
         <div className="text-black">Error loading events. Please try again.</div>

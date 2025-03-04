@@ -57,7 +57,7 @@ export function useEvents(selectedDate?: Date, eventId?: string) {
           }
         }
 
-        const { data: events, error, count } = await query;
+        const { data: events, error } = await query;
 
         if (error) {
           console.error('Events query error:', error);
@@ -65,15 +65,15 @@ export function useEvents(selectedDate?: Date, eventId?: string) {
         }
 
         // Sort events with today's events first in memory
-        const sortedEvents = (events as Event[]).sort((a, b) => {
+        const sortedEvents = (events as Event[])?.sort((a, b) => {
           return new Date(a.date).getTime() - new Date(b.date).getTime();
-        });
+        }) || [];
 
         console.log('Fetched events:', sortedEvents);
 
         return {
           data: sortedEvents,
-          count: count || 0,
+          count: sortedEvents.length,
           nextPage: null
         };
       } catch (error) {

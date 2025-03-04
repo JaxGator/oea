@@ -3,7 +3,6 @@ import { Event } from "@/types/event";
 import { EventCard } from "@/components/EventCard";
 import { useAuthState } from "@/hooks/useAuthState";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useMemo } from "react";
 
 interface EventListProps {
   events: Event[];
@@ -30,15 +29,6 @@ export function EventList({
 }: EventListProps) {
   const { isLoading: isAuthChecking } = useAuthState();
 
-  if (!Array.isArray(events)) {
-    console.error("Events is not an array:", events);
-    return (
-      <div className="text-center py-8">
-        <p className="text-gray-500">Error loading events. Please try again.</p>
-      </div>
-    );
-  }
-
   if (isLoading) {
     return (
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -59,6 +49,15 @@ export function EventList({
             </div>
           </div>
         ))}
+      </div>
+    );
+  }
+
+  if (!Array.isArray(events)) {
+    console.error("Events is not an array:", events);
+    return (
+      <div className="text-center py-8">
+        <p className="text-gray-500">Error loading events. Please try again.</p>
       </div>
     );
   }
