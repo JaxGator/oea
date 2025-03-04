@@ -1,7 +1,6 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
 import { useAuthState } from "@/hooks/useAuthState";
 import { canEditEvent } from "@/utils/permissionsUtils";
 import type { Event } from "@/types/event";
@@ -15,6 +14,8 @@ export function useAuthVerification(
   const [checkedSessionData, setCheckedSessionData] = useState(false);
   const [hasValidPermission, setHasValidPermission] = useState(false);
   const { user, isAuthenticated, isLoading } = useAuthState();
+  // Add a flag to prevent showing multiple toast messages
+  const [hasShownToast, setHasShownToast] = useState(false);
 
   const checkAuthAndPermissions = useCallback(async () => {
     try {
@@ -62,7 +63,7 @@ export function useAuthVerification(
       
       if (error) {
         console.error("Error getting session:", error);
-        toast.error("Authentication error. Please try logging in again.");
+        // Only show toast once
         setHasValidPermission(false);
         setVerifyingAuth(false);
         return false;
@@ -80,7 +81,7 @@ export function useAuthVerification(
       
       if (!sessionExists) {
         console.error("Authentication error: No active session");
-        toast.error("You must be logged in to edit events");
+        // Don't show toast messages here, let the component handle it
         setHasValidPermission(false);
         setVerifyingAuth(false);
         return false;
@@ -147,7 +148,7 @@ export function useAuthVerification(
         
         if (!hasEditPermission) {
           console.error("Permission denied: user cannot edit this event");
-          toast.error("You don't have permission to edit this event");
+          // Don't show toast messages here, let the component handle it
         }
         
         setVerifyingAuth(false);
@@ -159,12 +160,12 @@ export function useAuthVerification(
       return false;
     } catch (err) {
       console.error("Authentication check failed:", err);
-      toast.error("Authentication error. Please try logging in again.");
+      // Don't show toast messages here, let the component handle it
       setHasValidPermission(false);
       setVerifyingAuth(false);
       return false;
     }
-  }, [initialData, user, forceAdmin, forceCanManage]);
+  }, [initialData, user, forceAdmin, forceCanManage, hasShownToast]);
 
   // Run checks when component mounts or when user/initialData changes
   useEffect(() => {
@@ -178,6 +179,8 @@ export function useAuthVerification(
     verifyingAuth,
     checkedSessionData,
     hasValidPermission,
-    checkAuthAndPermissions
+    checkAuthAndPermissions,
+    setHasShownToast,
+    hasShownToast
   };
 }

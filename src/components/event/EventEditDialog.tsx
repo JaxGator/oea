@@ -32,10 +32,14 @@ export function EventEditDialog({
   const [isClosing, setIsClosing] = useState(false);
   const [localShowDialog, setLocalShowDialog] = useState(showDialog);
   const { user, isAuthenticated } = useAuthState();
+  const [hasShownAuthMessage, setHasShownAuthMessage] = useState(false);
+  
   const { 
     verifyingAuth, 
     hasValidPermission, 
-    checkAuthAndPermissions 
+    checkAuthAndPermissions,
+    hasShownToast,
+    setHasShownToast
   } = useAuthVerification(initialData, forceAdmin, forceCanManage);
   
   // Sync the local state with the parent state
@@ -43,8 +47,22 @@ export function EventEditDialog({
     if (showDialog !== localShowDialog) {
       console.log("Syncing dialog state:", { showDialog, localShowDialog });
       setLocalShowDialog(showDialog);
+      
+      // Reset the auth message flag when dialog changes
+      if (showDialog) {
+        setHasShownAuthMessage(false);
+      }
     }
   }, [showDialog, localShowDialog]);
+  
+  // Show auth message only once when dialog opens
+  useEffect(() => {
+    if (localShowDialog && !isAuthenticated && !hasShownAuthMessage) {
+      console.log("User not authenticated, showing message");
+      setHasShownAuthMessage(true);
+      // We'll handle auth messages in the component render, not here
+    }
+  }, [localShowDialog, isAuthenticated, hasShownAuthMessage]);
   
   // Perform auth check whenever the dialog opens
   useEffect(() => {
@@ -73,7 +91,8 @@ export function EventEditDialog({
     hasValidPermission,
     verifyingAuth,
     forceAdmin,
-    forceCanManage
+    forceCanManage,
+    hasShownAuthMessage
   });
 
   const handleSuccess = useCallback(() => {
@@ -99,6 +118,11 @@ export function EventEditDialog({
     if (!isClosing) {
       setLocalShowDialog(open);
       setShowDialog(open);
+      
+      // Reset auth message flag when closing
+      if (!open) {
+        setHasShownAuthMessage(false);
+      }
     }
   };
 
@@ -107,6 +131,7 @@ export function EventEditDialog({
     return () => {
       if (localShowDialog) {
         setShowDialog(false);
+        setHasShownAuthMessage(false);
       }
     };
   }, [localShowDialog, setShowDialog]);
