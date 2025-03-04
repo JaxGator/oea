@@ -5,8 +5,8 @@ import type { Event } from "@/types/event";
 import { useEffect, useState, useCallback } from "react";
 import { Loader2 } from "lucide-react";
 import { useAuthState } from "@/hooks/useAuthState";
-import { useEventPermissions } from "@/hooks/events/useEventPermissions";
 import { Button } from "@/components/ui/button";
+import { usePermissions } from "@/hooks/usePermissions";
 
 interface EventEditDialogProps {
   initialData: Event;
@@ -32,12 +32,8 @@ export function EventEditDialog({
   const [isClosing, setIsClosing] = useState(false);
   const [localShowDialog, setLocalShowDialog] = useState(showDialog);
   const { user, isAuthenticated } = useAuthState();
-  
-  const { 
-    verifyingAuth, 
-    hasValidPermission, 
-    checkPermissions
-  } = useEventPermissions(initialData, forceAdmin, forceCanManage);
+  const { verifyPermission, isVerifying } = usePermissions();
+  const [hasValidPermission, setHasValidPermission] = useState(false);
   
   // Sync the local state with the parent state
   useEffect(() => {
@@ -49,17 +45,35 @@ export function EventEditDialog({
   
   // Perform permission check whenever the dialog opens
   useEffect(() => {
-    if (localShowDialog && initialData) {
-      console.log("Dialog opened, checking permissions with override:", { 
-        forceAdmin, 
-        forceCanManage,
-        isAdmin: user?.is_admin,
-        isMember: user?.is_member,
-        isApproved: user?.is_approved
-      });
-      checkPermissions();
-    }
-  }, [localShowDialog, initialData, checkPermissions, forceAdmin, forceCanManage, user?.is_admin, user?.is_member, user?.is_approved]);
+    const checkPermissions = async () => {
+      if (!localShowDialog) return;
+      
+      if (!initialData?.id) {
+        // New event creation - permission granted
+        setHasValidPermission(true);
+        return;
+      }
+      
+      // For existing events, check if user has permission to edit
+      const hasPermission = await verifyPermission(
+        'edit', 
+        initialData.id, 
+        initialData.created_by
+      );
+      
+      // Apply force overrides if provided
+      const effectivePermission = hasPermission || forceAdmin || forceCanManage;
+      setHasValidPermission(effectivePermission);
+    };
+    
+    checkPermissions();
+  }, [
+    localShowDialog, 
+    initialData, 
+    verifyPermission, 
+    forceAdmin, 
+    forceCanManage
+  ]);
 
   const handleSuccess = useCallback(() => {
     console.log("EventEditDialog: handleSuccess called");
@@ -123,11 +137,11 @@ export function EventEditDialog({
   
   // Helper function to render dialog content based on auth/permission state
   function renderDialogContent() {
-    if (verifyingAuth) {
+    if (isVerifying) {
       return (
         <div className="flex justify-center items-center py-12">
           <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
-          <p className="ml-2">Verifying authentication...</p>
+          <p className="ml-2">Verifying permissions...</p>
         </div>
       );
     }
@@ -148,9 +162,10 @@ export function EventEditDialog({
     
     // Check permissions only for existing events (editing)
     const needsPermissionCheck = initialData?.id;
-    const isAdminOrMember = user?.is_admin || user?.is_member || user?.is_approved || forceAdmin || forceCanManage;
+    const { getEffectivePermissions } = usePermissions();
+    const { isAdmin, canManageEvents } = getEffectivePermissions();
     
-    if (needsPermissionCheck && !hasValidPermission && !isAdminOrMember) {
+    if (needsPermissionCheck && !hasValidPermission && !isAdmin && !canManageEvents) {
       return (
         <div className="text-center py-6">
           <p className="text-yellow-500">You don't have permission to edit this event</p>
@@ -169,8 +184,8 @@ export function EventEditDialog({
           isPastEvent={isPastEvent}
           isWixEvent={isWixEvent}
           onSuccess={handleSuccess}
-          forceAdmin={forceAdmin || !!user?.is_admin}
-          forceCanManage={forceCanManage || !!user?.is_member || !!user?.is_approved}
+          forceAdmin={forceAdmin}
+          forceCanManage={forceCanManage}
         />
       </div>
     );

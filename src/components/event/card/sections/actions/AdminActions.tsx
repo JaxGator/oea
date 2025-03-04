@@ -1,87 +1,76 @@
 
 import { Button } from "@/components/ui/button";
 import { Edit, Trash2, ToggleLeft, ToggleRight } from "lucide-react";
-import { useAuthState } from "@/hooks/useAuthState";
-import { canEditEvent, canDeleteEvent, isAdministrator, canManageEvents } from "@/utils/permissionsUtils";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useActionFeedback } from "@/hooks/ui/useActionFeedback";
 import { toast } from "sonner";
+import { usePermissions } from "@/hooks/usePermissions";
+import { LoadingButton } from "@/components/ui/loading-button";
 
 interface AdminActionsProps {
-  isAdmin: boolean;
-  canManageEvents: boolean;
   isPastEvent: boolean;
   isWixEvent: boolean;
   showDelete?: boolean;
   showPublishToggle?: boolean;
   isPublished?: boolean;
   createdBy: string;
+  eventId: string;
   onEdit?: () => void;
   onDelete?: () => void;
   onTogglePublish?: () => void;
 }
 
 export function AdminActions({
-  isAdmin,
-  canManageEvents: propsCanManageEvents,
   isPastEvent,
   isWixEvent,
   showDelete = false,
   showPublishToggle = false,
   isPublished = true,
   createdBy,
+  eventId,
   onEdit,
   onDelete,
   onTogglePublish
 }: AdminActionsProps) {
-  const { user } = useAuthState();
   const { executeAction, isLoading } = useActionFeedback();
+  const { 
+    verifyPermission, 
+    isVerifying,
+    getEffectivePermissions
+  } = usePermissions();
   
-  // Log auth state and permissions on mount and when they change
+  const [canEdit, setCanEdit] = useState(false);
+  const [canDelete, setCanDelete] = useState(false);
+  const [canManage, setCanManage] = useState(false);
+  const [isCheckingPermissions, setIsCheckingPermissions] = useState(true);
+  
+  // Get synchronous permissions for initial render
+  const { isAdmin, canManageEvents } = getEffectivePermissions();
+  
+  // Check permissions when component mounts
   useEffect(() => {
-    if (user) {
-      console.log("AdminActions - Auth state:", {
-        userId: user?.id,
-        profileIsAdmin: user?.is_admin,
-        profileIsApproved: user?.is_approved,
-        profileIsMember: user?.is_member,
-        propsIsAdmin: isAdmin,
-        propsCanManageEvents,
-        eventCreator: createdBy,
-        timestamp: new Date().toISOString()
-      });
-    }
-  }, [user, isAdmin, propsCanManageEvents, createdBy]);
-  
-  // If no user, don't render anything
-  if (!user) {
-    console.log("AdminActions - No user found");
-    return null;
-  }
-  
-  // Force isAdmin to be true if user.is_admin is true, regardless of prop
-  const effectiveIsAdmin = user.is_admin === true || isAdmin === true;
-  
-  // Updated: Consider both admin status and the canManageEvents prop for permissions
-  // Any approved member (is_approved=true) or member (is_member=true) should be able to manage events
-  const effectiveCanManage = effectiveIsAdmin || propsCanManageEvents || user.is_approved === true || user.is_member === true;
-  
-  // Calculate permissions with the effective admin and management status
-  const canEdit = canEditEvent(user.id, effectiveIsAdmin, effectiveCanManage, createdBy);
-  const canDelete = canDeleteEvent(user.id, effectiveIsAdmin, effectiveCanManage, createdBy);
-  
-  console.log("AdminActions - Final permissions:", {
-    userId: user.id,
-    effectiveIsAdmin,
-    effectiveCanManage,
-    canEdit,
-    canDelete,
-    timestamp: new Date().toISOString()
-  });
+    const checkPermissions = async () => {
+      setIsCheckingPermissions(true);
+      
+      // Check all required permissions
+      const [canEditResult, canDeleteResult, canManageResult] = await Promise.all([
+        verifyPermission('edit', eventId, createdBy),
+        verifyPermission('delete', eventId, createdBy),
+        verifyPermission('manage', eventId, createdBy)
+      ]);
+      
+      setCanEdit(canEditResult);
+      setCanDelete(canDeleteResult);
+      setCanManage(canManageResult);
+      setIsCheckingPermissions(false);
+    };
+    
+    checkPermissions();
+  }, [eventId, createdBy, verifyPermission]);
 
   // Handle edit with feedback
   const handleEdit = () => {
-    if (isPastEvent) {
+    if (isPastEvent && !isAdmin) {
       toast.info("Past events can only be edited by administrators");
       return;
     }
@@ -91,7 +80,7 @@ export function AdminActions({
 
   // Handle delete with confirmation and feedback
   const handleDelete = async () => {
-    if (isPastEvent) {
+    if (isPastEvent && !isAdmin) {
       toast.info("Past events can only be deleted by administrators");
       return;
     }
@@ -128,38 +117,51 @@ export function AdminActions({
     }
   };
   
+  const isCheckingAnyPermission = isCheckingPermissions || isVerifying;
+  
   return (
     <div className="flex flex-wrap items-center gap-2">
-      {canEdit && !isWixEvent && onEdit && (
-        <Button 
+      {!isWixEvent && onEdit && (
+        <LoadingButton 
           variant="outline" 
           size="sm" 
           onClick={handleEdit}
-          disabled={isPastEvent && !effectiveIsAdmin}
+          disabled={isPastEvent && !isAdmin}
+          isVerifyingPermission={isCheckingAnyPermission}
+          permissionDenied={!isCheckingAnyPermission && !canEdit}
+          permissionMessage="You don't have permission to edit this event"
         >
           <Edit className="h-4 w-4 mr-2" />
           Edit
-        </Button>
+        </LoadingButton>
       )}
       
-      {canDelete && !isWixEvent && showDelete && onDelete && (
-        <Button 
+      {!isWixEvent && showDelete && onDelete && (
+        <LoadingButton 
           variant="destructive" 
           size="sm" 
           onClick={handleDelete}
-          disabled={isPastEvent && !effectiveIsAdmin || isLoading}
+          disabled={isPastEvent && !isAdmin || isLoading}
+          isVerifyingPermission={isCheckingAnyPermission}
+          permissionDenied={!isCheckingAnyPermission && !canDelete}
+          permissionMessage="You don't have permission to delete this event"
+          isLoading={isLoading}
         >
           <Trash2 className="h-4 w-4 mr-2" />
           Delete
-        </Button>
+        </LoadingButton>
       )}
       
-      {showPublishToggle && onTogglePublish && (effectiveIsAdmin || effectiveCanManage) && (
-        <Button
+      {showPublishToggle && onTogglePublish && (
+        <LoadingButton
           variant="secondary"
           size="sm"
           onClick={handleTogglePublish}
           disabled={isLoading}
+          isVerifyingPermission={isCheckingAnyPermission}
+          permissionDenied={!isCheckingAnyPermission && !canManage}
+          permissionMessage="You don't have permission to publish/unpublish events"
+          isLoading={isLoading}
         >
           {isPublished ? (
             <>
@@ -172,7 +174,7 @@ export function AdminActions({
               Publish
             </>
           )}
-        </Button>
+        </LoadingButton>
       )}
     </div>
   );

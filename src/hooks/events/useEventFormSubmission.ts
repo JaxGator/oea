@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useEventFormSubmit } from "@/hooks/useEventFormSubmit";
 import type { Profile } from "@/types/auth";
+import { usePermissions } from "@/hooks/usePermissions";
 
 interface FormSubmissionProps {
   onSuccess: () => void;
@@ -25,34 +26,19 @@ export function useEventFormSubmission({
 }: FormSubmissionProps) {
   const [localSubmitting, setLocalSubmitting] = useState(false);
   const { handleSubmit: handleFormSubmit, isSubmitting } = useEventFormSubmit(onSuccess);
+  const { getEffectivePermissions } = usePermissions();
   
-  // CRITICAL: Always consider forced admin status or user admin status
-  const effectiveIsAdmin = forceAdmin || !!user?.is_admin;
-  const effectiveCanManage = effectiveIsAdmin || forceCanManage || !!user?.is_approved || !!user?.is_member;
+  // Get synchronous permissions
+  const { isAdmin, canManageEvents } = getEffectivePermissions();
   
-  // For debugging purposes
-  useEffect(() => {
-    console.log("EventFormSubmission - Admin status:", {
-      forceAdmin,
-      effectiveIsAdmin,
-      userIsAdmin: user?.is_admin,
-      userIsMember: user?.is_member,
-      userIsApproved: user?.is_approved,
-      hasPermissionToEdit,
-      timestamp: new Date().toISOString()
-    });
-  }, [forceAdmin, effectiveIsAdmin, user?.is_admin, user?.is_member, user?.is_approved, hasPermissionToEdit]);
+  // Apply force overrides
+  const effectiveIsAdmin = isAdmin || !!forceAdmin;
+  const effectiveCanManage = effectiveIsAdmin || canManageEvents || !!forceCanManage;
   
   const onSubmit = async (data: EventFormValues) => {
     try {
       const { data: sessionData } = await supabase.auth.getSession();
       const hasValidSession = !!sessionData.session;
-      
-      console.log("Form submission - Session check:", {
-        hasValidSession,
-        userId: sessionData.session?.user?.id,
-        timestamp: new Date().toISOString()
-      });
       
       if (!hasValidSession) {
         console.error('Not authenticated while submitting form - direct check');
@@ -68,25 +54,8 @@ export function useEventFormSubmission({
         return;
       }
       
-      // CRITICAL: Ensure admin status checks are accurate
-      const isAdmin = !!user?.is_admin || forceAdmin;
-      const isMember = !!user?.is_member;
-      const isApproved = !!user?.is_approved;
-      
-      const canManageEvents = isAdmin || isMember || isApproved || forceCanManage;
-      
-      console.log("Form submission - Permission check:", {
-        isAdmin,
-        isMember,
-        isApproved,
-        forceAdmin,
-        forceCanManage,
-        canManageEvents,
-        hasPermissionToEdit
-      });
-      
-      // CRITICAL FIX: Always let admins and members bypass permission checks
-      if (initialData?.id && !hasPermissionToEdit && !canManageEvents) {
+      // CRITICAL: Always let admins and members bypass permission checks
+      if (initialData?.id && !hasPermissionToEdit && !effectiveCanManage) {
         toast.error('You do not have permission to edit this event');
         return;
       }

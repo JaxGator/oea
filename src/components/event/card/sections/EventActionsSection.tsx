@@ -1,16 +1,13 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { RSVPActions } from "./actions/RSVPActions";
 import { AdminActions } from "./actions/AdminActions";
 import { EventDetailsActions } from "./actions/EventDetailsActions";
-import { useEventActions } from "@/hooks/events/useEventActions";
-import { useAuthState } from "@/hooks/useAuthState";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { usePermissions } from "@/hooks/usePermissions";
 
 interface EventActionsSectionProps {
-  isAdmin: boolean;
-  canManageEvents: boolean;
   userRSVPStatus: string | null;
   isPastEvent: boolean;
   canAddGuests: boolean;
@@ -19,10 +16,10 @@ interface EventActionsSectionProps {
   onCancelRSVP: () => void;
   onEdit?: () => void;
   onDelete?: () => void;
+  onTogglePublish?: () => void;
+  onViewDetails?: () => void;
   showPublishToggle?: boolean;
   isPublished?: boolean;
-  onViewDetails?: () => void;
-  onTogglePublish?: () => void;
   isAuthChecking?: boolean;
   requireAuth?: boolean;
   event: {
@@ -38,8 +35,6 @@ interface EventActionsSectionProps {
 }
 
 export function EventActionsSection({
-  isAdmin,
-  canManageEvents,
   userRSVPStatus,
   isPastEvent,
   canAddGuests,
@@ -62,17 +57,11 @@ export function EventActionsSection({
   isWixEvent = false
 }: EventActionsSectionProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { user } = useAuthState();
   const isMobile = useIsMobile();
+  const { getEffectivePermissions } = usePermissions();
   
-  // Enhanced event actions with permission checks
-  const { isLoading: isActionLoading } = useEventActions({
-    eventId: event.id,
-    createdBy: event.created_by || ''
-  });
-
-  // Check if the current user is the creator of this event
-  const isCreator = user?.id === event.created_by;
+  // Get synchronous permissions for rendering
+  const { isAdmin, canManageEvents } = getEffectivePermissions();
 
   const handleRSVP = async (guests?: { firstName: string }[]) => {
     setIsSubmitting(true);
@@ -120,7 +109,7 @@ export function EventActionsSection({
         canAddGuests={canAddGuests}
         isFullyBooked={isFullyBooked}
         isPastEvent={isPastEvent}
-        isSubmitting={isSubmitting || isActionLoading}
+        isSubmitting={isSubmitting}
         currentGuests={currentGuests}
         eventTitle={event.title}
         onRSVP={handleRSVP}
@@ -130,14 +119,13 @@ export function EventActionsSection({
       
       <div className={`flex ${isMobile ? 'flex-col' : 'flex-wrap items-center justify-between'} gap-2 mt-4`}>
         <AdminActions
-          isAdmin={isAdmin}
-          canManageEvents={canManageEvents || isCreator}
           isPastEvent={isPastEvent}
           isWixEvent={isWixEvent}
           showDelete={showDelete}
           showPublishToggle={showPublishToggle}
           isPublished={isPublished}
           createdBy={event.created_by || ''}
+          eventId={event.id}
           onEdit={onEdit}
           onDelete={onDelete}
           onTogglePublish={onTogglePublish}

@@ -2,31 +2,45 @@
 import { EventFormProps } from "../EventFormTypes";
 import { EventFormContent } from "./EventFormContent";
 import { useAuthState } from "@/hooks/useAuthState";
-import { useEventPermissions } from "@/hooks/events/useEventPermissions";
-import { useEffect } from "react";
+import { usePermissions } from "@/hooks/usePermissions";
+import { useEffect, useState } from "react";
 
 export function EventFormWrapper(props: EventFormProps) {
   const { user } = useAuthState();
   const { initialData, forceAdmin, forceCanManage } = props;
-  
-  const { 
-    hasValidPermission,
-    checkPermissions
-  } = useEventPermissions(initialData, forceAdmin, forceCanManage);
+  const { verifyPermission, isVerifying } = usePermissions();
+  const [hasValidPermission, setHasValidPermission] = useState<boolean>(false);
   
   // Perform permission check when component mounts
   useEffect(() => {
-    if (initialData) {
-      console.log("EventFormWrapper: Checking permissions");
-      checkPermissions();
-    }
-  }, [initialData, checkPermissions]);
+    const checkPermissions = async () => {
+      if (!initialData?.id) {
+        // New event creation - permission granted
+        setHasValidPermission(true);
+        return;
+      }
+      
+      // For existing events, verify edit permission
+      const hasPermission = await verifyPermission(
+        'edit',
+        initialData.id,
+        initialData.created_by
+      );
+      
+      // Force permission if needed
+      const effectivePermission = hasPermission || forceAdmin || forceCanManage;
+      setHasValidPermission(effectivePermission);
+    };
+    
+    checkPermissions();
+  }, [initialData, verifyPermission, forceAdmin, forceCanManage]);
   
   return (
     <EventFormContent
       {...props}
       hasPermissionToEdit={hasValidPermission}
       user={user}
+      isVerifyingPermission={isVerifying}
     />
   );
 }

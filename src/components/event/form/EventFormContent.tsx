@@ -1,4 +1,3 @@
-
 import { Form } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -20,6 +19,7 @@ interface EventFormContentProps extends EventFormProps {
   user: Profile | null;
   forceAdmin?: boolean;
   forceCanManage?: boolean;
+  isVerifyingPermission?: boolean;
 }
 
 export function EventFormContent({ 
@@ -30,9 +30,9 @@ export function EventFormContent({
   hasPermissionToEdit,
   user,
   forceAdmin,
-  forceCanManage
+  forceCanManage,
+  isVerifyingPermission = false
 }: EventFormContentProps) {
-  // Initialize the form with default values
   const form = useForm<EventFormValues>({
     resolver: zodResolver(eventSchema),
     mode: "onBlur",
@@ -56,7 +56,6 @@ export function EventFormContent({
     }
   });
 
-  // Set creator ID when user is loaded
   useEffect(() => {
     if (user?.id) {
       if (initialData?.id && initialData?.created_by) {
@@ -69,7 +68,6 @@ export function EventFormContent({
     }
   }, [user, form, initialData]);
 
-  // Use the extracted submission logic hook
   const { 
     onSubmit, 
     isSubmitting, 
@@ -84,7 +82,6 @@ export function EventFormContent({
     forceCanManage
   });
 
-  // IMPORTANT: For admin/members, never show permission warning
   const showPermissionWarning = initialData?.id && !hasPermissionToEdit && 
     !effectiveCanManage;
 
@@ -112,6 +109,7 @@ export function EventFormContent({
 
         <EventFormSubmitButton 
           isSubmitting={isSubmitting}
+          isVerifyingPermission={isVerifyingPermission}
           initialData={initialData}
           showPermissionWarning={showPermissionWarning}
         />
