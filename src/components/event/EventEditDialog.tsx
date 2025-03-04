@@ -36,17 +36,19 @@ export function EventEditDialog({
   
   // Sync the local state with the parent state
   useEffect(() => {
-    setLocalShowDialog(showDialog);
-  }, [showDialog]);
+    if (showDialog !== localShowDialog) {
+      setLocalShowDialog(showDialog);
+    }
+  }, [showDialog, localShowDialog]);
   
   // Perform direct auth check on component mount
   useEffect(() => {
-    if (localShowDialog) {
+    if (localShowDialog && initialData) {
       checkAuthAndPermissions();
     }
-  }, [localShowDialog, checkAuthAndPermissions]);
+  }, [localShowDialog, initialData, checkAuthAndPermissions]);
 
-  console.log("EventEditDialog initialized with:", { 
+  console.log("EventEditDialog state:", { 
     eventId: initialData?.id,
     eventTitle: initialData?.title,
     showDialog,
@@ -92,25 +94,7 @@ export function EventEditDialog({
     };
   }, [localShowDialog, setShowDialog]);
 
-  // Show loading state while checking authentication
-  if (verifyingAuth) {
-    return (
-      <Dialog open={localShowDialog} onOpenChange={handleOpenChange}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-          <div className="flex justify-center items-center py-12">
-            <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
-            <p className="ml-2">Verifying authentication...</p>
-          </div>
-        </DialogContent>
-      </Dialog>
-    );
-  }
-
-  // Don't render anything if not authenticated
-  if (!hasValidPermission) {
-    return null;
-  }
-
+  // Important: We need to render the dialog regardless of auth state, but conditionally render content
   return (
     <Dialog 
       open={localShowDialog} 
@@ -136,14 +120,36 @@ export function EventEditDialog({
             {initialData?.id ? 'Edit Event' : 'Create Event'}
           </DialogTitle>
         </DialogHeader>
-        <div className="space-y-6">
-          <EventForm 
-            initialData={initialData}
-            isPastEvent={isPastEvent}
-            isWixEvent={isWixEvent}
-            onSuccess={handleSuccess}
-          />
-        </div>
+        
+        {verifyingAuth ? (
+          <div className="flex justify-center items-center py-12">
+            <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+            <p className="ml-2">Verifying authentication...</p>
+          </div>
+        ) : !isAuthenticated ? (
+          <div className="text-center py-6">
+            <p className="text-red-500">You must be logged in to edit events</p>
+            <button 
+              onClick={() => window.location.href = '/auth'} 
+              className="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+            >
+              Sign In
+            </button>
+          </div>
+        ) : !hasValidPermission && initialData?.id ? (
+          <div className="text-center py-6">
+            <p className="text-yellow-500">You don't have permission to edit this event</p>
+          </div>
+        ) : (
+          <div className="space-y-6">
+            <EventForm 
+              initialData={initialData}
+              isPastEvent={isPastEvent}
+              isWixEvent={isWixEvent}
+              onSuccess={handleSuccess}
+            />
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   );

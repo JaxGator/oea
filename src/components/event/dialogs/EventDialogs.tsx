@@ -47,6 +47,14 @@ export function EventDialogs({
   handleEditSuccess,
   isAuthenticated = false,
 }: EventDialogsProps) {
+  // Log dialog state for debugging
+  console.log("EventDialogs state:", {
+    eventId: event?.id,
+    showDetailsDialog,
+    showEditDialog,
+    isAuthenticated
+  });
+
   return (
     <>
       <Dialog 
@@ -80,16 +88,15 @@ export function EventDialogs({
         </DialogContent>
       </Dialog>
 
-      {showEditDialog && (
-        <EventEditDialog
-          initialData={event}
-          showDialog={showEditDialog}
-          setShowDialog={setShowEditDialog}
-          onSuccess={handleEditSuccess}
-          isPastEvent={isPastEvent}
-          isWixEvent={isWixEvent}
-        />
-      )}
+      {/* Always render the edit dialog but control visibility through "open" prop */}
+      <EventEditDialog
+        initialData={event}
+        showDialog={showEditDialog}
+        setShowDialog={setShowEditDialog}
+        onSuccess={handleEditSuccess}
+        isPastEvent={isPastEvent}
+        isWixEvent={isWixEvent}
+      />
     </>
   );
 }

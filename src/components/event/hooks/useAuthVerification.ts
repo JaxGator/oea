@@ -87,8 +87,10 @@ export function useAuthVerification(initialData: Event) {
 
   // Run checks when component mounts
   useEffect(() => {
-    checkAuthAndPermissions();
-  }, [checkAuthAndPermissions, user, isAuthenticated]);
+    if (initialData) {
+      checkAuthAndPermissions();
+    }
+  }, [checkAuthAndPermissions, initialData]);
 
   return {
     verifyingAuth,
