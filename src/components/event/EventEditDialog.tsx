@@ -2,7 +2,7 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { EventForm } from "@/components/event/EventForm";
 import type { Event } from "@/types/event";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { toast } from "sonner";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { InfoIcon } from "lucide-react";
@@ -48,39 +48,50 @@ export function EventEditDialog({
 
   // Check permissions whenever auth state or dialog visibility changes
   useEffect(() => {
-    if (!isLoading && user && initialData && localShowDialog) {
-      const isAdmin = user.is_admin || false;
-      const canManageEvents = isAdmin || user.is_approved;
-      const hasEditPermission = canEditEvent(user.id, isAdmin, canManageEvents, initialData.created_by || '');
-      
-      console.log("EventEditDialog - Permission check:", { 
-        userId: user.id,
-        eventCreator: initialData.created_by,
-        isAdmin,
-        canManageEvents,
-        hasPermission: hasEditPermission
-      });
-      
-      if (!hasEditPermission) {
-        console.error("Permission denied: user cannot edit this event");
-        toast.error("You don't have permission to edit this event");
+    if (!isLoading && localShowDialog) {
+      // First check if the user is authenticated at all
+      if (!isAuthenticated) {
+        console.error("Authentication error: User not authenticated");
+        toast.error("You must be logged in to edit events");
         setLocalShowDialog(false);
         setShowDialog(false);
+        return;
+      }
+      
+      // Then check if we have a user object with an ID
+      if (!user || !user.id) {
+        console.error("Authentication error: No user ID available");
+        toast.error("User profile not available. Please try logging in again.");
+        setLocalShowDialog(false);
+        setShowDialog(false);
+        return;
+      }
+      
+      // Finally check edit permissions for this specific event
+      if (initialData && initialData.id) {
+        const isAdmin = user.is_admin || false;
+        const canManageEvents = isAdmin || user.is_approved;
+        const hasEditPermission = canEditEvent(user.id, isAdmin, canManageEvents, initialData.created_by || '');
+        
+        console.log("EventEditDialog - Permission check:", { 
+          userId: user.id,
+          eventCreator: initialData.created_by,
+          isAdmin,
+          canManageEvents,
+          hasPermission: hasEditPermission
+        });
+        
+        if (!hasEditPermission) {
+          console.error("Permission denied: user cannot edit this event");
+          toast.error("You don't have permission to edit this event");
+          setLocalShowDialog(false);
+          setShowDialog(false);
+        }
       }
     }
-  }, [user, initialData, localShowDialog, setShowDialog, isLoading]);
+  }, [user, initialData, localShowDialog, setShowDialog, isLoading, isAuthenticated]);
 
-  // Check authentication early - but only if the dialog should be shown and auth has finished loading
-  useEffect(() => {
-    if (!isLoading && !isAuthenticated && localShowDialog) {
-      console.log("EventEditDialog: User not authenticated");
-      toast.error("You must be logged in to edit events");
-      setLocalShowDialog(false);
-      setShowDialog(false);
-    }
-  }, [isAuthenticated, localShowDialog, setShowDialog, isLoading]);
-
-  const handleSuccess = () => {
+  const handleSuccess = useCallback(() => {
     console.log("EventEditDialog: handleSuccess called");
     setIsClosing(true);
     if (onSuccess) {
@@ -96,7 +107,7 @@ export function EventEditDialog({
         window.location.reload();
       }, 500);
     }
-  };
+  }, [initialData?.id, onSuccess, setShowDialog]);
 
   const handleOpenChange = (open: boolean) => {
     console.log("EventEditDialog: handleOpenChange", open);
@@ -116,7 +127,12 @@ export function EventEditDialog({
   }, [localShowDialog, setShowDialog]);
 
   // Don't render anything while loading authentication state or if not authenticated
-  if (isLoading || (!isAuthenticated && localShowDialog)) {
+  if (isLoading) {
+    return null;
+  }
+
+  if (!isAuthenticated) {
+    toast.error("You must be logged in to edit events");
     return null;
   }
 

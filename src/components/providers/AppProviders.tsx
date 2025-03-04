@@ -1,4 +1,5 @@
-import { ReactNode, useState } from "react";
+
+import { ReactNode, useState, useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -12,24 +13,45 @@ interface AppProvidersProps {
   children: ReactNode;
 }
 
+// Create a persistent query client to maintain data between renders
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       retry: 2,
       refetchOnWindowFocus: false,
       staleTime: 1000 * 60 * 5, // 5 minutes
+      // Add proper error handling
+      onError: (error) => {
+        console.error("Query error:", error);
+      }
     },
   },
 });
 
 export function AppProviders({ children }: AppProvidersProps) {
   const [isLoading, setIsLoading] = useState(true);
+  const [initialSession, setInitialSession] = useState(null);
 
-  // Simulate initial load to prevent flash
-  useState(() => {
-    const timer = setTimeout(() => setIsLoading(false), 100);
-    return () => clearTimeout(timer);
-  });
+  // Get initial session on component mount
+  useEffect(() => {
+    const getInitialSession = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (error) {
+          console.error("Error getting initial session:", error);
+        } else {
+          console.log("Initial session loaded successfully:", !!session);
+          setInitialSession(session);
+        }
+      } catch (err) {
+        console.error("Failed to get initial session:", err);
+      } finally {
+        setTimeout(() => setIsLoading(false), 100);
+      }
+    };
+
+    getInitialSession();
+  }, []);
 
   if (isLoading) {
     return <LoadingScreen message="Initializing application..." />;
@@ -39,7 +61,7 @@ export function AppProviders({ children }: AppProvidersProps) {
     <QueryClientProvider client={queryClient}>
       <SessionContextProvider 
         supabaseClient={supabase}
-        initialSession={null}
+        initialSession={initialSession}
       >
         <TooltipProvider>
           <SessionManager queryClient={queryClient}>

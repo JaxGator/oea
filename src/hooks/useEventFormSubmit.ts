@@ -15,18 +15,33 @@ export function useEventFormSubmit(onSuccess: () => void) {
     try {
       setIsSubmitting(true);
       
-      // Check for authentication first
-      if (!isAuthenticated || !user?.id) {
-        console.error('User not authenticated', { isAuthenticated, userId: user?.id });
+      // Enhanced authentication check with detailed error logging
+      if (!isAuthenticated) {
+        console.error('Authentication failed: User not authenticated', { 
+          isAuthenticated, 
+          userExists: !!user,
+          userId: user?.id 
+        });
         toast.error('You must be logged in to save events');
         throw new Error('User not authenticated');
       }
       
-      // Log authentication status for debugging
-      console.log('Authentication check passed:', { 
+      if (!user?.id) {
+        console.error('Authentication failed: No user ID available', { 
+          isAuthenticated, 
+          user 
+        });
+        toast.error('Unable to identify your account. Please try logging in again.');
+        throw new Error('No user ID available');
+      }
+      
+      // More detailed logging for debugging
+      console.log('Authentication verified:', { 
         isAuthenticated, 
         userId: user.id,
-        isAdmin: user.is_admin
+        isAdmin: user.is_admin,
+        isApproved: user.is_approved,
+        actionType: initialData?.id ? 'update' : 'create'
       });
       
       // Clean and validate data

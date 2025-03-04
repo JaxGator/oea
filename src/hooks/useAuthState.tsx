@@ -2,7 +2,7 @@
 import { useSession } from "./auth/useSession";
 import { useProfile } from "./auth/useProfile";
 import { useToast } from "@/hooks/use-toast";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import type { Profile } from "@/types/auth";
@@ -20,6 +20,20 @@ export function useAuthState(): AuthState {
   const queryClient = useQueryClient();
   const { user: authUser, isLoading: isSessionLoading, error: sessionError } = useSession();
   const { data: profile, isLoading: isProfileLoading, error: profileError } = useProfile(authUser?.id);
+  
+  // Add explicit state tracking for authentication
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(!!authUser);
+  
+  // Update authentication state whenever authUser changes
+  useEffect(() => {
+    setIsAuthenticated(!!authUser);
+    
+    console.log("Auth state updated:", {
+      isAuthenticated: !!authUser,
+      userId: authUser?.id,
+      timestamp: new Date().toISOString()
+    });
+  }, [authUser]);
 
   useEffect(() => {
     if (!authUser?.id) return;
@@ -112,6 +126,6 @@ export function useAuthState(): AuthState {
     profile,
     isLoading: isSessionLoading || isProfileLoading,
     error: sessionError || profileError,
-    isAuthenticated: !!authUser
+    isAuthenticated: isAuthenticated
   };
 }
