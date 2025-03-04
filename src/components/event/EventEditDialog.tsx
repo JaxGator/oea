@@ -3,10 +3,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { EventForm } from "@/components/event/EventForm";
 import type { Event } from "@/types/event";
 import { useEffect, useState, useCallback } from "react";
-import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { useAuthState } from "@/hooks/useAuthState";
-import { useAuthVerification } from "./hooks/useAuthVerification";
+import { useEventPermissions } from "@/hooks/events/useEventPermissions";
 
 interface EventEditDialogProps {
   initialData: Event;
@@ -31,69 +30,36 @@ export function EventEditDialog({
 }: EventEditDialogProps) {
   const [isClosing, setIsClosing] = useState(false);
   const [localShowDialog, setLocalShowDialog] = useState(showDialog);
-  const { user, isAuthenticated } = useAuthState();
-  const [hasShownAuthMessage, setHasShownAuthMessage] = useState(false);
+  const { user } = useAuthState();
   
   const { 
     verifyingAuth, 
     hasValidPermission, 
-    checkAuthAndPermissions,
-    hasShownToast,
-    setHasShownToast
-  } = useAuthVerification(initialData, forceAdmin, forceCanManage);
+    isAuthenticated,
+    checkPermissions
+  } = useEventPermissions(initialData, forceAdmin, forceCanManage);
   
   // Sync the local state with the parent state
   useEffect(() => {
     if (showDialog !== localShowDialog) {
       console.log("Syncing dialog state:", { showDialog, localShowDialog });
       setLocalShowDialog(showDialog);
-      
-      // Reset the auth message flag when dialog changes
-      if (showDialog) {
-        setHasShownAuthMessage(false);
-      }
     }
   }, [showDialog, localShowDialog]);
   
-  // Show auth message only once when dialog opens
-  useEffect(() => {
-    if (localShowDialog && !isAuthenticated && !hasShownAuthMessage) {
-      console.log("User not authenticated, showing message");
-      setHasShownAuthMessage(true);
-      // We'll handle auth messages in the component render, not here
-    }
-  }, [localShowDialog, isAuthenticated, hasShownAuthMessage]);
-  
-  // Perform auth check whenever the dialog opens
+  // Perform permission check whenever the dialog opens
   useEffect(() => {
     if (localShowDialog && initialData) {
-      console.log("Dialog opened, checking auth permissions with override:", { 
+      console.log("Dialog opened, checking permissions with override:", { 
         forceAdmin, 
         forceCanManage,
         isAdmin: user?.is_admin,
         isMember: user?.is_member,
         isApproved: user?.is_approved
       });
-      checkAuthAndPermissions();
+      checkPermissions();
     }
-  }, [localShowDialog, initialData, checkAuthAndPermissions, forceAdmin, forceCanManage, user?.is_admin, user?.is_member, user?.is_approved]);
-
-  console.log("EventEditDialog state:", { 
-    eventId: initialData?.id,
-    eventTitle: initialData?.title,
-    showDialog,
-    localShowDialog,
-    userId: user?.id,
-    isAdmin: user?.is_admin || forceAdmin,
-    isMember: user?.is_member,
-    isApproved: user?.is_approved,
-    isAuthenticated,
-    hasValidPermission,
-    verifyingAuth,
-    forceAdmin,
-    forceCanManage,
-    hasShownAuthMessage
-  });
+  }, [localShowDialog, initialData, checkPermissions, forceAdmin, forceCanManage, user?.is_admin, user?.is_member, user?.is_approved]);
 
   const handleSuccess = useCallback(() => {
     console.log("EventEditDialog: handleSuccess called");
@@ -118,11 +84,6 @@ export function EventEditDialog({
     if (!isClosing) {
       setLocalShowDialog(open);
       setShowDialog(open);
-      
-      // Reset auth message flag when closing
-      if (!open) {
-        setHasShownAuthMessage(false);
-      }
     }
   };
 
@@ -131,12 +92,10 @@ export function EventEditDialog({
     return () => {
       if (localShowDialog) {
         setShowDialog(false);
-        setHasShownAuthMessage(false);
       }
     };
   }, [localShowDialog, setShowDialog]);
 
-  // Important: We need to render the dialog regardless of auth state, but conditionally render content
   return (
     <Dialog 
       open={localShowDialog} 
@@ -145,16 +104,10 @@ export function EventEditDialog({
       <DialogContent 
         className="max-w-4xl max-h-[90vh] overflow-y-auto"
         onEscapeKeyDown={(e) => {
-          // Prevent escape from closing if we're in the middle of an operation
-          if (isClosing) {
-            e.preventDefault();
-          }
+          if (isClosing) e.preventDefault();
         }}
         onPointerDownOutside={(e) => {
-          // Prevent clicking outside from closing if we're in the middle of an operation
-          if (isClosing) {
-            e.preventDefault();
-          }
+          if (isClosing) e.preventDefault();
         }}
       >
         <DialogHeader>
@@ -163,42 +116,63 @@ export function EventEditDialog({
           </DialogTitle>
         </DialogHeader>
         
-        {verifyingAuth ? (
-          <div className="flex justify-center items-center py-12">
-            <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
-            <p className="ml-2">Verifying authentication...</p>
-          </div>
-        ) : !isAuthenticated ? (
-          <div className="text-center py-6">
-            <p className="text-red-500">You must be logged in to edit events</p>
-            <button 
-              onClick={() => window.location.href = '/auth'} 
-              className="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-            >
-              Sign In
-            </button>
-          </div>
-        ) : !hasValidPermission && initialData?.id && 
-             !(user?.is_admin || user?.is_member || user?.is_approved || forceAdmin || forceCanManage) ? (
-          <div className="text-center py-6">
-            <p className="text-yellow-500">You don't have permission to edit this event</p>
-            <p className="text-sm text-gray-500 mt-2">
-              Only admins, approved members, or the event creator can edit this event.
-            </p>
-          </div>
-        ) : (
-          <div className="space-y-6">
-            <EventForm 
-              initialData={initialData}
-              isPastEvent={isPastEvent}
-              isWixEvent={isWixEvent}
-              onSuccess={handleSuccess}
-              forceAdmin={forceAdmin || !!user?.is_admin}
-              forceCanManage={forceCanManage || !!user?.is_member || !!user?.is_approved}
-            />
-          </div>
-        )}
+        {renderDialogContent()}
       </DialogContent>
     </Dialog>
   );
+  
+  // Helper function to render dialog content based on auth/permission state
+  function renderDialogContent() {
+    if (verifyingAuth) {
+      return (
+        <div className="flex justify-center items-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+          <p className="ml-2">Verifying authentication...</p>
+        </div>
+      );
+    }
+    
+    if (!isAuthenticated) {
+      return (
+        <div className="text-center py-6">
+          <p className="text-red-500">You must be logged in to edit events</p>
+          <button 
+            onClick={() => window.location.href = '/auth'} 
+            className="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+          >
+            Sign In
+          </button>
+        </div>
+      );
+    }
+    
+    // Check permissions only for existing events (editing)
+    const needsPermissionCheck = initialData?.id;
+    const isAdminOrMember = user?.is_admin || user?.is_member || user?.is_approved || forceAdmin || forceCanManage;
+    
+    if (needsPermissionCheck && !hasValidPermission && !isAdminOrMember) {
+      return (
+        <div className="text-center py-6">
+          <p className="text-yellow-500">You don't have permission to edit this event</p>
+          <p className="text-sm text-gray-500 mt-2">
+            Only admins, approved members, or the event creator can edit this event.
+          </p>
+        </div>
+      );
+    }
+    
+    // User has permission or is creating a new event
+    return (
+      <div className="space-y-6">
+        <EventForm 
+          initialData={initialData}
+          isPastEvent={isPastEvent}
+          isWixEvent={isWixEvent}
+          onSuccess={handleSuccess}
+          forceAdmin={forceAdmin || !!user?.is_admin}
+          forceCanManage={forceCanManage || !!user?.is_member || !!user?.is_approved}
+        />
+      </div>
+    );
+  }
 }
