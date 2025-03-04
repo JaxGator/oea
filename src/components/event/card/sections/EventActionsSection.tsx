@@ -109,6 +109,7 @@ export function EventActionsSection({
 
   return (
     <div className="space-y-4">
+      {/* RSVP Actions - Always at the top for easy access */}
       <RSVPActions
         isAuthenticated={isAuthenticated}
         userRSVPStatus={userRSVPStatus}
@@ -123,7 +124,8 @@ export function EventActionsSection({
         canJoinWaitlist={canJoinWaitlist}
       />
       
-      <div className={`flex ${isMobile ? 'flex-col' : 'flex-wrap items-center justify-between'} gap-2 mt-4`}>
+      {/* Admin and Details actions - Responsive layout */}
+      <div className={`flex ${isMobile ? 'flex-col space-y-2' : 'flex-wrap items-center justify-between'} gap-2 mt-4`}>
         <AdminActions
           isPastEvent={isPastEvent}
           isWixEvent={isWixEvent}

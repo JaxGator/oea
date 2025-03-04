@@ -1,29 +1,32 @@
 
 import { useState } from "react";
-import { useEventActions } from "@/hooks/events/useEventActions";
 import { Event } from "@/types/event";
-import { toast } from "sonner";
+import { useEventActions, UseEventActionsProps } from "./useEventActions";
 
 export function useEventCard(event: Event) {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
   
-  const {
-    isDeleting,
-    isPublishing,
-    handleDelete,
-    handleTogglePublish
-  } = useEventActions(event);
-
-  const toggleMenu = () => {
-    setIsMenuOpen(!isMenuOpen);
+  // Properly format the event for the useEventActions hook
+  const eventActionProps: UseEventActionsProps = {
+    event: event,
+    // Add other required properties if needed
   };
-
+  
+  const { handleEdit, handleDelete } = useEventActions(eventActionProps);
+  
+  const handleOpenDialog = () => {
+    setIsDialogOpen(true);
+  };
+  
+  const handleCloseDialog = () => {
+    setIsDialogOpen(false);
+  };
+  
   return {
-    isMenuOpen,
-    toggleMenu,
-    isDeleting,
-    isPublishing,
-    handleDelete,
-    handleTogglePublish
+    isDialogOpen,
+    handleOpenDialog,
+    handleCloseDialog,
+    handleEdit,
+    handleDelete
   };
 }
