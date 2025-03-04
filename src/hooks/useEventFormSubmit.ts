@@ -9,17 +9,25 @@ import { useAuthState } from '@/hooks/useAuthState';
 
 export function useEventFormSubmit(onSuccess: () => void) {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { user } = useAuthState();
+  const { user, isAuthenticated } = useAuthState();
   
   const handleSubmit = async (formData: EventFormValues, initialData?: any) => {
     try {
       setIsSubmitting(true);
       
-      if (!user?.id) {
-        console.error('User not authenticated');
+      // Check for authentication first
+      if (!isAuthenticated || !user?.id) {
+        console.error('User not authenticated', { isAuthenticated, userId: user?.id });
         toast.error('You must be logged in to save events');
         throw new Error('User not authenticated');
       }
+      
+      // Log authentication status for debugging
+      console.log('Authentication check passed:', { 
+        isAuthenticated, 
+        userId: user.id,
+        isAdmin: user.is_admin
+      });
       
       // Clean and validate data
       validateEventData(formData);

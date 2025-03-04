@@ -22,9 +22,19 @@ import { InfoIcon } from "lucide-react";
 
 export function EventForm({ onSuccess, initialData, isPastEvent, isWixEvent }: EventFormProps) {
   const { isAdmin, canManageEvents, isLoading: checkingAdminStatus } = useAdminStatus();
-  const { user } = useAuthState();
+  const { user, isAuthenticated } = useAuthState();
   const [localSubmitting, setLocalSubmitting] = useState(false);
   const [hasPermissionToEdit, setHasPermissionToEdit] = useState(true);
+  
+  // Log authentication status for debugging
+  useEffect(() => {
+    console.log('EventForm - Auth status:', {
+      isAuthenticated,
+      userId: user?.id,
+      isAdmin: user?.is_admin,
+      isApproved: user?.is_approved
+    });
+  }, [user, isAuthenticated]);
   
   const form = useForm<EventFormValues>({
     resolver: zodResolver(eventSchema),
@@ -78,6 +88,13 @@ export function EventForm({ onSuccess, initialData, isPastEvent, isWixEvent }: E
   const { handleSubmit: handleFormSubmit, isSubmitting } = useEventFormSubmit(onSuccess);
 
   const onSubmit = async (data: EventFormValues) => {
+    // Check authentication first
+    if (!isAuthenticated) {
+      console.error('Not authenticated while submitting form');
+      toast.error('You must be logged in to create or edit events');
+      return;
+    }
+    
     if (!user?.id) {
       console.error('No user ID available');
       toast.error('You must be logged in to create an event');
