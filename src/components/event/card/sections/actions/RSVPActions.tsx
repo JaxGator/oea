@@ -82,12 +82,25 @@ export function RSVPActions({
 
   // Show RSVP options if not already RSVP'd
   return <>
-      {canAddGuests ? <Button onClick={() => setShowGuestDialog(true)} disabled={isSubmitting || isFullyBooked && !canJoinWaitlist}>RSVP</Button> : <Button onClick={() => onRSVP()} disabled={(isFullyBooked && !canJoinWaitlist) || isSubmitting}>
+      {canAddGuests ? (
+        <Button 
+          onClick={() => setShowGuestDialog(true)} 
+          disabled={isSubmitting || (isFullyBooked && !canJoinWaitlist)}
+        >
+          {isFullyBooked && canJoinWaitlist ? 'Add Guests to Waitlist' : 'RSVP'}
+        </Button>
+      ) : (
+        <Button 
+          onClick={() => onRSVP()} 
+          disabled={(isFullyBooked && !canJoinWaitlist) || isSubmitting}
+          variant={isFullyBooked && canJoinWaitlist ? "warning" : "default"}
+        >
           {isSubmitting ? <>
               {isFullyBooked && canJoinWaitlist ? 'Joining Waitlist...' : 'Reserving Spot...'}
               <Loader2 className="ml-2 h-4 w-4 animate-spin" />
             </> : isFullyBooked ? (canJoinWaitlist ? 'Join Waitlist' : 'Event Full') : 'RSVP'}
-        </Button>}
+        </Button>
+      )}
       
       {canAddGuests && <EventGuestDialog open={showGuestDialog} onOpenChange={setShowGuestDialog} onSave={onRSVP} currentGuests={currentGuests} eventTitle={eventTitle} />}
     </>;

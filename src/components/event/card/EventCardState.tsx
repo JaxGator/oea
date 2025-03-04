@@ -8,6 +8,7 @@ import { useGuestListUpdates } from "@/hooks/events/useGuestListUpdates";
 import { useEffect } from "react";
 import { parseISO, set } from "date-fns";
 import { useAuthState } from "@/hooks/useAuthState";
+import { useCarouselConfig } from "@/hooks/gallery/useCarouselConfig";
 
 interface EventCardStateProps {
   event: Event;
@@ -37,6 +38,7 @@ interface EventCardStateProps {
     handleCancelEdit: () => void;
     handleRSVPCountChange: (value: string) => void;
     isAuthenticated?: boolean;
+    isConfiguring?: boolean;
   }) => React.ReactNode;
 }
 
@@ -51,6 +53,7 @@ export function EventCardState({
   const { user } = useAuthState();
   const { data: attendees = [] } = useEventRSVPData(event.id);
   const { data: guests = [], refetch: refetchGuests } = useEventGuestData(event.id, userRSVPStatus);
+  const { carouselEnabled } = useCarouselConfig();
   
   useGuestListUpdates(event.id, refetchGuests);
   
@@ -150,6 +153,7 @@ export function EventCardState({
     handleSaveRSVP,
     handleCancelEdit,
     handleRSVPCountChange,
-    isAuthenticated: effectiveIsAuthenticated
+    isAuthenticated: effectiveIsAuthenticated,
+    isConfiguring: isEditingRSVP
   });
 }
