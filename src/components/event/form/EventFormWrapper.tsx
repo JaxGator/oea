@@ -19,7 +19,7 @@ export function EventFormWrapper({
   const { user, isAuthenticated, isLoading: authLoading } = useAuthState();
   const [verifyingSession, setVerifyingSession] = useState(true);
   const [sessionConfirmed, setSessionConfirmed] = useState(false);
-  const [hasPermissionToEdit, setHasPermissionToEdit] = useState(true);
+  const [hasPermissionToEdit, setHasPermissionToEdit] = useState(true); // Default to true now
   const [sessionUserId, setSessionUserId] = useState<string | null>(null);
   
   // Direct session check
@@ -61,6 +61,11 @@ export function EventFormWrapper({
             userObject: user?.is_admin,
             forceAdmin
           });
+          
+          // IMPORTANT: Set permission to true for admins and members automatically
+          if (profileData?.is_admin || profileData?.is_member || profileData?.is_approved || forceAdmin || forceCanManage) {
+            setHasPermissionToEdit(true);
+          }
         }
       } catch (err) {
         console.error("Session check failed:", err);
@@ -70,7 +75,7 @@ export function EventFormWrapper({
     };
     
     checkSession();
-  }, [user?.is_admin, user?.id, forceAdmin]);
+  }, [user?.is_admin, user?.id, forceAdmin, forceCanManage]);
   
   // Log authentication status for debugging
   useEffect(() => {
@@ -89,7 +94,7 @@ export function EventFormWrapper({
     });
   }, [user, isAuthenticated, sessionConfirmed, verifyingSession, authLoading, forceAdmin, forceCanManage, sessionUserId]);
 
-  // Simplified permission check for editing events
+  // CRITICAL FIX: Simplified permission check for editing events
   // Admin or members can always edit any event
   useEffect(() => {
     if (initialData?.id && (user?.id || sessionUserId)) {
@@ -100,6 +105,7 @@ export function EventFormWrapper({
       const isApproved = (user?.is_approved || false);
       
       // Admin or member status grants automatic permission
+      // ALWAYS grant access to admins and members
       const canEdit = isAdmin || isMember || isApproved || isCreator || (forceCanManage || false);
       
       console.log("Permission check in EventFormWrapper:", {

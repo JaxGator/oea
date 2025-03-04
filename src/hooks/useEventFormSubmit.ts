@@ -76,7 +76,6 @@ export function useEventFormSubmit(onSuccess: () => void) {
       const isMember = user?.is_member || false;
       const canManageEvents = isAdmin || isApproved || isMember;
       
-      // More detailed logging for debugging
       console.log('Authentication verified:', { 
         isAuthenticated, 
         userId,
@@ -107,16 +106,25 @@ export function useEventFormSubmit(onSuccess: () => void) {
       // Check if this is an update or create operation
       if (initialData?.id) {
         // This is an update operation
-        // PERMISSION CHECK REMOVED FOR ADMINS AND MEMBERS
-        // Admins and members can edit any event, we only check for regular users
-        let hasPermission = true;
-        
-        // Only check permissions for non-admin, non-member users
-        if (!isAdmin && !canManageEvents) {
-          // Only regular users need to be the creator
-          hasPermission = initialData.created_by === userId;
+        // IMPORTANT: COMPLETELY BYPASS PERMISSION CHECKS FOR ADMINS AND MEMBERS
+        if (isAdmin || canManageEvents) {
+          console.log('Admin or member detected, bypassing ALL permission checks:', {
+            userId,
+            isAdmin,
+            canManageEvents,
+            eventId: initialData.id
+          });
           
-          // For debugging - log the permission check
+          // Preserve the original created_by field for updates
+          if (initialData.created_by) {
+            cleanedData.created_by = initialData.created_by;
+          }
+          
+          result = await updateEvent(initialData.id, cleanedData);
+        } else {
+          // Regular user - only check if they are the creator
+          const hasPermission = initialData.created_by === userId;
+          
           console.log('Permission check for regular user:', {
             userId,
             eventCreator: initialData.created_by,
@@ -131,28 +139,11 @@ export function useEventFormSubmit(onSuccess: () => void) {
             toast.error('You do not have permission to edit this event');
             throw new Error('You do not have permission to edit this event');
           }
-        } else {
-          // Admin or member - log that we're skipping permission check
-          console.log('Admin or member detected, skipping permission check:', {
-            userId,
-            isAdmin,
-            canManageEvents
-          });
-        }
-        
-        console.log(`Updating event with ID: ${initialData.id}`, {
-          userId,
-          isAdmin,
-          canManageEvents,
-          hasPermission: true
-        });
-        
-        // Preserve the original created_by field for updates
-        if (initialData.created_by) {
+          
+          // Preserve the original created_by field
           cleanedData.created_by = initialData.created_by;
+          result = await updateEvent(initialData.id, cleanedData);
         }
-        
-        result = await updateEvent(initialData.id, cleanedData);
       } else {
         // This is a create operation
         console.log('Creating new event with user ID:', userId);

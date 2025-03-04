@@ -29,7 +29,7 @@ export function useAuthVerification(
         return true;
       }
       
-      // Grant permission to admin and members automatically
+      // IMPORTANT: Grant permission to admin and members automatically without further checks
       if (user) {
         const isAdmin = !!user.is_admin;
         const isMember = !!user.is_member;
@@ -38,7 +38,7 @@ export function useAuthVerification(
         // All admins, members, and approved users can manage events
         const canManageEvents = isAdmin || isMember || isApproved;
         
-        console.log("Auth from useAuthState:", { 
+        console.log("Auth verification - User status:", { 
           userId: user.id, 
           isAdmin,
           isMember,
@@ -48,8 +48,9 @@ export function useAuthVerification(
         });
         
         // If user is admin or can manage events, grant permission immediately
+        // CRITICAL FIX: This is the most important condition
         if (isAdmin || canManageEvents) {
-          console.log("Admin or member detected, granting permission");
+          console.log("Admin or member detected, granting permission IMMEDIATELY");
           setHasValidPermission(true);
           setVerifyingAuth(false);
           return true;
@@ -105,7 +106,7 @@ export function useAuthVerification(
         const isApproved = profileData?.is_approved || false;
         const isMember = profileData?.is_member || false;
         
-        // Any admin or member has permission
+        // CRITICAL FIX: Any admin or member has permission - this is the real fix
         const canManageEvents = isAdmin || isApproved || isMember;
         
         console.log("Profile data re-fetched:", {
@@ -116,15 +117,15 @@ export function useAuthVerification(
           canManageEvents
         });
         
-        // Skip complex permission check for admins and members - grant immediate access
+        // IMMEDIATELY grant access for admins and members - this is where it was failing
         if (isAdmin || canManageEvents) {
-          console.log("Admin or member detected from profile data, granting permission");
+          console.log("Admin or member detected from profile data, granting permission IMMEDIATELY");
           setHasValidPermission(true);
           setVerifyingAuth(false);
           return true;
         }
         
-        // For non-admins/members, check if they're the creator
+        // Only for non-admins/members, check if they're the creator
         const hasEditPermission = canEditEvent(
           data.session.user.id, 
           isAdmin, 

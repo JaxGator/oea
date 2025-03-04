@@ -1,4 +1,3 @@
-
 import { Form } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import { useForm } from "react-hook-form";
@@ -39,8 +38,8 @@ export function EventFormContent({
   const { isAdmin } = useAdminStatus();
   const [localSubmitting, setLocalSubmitting] = useState(false);
   
-  // Determine effective admin status using both hook and forced status
-  const effectiveIsAdmin = isAdmin || forceAdmin;
+  const effectiveIsAdmin = isAdmin || forceAdmin || !!user?.is_admin;
+  const effectiveCanManage = effectiveIsAdmin || forceCanManage || !!user?.is_approved || !!user?.is_member;
   
   const form = useForm<EventFormValues>({
     resolver: zodResolver(eventSchema),
@@ -65,15 +64,12 @@ export function EventFormContent({
     }
   });
 
-  // Ensure created_by is set correctly on mount and whenever user changes
   useEffect(() => {
     if (user?.id) {
-      // For updates, preserve the original creator
       if (initialData?.id && initialData?.created_by) {
         console.log("Preserving original event creator:", initialData.created_by);
         form.setValue('created_by', initialData.created_by);
       } else if (!form.getValues('created_by')) {
-        // For new events, set current user as creator
         console.log("Setting current user as event creator:", user.id);
         form.setValue('created_by', user.id);
       }
@@ -87,13 +83,16 @@ export function EventFormContent({
       hookIsAdmin: isAdmin,
       forceAdmin,
       effectiveIsAdmin,
+      userIsAdmin: user?.is_admin,
+      userIsMember: user?.is_member,
+      userIsApproved: user?.is_approved,
+      hasPermissionToEdit,
       timestamp: new Date().toISOString()
     });
-  }, [isAdmin, forceAdmin, effectiveIsAdmin]);
+  }, [isAdmin, forceAdmin, effectiveIsAdmin, user?.is_admin, user?.is_member, user?.is_approved, hasPermissionToEdit]);
 
   const onSubmit = async (data: EventFormValues) => {
     try {
-      // Perform a direct session check before proceeding
       const { data: sessionData } = await supabase.auth.getSession();
       const hasValidSession = !!sessionData.session;
       
@@ -109,7 +108,6 @@ export function EventFormContent({
         return;
       }
       
-      // Get user ID from either the current user or the session
       const userId = user?.id || sessionData.session?.user?.id;
       
       if (!userId) {
@@ -118,13 +116,27 @@ export function EventFormContent({
         return;
       }
       
-      // For editing events, check permissions first
-      if (initialData?.id && !hasPermissionToEdit) {
+      const isAdmin = !!user?.is_admin || forceAdmin;
+      const isMember = !!user?.is_member;
+      const isApproved = !!user?.is_approved;
+      
+      const canManageEvents = isAdmin || isMember || isApproved || forceCanManage;
+      
+      console.log("Form submission - Permission check:", {
+        isAdmin,
+        isMember,
+        isApproved,
+        forceAdmin,
+        forceCanManage,
+        canManageEvents,
+        hasPermissionToEdit
+      });
+      
+      if (initialData?.id && !hasPermissionToEdit && !canManageEvents) {
         toast.error('You do not have permission to edit this event');
         return;
       }
       
-      // Prevent multiple submissions
       if (localSubmitting || isSubmitting) {
         console.log('Submission already in progress, ignoring duplicate submit');
         return;
@@ -136,12 +148,12 @@ export function EventFormContent({
         ...data,
         userId,
         isAdmin: effectiveIsAdmin,
+        canManageEvents: effectiveCanManage,
         isEditing: !!initialData,
         eventCreator: initialData?.created_by,
         isCreator: initialData?.created_by === userId
       });
       
-      // Ensure created_by is preserved for updates or set for new events
       const eventData = {
         ...data,
         created_by: initialData?.id ? (initialData.created_by || userId) : userId,
@@ -157,8 +169,8 @@ export function EventFormContent({
     }
   };
 
-  // Show permission warning for edit operations
-  const showPermissionWarning = initialData?.id && !hasPermissionToEdit;
+  const showPermissionWarning = initialData?.id && !hasPermissionToEdit && 
+    !(!!user?.is_admin || !!user?.is_member || !!user?.is_approved || forceAdmin || forceCanManage);
 
   return (
     <Form {...form}>

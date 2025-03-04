@@ -13,7 +13,7 @@ export function canEditEvent(
   canManageEvents: boolean,
   createdBy: string
 ): boolean {
-  // More detailed logging for debugging
+  // For debugging purposes, log all parameters
   console.log("Permission check for edit:", {
     userId,
     isAdmin,
@@ -29,10 +29,10 @@ export function canEditEvent(
     return false;
   }
   
-  // Admin or anyone with canManageEvents should always be able to edit any event
-  // This includes admins and all members
+  // CRITICAL: Admin or anyone with canManageEvents should ALWAYS be able to edit ANY event
+  // This includes admins, members and approved users
   if (isAdmin || canManageEvents) {
-    console.log(`Edit permission granted: User is ${isAdmin ? 'admin' : 'member with manage events permission'}`);
+    console.log(`Edit permission GRANTED for admin/member: User is ${isAdmin ? 'admin' : 'member with manage events permission'}`);
     return true;
   }
   
@@ -56,7 +56,7 @@ export function canDeleteEvent(
   canManageEvents: boolean,
   createdBy: string
 ): boolean {
-  // More detailed logging for debugging
+  // For debugging purposes, log all parameters
   console.log("Permission check for delete:", {
     userId,
     isAdmin,
@@ -71,10 +71,10 @@ export function canDeleteEvent(
     return false;
   }
   
-  // Admin or anyone with canManageEvents should always be able to delete any event
-  // This includes admins and all members
+  // CRITICAL: Admin or anyone with canManageEvents should ALWAYS be able to delete ANY event
+  // This includes admins, members and approved users
   if (isAdmin || canManageEvents) {
-    console.log(`Delete permission granted: User is ${isAdmin ? 'admin' : 'member with manage events permission'}`);
+    console.log(`Delete permission GRANTED for admin/member: User is ${isAdmin ? 'admin' : 'member with manage events permission'}`);
     return true;
   }
   

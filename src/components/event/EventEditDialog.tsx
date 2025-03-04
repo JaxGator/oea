@@ -51,11 +51,14 @@ export function EventEditDialog({
     if (localShowDialog && initialData) {
       console.log("Dialog opened, checking auth permissions with override:", { 
         forceAdmin, 
-        forceCanManage 
+        forceCanManage,
+        isAdmin: user?.is_admin,
+        isMember: user?.is_member,
+        isApproved: user?.is_approved
       });
       checkAuthAndPermissions();
     }
-  }, [localShowDialog, initialData, checkAuthAndPermissions, forceAdmin, forceCanManage]);
+  }, [localShowDialog, initialData, checkAuthAndPermissions, forceAdmin, forceCanManage, user?.is_admin, user?.is_member, user?.is_approved]);
 
   console.log("EventEditDialog state:", { 
     eventId: initialData?.id,
@@ -64,6 +67,8 @@ export function EventEditDialog({
     localShowDialog,
     userId: user?.id,
     isAdmin: user?.is_admin || forceAdmin,
+    isMember: user?.is_member,
+    isApproved: user?.is_approved,
     isAuthenticated,
     hasValidPermission,
     verifyingAuth,
@@ -148,7 +153,8 @@ export function EventEditDialog({
               Sign In
             </button>
           </div>
-        ) : !hasValidPermission && initialData?.id ? (
+        ) : !hasValidPermission && initialData?.id && 
+             !(user?.is_admin || user?.is_member || user?.is_approved || forceAdmin || forceCanManage) ? (
           <div className="text-center py-6">
             <p className="text-yellow-500">You don't have permission to edit this event</p>
             <p className="text-sm text-gray-500 mt-2">
@@ -162,7 +168,8 @@ export function EventEditDialog({
               isPastEvent={isPastEvent}
               isWixEvent={isWixEvent}
               onSuccess={handleSuccess}
-              forceAdmin={forceAdmin}
+              forceAdmin={forceAdmin || !!user?.is_admin}
+              forceCanManage={forceCanManage || !!user?.is_member || !!user?.is_approved}
             />
           </div>
         )}
