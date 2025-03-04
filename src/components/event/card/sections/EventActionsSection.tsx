@@ -5,6 +5,7 @@ import { AdminActions } from "./actions/AdminActions";
 import { EventDetailsActions } from "./actions/EventDetailsActions";
 import { useEventActions } from "@/hooks/events/useEventActions";
 import { useAuthState } from "@/hooks/useAuthState";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface EventActionsSectionProps {
   isAdmin: boolean;
@@ -96,6 +97,17 @@ export function EventActionsSection({
   // Don't render anything while checking auth
   if (isAuthChecking) {
     return null;
+  }
+
+  // Show message if authentication is required but user isn't authenticated
+  if (requireAuth && !isAuthenticated) {
+    return (
+      <Alert className="mb-4">
+        <AlertDescription>
+          Please sign in to interact with this event.
+        </AlertDescription>
+      </Alert>
+    );
   }
 
   return (
