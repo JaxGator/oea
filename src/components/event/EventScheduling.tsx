@@ -1,3 +1,4 @@
+
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { UseFormReturn } from "react-hook-form";
@@ -18,7 +19,12 @@ export function EventScheduling({ form, disabled }: EventSchedulingProps) {
           <FormItem>
             <FormLabel>Date</FormLabel>
             <FormControl>
-              <Input type="date" {...field} disabled={disabled} />
+              <Input 
+                type="date" 
+                {...field} 
+                disabled={disabled} 
+                value={field.value || ''}
+              />
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -31,7 +37,12 @@ export function EventScheduling({ form, disabled }: EventSchedulingProps) {
           <FormItem>
             <FormLabel>Start Time</FormLabel>
             <FormControl>
-              <Input type="time" {...field} disabled={disabled} />
+              <Input 
+                type="time" 
+                {...field} 
+                disabled={disabled} 
+                value={field.value || ''}
+              />
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -44,7 +55,12 @@ export function EventScheduling({ form, disabled }: EventSchedulingProps) {
           <FormItem>
             <FormLabel>End Time (Optional)</FormLabel>
             <FormControl>
-              <Input type="time" {...field} disabled={disabled} />
+              <Input 
+                type="time" 
+                {...field} 
+                disabled={disabled} 
+                value={field.value || ''}
+              />
             </FormControl>
             <FormMessage />
           </FormItem>

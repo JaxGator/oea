@@ -21,6 +21,7 @@ export function EventLocationCapacity({
   const { isAdmin } = useAdminStatus();
 
   const handleLocationSelect = (suggestion: LocationSuggestion) => {
+    console.log("Location selected:", suggestion);
     // Update form values silently without triggering validation or submission
     form.setValue('location', suggestion.place_name, {
       shouldValidate: false,

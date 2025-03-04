@@ -1,3 +1,4 @@
+
 import { FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
@@ -25,8 +26,11 @@ export function EventWaitlistSettings({ form, disabled }: EventWaitlistSettingsP
             </div>
             <FormControl>
               <Switch
-                checked={field.value}
-                onCheckedChange={field.onChange}
+                checked={field.value || false}
+                onCheckedChange={(checked) => {
+                  console.log("Waitlist switch changed:", checked);
+                  field.onChange(checked);
+                }}
                 disabled={disabled}
               />
             </FormControl>

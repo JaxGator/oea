@@ -1,3 +1,4 @@
+
 import { FormControl, FormDescription, FormField, FormItem, FormLabel } from "@/components/ui/form";
 import { Switch } from "@/components/ui/switch";
 import { UseFormReturn } from "react-hook-form";
@@ -24,8 +25,11 @@ export function EventReminderSettings({ form, disabled }: EventReminderSettingsP
             </div>
             <FormControl>
               <Switch
-                checked={field.value}
-                onCheckedChange={field.onChange}
+                checked={field.value || false}
+                onCheckedChange={(checked) => {
+                  console.log("Reminder switch changed:", checked);
+                  field.onChange(checked);
+                }}
                 disabled={disabled}
               />
             </FormControl>
