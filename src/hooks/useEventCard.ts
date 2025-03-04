@@ -1,18 +1,42 @@
 
 import { useState } from "react";
 import { Event } from "@/types/event";
-import { useEventActions, UseEventActionsProps } from "./useEventActions";
+import { usePermissions } from "@/hooks/usePermissions";
+import { toast } from "sonner";
 
 export function useEventCard(event: Event) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const { verifyPermission } = usePermissions();
   
-  // Properly format the event for the useEventActions hook
-  const eventActionProps: UseEventActionsProps = {
-    event: event,
-    // Add other required properties if needed
+  const handleEdit = async () => {
+    // Check if user has permission to edit
+    const hasPermission = await verifyPermission(
+      'edit',
+      event.id,
+      event.created_by
+    );
+    
+    if (hasPermission) {
+      setIsDialogOpen(true);
+    }
   };
   
-  const { handleEdit, handleDelete } = useEventActions(eventActionProps);
+  const handleDelete = async () => {
+    // Check if user has permission to delete
+    const hasPermission = await verifyPermission(
+      'delete',
+      event.id,
+      event.created_by
+    );
+    
+    if (!hasPermission) {
+      toast.error("You don't have permission to delete this event");
+      return;
+    }
+    
+    // Deletion logic would go here
+    console.log("Deleting event:", event.id);
+  };
   
   const handleOpenDialog = () => {
     setIsDialogOpen(true);

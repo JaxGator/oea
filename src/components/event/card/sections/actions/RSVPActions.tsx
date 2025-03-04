@@ -130,11 +130,15 @@ export function RSVPActions({
             {guests.length > 0 && (
               <GuestListDisplay 
                 guests={guests} 
-                onRemoveGuest={handleRemoveGuest} 
+                onRemoveGuest={handleRemoveGuest}
+                isApproved={true} 
               />
             )}
             
-            <GuestInput onAddGuest={handleAddGuest} />
+            <GuestInput 
+              onAddGuest={handleAddGuest}
+              isApproved={true}
+            />
             
             <div className="flex gap-2 justify-end mt-2">
               <Button 
