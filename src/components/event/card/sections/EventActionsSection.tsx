@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { useState } from "react";
@@ -11,45 +12,53 @@ interface EventActionsSectionProps {
   isAdmin: boolean;
   canManageEvents: boolean;
   userRSVPStatus: string | null;
-  isFullyBooked: boolean;
-  canJoinWaitlist: boolean;
+  isPastEvent: boolean;
+  canAddGuests: boolean;
+  currentGuests: { firstName: string }[];
   onRSVP: (guests?: { firstName: string }[]) => void;
   onCancelRSVP: () => void;
   onEdit?: () => void;
   onDelete?: () => void;
+  showPublishToggle?: boolean;
+  isPublished?: boolean;
+  onViewDetails?: () => void;
   onTogglePublish?: () => void;
-  isPastEvent: boolean;
-  isWixEvent: boolean;
-  isPublished: boolean;
-  showPublishToggle: boolean;
-  canAddGuests: boolean;
-  currentGuests?: { firstName: string }[];
+  isAuthChecking?: boolean;
+  requireAuth?: boolean;
   event: {
     id: string;
     title: string;
   };
-  isAuthenticated: boolean;
+  showDelete?: boolean;
+  isAuthenticated?: boolean;
+  isFullyBooked?: boolean;
+  canJoinWaitlist?: boolean;
+  isWixEvent?: boolean;
 }
 
 export function EventActionsSection({
   isAdmin,
   canManageEvents,
   userRSVPStatus,
-  isFullyBooked,
-  canJoinWaitlist,
+  isPastEvent,
+  canAddGuests,
+  currentGuests = [],
   onRSVP,
   onCancelRSVP,
   onEdit,
   onDelete,
   onTogglePublish,
-  isPastEvent,
-  isWixEvent,
-  isPublished,
-  showPublishToggle,
-  canAddGuests,
-  currentGuests = [],
+  onViewDetails,
+  showPublishToggle = false,
+  isPublished = true,
+  isAuthChecking = false,
+  requireAuth = false,
   event,
-  isAuthenticated
+  showDelete = false,
+  isAuthenticated = false,
+  isFullyBooked = false,
+  canJoinWaitlist = false,
+  isWixEvent = false
 }: EventActionsSectionProps) {
   const { toast } = useToast();
   const { user } = useAuthState();
@@ -106,13 +115,16 @@ export function EventActionsSection({
           ) : (
             <>
               {canAddGuests && (
-                <Button onClick={() => setShowGuestDialog(true)}>
+                <Button 
+                  onClick={() => setShowGuestDialog(true)}
+                  disabled={isSubmitting || isFullyBooked}
+                >
                   RSVP with Guests
                 </Button>
               )}
               {!canAddGuests && (
                 <Button 
-                  onClick={handleRSVP} 
+                  onClick={() => handleRSVP()} 
                   disabled={isFullyBooked || isSubmitting}
                 >
                   {isSubmitting ? (
@@ -142,7 +154,7 @@ export function EventActionsSection({
               Edit
             </Button>
           )}
-          {(isAdmin || (user && canDeleteEvent(user.id, isAdmin, canManageEvents, user.id))) && !isWixEvent && (
+          {(isAdmin || (user && canDeleteEvent(user.id, isAdmin, canManageEvents, user.id))) && !isWixEvent && showDelete && (
             <Button variant="destructive" size="sm" onClick={onDelete} disabled={isPastEvent}>
               <Trash2 className="h-4 w-4 mr-2" />
               Delete
@@ -170,7 +182,12 @@ export function EventActionsSection({
         </div>
         
         <div className="flex items-center gap-2">
-          {/* Add share button here */}
+          {onViewDetails && (
+            <Button variant="outline" size="sm" onClick={onViewDetails}>
+              View Details
+            </Button>
+          )}
+          
           <EventShareMenu 
             eventId={event.id} 
             title={event.title} 
