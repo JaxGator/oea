@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Event } from '@/types/event';
 import { useEventLocations } from '@/hooks/useEventLocations';
@@ -14,9 +15,10 @@ interface EventsMapProps {
   events: Event[];
   selectedEventId?: string | null;
   isLoading?: boolean;
+  onError?: (error: string) => void;
 }
 
-export function EventsMap({ events, selectedEventId, isLoading = false }: EventsMapProps) {
+export function EventsMap({ events, selectedEventId, isLoading = false, onError }: EventsMapProps) {
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const { mapToken, isLoading: isKeyLoading, error: keyError } = useMapboxToken();
   const locations = useEventLocations(events);
@@ -48,6 +50,13 @@ export function EventsMap({ events, selectedEventId, isLoading = false }: Events
     }
   }, [selectedEventId, events]);
 
+  // Handle errors and report them up
+  useEffect(() => {
+    if (keyError && onError) {
+      onError('Failed to load map configuration');
+    }
+  }, [keyError, onError]);
+
   if (isLoading || events.length === 0 || locations.length === 0) {
     return <MapLoadingState />;
   }
@@ -57,7 +66,11 @@ export function EventsMap({ events, selectedEventId, isLoading = false }: Events
   }
 
   if (keyError || !mapToken) {
-    return <MapErrorState message="Failed to load map configuration" />;
+    const errorMessage = 'Failed to load map configuration';
+    if (onError) {
+      onError(errorMessage);
+    }
+    return <MapErrorState message={errorMessage} />;
   }
 
   return (
