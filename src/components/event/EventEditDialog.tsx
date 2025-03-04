@@ -29,16 +29,26 @@ export function EventEditDialog({
   const [isClosing, setIsClosing] = useState(false);
   const [localShowDialog, setLocalShowDialog] = useState(showDialog);
   const { user, isAuthenticated, isLoading } = useAuthState();
-  const [hasPermission, setHasPermission] = useState(false);
   
   // Sync the local state with the parent state
   useEffect(() => {
     setLocalShowDialog(showDialog);
   }, [showDialog]);
   
+  console.log("EventEditDialog initialized with:", { 
+    eventId: initialData?.id,
+    eventTitle: initialData?.title,
+    showDialog,
+    localShowDialog,
+    userId: user?.id,
+    isAuthenticated,
+    isLoading,
+    isAdmin: user?.is_admin
+  });
+
   // Check permissions whenever auth state or dialog visibility changes
   useEffect(() => {
-    if (user && initialData && localShowDialog) {
+    if (!isLoading && user && initialData && localShowDialog) {
       const isAdmin = user.is_admin || false;
       const canManageEvents = isAdmin || user.is_approved;
       const hasEditPermission = canEditEvent(user.id, isAdmin, canManageEvents, initialData.created_by || '');
@@ -51,26 +61,24 @@ export function EventEditDialog({
         hasPermission: hasEditPermission
       });
       
-      setHasPermission(hasEditPermission);
-      
       if (!hasEditPermission) {
+        console.error("Permission denied: user cannot edit this event");
         toast.error("You don't have permission to edit this event");
         setLocalShowDialog(false);
         setShowDialog(false);
       }
     }
-  }, [user, initialData, localShowDialog, setShowDialog]);
+  }, [user, initialData, localShowDialog, setShowDialog, isLoading]);
 
-  console.log("EventEditDialog initialized with:", { 
-    eventId: initialData?.id,
-    eventTitle: initialData?.title,
-    showDialog,
-    localShowDialog,
-    userId: user?.id,
-    isAuthenticated,
-    isLoading,
-    hasPermission
-  });
+  // Check authentication early - but only if the dialog should be shown and auth has finished loading
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated && localShowDialog) {
+      console.log("EventEditDialog: User not authenticated");
+      toast.error("You must be logged in to edit events");
+      setLocalShowDialog(false);
+      setShowDialog(false);
+    }
+  }, [isAuthenticated, localShowDialog, setShowDialog, isLoading]);
 
   const handleSuccess = () => {
     console.log("EventEditDialog: handleSuccess called");
@@ -98,20 +106,6 @@ export function EventEditDialog({
     }
   };
 
-  // Don't render anything while loading authentication state
-  if (isLoading && localShowDialog) {
-    return null;
-  }
-
-  // Check authentication first - but only if the dialog should be shown
-  if (!isAuthenticated && localShowDialog) {
-    console.log("EventEditDialog: User not authenticated");
-    toast.error("You must be logged in to edit events");
-    setLocalShowDialog(false);
-    setShowDialog(false);
-    return null;
-  }
-
   // Cleanup on unmount
   useEffect(() => {
     return () => {
@@ -120,6 +114,11 @@ export function EventEditDialog({
       }
     };
   }, [localShowDialog, setShowDialog]);
+
+  // Don't render anything while loading authentication state or if not authenticated
+  if (isLoading || (!isAuthenticated && localShowDialog)) {
+    return null;
+  }
 
   return (
     <Dialog 

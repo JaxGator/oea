@@ -1,17 +1,17 @@
 
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { X, Plus, Loader2 } from "lucide-react";
+import { X, UserPlus } from "lucide-react";
 
 interface EventGuestDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSave: (guests: { firstName: string }[]) => void;
   currentGuests?: { firstName: string }[];
-  eventTitle: string;
+  eventTitle?: string;
+  maxGuests?: number;
 }
 
 export function EventGuestDialog({
@@ -19,113 +19,95 @@ export function EventGuestDialog({
   onOpenChange,
   onSave,
   currentGuests = [],
-  eventTitle
+  eventTitle = "Event",
+  maxGuests = 5
 }: EventGuestDialogProps) {
-  const [guests, setGuests] = useState<{ firstName: string; id?: string }[]>(
-    currentGuests.map((guest, index) => ({ ...guest, id: `existing-${index}` }))
+  const [guests, setGuests] = useState<{ firstName: string; id: string }[]>(
+    currentGuests.map((guest, index) => ({ 
+      ...guest, 
+      id: `existing-${index}` 
+    }))
   );
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const addGuest = () => {
-    setGuests([...guests, { firstName: "", id: `new-${Date.now()}` }]);
-  };
-
-  const removeGuest = (index: number) => {
-    const newGuests = [...guests];
-    newGuests.splice(index, 1);
-    setGuests(newGuests);
-  };
-
-  const updateGuestName = (index: number, name: string) => {
-    const newGuests = [...guests];
-    newGuests[index].firstName = name;
-    setGuests(newGuests);
-  };
-
-  const handleSave = async () => {
-    // Filter out any guests with empty names
-    const validGuests = guests.filter(guest => guest.firstName.trim() !== "");
-    
-    if (validGuests.length === 0) {
-      onOpenChange(false);
-      return;
+  const handleAddGuest = () => {
+    if (guests.length < maxGuests) {
+      setGuests([...guests, { firstName: "", id: `new-${Date.now()}` }]);
     }
+  };
+
+  const handleRemoveGuest = (id: string) => {
+    setGuests(guests.filter(guest => guest.id !== id));
+  };
+
+  const handleGuestChange = (id: string, value: string) => {
+    setGuests(
+      guests.map(guest => 
+        guest.id === id ? { ...guest, firstName: value } : guest
+      )
+    );
+  };
+
+  const handleSave = () => {
+    // Filter out empty guest names and convert to the expected format
+    const validGuests = guests
+      .filter(guest => guest.firstName.trim().length > 0)
+      .map(({ firstName }) => ({ firstName }));
     
-    setIsSubmitting(true);
-    try {
-      await onSave(validGuests);
-      onOpenChange(false);
-    } catch (error) {
-      console.error("Error saving guests:", error);
-    } finally {
-      setIsSubmitting(false);
-    }
+    onSave(validGuests);
+    onOpenChange(false);
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle>Add Guests for {eventTitle}</DialogTitle>
         </DialogHeader>
         
         <div className="space-y-4 my-4">
-          <div className="space-y-2">
-            {guests.map((guest, index) => (
-              <div key={guest.id} className="flex items-center gap-2">
-                <div className="flex-1">
-                  <Label htmlFor={`guest-${index}`} className="sr-only">
-                    Guest Name
-                  </Label>
-                  <Input
-                    id={`guest-${index}`}
-                    value={guest.firstName}
-                    onChange={(e) => updateGuestName(index, e.target.value)}
-                    placeholder="Guest name"
-                  />
-                </div>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => removeGuest(index)}
-                >
-                  <X className="h-4 w-4" />
-                  <span className="sr-only">Remove</span>
-                </Button>
-              </div>
-            ))}
-          </div>
+          {guests.map((guest, index) => (
+            <div key={guest.id} className="flex items-center gap-2">
+              <Input
+                placeholder={`Guest ${index + 1} name`}
+                value={guest.firstName}
+                onChange={(e) => handleGuestChange(guest.id, e.target.value)}
+              />
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                onClick={() => handleRemoveGuest(guest.id)}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+          ))}
           
-          <Button
-            type="button"
-            variant="outline"
-            className="w-full"
-            onClick={addGuest}
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Add Guest
-          </Button>
+          {guests.length < maxGuests && (
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleAddGuest}
+              className="w-full"
+            >
+              <UserPlus className="h-4 w-4 mr-2" />
+              Add Guest
+            </Button>
+          )}
+          
+          {guests.length === maxGuests && (
+            <p className="text-sm text-muted-foreground text-center">
+              Maximum {maxGuests} guests allowed
+            </p>
+          )}
         </div>
         
         <DialogFooter>
-          <Button 
-            type="button" 
-            variant="outline" 
-            onClick={() => onOpenChange(false)}
-            disabled={isSubmitting}
-          >
+          <Button variant="ghost" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button onClick={handleSave} disabled={isSubmitting}>
-            {isSubmitting ? (
-              <>
-                Saving...
-                <Loader2 className="ml-2 h-4 w-4 animate-spin" />
-              </>
-            ) : (
-              'Save'
-            )}
+          <Button onClick={handleSave}>
+            Save
           </Button>
         </DialogFooter>
       </DialogContent>

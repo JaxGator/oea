@@ -36,7 +36,7 @@ export function useEventFormSubmit(onSuccess: () => void) {
         const canManageEvents = isAdmin || user.is_approved;
         
         // Check permissions before attempting update
-        if (!canEditEvent(user.id, isAdmin, canManageEvents, initialData.created_by)) {
+        if (!canEditEvent(user.id, isAdmin, canManageEvents, initialData.created_by || '')) {
           console.error('Permission denied: user cannot edit this event', {
             userId: user.id,
             isAdmin,
