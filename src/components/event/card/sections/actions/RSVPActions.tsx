@@ -1,9 +1,7 @@
-
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 import { useState } from "react";
 import { EventGuestDialog } from "@/components/event/guests/EventGuestDialog";
-
 interface RSVPActionsProps {
   isAuthenticated: boolean;
   userRSVPStatus: string | null;
@@ -11,12 +9,15 @@ interface RSVPActionsProps {
   isFullyBooked?: boolean;
   isPastEvent: boolean;
   isSubmitting: boolean;
-  currentGuests: { firstName: string }[];
+  currentGuests: {
+    firstName: string;
+  }[];
   eventTitle: string;
-  onRSVP: (guests?: { firstName: string }[]) => void;
+  onRSVP: (guests?: {
+    firstName: string;
+  }[]) => void;
   onCancelRSVP: () => void;
 }
-
 export function RSVPActions({
   isAuthenticated,
   userRSVPStatus,
@@ -38,77 +39,33 @@ export function RSVPActions({
 
   // Show login prompt if not authenticated
   if (!isAuthenticated) {
-    return (
-      <Button onClick={() => window.location.href = '/auth'}>
+    return <Button onClick={() => window.location.href = '/auth'}>
         Sign In to RSVP
-      </Button>
-    );
+      </Button>;
   }
 
   // Show cancel button if already RSVP'd
   if (userRSVPStatus === 'attending') {
-    return (
-      <>
-        <Button 
-          variant="destructive" 
-          onClick={onCancelRSVP}
-          disabled={isSubmitting}
-        >
-          {isSubmitting ? (
-            <>
+    return <>
+        <Button variant="destructive" onClick={onCancelRSVP} disabled={isSubmitting}>
+          {isSubmitting ? <>
               Cancelling...
               <Loader2 className="ml-2 h-4 w-4 animate-spin" />
-            </>
-          ) : 'Cancel RSVP'}
+            </> : 'Cancel RSVP'}
         </Button>
-        {canAddGuests && (
-          <EventGuestDialog
-            open={showGuestDialog}
-            onOpenChange={setShowGuestDialog}
-            onSave={onRSVP}
-            currentGuests={currentGuests}
-            eventTitle={eventTitle}
-          />
-        )}
-      </>
-    );
+        {canAddGuests && <EventGuestDialog open={showGuestDialog} onOpenChange={setShowGuestDialog} onSave={onRSVP} currentGuests={currentGuests} eventTitle={eventTitle} />}
+      </>;
   }
 
   // Show RSVP options if not already RSVP'd
-  return (
-    <>
-      {canAddGuests ? (
-        <Button 
-          onClick={() => setShowGuestDialog(true)}
-          disabled={isSubmitting || isFullyBooked}
-        >
-          RSVP with Guests
-        </Button>
-      ) : (
-        <Button 
-          onClick={() => onRSVP()} 
-          disabled={isFullyBooked || isSubmitting}
-        >
-          {isSubmitting ? (
-            <>
+  return <>
+      {canAddGuests ? <Button onClick={() => setShowGuestDialog(true)} disabled={isSubmitting || isFullyBooked}>RSVP</Button> : <Button onClick={() => onRSVP()} disabled={isFullyBooked || isSubmitting}>
+          {isSubmitting ? <>
               Reserving Spot...
               <Loader2 className="ml-2 h-4 w-4 animate-spin" />
-            </>
-          ) : (
-            isFullyBooked ? 'Event Full' : 'RSVP'
-          )}
-        </Button>
-      )}
+            </> : isFullyBooked ? 'Event Full' : 'RSVP'}
+        </Button>}
       
-      {canAddGuests && (
-        <EventGuestDialog
-          open={showGuestDialog}
-          onOpenChange={setShowGuestDialog}
-          onSave={onRSVP}
-          currentGuests={currentGuests}
-          eventTitle={eventTitle}
-        />
-      )}
-    </>
-  );
+      {canAddGuests && <EventGuestDialog open={showGuestDialog} onOpenChange={setShowGuestDialog} onSave={onRSVP} currentGuests={currentGuests} eventTitle={eventTitle} />}
+    </>;
 }
