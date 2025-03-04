@@ -1,3 +1,4 @@
+
 import { useSession } from "./auth/useSession";
 import { useProfile } from "./auth/useProfile";
 import { useToast } from "@/hooks/use-toast";
@@ -43,7 +44,7 @@ export function useAuthState(): AuthState {
       
       console.log("Initial auth check:", {
         hasSession,
-        sessionId: data.session?.id,
+        sessionId: data.session?.user?.id, // Fixed: access user.id instead of session.id
         timestamp: new Date().toISOString()
       });
       

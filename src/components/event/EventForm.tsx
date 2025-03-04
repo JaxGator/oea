@@ -46,8 +46,7 @@ export function EventForm({ onSuccess, initialData, isPastEvent, isWixEvent }: E
         
         console.log("EventForm - Direct session check:", {
           hasSession,
-          sessionId: data.session?.id,
-          userId: data.session?.user?.id,
+          userId: data.session?.user?.id, // Fixed: access user.id instead of session.id
           timestamp: new Date().toISOString()
         });
       } catch (err) {
@@ -132,8 +131,7 @@ export function EventForm({ onSuccess, initialData, isPastEvent, isWixEvent }: E
       
       console.log("Form submission - Session check:", {
         hasValidSession,
-        sessionId: sessionData.session?.id,
-        userId: sessionData.session?.user?.id,
+        userId: sessionData.session?.user?.id, // Fixed: access user.id instead of session.id
         timestamp: new Date().toISOString()
       });
       

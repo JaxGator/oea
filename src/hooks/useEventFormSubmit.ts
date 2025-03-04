@@ -16,17 +16,21 @@ export function useEventFormSubmit(onSuccess: () => void) {
   // Additional auth check to ensure we have the latest state
   useEffect(() => {
     const verifyAuth = async () => {
-      const { data } = await supabase.auth.getSession();
-      const isAuthVerified = !!data.session;
-      
-      console.log('useEventFormSubmit - Auth verification:', {
-        sessionExists: isAuthVerified,
-        sessionId: data.session?.id,
-        userId: data.session?.user.id,
-        timestamp: new Date().toISOString()
-      });
-      
-      setCheckedAuth(true);
+      try {
+        setCheckedAuth(true);
+        const { data } = await supabase.auth.getSession();
+        const isAuthVerified = !!data.session;
+        
+        console.log('useEventFormSubmit - Auth verification:', {
+          sessionExists: isAuthVerified,
+          sessionUserId: data.session?.user?.id, // Fixed: access user.id instead of session.id
+          timestamp: new Date().toISOString()
+        });
+        
+        setCheckedAuth(true);
+      } catch (err) {
+        console.error('Auth verification error:', err);
+      }
     };
     
     verifyAuth();
@@ -58,7 +62,7 @@ export function useEventFormSubmit(onSuccess: () => void) {
         console.error('Authentication failed: No user ID available', { 
           isAuthenticated, 
           user,
-          sessionUserId: sessionData.session?.user.id
+          sessionUserId: sessionData.session?.user?.id
         });
         toast.error('Unable to identify your account. Please try logging in again.');
         throw new Error('No user ID available');
@@ -71,7 +75,7 @@ export function useEventFormSubmit(onSuccess: () => void) {
         isAdmin: user.is_admin,
         isApproved: user.is_approved,
         actionType: initialData?.id ? 'update' : 'create',
-        sessionUserId: sessionData.session?.user.id
+        sessionUserId: sessionData.session?.user?.id
       });
       
       // Clean and validate data

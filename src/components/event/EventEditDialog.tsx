@@ -57,8 +57,7 @@ export function EventEditDialog({
         
         console.log("EventEditDialog - Direct auth check:", { 
           sessionExists,
-          sessionId: data.session?.id,
-          userId: data.session?.user?.id, 
+          userId: data.session?.user?.id, // Fixed: access user.id instead of session.id
           timestamp: new Date().toISOString()
         });
         
