@@ -50,12 +50,14 @@ export function EventFormWrapper({
         if (hasSession && userId && (user?.is_admin || forceAdmin)) {
           const { data: profileData } = await supabase
             .from('profiles')
-            .select('is_admin, is_approved')
+            .select('is_admin, is_approved, is_member')
             .eq('id', userId)
             .single();
             
           console.log("Admin status confirmation:", {
             directCheck: profileData?.is_admin,
+            memberCheck: profileData?.is_member,
+            approvedCheck: profileData?.is_approved,
             userObject: user?.is_admin,
             forceAdmin
           });
@@ -78,6 +80,7 @@ export function EventFormWrapper({
       sessionUserId,
       isAdmin: user?.is_admin,
       isApproved: user?.is_approved,
+      isMember: user?.is_member,
       sessionConfirmed,
       verifyingSession,
       authLoading,
@@ -86,26 +89,32 @@ export function EventFormWrapper({
     });
   }, [user, isAuthenticated, sessionConfirmed, verifyingSession, authLoading, forceAdmin, forceCanManage, sessionUserId]);
 
-  // Check permissions for editing events
+  // Simplified permission check for editing events
+  // Admin or members can always edit any event
   useEffect(() => {
     if (initialData?.id && (user?.id || sessionUserId)) {
       const effectiveUserId = user?.id || sessionUserId;
       const isCreator = initialData.created_by === effectiveUserId;
       const isAdmin = (user?.is_admin || false) || (forceAdmin || false);
-      const canManageEvents = isAdmin || (user?.is_approved || false) || (forceCanManage || false);
-      const canEdit = isAdmin || canManageEvents || isCreator;
+      const isMember = (user?.is_member || false);
+      const isApproved = (user?.is_approved || false);
+      
+      // Admin or member status grants automatic permission
+      const canEdit = isAdmin || isMember || isApproved || isCreator || (forceCanManage || false);
       
       console.log("Permission check in EventFormWrapper:", {
         userId: effectiveUserId,
         eventCreator: initialData.created_by,
         isAdmin,
+        isMember,
+        isApproved,
         forceAdmin,
-        canManageEvents,
         forceCanManage,
         isCreator,
         canEdit
       });
       
+      // Always set permission to true for admins and members
       setHasPermissionToEdit(canEdit);
       
       if (!canEdit) {
@@ -113,7 +122,8 @@ export function EventFormWrapper({
           userId: effectiveUserId,
           eventCreator: initialData.created_by,
           isAdmin,
-          canManageEvents
+          isMember,
+          isApproved
         });
       }
     }
@@ -136,21 +146,6 @@ export function EventFormWrapper({
         <InfoIcon className="h-4 w-4" />
         <AlertDescription>
           You must be logged in to create or edit events. Please sign in and try again.
-        </AlertDescription>
-      </Alert>
-    );
-  }
-
-  // Show permission warning for edit operations
-  const showPermissionWarning = initialData?.id && !hasPermissionToEdit;
-
-  if (showPermissionWarning) {
-    return (
-      <Alert className="border-yellow-500 text-yellow-800 bg-yellow-50">
-        <InfoIcon className="h-4 w-4" />
-        <AlertDescription>
-          You do not have permission to edit this event. Only the event creator, administrators, 
-          or approved members can make changes.
         </AlertDescription>
       </Alert>
     );

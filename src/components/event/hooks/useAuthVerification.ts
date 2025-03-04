@@ -29,24 +29,27 @@ export function useAuthVerification(
         return true;
       }
       
-      // First check if the user object from useAuthState is available and has admin or approval status
+      // Grant permission to admin and members automatically
       if (user) {
         const isAdmin = !!user.is_admin;
-        // Updated: Consider both is_approved and is_member status for permission to manage events
-        const canManageEvents = isAdmin || !!user.is_approved || !!user.is_member;
+        const isMember = !!user.is_member;
+        const isApproved = !!user.is_approved;
+        
+        // All admins, members, and approved users can manage events
+        const canManageEvents = isAdmin || isMember || isApproved;
         
         console.log("Auth from useAuthState:", { 
           userId: user.id, 
-          isAdmin, 
-          isApproved: !!user.is_approved,
-          isMember: !!user.is_member,
+          isAdmin,
+          isMember,
+          isApproved,
           canManageEvents,
           eventCreator: initialData?.created_by || 'unknown'
         });
         
-        // If user is admin or can manage events (approved or member), grant permission immediately
+        // If user is admin or can manage events, grant permission immediately
         if (isAdmin || canManageEvents) {
-          console.log("Admin, approved member, or member detected, granting permission");
+          console.log("Admin or member detected, granting permission");
           setHasValidPermission(true);
           setVerifyingAuth(false);
           return true;
@@ -90,19 +93,19 @@ export function useAuthVerification(
       }
 
       // If we reach here, we need to do a full permission check
-      if (user && user.id) {
+      if (data.session?.user?.id) {
         // Recheck admin and approval status directly from the profile
         const { data: profileData } = await supabase
           .from('profiles')
           .select('is_admin, is_approved, is_member')
-          .eq('id', user.id)
+          .eq('id', data.session.user.id)
           .single();
         
-        const isAdmin = profileData?.is_admin || user.is_admin || false;
-        const isApproved = profileData?.is_approved || user.is_approved || false;
-        const isMember = profileData?.is_member || user.is_member || false;
+        const isAdmin = profileData?.is_admin || false;
+        const isApproved = profileData?.is_approved || false;
+        const isMember = profileData?.is_member || false;
         
-        // Updated: Consider both is_approved and is_member for permission to manage events
+        // Any admin or member has permission
         const canManageEvents = isAdmin || isApproved || isMember;
         
         console.log("Profile data re-fetched:", {
@@ -113,10 +116,24 @@ export function useAuthVerification(
           canManageEvents
         });
         
-        const hasEditPermission = canEditEvent(user.id, isAdmin, canManageEvents, initialData.created_by || '');
+        // Skip complex permission check for admins and members - grant immediate access
+        if (isAdmin || canManageEvents) {
+          console.log("Admin or member detected from profile data, granting permission");
+          setHasValidPermission(true);
+          setVerifyingAuth(false);
+          return true;
+        }
+        
+        // For non-admins/members, check if they're the creator
+        const hasEditPermission = canEditEvent(
+          data.session.user.id, 
+          isAdmin, 
+          canManageEvents, 
+          initialData.created_by || ''
+        );
         
         console.log("Final permission check:", { 
-          userId: user.id,
+          userId: data.session.user.id,
           eventCreator: initialData.created_by,
           isAdmin,
           isApproved,

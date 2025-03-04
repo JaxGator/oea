@@ -4,7 +4,6 @@ import { toast } from 'sonner';
 import { EventFormValues } from '@/components/event/EventFormTypes';
 import { validateEventData, cleanEventData } from '@/utils/eventValidation';
 import { createEvent, updateEvent } from '@/services/events/eventDatabaseService';
-import { canEditEvent } from '@/utils/permissionsUtils';
 import { useAuthState } from '@/hooks/useAuthState';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -71,13 +70,20 @@ export function useEventFormSubmit(onSuccess: () => void) {
         throw new Error('No user ID available');
       }
       
+      // Check if user is admin or member - admins and members always have permission
+      const isAdmin = user?.is_admin || false;
+      const isApproved = user?.is_approved || false;
+      const isMember = user?.is_member || false;
+      const canManageEvents = isAdmin || isApproved || isMember;
+      
       // More detailed logging for debugging
       console.log('Authentication verified:', { 
         isAuthenticated, 
         userId,
-        isAdmin: user?.is_admin,
-        isApproved: user?.is_approved,
-        isMember: user?.is_member,
+        isAdmin,
+        isApproved,
+        isMember,
+        canManageEvents,
         actionType: initialData?.id ? 'update' : 'create',
         sessionUserId: sessionData.session?.user?.id
       });
@@ -101,31 +107,37 @@ export function useEventFormSubmit(onSuccess: () => void) {
       // Check if this is an update or create operation
       if (initialData?.id) {
         // This is an update operation
-        const isAdmin = (user?.is_admin || false);
-        // Updated: Consider both admin status, approved status, and member status
-        const canManageEvents = isAdmin || (user?.is_approved || false) || (user?.is_member || false);
+        // PERMISSION CHECK REMOVED FOR ADMINS AND MEMBERS
+        // Admins and members can edit any event, we only check for regular users
+        let hasPermission = true;
         
-        // Check permissions before attempting update
-        const hasPermission = canEditEvent(userId, isAdmin, canManageEvents, initialData.created_by || '');
-        
-        // For debugging - log the permission check
-        console.log('Permission check for update operation:', {
-          userId,
-          isAdmin,
-          canManageEvents,
-          eventCreator: initialData.created_by,
-          hasPermission
-        });
-        
-        if (!hasPermission) {
-          console.error('Permission denied: user cannot edit this event', {
+        // Only check permissions for non-admin, non-member users
+        if (!isAdmin && !canManageEvents) {
+          // Only regular users need to be the creator
+          hasPermission = initialData.created_by === userId;
+          
+          // For debugging - log the permission check
+          console.log('Permission check for regular user:', {
+            userId,
+            eventCreator: initialData.created_by,
+            hasPermission
+          });
+          
+          if (!hasPermission) {
+            console.error('Permission denied: user cannot edit this event', {
+              userId,
+              eventCreator: initialData.created_by
+            });
+            toast.error('You do not have permission to edit this event');
+            throw new Error('You do not have permission to edit this event');
+          }
+        } else {
+          // Admin or member - log that we're skipping permission check
+          console.log('Admin or member detected, skipping permission check:', {
             userId,
             isAdmin,
-            canManageEvents,
-            eventCreator: initialData.created_by
+            canManageEvents
           });
-          toast.error('You do not have permission to edit this event');
-          throw new Error('You do not have permission to edit this event');
         }
         
         console.log(`Updating event with ID: ${initialData.id}`, {
