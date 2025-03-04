@@ -1,35 +1,64 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { EventFormValues } from '@/components/event/EventFormTypes';
 import { validateEventData, cleanEventData } from '@/utils/eventValidation';
 import { createEvent, updateEvent } from '@/services/events/eventDatabaseService';
 import { canEditEvent } from '@/utils/permissionsUtils';
 import { useAuthState } from '@/hooks/useAuthState';
+import { supabase } from '@/integrations/supabase/client';
 
 export function useEventFormSubmit(onSuccess: () => void) {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { user, isAuthenticated } = useAuthState();
+  const { user, isAuthenticated, isLoading } = useAuthState();
+  const [checkedAuth, setCheckedAuth] = useState(false);
+  
+  // Additional auth check to ensure we have the latest state
+  useEffect(() => {
+    const verifyAuth = async () => {
+      const { data } = await supabase.auth.getSession();
+      const isAuthVerified = !!data.session;
+      
+      console.log('useEventFormSubmit - Auth verification:', {
+        sessionExists: isAuthVerified,
+        sessionId: data.session?.id,
+        userId: data.session?.user.id,
+        timestamp: new Date().toISOString()
+      });
+      
+      setCheckedAuth(true);
+    };
+    
+    verifyAuth();
+  }, []);
   
   const handleSubmit = async (formData: EventFormValues, initialData?: any) => {
     try {
+      console.log('Event form submission starting with auth state:', {
+        isAuthenticated,
+        userId: user?.id,
+        isAdmin: user?.is_admin,
+        isApproved: user?.is_approved,
+        isLoading,
+        checkedAuth,
+        timestamp: new Date().toISOString()
+      });
+      
       setIsSubmitting(true);
       
-      // Enhanced authentication check with detailed error logging
-      if (!isAuthenticated) {
-        console.error('Authentication failed: User not authenticated', { 
-          isAuthenticated, 
-          userExists: !!user,
-          userId: user?.id 
-        });
-        toast.error('You must be logged in to save events');
-        throw new Error('User not authenticated');
+      // Perform a direct auth check here to be extra sure
+      const { data: sessionData } = await supabase.auth.getSession();
+      if (!sessionData.session) {
+        console.error('Authentication verification failed: No active session');
+        toast.error('You must be logged in to save events. Please sign in again.');
+        throw new Error('No active session');
       }
       
       if (!user?.id) {
         console.error('Authentication failed: No user ID available', { 
           isAuthenticated, 
-          user 
+          user,
+          sessionUserId: sessionData.session?.user.id
         });
         toast.error('Unable to identify your account. Please try logging in again.');
         throw new Error('No user ID available');
@@ -41,7 +70,8 @@ export function useEventFormSubmit(onSuccess: () => void) {
         userId: user.id,
         isAdmin: user.is_admin,
         isApproved: user.is_approved,
-        actionType: initialData?.id ? 'update' : 'create'
+        actionType: initialData?.id ? 'update' : 'create',
+        sessionUserId: sessionData.session?.user.id
       });
       
       // Clean and validate data

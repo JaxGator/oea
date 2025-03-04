@@ -18,13 +18,47 @@ import { useAuthState } from "@/hooks/useAuthState";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { InfoIcon } from "lucide-react";
+import { InfoIcon, Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 export function EventForm({ onSuccess, initialData, isPastEvent, isWixEvent }: EventFormProps) {
   const { isAdmin, canManageEvents, isLoading: checkingAdminStatus } = useAdminStatus();
-  const { user, isAuthenticated } = useAuthState();
+  const { user, isAuthenticated, isLoading: authLoading } = useAuthState();
   const [localSubmitting, setLocalSubmitting] = useState(false);
   const [hasPermissionToEdit, setHasPermissionToEdit] = useState(true);
+  const [verifyingSession, setVerifyingSession] = useState(true);
+  const [sessionConfirmed, setSessionConfirmed] = useState(false);
+  
+  // Direct session check
+  useEffect(() => {
+    const checkSession = async () => {
+      try {
+        setVerifyingSession(true);
+        const { data, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.error("Session check error:", error);
+          return;
+        }
+        
+        const hasSession = !!data.session;
+        setSessionConfirmed(hasSession);
+        
+        console.log("EventForm - Direct session check:", {
+          hasSession,
+          sessionId: data.session?.id,
+          userId: data.session?.user?.id,
+          timestamp: new Date().toISOString()
+        });
+      } catch (err) {
+        console.error("Session check failed:", err);
+      } finally {
+        setVerifyingSession(false);
+      }
+    };
+    
+    checkSession();
+  }, []);
   
   // Log authentication status for debugging
   useEffect(() => {
@@ -32,9 +66,12 @@ export function EventForm({ onSuccess, initialData, isPastEvent, isWixEvent }: E
       isAuthenticated,
       userId: user?.id,
       isAdmin: user?.is_admin,
-      isApproved: user?.is_approved
+      isApproved: user?.is_approved,
+      sessionConfirmed,
+      verifyingSession,
+      authLoading
     });
-  }, [user, isAuthenticated]);
+  }, [user, isAuthenticated, sessionConfirmed, verifyingSession, authLoading]);
   
   const form = useForm<EventFormValues>({
     resolver: zodResolver(eventSchema),
@@ -88,34 +125,51 @@ export function EventForm({ onSuccess, initialData, isPastEvent, isWixEvent }: E
   const { handleSubmit: handleFormSubmit, isSubmitting } = useEventFormSubmit(onSuccess);
 
   const onSubmit = async (data: EventFormValues) => {
-    // Check authentication first
-    if (!isAuthenticated) {
-      console.error('Not authenticated while submitting form');
-      toast.error('You must be logged in to create or edit events');
-      return;
-    }
-    
-    if (!user?.id) {
-      console.error('No user ID available');
-      toast.error('You must be logged in to create an event');
-      return;
-    }
-    
-    // For editing events, check permissions first
-    if (initialData?.id && !hasPermissionToEdit) {
-      toast.error('You do not have permission to edit this event');
-      return;
-    }
-    
-    // Prevent multiple submissions
-    if (localSubmitting || isSubmitting) {
-      console.log('Submission already in progress, ignoring duplicate submit');
-      return;
-    }
-    
-    setLocalSubmitting(true);
-    
+    // Perform a direct session check before proceeding
     try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const hasValidSession = !!sessionData.session;
+      
+      console.log("Form submission - Session check:", {
+        hasValidSession,
+        sessionId: sessionData.session?.id,
+        userId: sessionData.session?.user?.id,
+        timestamp: new Date().toISOString()
+      });
+      
+      if (!hasValidSession) {
+        console.error('Not authenticated while submitting form - direct check');
+        toast.error('You must be logged in to create or edit events');
+        return;
+      }
+      
+      // Check normal auth state too
+      if (!isAuthenticated) {
+        console.error('Not authenticated while submitting form - state check');
+        toast.error('You must be logged in to create or edit events');
+        return;
+      }
+      
+      if (!user?.id) {
+        console.error('No user ID available');
+        toast.error('You must be logged in to create an event');
+        return;
+      }
+      
+      // For editing events, check permissions first
+      if (initialData?.id && !hasPermissionToEdit) {
+        toast.error('You do not have permission to edit this event');
+        return;
+      }
+      
+      // Prevent multiple submissions
+      if (localSubmitting || isSubmitting) {
+        console.log('Submission already in progress, ignoring duplicate submit');
+        return;
+      }
+      
+      setLocalSubmitting(true);
+      
       console.log('EventForm - Submitting form with data:', { 
         ...data,
         userId: user.id,
@@ -138,6 +192,28 @@ export function EventForm({ onSuccess, initialData, isPastEvent, isWixEvent }: E
       setLocalSubmitting(false);
     }
   };
+
+  // Loading state while verifying session
+  if (verifyingSession || authLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center py-8">
+        <Loader2 className="h-8 w-8 animate-spin text-blue-500 mb-4" />
+        <p className="text-gray-500">Verifying your session...</p>
+      </div>
+    );
+  }
+
+  // Authentication warning state
+  if (!isAuthenticated || !sessionConfirmed) {
+    return (
+      <Alert className="border-red-500 text-red-800 bg-red-50">
+        <InfoIcon className="h-4 w-4" />
+        <AlertDescription>
+          You must be logged in to create or edit events. Please sign in and try again.
+        </AlertDescription>
+      </Alert>
+    );
+  }
 
   // Show permission warning for edit operations
   const showPermissionWarning = initialData?.id && !hasPermissionToEdit;
@@ -185,7 +261,7 @@ export function EventForm({ onSuccess, initialData, isPastEvent, isWixEvent }: E
         <Button 
           type="submit" 
           className="w-full bg-[#0d97d1] hover:bg-[#0d97d1]/90"
-          disabled={localSubmitting || isSubmitting || showPermissionWarning}
+          disabled={localSubmitting || isSubmitting || showPermissionWarning || !isAuthenticated || !sessionConfirmed}
         >
           {localSubmitting || isSubmitting ? 
             (initialData ? "Updating Event..." : "Creating Event...") : 

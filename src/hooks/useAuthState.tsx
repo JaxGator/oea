@@ -1,4 +1,3 @@
-
 import { useSession } from "./auth/useSession";
 import { useProfile } from "./auth/useProfile";
 import { useToast } from "@/hooks/use-toast";
@@ -22,18 +21,37 @@ export function useAuthState(): AuthState {
   const { data: profile, isLoading: isProfileLoading, error: profileError } = useProfile(authUser?.id);
   
   // Add explicit state tracking for authentication
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(!!authUser);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   
   // Update authentication state whenever authUser changes
   useEffect(() => {
-    setIsAuthenticated(!!authUser);
+    const authState = !!authUser;
+    setIsAuthenticated(authState);
     
     console.log("Auth state updated:", {
-      isAuthenticated: !!authUser,
+      isAuthenticated: authState,
       userId: authUser?.id,
       timestamp: new Date().toISOString()
     });
   }, [authUser]);
+
+  // Force refresh of authentication state on component mount
+  useEffect(() => {
+    const checkAuthStatus = async () => {
+      const { data } = await supabase.auth.getSession();
+      const hasSession = !!data.session;
+      
+      console.log("Initial auth check:", {
+        hasSession,
+        sessionId: data.session?.id,
+        timestamp: new Date().toISOString()
+      });
+      
+      setIsAuthenticated(hasSession);
+    };
+    
+    checkAuthStatus();
+  }, []);
 
   useEffect(() => {
     if (!authUser?.id) return;
@@ -71,7 +89,7 @@ export function useAuthState(): AuthState {
     };
   }, [authUser?.id, queryClient]);
 
-  // Enhanced error handling for profile errors - only show toast for actual errors
+  // Enhanced error handling for profile errors
   useEffect(() => {
     if (profileError) {
       // Skip showing error for expected "no profile" cases
@@ -105,27 +123,24 @@ export function useAuthState(): AuthState {
   }, [sessionError, toast]);
 
   // Debug logging
-  console.log('useAuthState - Current state:', {
-    isAuthenticated: !!authUser,
-    userId: authUser?.id,
-    hasProfile: !!profile,
-    profileError,
-    isAdmin: profile?.is_admin,
-    profileDetails: profile ? {
-      id: profile.id,
-      username: profile.username,
-      isAdmin: profile.is_admin,
-      isApproved: profile.is_approved
-    } : null,
-    isLoading: isSessionLoading || isProfileLoading,
-    timestamp: new Date().toISOString()
-  });
+  useEffect(() => {
+    console.log('useAuthState - Current state:', {
+      isAuthenticated,
+      userId: authUser?.id,
+      hasProfile: !!profile,
+      profileError,
+      isAdmin: profile?.is_admin,
+      profileLoading: isProfileLoading,
+      sessionLoading: isSessionLoading,
+      timestamp: new Date().toISOString()
+    });
+  }, [isAuthenticated, authUser, profile, profileError, isProfileLoading, isSessionLoading]);
 
   return {
     user: profile || null,
     profile,
     isLoading: isSessionLoading || isProfileLoading,
     error: sessionError || profileError,
-    isAuthenticated: isAuthenticated
+    isAuthenticated
   };
 }
