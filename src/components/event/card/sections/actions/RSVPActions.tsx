@@ -86,6 +86,7 @@ export function RSVPActions({
         <Button 
           onClick={() => setShowGuestDialog(true)} 
           disabled={isSubmitting || (isFullyBooked && !canJoinWaitlist)}
+          variant={isFullyBooked && canJoinWaitlist ? "warning" : "success"}
         >
           {isFullyBooked && canJoinWaitlist ? 'Add Guests to Waitlist' : 'RSVP'}
         </Button>
@@ -93,7 +94,7 @@ export function RSVPActions({
         <Button 
           onClick={() => onRSVP()} 
           disabled={(isFullyBooked && !canJoinWaitlist) || isSubmitting}
-          variant={isFullyBooked && canJoinWaitlist ? "warning" : "default"}
+          variant={isFullyBooked && canJoinWaitlist ? "warning" : "success"}
         >
           {isSubmitting ? <>
               {isFullyBooked && canJoinWaitlist ? 'Joining Waitlist...' : 'Reserving Spot...'}
