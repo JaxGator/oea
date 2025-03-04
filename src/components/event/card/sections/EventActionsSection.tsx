@@ -32,6 +32,8 @@ interface EventActionsSectionProps {
   isFullyBooked?: boolean;
   canJoinWaitlist?: boolean;
   isWixEvent?: boolean;
+  isAdmin?: boolean;
+  canManageEvents?: boolean;
 }
 
 export function EventActionsSection({
@@ -54,14 +56,18 @@ export function EventActionsSection({
   isAuthenticated = false,
   isFullyBooked = false,
   canJoinWaitlist = false,
-  isWixEvent = false
+  isWixEvent = false,
+  isAdmin,
+  canManageEvents
 }: EventActionsSectionProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const isMobile = useIsMobile();
   const { getEffectivePermissions } = usePermissions();
   
-  // Get synchronous permissions for rendering
-  const { isAdmin, canManageEvents } = getEffectivePermissions();
+  // Get synchronous permissions for rendering if not provided from props
+  const permissions = getEffectivePermissions();
+  const effectiveIsAdmin = isAdmin !== undefined ? isAdmin : permissions.isAdmin;
+  const effectiveCanManage = canManageEvents !== undefined ? canManageEvents : permissions.canManageEvents;
 
   const handleRSVP = async (guests?: { firstName: string }[]) => {
     setIsSubmitting(true);

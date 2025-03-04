@@ -73,4 +73,19 @@ export class PermissionService {
         return false;
     }
   }
+
+  /**
+   * Helper method for checking if a user can edit a specific event
+   * @param user Current user profile
+   * @param eventId ID of the event
+   * @param createdBy ID of the user who created the event
+   * @returns Whether the user can edit the event
+   */
+  static async canEditEvent(
+    user: Profile | null,
+    eventId?: string,
+    createdBy?: string
+  ): Promise<boolean> {
+    return this.hasPermission(user, 'edit', eventId, createdBy);
+  }
 }

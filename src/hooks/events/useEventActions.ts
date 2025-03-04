@@ -1,88 +1,142 @@
 
-import { useCallback } from "react";
-import { useActionFeedback } from "@/hooks/ui/useActionFeedback";
-import { toast } from "sonner";
-import { useAuthState } from "@/hooks/useAuthState";
+import { useState, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
+import { useProfile } from "@/hooks/auth/useProfile";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import { Event } from "@/types/event";
+import { useSession } from "@/hooks/auth/useSession";
 import { PermissionService } from "@/services/permissions/permissionService";
+import { usePermissions } from "@/hooks/usePermissions";
 
-interface EventActionsProps {
-  eventId: string;
-  createdBy: string;
-  onSuccess?: () => void;
+interface UseEventActionsProps {
+  event: Event;
+  onUpdate?: () => void;
 }
 
-export function useEventActions({ eventId, createdBy, onSuccess }: EventActionsProps) {
-  const { user } = useAuthState();
-  const { executeAction, isLoading } = useActionFeedback();
-  
-  // Handle RSVP action with proper feedback
-  const handleRSVP = useCallback(async (guests?: { firstName: string }[]) => {
-    return executeAction(
-      async () => {
-        // Session check
-        const sessionCheck = await PermissionService.verifySession();
-        if (!sessionCheck.isValid) {
-          throw new Error("Please sign in to RSVP for this event");
-        }
-        
-        // Normally you would call your RSVP service here
-        console.log("RSVP with guests:", guests);
-        
-        // Simulate a successful RSVP
-        await new Promise(resolve => setTimeout(resolve, 500));
-        
-        if (onSuccess) onSuccess();
-        return true;
-      },
-      {
-        loadingMessage: "Saving your RSVP...",
-        successMessage: "You're confirmed for this event!",
-        errorMessage: "Failed to RSVP. Please try again."
-      }
-    );
-  }, [executeAction, onSuccess]);
-  
-  // Handle cancel RSVP with proper feedback
-  const handleCancelRSVP = useCallback(async () => {
-    return executeAction(
-      async () => {
-        // Session check
-        const sessionCheck = await PermissionService.verifySession();
-        if (!sessionCheck.isValid) {
-          throw new Error("Please sign in to manage your RSVP");
-        }
-        
-        // Normally you would call your cancel RSVP service here
-        console.log("Cancelling RSVP");
-        
-        // Simulate a successful cancellation
-        await new Promise(resolve => setTimeout(resolve, 500));
-        
-        if (onSuccess) onSuccess();
-        return true;
-      },
-      {
-        loadingMessage: "Cancelling your RSVP...",
-        successMessage: "Your RSVP has been cancelled",
-        errorMessage: "Failed to cancel RSVP. Please try again."
-      }
-    );
-  }, [executeAction, onSuccess]);
-  
-  // Check if user can manage this event
-  const canManageEvent = useCallback(async () => {
-    if (!user) return false;
+export const useEventActions = ({ event, onUpdate }: UseEventActionsProps) => {
+  const { user } = useSession();
+  const { data: profile } = useProfile(user?.id);
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isPublishing, setIsPublishing] = useState(false);
+  const { verifyPermission } = usePermissions();
+
+  const handleDelete = useCallback(async () => {
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "You must be logged in to delete events",
+        variant: "destructive",
+      });
+      navigate("/auth");
+      return;
+    }
+
+    // Check if user has permission to delete
+    const hasPermission = await verifyPermission('delete', event.id, event.created_by);
     
-    return PermissionService.canEditEvent(
-      user,
-      createdBy
-    );
-  }, [user, createdBy]);
-  
+    if (!hasPermission && !profile?.is_admin) {
+      toast({
+        title: "Permission Denied",
+        description: "You don't have permission to delete this event",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      setIsDeleting(true);
+      const { error } = await supabase
+        .from("events")
+        .delete()
+        .eq("id", event.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success!",
+        description: "Event deleted successfully",
+      });
+
+      if (onUpdate) {
+        onUpdate();
+      }
+
+      navigate("/events");
+    } catch (error: any) {
+      console.error("Error deleting event:", error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete event",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDeleting(false);
+    }
+  }, [event, user, profile, toast, navigate, onUpdate, verifyPermission]);
+
+  const handleTogglePublish = useCallback(async () => {
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "You must be logged in to publish/unpublish events",
+        variant: "destructive",
+      });
+      navigate("/auth");
+      return;
+    }
+
+    // Check if user has permission to manage this event
+    const hasPermission = await verifyPermission('manage', event.id, event.created_by);
+    
+    if (!hasPermission) {
+      toast({
+        title: "Permission Denied",
+        description: "You don't have permission to publish/unpublish this event",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      setIsPublishing(true);
+      const newPublishState = !event.is_published;
+      
+      const { error } = await supabase
+        .from("events")
+        .update({ is_published: newPublishState })
+        .eq("id", event.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success!",
+        description: newPublishState 
+          ? "Event published successfully" 
+          : "Event unpublished successfully",
+      });
+
+      if (onUpdate) {
+        onUpdate();
+      }
+    } catch (error: any) {
+      console.error("Error toggling publish state:", error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update event publish state",
+        variant: "destructive",
+      });
+    } finally {
+      setIsPublishing(false);
+    }
+  }, [event, user, toast, navigate, onUpdate, verifyPermission]);
+
   return {
-    handleRSVP,
-    handleCancelRSVP,
-    canManageEvent,
-    isLoading
+    isDeleting,
+    isPublishing,
+    handleDelete,
+    handleTogglePublish,
   };
-}
+};
