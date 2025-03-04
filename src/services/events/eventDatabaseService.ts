@@ -1,49 +1,43 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { EventFormValues } from "@/components/event/EventFormTypes";
-
-interface EventOperationResult {
-  success: boolean;
-  data?: any;
-  error?: Error;
-}
+import { geocodeAddress } from "../geocoding/geocodingService";
 
 /**
  * Creates a new event in the database
- * @param eventData The event data to create
- * @returns Promise resolving to the operation result
+ * @param eventData The event data to save
+ * @returns The result of the database operation
  */
-export async function createEvent(eventData: any): Promise<EventOperationResult> {
+export async function createEvent(eventData: EventFormValues) {
   try {
-    console.log('Creating new event with data:', eventData);
+    // Try to geocode the address if not already done
+    if (eventData.location && (!eventData.latitude || !eventData.longitude)) {
+      const geoData = await geocodeAddress(eventData.location);
+      
+      if (geoData?.latitude && geoData?.longitude) {
+        eventData.latitude = geoData.latitude;
+        eventData.longitude = geoData.longitude;
+      }
+    }
     
+    // Insert the event into the database
     const { data, error } = await supabase
       .from('events')
       .insert([eventData])
-      .select();
-
+      .select()
+      .single();
+      
     if (error) {
-      console.error('Event creation error:', error);
-      return { 
-        success: false, 
-        error: new Error(`Failed to create event: ${error.message}`) 
-      };
+      console.error('Database error creating event:', error);
+      return { data: null, error };
     }
     
-    if (!data || data.length === 0) {
-      console.error('Event creation returned no data');
-      return { 
-        success: false, 
-        error: new Error('Failed to create event - no data returned') 
-      };
-    }
-    
-    return { success: true, data };
-  } catch (error: any) {
+    return { data, error: null };
+  } catch (error) {
     console.error('Error creating event:', error);
     return { 
-      success: false, 
-      error: new Error(error.message || 'Unknown error creating event') 
+      data: null, 
+      error: { message: 'Failed to create event in the database' } 
     };
   }
 }
@@ -52,32 +46,39 @@ export async function createEvent(eventData: any): Promise<EventOperationResult>
  * Updates an existing event in the database
  * @param eventId The ID of the event to update
  * @param eventData The updated event data
- * @returns Promise resolving to the operation result
+ * @returns The result of the database operation
  */
-export async function updateEvent(eventId: string, eventData: any): Promise<EventOperationResult> {
+export async function updateEvent(eventId: string, eventData: EventFormValues) {
   try {
-    console.log('Updating event with ID:', eventId);
+    // Try to geocode the address if it has changed
+    if (eventData.location && (!eventData.latitude || !eventData.longitude)) {
+      const geoData = await geocodeAddress(eventData.location);
+      
+      if (geoData?.latitude && geoData?.longitude) {
+        eventData.latitude = geoData.latitude;
+        eventData.longitude = geoData.longitude;
+      }
+    }
     
+    // Update the event in the database
     const { data, error } = await supabase
       .from('events')
       .update(eventData)
       .eq('id', eventId)
-      .select();
-
+      .select()
+      .single();
+      
     if (error) {
-      console.error('Event update error:', error);
-      return { 
-        success: false, 
-        error: new Error(`Failed to update event: ${error.message}`) 
-      };
+      console.error('Database error updating event:', error);
+      return { data: null, error };
     }
     
-    return { success: true, data };
-  } catch (error: any) {
+    return { data, error: null };
+  } catch (error) {
     console.error('Error updating event:', error);
     return { 
-      success: false, 
-      error: new Error(error.message || 'Unknown error updating event') 
+      data: null, 
+      error: { message: 'Failed to update event in the database' } 
     };
   }
 }

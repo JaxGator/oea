@@ -1,42 +1,43 @@
 
-import { supabase } from "@/integrations/supabase/client";
-
-interface GeocodingResult {
-  latitude: number;
-  longitude: number;
-}
-
 /**
- * Geocodes a location string to latitude and longitude coordinates
- * @param location The location string to geocode
- * @returns A Promise that resolves to the geocoding result or null if geocoding failed
+ * Geocodes an address to latitude and longitude
+ * @param address The address to geocode
+ * @returns The geocoded coordinates or null if geocoding failed
  */
-export async function geocodeLocation(location: string): Promise<GeocodingResult | null> {
+export async function geocodeAddress(address: string) {
   try {
-    const { data: { token }, error: tokenError } = await supabase.functions.invoke('get-mapbox-token');
-    
-    if (tokenError) {
-      console.error('Error getting Mapbox token:', tokenError);
+    // Simple validation
+    if (!address.trim()) {
+      console.warn('Empty address provided for geocoding');
       return null;
     }
-
-    const query = encodeURIComponent(location);
+    
+    console.log(`Geocoding address: ${address}`);
+    
+    // Using MapBox Geocoding API
+    // Note: In a real app, you would use your own API key
+    const apiKey = process.env.MAPBOX_API_KEY;
+    if (!apiKey) {
+      console.warn('No Mapbox API key available for geocoding');
+      return null;
+    }
+    
+    const encodedAddress = encodeURIComponent(address);
     const response = await fetch(
-      `https://api.mapbox.com/geocoding/v5/mapbox.places/${query}.json?access_token=${token}`
+      `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodedAddress}.json?access_token=${apiKey}`
     );
     
     if (!response.ok) {
-      console.error('Geocoding fetch error:', response.status, response.statusText);
-      return null;
+      throw new Error(`Geocoding API error: ${response.statusText}`);
     }
-
+    
     const data = await response.json();
+    
     if (data.features && data.features.length > 0) {
       const [longitude, latitude] = data.features[0].center;
       return { latitude, longitude };
     }
     
-    console.log('No geocoding results found for:', location);
     return null;
   } catch (error) {
     console.error('Geocoding error:', error);
