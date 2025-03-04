@@ -20,6 +20,7 @@ export function PublicEventView() {
     queryKey: ['public-event', id],
     queryFn: async () => {
       if (!id) {
+        console.error('No event ID provided');
         toast.error("No event ID provided");
         throw new Error('No event ID provided');
       }
@@ -30,8 +31,7 @@ export function PublicEventView() {
         .from('events')
         .select('*')
         .eq('id', id)
-        .eq('is_published', true)
-        .maybeSingle();
+        .single();
 
       if (eventError) {
         console.error('Error fetching event:', eventError);
@@ -40,17 +40,16 @@ export function PublicEventView() {
       }
       
       if (!eventData) {
-        console.error('Event not found or not published:', id);
-        toast.error("Event not found or not published");
-        throw new Error('Event not found or not published');
+        console.error('Event not found:', id);
+        toast.error("Event not found");
+        throw new Error('Event not found');
       }
 
       console.log('Successfully fetched public event data:', eventData);
       return eventData as Event;
     },
     enabled: !!id,
-    staleTime: 0, // Always fetch fresh data
-    gcTime: 0     // Don't cache the data
+    retry: 1
   });
 
   if (error) {
@@ -67,7 +66,7 @@ export function PublicEventView() {
             Back to Home
           </Button>
           <div className="text-center py-8">
-            <p className="text-red-500">Event not found or not published</p>
+            <p className="text-red-500">Unable to load event. It may have been deleted or is no longer available.</p>
           </div>
         </div>
       </div>
@@ -102,7 +101,7 @@ export function PublicEventView() {
             Back to Home
           </Button>
           <div className="text-center py-8">
-            <p>Event not found or not published</p>
+            <p>Event not found</p>
           </div>
         </div>
       </div>
@@ -150,8 +149,6 @@ export function PublicEventView() {
               className="prose prose-sm md:prose-base max-w-none"
               dangerouslySetInnerHTML={{ __html: event.description || "" }}
             />
-
-            <EventDetails event={event} />
 
             <div className="border-t pt-6">
               <p className="text-sm text-gray-500">

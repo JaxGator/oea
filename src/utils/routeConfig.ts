@@ -1,4 +1,3 @@
-
 export const publicRoutes = ['/', '/about', '/privacy', '/terms', '/resources', '/events', '/polls/share/:token', '/events/share/:id', '/auth', '/auth/callback'];
 export const protectedRoutes = ['/profile', '/admin', '/users', '/store'];
 
@@ -13,18 +12,22 @@ export const isProtectedRoute = (pathname: string): boolean => {
 };
 
 export const isPublicRoute = (pathname: string): boolean => {
-  // Match exact routes or parameterized routes
-  const exactMatch = publicRoutes.includes(pathname);
-  if (exactMatch) return true;
+  // Extract the base path without query params for comparison
+  const basePath = pathname.split('?')[0];
+  
+  // Match exact routes first
+  if (publicRoutes.includes(basePath)) return true;
   
   // Handle parameterized routes like /events/share/:id
-  const pathParts = pathname.split('/');
+  const pathParts = basePath.split('/');
   return publicRoutes.some(route => {
     const routeParts = route.split('/');
     if (pathParts.length !== routeParts.length) return false;
     
-    return routeParts.every((part, i) => 
-      part === pathParts[i] || part.startsWith(':')
-    );
+    return routeParts.every((part, i) => {
+      // If the route part starts with :, it's a parameter
+      if (part.startsWith(':')) return true;
+      return part === pathParts[i];
+    });
   });
 };
