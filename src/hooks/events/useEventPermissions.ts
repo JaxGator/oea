@@ -1,5 +1,5 @@
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { EventFormData } from "@/components/event/EventFormTypes";
 import { useAuthState } from "@/hooks/useAuthState";
 import { supabase } from "@/integrations/supabase/client";
@@ -12,14 +12,18 @@ export function useEventPermissions(
   forceAdmin?: boolean,
   forceCanManage?: boolean
 ) {
-  const { user } = useAuthState();
+  const { user, isAuthenticated } = useAuthState();
   const [hasValidPermission, setHasValidPermission] = useState(false);
+  const [verifyingAuth, setVerifyingAuth] = useState(true);
   
   const checkPermissions = useCallback(async () => {
+    setVerifyingAuth(true);
+
     // If no event data, then it's a new event - permission granted
     if (!eventData?.id) {
       console.log("Event Permission Check: New event, permission granted");
       setHasValidPermission(true);
+      setVerifyingAuth(false);
       return true;
     }
     
@@ -31,6 +35,7 @@ export function useEventPermissions(
     if (!currentUserId) {
       console.log("Event Permission Check: No user logged in, permission denied");
       setHasValidPermission(false);
+      setVerifyingAuth(false);
       return false;
     }
     
@@ -51,6 +56,7 @@ export function useEventPermissions(
         forceCanManage
       });
       setHasValidPermission(true);
+      setVerifyingAuth(false);
       return true;
     }
     
@@ -58,6 +64,7 @@ export function useEventPermissions(
     if (isCreator) {
       console.log("Event Permission Check: User is event creator, permission granted");
       setHasValidPermission(true);
+      setVerifyingAuth(false);
       return true;
     }
     
@@ -70,11 +77,23 @@ export function useEventPermissions(
     });
     
     setHasValidPermission(false);
+    setVerifyingAuth(false);
     return false;
   }, [eventData, user, forceAdmin, forceCanManage]);
   
+  // Automatically check permissions when the hook is initialized
+  useEffect(() => {
+    if (eventData || forceAdmin || forceCanManage) {
+      checkPermissions();
+    } else {
+      setVerifyingAuth(false);
+    }
+  }, [eventData, checkPermissions, forceAdmin, forceCanManage]);
+  
   return {
     hasValidPermission,
-    checkPermissions
+    checkPermissions,
+    verifyingAuth,
+    isAuthenticated
   };
 }
