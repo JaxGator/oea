@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -14,13 +13,38 @@ export function useAuthVerification(initialData: Event) {
 
   const checkAuthAndPermissions = useCallback(async () => {
     try {
+      console.log("Starting auth verification check for event:", initialData?.id);
       setVerifyingAuth(true);
+      
+      // First check if the user object from useAuthState is available and has admin status
+      if (user) {
+        const isAdmin = !!user.is_admin;
+        const canManageEvents = isAdmin || !!user.is_approved;
+        
+        console.log("Auth from useAuthState:", { 
+          userId: user.id, 
+          isAdmin, 
+          canManageEvents,
+          eventCreator: initialData?.created_by || 'unknown'
+        });
+        
+        // If user is admin or can manage events, grant permission immediately
+        if (isAdmin || canManageEvents) {
+          console.log("Admin or manager detected, granting permission");
+          setHasValidPermission(true);
+          setVerifyingAuth(false);
+          return true;
+        }
+      }
+      
+      // Otherwise perform a direct session check
       const { data, error } = await supabase.auth.getSession();
       
       if (error) {
         console.error("Error getting session:", error);
         toast.error("Authentication error. Please try logging in again.");
         setHasValidPermission(false);
+        setVerifyingAuth(false);
         return false;
       }
       
@@ -38,6 +62,7 @@ export function useAuthVerification(initialData: Event) {
         console.error("Authentication error: No active session");
         toast.error("You must be logged in to edit events");
         setHasValidPermission(false);
+        setVerifyingAuth(false);
         return false;
       }
 
@@ -48,13 +73,29 @@ export function useAuthVerification(initialData: Event) {
         return true;
       }
 
-      // Check permissions for this specific event
+      // If we reach here, we need to do a full permission check
       if (user && user.id) {
-        const isAdmin = user.is_admin || false;
-        const canManageEvents = isAdmin || user.is_approved;
+        // Recheck admin status directly from the profile
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('is_admin, is_approved')
+          .eq('id', user.id)
+          .single();
+        
+        const isAdmin = profileData?.is_admin || user.is_admin || false;
+        const isApproved = profileData?.is_approved || user.is_approved || false;
+        const canManageEvents = isAdmin || isApproved;
+        
+        console.log("Profile data re-fetched:", {
+          profileData,
+          isAdmin,
+          isApproved,
+          canManageEvents
+        });
+        
         const hasEditPermission = canEditEvent(user.id, isAdmin, canManageEvents, initialData.created_by || '');
         
-        console.log("Permission check:", { 
+        console.log("Final permission check:", { 
           userId: user.id,
           eventCreator: initialData.created_by,
           isAdmin,
@@ -83,14 +124,15 @@ export function useAuthVerification(initialData: Event) {
       setVerifyingAuth(false);
       return false;
     }
-  }, [initialData?.id, initialData?.created_by, user]);
+  }, [initialData, user]);
 
-  // Run checks when component mounts
+  // Run checks when component mounts or when user/initialData changes
   useEffect(() => {
     if (initialData) {
+      console.log("Running auth check due to initialData or user change");
       checkAuthAndPermissions();
     }
-  }, [checkAuthAndPermissions, initialData]);
+  }, [checkAuthAndPermissions, initialData, user?.id]);
 
   return {
     verifyingAuth,

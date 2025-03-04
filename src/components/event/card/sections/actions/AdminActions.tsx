@@ -33,6 +33,18 @@ export function AdminActions({
 }: AdminActionsProps) {
   const { user } = useAuthState();
   
+  // Debug log the permission checks
+  if (user) {
+    console.log("AdminActions permissions:", {
+      userId: user.id,
+      eventCreator: createdBy,
+      isAdmin,
+      canManageEvents,
+      canEditResult: canEditEvent(user.id, isAdmin, canManageEvents, createdBy),
+      canDeleteResult: canDeleteEvent(user.id, isAdmin, canManageEvents, createdBy)
+    });
+  }
+  
   if (!user) return null;
   
   const canEdit = canEditEvent(user.id, isAdmin, canManageEvents, createdBy);

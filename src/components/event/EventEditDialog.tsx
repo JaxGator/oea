@@ -37,13 +37,15 @@ export function EventEditDialog({
   // Sync the local state with the parent state
   useEffect(() => {
     if (showDialog !== localShowDialog) {
+      console.log("Syncing dialog state:", { showDialog, localShowDialog });
       setLocalShowDialog(showDialog);
     }
   }, [showDialog, localShowDialog]);
   
-  // Perform direct auth check on component mount
+  // Perform auth check whenever the dialog opens
   useEffect(() => {
     if (localShowDialog && initialData) {
+      console.log("Dialog opened, checking auth permissions");
       checkAuthAndPermissions();
     }
   }, [localShowDialog, initialData, checkAuthAndPermissions]);
@@ -54,6 +56,7 @@ export function EventEditDialog({
     showDialog,
     localShowDialog,
     userId: user?.id,
+    isAdmin: user?.is_admin,
     isAuthenticated,
     hasValidPermission,
     verifyingAuth
@@ -139,6 +142,9 @@ export function EventEditDialog({
         ) : !hasValidPermission && initialData?.id ? (
           <div className="text-center py-6">
             <p className="text-yellow-500">You don't have permission to edit this event</p>
+            <p className="text-sm text-gray-500 mt-2">
+              Only admins, approved members, or the event creator can edit this event.
+            </p>
           </div>
         ) : (
           <div className="space-y-6">

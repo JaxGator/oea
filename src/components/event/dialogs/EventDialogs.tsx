@@ -3,6 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { EventCardDetailedView } from "@/components/event/card/EventCardDetailedView";
 import { EventEditDialog } from "@/components/event/EventEditDialog";
 import type { Event } from "@/types/event";
+import { useEffect } from "react";
 
 interface EventDialogsProps {
   event: Event;
@@ -52,8 +53,16 @@ export function EventDialogs({
     eventId: event?.id,
     showDetailsDialog,
     showEditDialog,
-    isAuthenticated
+    isAuthenticated,
+    isAdmin,
+    canManageEvents,
+    createdBy: event?.created_by
   });
+
+  // Force re-render of edit dialog when admin status changes
+  useEffect(() => {
+    console.log("Admin status in EventDialogs:", { isAdmin, canManageEvents });
+  }, [isAdmin, canManageEvents]);
 
   return (
     <>
@@ -79,7 +88,10 @@ export function EventDialogs({
               currentGuests={currentGuests}
               onRSVP={onRSVP}
               onCancelRSVP={onCancelRSVP}
-              onEdit={() => setShowEditDialog(true)}
+              onEdit={() => {
+                console.log("Edit button clicked in details view");
+                setShowEditDialog(true);
+              }}
               onDelete={onDelete}
               onTogglePublish={() => {}}
               isAuthenticated={isAuthenticated}

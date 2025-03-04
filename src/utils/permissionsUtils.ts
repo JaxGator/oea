@@ -12,9 +12,17 @@ export function canEditEvent(
   canManageEvents: boolean,
   createdBy: string
 ): boolean {
+  console.log("Permission check for edit:", {
+    userId,
+    isAdmin,
+    canManageEvents,
+    createdBy,
+    hasPermission: isAdmin || canManageEvents || createdBy === userId
+  });
+  
   if (!userId) return false;
   
-  // If user is admin or can manage events, they should be able to edit any event
+  // Admin or users with event management permission can edit any event
   if (isAdmin || canManageEvents) return true;
   
   // Otherwise, check if the user created the event

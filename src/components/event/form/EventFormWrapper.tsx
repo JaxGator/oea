@@ -34,6 +34,20 @@ export function EventFormWrapper({ onSuccess, initialData, isPastEvent, isWixEve
           userId: data.session?.user?.id,
           timestamp: new Date().toISOString()
         });
+        
+        // If we have a session and user appears to be admin, confirm admin status
+        if (hasSession && user?.is_admin) {
+          const { data: profileData } = await supabase
+            .from('profiles')
+            .select('is_admin, is_approved')
+            .eq('id', data.session.user.id)
+            .single();
+            
+          console.log("Admin status confirmation:", {
+            directCheck: profileData?.is_admin,
+            userObject: user?.is_admin
+          });
+        }
       } catch (err) {
         console.error("Session check failed:", err);
       } finally {
@@ -42,7 +56,7 @@ export function EventFormWrapper({ onSuccess, initialData, isPastEvent, isWixEve
     };
     
     checkSession();
-  }, []);
+  }, [user?.is_admin, user?.id]);
   
   // Log authentication status for debugging
   useEffect(() => {
@@ -64,6 +78,15 @@ export function EventFormWrapper({ onSuccess, initialData, isPastEvent, isWixEve
       const isAdmin = user.is_admin || false;
       const canManageEvents = isAdmin || (user.is_approved || false);
       const canEdit = isAdmin || canManageEvents || isCreator;
+      
+      console.log("Permission check in EventFormWrapper:", {
+        userId: user.id,
+        eventCreator: initialData.created_by,
+        isAdmin,
+        canManageEvents,
+        isCreator,
+        canEdit
+      });
       
       setHasPermissionToEdit(canEdit);
       
