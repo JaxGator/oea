@@ -4,11 +4,9 @@ import { EventForm } from "@/components/event/EventForm";
 import type { Event } from "@/types/event";
 import { useEffect, useState, useCallback } from "react";
 import { toast } from "sonner";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { InfoIcon, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { useAuthState } from "@/hooks/useAuthState";
-import { canEditEvent } from "@/utils/permissionsUtils";
-import { supabase } from "@/integrations/supabase/client";
+import { useAuthVerification } from "./hooks/useAuthVerification";
 
 interface EventEditDialogProps {
   initialData: Event;
@@ -29,9 +27,12 @@ export function EventEditDialog({
 }: EventEditDialogProps) {
   const [isClosing, setIsClosing] = useState(false);
   const [localShowDialog, setLocalShowDialog] = useState(showDialog);
-  const [verifyingAuth, setVerifyingAuth] = useState(true);
-  const [checkedSessionData, setCheckedSessionData] = useState(false);
-  const { user, isAuthenticated, isLoading } = useAuthState();
+  const { user, isAuthenticated } = useAuthState();
+  const { 
+    verifyingAuth, 
+    hasValidPermission, 
+    checkAuthAndPermissions 
+  } = useAuthVerification(initialData);
   
   // Sync the local state with the parent state
   useEffect(() => {
@@ -40,47 +41,10 @@ export function EventEditDialog({
   
   // Perform direct auth check on component mount
   useEffect(() => {
-    const verifyAuthStatus = async () => {
-      try {
-        setVerifyingAuth(true);
-        const { data, error } = await supabase.auth.getSession();
-        
-        if (error) {
-          console.error("Error getting session:", error);
-          toast.error("Authentication error. Please try logging in again.");
-          setLocalShowDialog(false);
-          setShowDialog(false);
-          return;
-        }
-        
-        const sessionExists = !!data.session;
-        
-        console.log("EventEditDialog - Direct auth check:", { 
-          sessionExists,
-          userId: data.session?.user?.id, // Fixed: access user.id instead of session.id
-          timestamp: new Date().toISOString()
-        });
-        
-        setCheckedSessionData(true);
-        
-        if (!sessionExists) {
-          console.error("Authentication error: No active session");
-          toast.error("You must be logged in to edit events");
-          setLocalShowDialog(false);
-          setShowDialog(false);
-        }
-      } catch (err) {
-        console.error("Authentication check failed:", err);
-        toast.error("Authentication error. Please try logging in again.");
-      } finally {
-        setVerifyingAuth(false);
-      }
-    };
-    
     if (localShowDialog) {
-      verifyAuthStatus();
+      checkAuthAndPermissions();
     }
-  }, [localShowDialog, setShowDialog]);
+  }, [localShowDialog, checkAuthAndPermissions]);
 
   console.log("EventEditDialog initialized with:", { 
     eventId: initialData?.id,
@@ -89,56 +53,9 @@ export function EventEditDialog({
     localShowDialog,
     userId: user?.id,
     isAuthenticated,
-    isLoading,
-    isAdmin: user?.is_admin,
-    verifyingAuth,
-    checkedSessionData
+    hasValidPermission,
+    verifyingAuth
   });
-
-  // Check permissions whenever auth state or dialog visibility changes
-  useEffect(() => {
-    if (!isLoading && !verifyingAuth && localShowDialog) {
-      // First check if the user is authenticated at all
-      if (!isAuthenticated) {
-        console.error("Authentication error: User not authenticated");
-        toast.error("You must be logged in to edit events");
-        setLocalShowDialog(false);
-        setShowDialog(false);
-        return;
-      }
-      
-      // Then check if we have a user object with an ID
-      if (!user || !user.id) {
-        console.error("Authentication error: No user ID available");
-        toast.error("User profile not available. Please try logging in again.");
-        setLocalShowDialog(false);
-        setShowDialog(false);
-        return;
-      }
-      
-      // Finally check edit permissions for this specific event
-      if (initialData && initialData.id) {
-        const isAdmin = user.is_admin || false;
-        const canManageEvents = isAdmin || user.is_approved;
-        const hasEditPermission = canEditEvent(user.id, isAdmin, canManageEvents, initialData.created_by || '');
-        
-        console.log("EventEditDialog - Permission check:", { 
-          userId: user.id,
-          eventCreator: initialData.created_by,
-          isAdmin,
-          canManageEvents,
-          hasPermission: hasEditPermission
-        });
-        
-        if (!hasEditPermission) {
-          console.error("Permission denied: user cannot edit this event");
-          toast.error("You don't have permission to edit this event");
-          setLocalShowDialog(false);
-          setShowDialog(false);
-        }
-      }
-    }
-  }, [user, initialData, localShowDialog, setShowDialog, isLoading, isAuthenticated, verifyingAuth]);
 
   const handleSuccess = useCallback(() => {
     console.log("EventEditDialog: handleSuccess called");
@@ -176,7 +93,7 @@ export function EventEditDialog({
   }, [localShowDialog, setShowDialog]);
 
   // Show loading state while checking authentication
-  if (verifyingAuth || isLoading) {
+  if (verifyingAuth) {
     return (
       <Dialog open={localShowDialog} onOpenChange={handleOpenChange}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
@@ -190,7 +107,7 @@ export function EventEditDialog({
   }
 
   // Don't render anything if not authenticated
-  if (!isAuthenticated) {
+  if (!hasValidPermission) {
     return null;
   }
 
