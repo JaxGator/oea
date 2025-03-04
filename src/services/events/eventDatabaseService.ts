@@ -50,6 +50,8 @@ export async function createEvent(eventData: EventFormValues) {
  */
 export async function updateEvent(eventId: string, eventData: EventFormValues) {
   try {
+    console.log(`Updating event ${eventId} with data:`, eventData);
+    
     // Try to geocode the address if it has changed
     if (eventData.location && (!eventData.latitude || !eventData.longitude)) {
       const geoData = await geocodeAddress(eventData.location);
@@ -61,16 +63,25 @@ export async function updateEvent(eventId: string, eventData: EventFormValues) {
     }
     
     // Update the event in the database
+    // Use maybeSingle() instead of single() to prevent errors when no rows are returned
     const { data, error } = await supabase
       .from('events')
       .update(eventData)
       .eq('id', eventId)
       .select()
-      .single();
+      .maybeSingle();
       
     if (error) {
       console.error('Database error updating event:', error);
       return { data: null, error };
+    }
+    
+    if (!data) {
+      console.warn('No event was updated. Event may not exist or user may not have permission.');
+      return { 
+        data: null, 
+        error: { message: 'No event was updated. The event may not exist or you may not have permission to update it.' } 
+      };
     }
     
     return { data, error: null };

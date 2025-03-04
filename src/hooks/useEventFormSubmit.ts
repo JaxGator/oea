@@ -23,7 +23,7 @@ export function useEventFormSubmit(onSuccess: () => void) {
         
         console.log('useEventFormSubmit - Auth verification:', {
           sessionExists: isAuthVerified,
-          sessionUserId: data.session?.user?.id, // Fixed: access user.id instead of session.id
+          sessionUserId: data.session?.user?.id,
           timestamp: new Date().toISOString()
         });
         
@@ -124,6 +124,12 @@ export function useEventFormSubmit(onSuccess: () => void) {
         throw new Error(result.error.message || 'Failed to save event');
       }
       
+      if (!result.data && initialData?.id) {
+        console.error('Event update returned no data');
+        toast.error('Failed to update event. The event may not exist or you may not have permission to update it.');
+        throw new Error('Event update returned no data');
+      }
+      
       toast.success(initialData?.id ? 'Event updated successfully' : 'Event created successfully');
       
       if (onSuccess) {
@@ -134,12 +140,18 @@ export function useEventFormSubmit(onSuccess: () => void) {
     } catch (error: any) {
       console.error('Event form submission error:', error);
       
-      // Provide a more specific error message for permission issues
-      const errorMessage = error.message?.includes('permission') 
-        ? 'Permission denied: You do not have access to edit this event' 
-        : error.message || 'Failed to save event. Please try again.';
+      // Check for specific Supabase error patterns
+      const errorMessage = error.message || 'Failed to save event. Please try again.';
       
-      toast.error(errorMessage);
+      // Handle specific error types more gracefully
+      if (errorMessage.includes('JSON object requested')) {
+        toast.error('Event could not be updated. Please check that you have permission to edit this event.');
+      } else if (errorMessage.includes('permission')) {
+        toast.error('Permission denied: You do not have access to edit this event');
+      } else {
+        toast.error(errorMessage);
+      }
+      
       throw error;
     } finally {
       setIsSubmitting(false);

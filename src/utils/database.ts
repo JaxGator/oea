@@ -22,7 +22,8 @@ export async function executeQuery<T>(
       throw error;
     }
 
-    const result = Array.isArray(data) ? data[0] : data;
+    // Handle empty data more gracefully
+    const result = Array.isArray(data) ? (data.length > 0 ? data[0] : null) : data;
 
     console.log('Database query completed successfully:', {
       hasData: !!result,
@@ -30,12 +31,21 @@ export async function executeQuery<T>(
     });
     return { data: result, error: null };
   } catch (error) {
-    const message = isErrorWithMessage(error) ? error.message : 'An unexpected error occurred';
+    const message = isErrorWithMessage(error) 
+      ? error.message 
+      : 'An unexpected error occurred';
+    
     console.error('Database operation error:', {
       error,
+      errorMessage: message,
       timestamp: new Date().toISOString()
     });
-    toast.error(message);
+    
+    // Don't show toast for expected "no data" conditions
+    if (!message.includes('JSON object requested')) {
+      toast.error(message);
+    }
+    
     return { 
       data: null, 
       error: { 
