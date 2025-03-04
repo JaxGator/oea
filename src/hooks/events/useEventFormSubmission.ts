@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { useEventFormSubmit } from "@/hooks/useEventFormSubmit";
 import type { Profile } from "@/types/auth";
 import { usePermissions } from "@/hooks/usePermissions";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface FormSubmissionProps {
   onSuccess: () => void;
@@ -25,8 +26,9 @@ export function useEventFormSubmission({
   forceCanManage
 }: FormSubmissionProps) {
   const [localSubmitting, setLocalSubmitting] = useState(false);
+  const [permissionError, setPermissionError] = useState<string | null>(null);
   const { handleSubmit: handleFormSubmit, isSubmitting } = useEventFormSubmit(onSuccess);
-  const { getEffectivePermissions } = usePermissions();
+  const { getEffectivePermissions, showPermissionDeniedToast } = usePermissions();
   
   // Get synchronous permissions
   const { isAdmin, canManageEvents } = getEffectivePermissions();
@@ -35,13 +37,22 @@ export function useEventFormSubmission({
   const effectiveIsAdmin = isAdmin || !!forceAdmin;
   const effectiveCanManage = effectiveIsAdmin || canManageEvents || !!forceCanManage;
   
+  // Clear permission error when component mounts or permissions change
+  useEffect(() => {
+    setPermissionError(null);
+  }, [effectiveIsAdmin, effectiveCanManage, hasPermissionToEdit]);
+  
   const onSubmit = async (data: EventFormValues) => {
     try {
+      // Clear any previous errors
+      setPermissionError(null);
+      
       const { data: sessionData } = await supabase.auth.getSession();
       const hasValidSession = !!sessionData.session;
       
       if (!hasValidSession) {
         console.error('Not authenticated while submitting form - direct check');
+        setPermissionError('You must be logged in to create or edit events');
         toast.error('You must be logged in to create or edit events');
         return;
       }
@@ -50,13 +61,16 @@ export function useEventFormSubmission({
       
       if (!userId) {
         console.error('No user ID available');
-        toast.error('You must be logged in to create an event');
+        setPermissionError('Unable to identify your account. Please try logging in again.');
+        toast.error('Unable to identify your account. Please try logging in again.');
         return;
       }
       
       // CRITICAL: Always let admins and members bypass permission checks
       if (initialData?.id && !hasPermissionToEdit && !effectiveCanManage) {
-        toast.error('You do not have permission to edit this event');
+        const errorMessage = 'You do not have permission to edit this event';
+        setPermissionError(errorMessage);
+        toast.error(errorMessage);
         return;
       }
       
@@ -85,8 +99,11 @@ export function useEventFormSubmission({
       console.log("Final event data:", eventData);
       
       await handleFormSubmit(eventData, initialData);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Form submission error:', error);
+      const errorMessage = error.message || 'An error occurred while submitting the form';
+      setPermissionError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setLocalSubmitting(false);
     }
@@ -96,6 +113,7 @@ export function useEventFormSubmission({
     onSubmit,
     isSubmitting: localSubmitting || isSubmitting,
     effectiveIsAdmin,
-    effectiveCanManage
+    effectiveCanManage,
+    permissionError
   };
 }

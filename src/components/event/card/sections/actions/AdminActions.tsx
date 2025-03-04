@@ -6,6 +6,7 @@ import { useActionFeedback } from "@/hooks/ui/useActionFeedback";
 import { toast } from "sonner";
 import { usePermissions } from "@/hooks/usePermissions";
 import { LoadingButton } from "@/components/ui/loading-button";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface AdminActionsProps {
   isPastEvent: boolean;
@@ -36,13 +37,15 @@ export function AdminActions({
   const { 
     verifyPermission, 
     isVerifying,
-    getEffectivePermissions
+    getEffectivePermissions,
+    showPermissionDeniedToast
   } = usePermissions();
   
   const [canEdit, setCanEdit] = useState(false);
   const [canDelete, setCanDelete] = useState(false);
   const [canManage, setCanManage] = useState(false);
   const [isCheckingPermissions, setIsCheckingPermissions] = useState(true);
+  const [permissionError, setPermissionError] = useState<string | null>(null);
   
   // Get synchronous permissions for initial render
   const { isAdmin, canManageEvents } = getEffectivePermissions();
@@ -51,6 +54,7 @@ export function AdminActions({
   useEffect(() => {
     const checkPermissions = async () => {
       setIsCheckingPermissions(true);
+      setPermissionError(null);
       
       // Check all required permissions
       const [canEditResult, canDeleteResult, canManageResult] = await Promise.all([
@@ -75,6 +79,11 @@ export function AdminActions({
       return;
     }
     
+    if (!canEdit) {
+      showPermissionDeniedToast('edit', "You don't have permission to edit this event");
+      return;
+    }
+    
     if (onEdit) onEdit();
   };
 
@@ -82,6 +91,11 @@ export function AdminActions({
   const handleDelete = async () => {
     if (isPastEvent && !isAdmin) {
       toast.info("Past events can only be deleted by administrators");
+      return;
+    }
+    
+    if (!canDelete) {
+      showPermissionDeniedToast('delete', "You don't have permission to delete this event");
       return;
     }
     
@@ -102,6 +116,11 @@ export function AdminActions({
 
   // Handle publish/unpublish with feedback
   const handleTogglePublish = async () => {
+    if (!canManage) {
+      showPermissionDeniedToast('manage', "You don't have permission to publish or unpublish events");
+      return;
+    }
+    
     if (onTogglePublish) {
       await executeAction(
         () => {
@@ -120,62 +139,70 @@ export function AdminActions({
   const isCheckingAnyPermission = isCheckingPermissions || isVerifying;
   
   return (
-    <div className="flex flex-wrap items-center gap-2">
-      {!isWixEvent && onEdit && (
-        <LoadingButton 
-          variant="outline" 
-          size="sm" 
-          onClick={handleEdit}
-          disabled={isPastEvent && !isAdmin}
-          isVerifyingPermission={isCheckingAnyPermission}
-          permissionDenied={!isCheckingAnyPermission && !canEdit}
-          permissionMessage="You don't have permission to edit this event"
-        >
-          <Edit className="h-4 w-4 mr-2" />
-          Edit
-        </LoadingButton>
+    <div className="space-y-2">
+      {permissionError && (
+        <Alert variant="warning" className="mb-2">
+          <AlertDescription>{permissionError}</AlertDescription>
+        </Alert>
       )}
       
-      {!isWixEvent && showDelete && onDelete && (
-        <LoadingButton 
-          variant="destructive" 
-          size="sm" 
-          onClick={handleDelete}
-          disabled={isPastEvent && !isAdmin || isLoading}
-          isVerifyingPermission={isCheckingAnyPermission}
-          permissionDenied={!isCheckingAnyPermission && !canDelete}
-          permissionMessage="You don't have permission to delete this event"
-          isLoading={isLoading}
-        >
-          <Trash2 className="h-4 w-4 mr-2" />
-          Delete
-        </LoadingButton>
-      )}
-      
-      {showPublishToggle && onTogglePublish && (
-        <LoadingButton
-          variant="secondary"
-          size="sm"
-          onClick={handleTogglePublish}
-          disabled={isLoading}
-          isVerifyingPermission={isCheckingAnyPermission}
-          permissionDenied={!isCheckingAnyPermission && !canManage}
-          permissionMessage="You don't have permission to publish/unpublish events"
-          isLoading={isLoading}
-        >
-          {isPublished ? (
-            <>
-              <ToggleRight className="h-4 w-4 mr-2" />
-              Unpublish
-            </>
-          ) : (
-            <>
-              <ToggleLeft className="h-4 w-4 mr-2" />
-              Publish
-            </>
-          )}
-        </LoadingButton>
-      )}
+      <div className="flex flex-wrap items-center gap-2">
+        {!isWixEvent && onEdit && (
+          <LoadingButton 
+            variant="outline" 
+            size="sm" 
+            onClick={handleEdit}
+            disabled={isPastEvent && !isAdmin}
+            isVerifyingPermission={isCheckingAnyPermission}
+            permissionDenied={!isCheckingAnyPermission && !canEdit}
+            permissionMessage="You don't have permission to edit this event"
+          >
+            <Edit className="h-4 w-4 mr-2" />
+            Edit
+          </LoadingButton>
+        )}
+        
+        {!isWixEvent && showDelete && onDelete && (
+          <LoadingButton 
+            variant="destructive" 
+            size="sm" 
+            onClick={handleDelete}
+            disabled={isPastEvent && !isAdmin || isLoading}
+            isVerifyingPermission={isCheckingAnyPermission}
+            permissionDenied={!isCheckingAnyPermission && !canDelete}
+            permissionMessage="You don't have permission to delete this event"
+            isLoading={isLoading}
+          >
+            <Trash2 className="h-4 w-4 mr-2" />
+            Delete
+          </LoadingButton>
+        )}
+        
+        {showPublishToggle && onTogglePublish && (
+          <LoadingButton
+            variant="secondary"
+            size="sm"
+            onClick={handleTogglePublish}
+            disabled={isLoading}
+            isVerifyingPermission={isCheckingAnyPermission}
+            permissionDenied={!isCheckingAnyPermission && !canManage}
+            permissionMessage="You don't have permission to publish/unpublish events"
+            isLoading={isLoading}
+          >
+            {isPublished ? (
+              <>
+                <ToggleRight className="h-4 w-4 mr-2" />
+                Unpublish
+              </>
+            ) : (
+              <>
+                <ToggleLeft className="h-4 w-4 mr-2" />
+                Publish
+              </>
+            )}
+          </LoadingButton>
+        )}
+      </div>
     </div>
   );
 }

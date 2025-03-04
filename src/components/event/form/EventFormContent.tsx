@@ -1,78 +1,34 @@
-import { Form } from "@/components/ui/form";
+import { EventFormProps } from "../EventFormTypes";
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { EventFormProps, EventFormValues, eventSchema } from "../EventFormTypes";
-import { EventBasicDetails } from "../EventBasicDetails";
-import { EventScheduling } from "../EventScheduling";
-import { EventLocationCapacity } from "../EventLocationCapacity";
-import { EventImageUpload } from "../EventImageUpload";
-import { EventReminderSettings } from "../EventReminderSettings";
-import { EventWaitlistSettings } from "../EventWaitlistSettings";
-import { useEffect } from "react";
-import type { Profile } from "@/types/auth";
-import { EventFormAdminSection } from "./EventFormAdminSection";
 import { EventFormSubmitButton } from "./EventFormSubmitButton";
 import { useEventFormSubmission } from "@/hooks/events/useEventFormSubmission";
+import { useFormState } from "./useFormState";
+import { Profile } from "@/types/auth";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface EventFormContentProps extends EventFormProps {
-  hasPermissionToEdit: boolean;
   user: Profile | null;
-  forceAdmin?: boolean;
-  forceCanManage?: boolean;
-  isVerifyingPermission?: boolean;
+  hasPermissionToEdit: boolean;
+  isVerifyingPermission: boolean;
 }
 
-export function EventFormContent({ 
-  onSuccess, 
-  initialData, 
-  isPastEvent, 
-  isWixEvent, 
-  hasPermissionToEdit,
+export function EventFormContent({
+  initialData,
+  onSuccess,
   user,
+  hasPermissionToEdit,
+  isVerifyingPermission,
   forceAdmin,
-  forceCanManage,
-  isVerifyingPermission = false
+  forceCanManage
 }: EventFormContentProps) {
-  const form = useForm<EventFormValues>({
-    resolver: zodResolver(eventSchema),
-    mode: "onBlur",
-    defaultValues: {
-      title: initialData?.title || "",
-      description: initialData?.description || "",
-      date: initialData?.date || "",
-      time: initialData?.time || "",
-      end_time: initialData?.end_time || "",
-      location: initialData?.location || "",
-      max_guests: initialData?.max_guests || 50,
-      image_url: initialData?.image_url || "/lovable-uploads/609edf01-3169-439a-80f5-f6f15de7a5a6.png",
-      reminder_enabled: initialData?.reminder_enabled || false,
-      reminder_intervals: initialData?.reminder_intervals || ["7d", "1d", "1h"],
-      waitlist_enabled: initialData?.waitlist_enabled || false,
-      waitlist_capacity: initialData?.waitlist_capacity || null,
-      is_featured: initialData?.is_featured || false,
-      latitude: initialData?.latitude || null,
-      longitude: initialData?.longitude || null,
-      created_by: initialData?.created_by || user?.id || "",
-    }
-  });
-
-  useEffect(() => {
-    if (user?.id) {
-      if (initialData?.id && initialData?.created_by) {
-        console.log("Preserving original event creator:", initialData.created_by);
-        form.setValue('created_by', initialData.created_by);
-      } else if (!form.getValues('created_by')) {
-        console.log("Setting current user as event creator:", user.id);
-        form.setValue('created_by', user.id);
-      }
-    }
-  }, [user, form, initialData]);
-
-  const { 
-    onSubmit, 
-    isSubmitting, 
-    effectiveIsAdmin, 
-    effectiveCanManage 
+  const { form, formFields } = useFormState(initialData);
+  
+  const {
+    onSubmit,
+    isSubmitting,
+    effectiveIsAdmin,
+    effectiveCanManage,
+    permissionError
   } = useEventFormSubmission({
     onSuccess,
     initialData,
@@ -81,39 +37,29 @@ export function EventFormContent({
     forceAdmin,
     forceCanManage
   });
-
-  const showPermissionWarning = initialData?.id && !hasPermissionToEdit && 
-    !effectiveCanManage;
-
+  
+  // Handle form submission
+  const handleSubmit = form.handleSubmit(onSubmit);
+  
   return (
-    <Form {...form}>
-      <form 
-        onSubmit={form.handleSubmit(onSubmit)}
-        className="space-y-4"
-      >
-        <EventBasicDetails form={form} />
-        <EventScheduling form={form} disabled={isPastEvent} />
-        <EventLocationCapacity 
-          form={form} 
-          disableLocation={isPastEvent}
-          showMaxGuestsHint={isPastEvent}
-        />
-        <EventImageUpload form={form} defaultImage={initialData?.image_url} />
-        <EventReminderSettings form={form} disabled={isPastEvent} />
-        <EventWaitlistSettings form={form} disabled={isPastEvent} />
+    <div className="space-y-4">
+      {permissionError && (
+        <Alert variant="destructive">
+          <AlertDescription>{permissionError}</AlertDescription>
+        </Alert>
+      )}
+      
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {formFields}
         
-        <EventFormAdminSection 
-          form={form} 
-          isAdmin={effectiveIsAdmin} 
-        />
-
-        <EventFormSubmitButton 
+        <EventFormSubmitButton
           isSubmitting={isSubmitting}
           isVerifyingPermission={isVerifyingPermission}
           initialData={initialData}
-          showPermissionWarning={showPermissionWarning}
+          showPermissionWarning={!hasPermissionToEdit && !!initialData?.id}
+          permissionError={permissionError}
         />
       </form>
-    </Form>
+    </div>
   );
 }

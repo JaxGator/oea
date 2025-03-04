@@ -7,6 +7,8 @@ import { Loader2 } from "lucide-react";
 import { useAuthState } from "@/hooks/useAuthState";
 import { Button } from "@/components/ui/button";
 import { usePermissions } from "@/hooks/usePermissions";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { toast } from "sonner";
 
 interface EventEditDialogProps {
   initialData: Event;
@@ -32,8 +34,9 @@ export function EventEditDialog({
   const [isClosing, setIsClosing] = useState(false);
   const [localShowDialog, setLocalShowDialog] = useState(showDialog);
   const { user, isAuthenticated } = useAuthState();
-  const { verifyPermission, isVerifying } = usePermissions();
+  const { verifyPermission, isVerifying, showPermissionDeniedToast } = usePermissions();
   const [hasValidPermission, setHasValidPermission] = useState(false);
+  const [permissionErrorMessage, setPermissionErrorMessage] = useState<string | null>(null);
   
   // Sync the local state with the parent state
   useEffect(() => {
@@ -47,6 +50,7 @@ export function EventEditDialog({
   useEffect(() => {
     const checkPermissions = async () => {
       if (!localShowDialog) return;
+      setPermissionErrorMessage(null);
       
       if (!initialData?.id) {
         // New event creation - permission granted
@@ -58,11 +62,21 @@ export function EventEditDialog({
       const hasPermission = await verifyPermission(
         'edit', 
         initialData.id, 
-        initialData.created_by
+        initialData.created_by,
+        { showFeedback: false } // Don't show toast here, we'll use inline message
       );
       
       // Apply force overrides if provided
       const effectivePermission = hasPermission || forceAdmin || forceCanManage;
+      
+      if (!effectivePermission) {
+        if (isPastEvent) {
+          setPermissionErrorMessage("Past events can only be edited by administrators");
+        } else {
+          setPermissionErrorMessage("You don't have permission to edit this event. Only admins, approved members, or the event creator can edit events.");
+        }
+      }
+      
       setHasValidPermission(effectivePermission);
     };
     
@@ -72,7 +86,8 @@ export function EventEditDialog({
     initialData, 
     verifyPermission, 
     forceAdmin, 
-    forceCanManage
+    forceCanManage,
+    isPastEvent
   ]);
 
   const handleSuccess = useCallback(() => {
@@ -87,9 +102,12 @@ export function EventEditDialog({
     
     // Force a page reload to ensure data is refreshed
     if (initialData?.id) {
+      toast.success("Event updated successfully");
       setTimeout(() => {
         window.location.reload();
       }, 500);
+    } else {
+      toast.success("Event created successfully");
     }
   }, [initialData?.id, onSuccess, setShowDialog]);
 
@@ -149,10 +167,12 @@ export function EventEditDialog({
     if (!isAuthenticated) {
       return (
         <div className="text-center py-6">
-          <p className="text-red-500">You must be logged in to edit events</p>
+          <Alert variant="destructive" className="mb-4">
+            <AlertDescription>You must be logged in to edit events</AlertDescription>
+          </Alert>
           <Button 
             onClick={() => window.location.href = '/auth'} 
-            className="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+            className="mt-4"
           >
             Sign In
           </Button>
@@ -162,16 +182,13 @@ export function EventEditDialog({
     
     // Check permissions only for existing events (editing)
     const needsPermissionCheck = initialData?.id;
-    const { getEffectivePermissions } = usePermissions();
-    const { isAdmin, canManageEvents } = getEffectivePermissions();
     
-    if (needsPermissionCheck && !hasValidPermission && !isAdmin && !canManageEvents) {
+    if (needsPermissionCheck && !hasValidPermission && permissionErrorMessage) {
       return (
         <div className="text-center py-6">
-          <p className="text-yellow-500">You don't have permission to edit this event</p>
-          <p className="text-sm text-gray-500 mt-2">
-            Only admins, approved members, or the event creator can edit this event.
-          </p>
+          <Alert variant="warning" className="mb-4">
+            <AlertDescription>{permissionErrorMessage}</AlertDescription>
+          </Alert>
         </div>
       );
     }
