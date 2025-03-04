@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import React, { useState } from "react";
 import { EventFormValues } from "../EventFormTypes";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -24,9 +24,9 @@ export function useFormState(initialData?: any) {
   // Generate form fields based on the structure of your form
   // This is a placeholder - you should replace with your actual form fields
   const formFields = (
-    <div>
+    <div className="space-y-4">
       {/* Your form fields would go here */}
-      {/* This is just a stub to fix the typing issue */}
+      <p className="text-gray-500 italic">Form fields placeholder</p>
     </div>
   );
 

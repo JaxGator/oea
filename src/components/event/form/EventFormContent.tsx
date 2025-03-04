@@ -1,6 +1,5 @@
 
 import { EventFormProps } from "../EventFormTypes";
-import { useForm } from "react-hook-form";
 import { EventFormSubmitButton } from "./EventFormSubmitButton";
 import { useEventFormSubmission } from "@/hooks/events/useEventFormSubmission";
 import { useFormState } from "./useFormState";
