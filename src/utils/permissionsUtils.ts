@@ -1,4 +1,3 @@
-
 /**
  * Checks if a user has permission to edit an event
  * @param userId The current user's ID
@@ -15,7 +14,11 @@ export function canEditEvent(
 ): boolean {
   if (!userId) return false;
   
-  return isAdmin || canManageEvents || createdBy === userId;
+  // If user is admin or can manage events, they should be able to edit any event
+  if (isAdmin || canManageEvents) return true;
+  
+  // Otherwise, check if the user created the event
+  return createdBy === userId;
 }
 
 /**
@@ -34,5 +37,9 @@ export function canDeleteEvent(
 ): boolean {
   if (!userId) return false;
   
-  return isAdmin || canManageEvents || createdBy === userId;
+  // If user is admin or can manage events, they should be able to delete any event
+  if (isAdmin || canManageEvents) return true;
+  
+  // Otherwise, check if the user created the event
+  return createdBy === userId;
 }

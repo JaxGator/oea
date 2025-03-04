@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { InfoIcon } from "lucide-react";
 import { useAuthState } from "@/hooks/useAuthState";
+import { canEditEvent } from "@/utils/permissionsUtils";
 
 interface EventEditDialogProps {
   initialData: Event;
@@ -27,20 +28,48 @@ export function EventEditDialog({
 }: EventEditDialogProps) {
   const [isClosing, setIsClosing] = useState(false);
   const [localShowDialog, setLocalShowDialog] = useState(showDialog);
-  const { user, isAuthenticated } = useAuthState();
+  const { user, isAuthenticated, isLoading } = useAuthState();
+  const [hasPermission, setHasPermission] = useState(false);
   
   // Sync the local state with the parent state
   useEffect(() => {
     setLocalShowDialog(showDialog);
   }, [showDialog]);
   
+  // Check permissions whenever auth state or dialog visibility changes
+  useEffect(() => {
+    if (user && initialData && localShowDialog) {
+      const isAdmin = user.is_admin || false;
+      const canManageEvents = isAdmin || user.is_approved;
+      const hasEditPermission = canEditEvent(user.id, isAdmin, canManageEvents, initialData.created_by || '');
+      
+      console.log("EventEditDialog - Permission check:", { 
+        userId: user.id,
+        eventCreator: initialData.created_by,
+        isAdmin,
+        canManageEvents,
+        hasPermission: hasEditPermission
+      });
+      
+      setHasPermission(hasEditPermission);
+      
+      if (!hasEditPermission) {
+        toast.error("You don't have permission to edit this event");
+        setLocalShowDialog(false);
+        setShowDialog(false);
+      }
+    }
+  }, [user, initialData, localShowDialog, setShowDialog]);
+
   console.log("EventEditDialog initialized with:", { 
     eventId: initialData?.id,
     eventTitle: initialData?.title,
     showDialog,
     localShowDialog,
     userId: user?.id,
-    isAuthenticated
+    isAuthenticated,
+    isLoading,
+    hasPermission
   });
 
   const handleSuccess = () => {
@@ -69,8 +98,14 @@ export function EventEditDialog({
     }
   };
 
-  // Check authentication first
+  // Don't render anything while loading authentication state
+  if (isLoading && localShowDialog) {
+    return null;
+  }
+
+  // Check authentication first - but only if the dialog should be shown
   if (!isAuthenticated && localShowDialog) {
+    console.log("EventEditDialog: User not authenticated");
     toast.error("You must be logged in to edit events");
     setLocalShowDialog(false);
     setShowDialog(false);

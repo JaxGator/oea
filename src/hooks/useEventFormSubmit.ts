@@ -16,6 +16,8 @@ export function useEventFormSubmit(onSuccess: () => void) {
       setIsSubmitting(true);
       
       if (!user?.id) {
+        console.error('User not authenticated');
+        toast.error('You must be logged in to save events');
         throw new Error('User not authenticated');
       }
       
@@ -41,6 +43,7 @@ export function useEventFormSubmit(onSuccess: () => void) {
             canManageEvents,
             eventCreator: initialData.created_by
           });
+          toast.error('You do not have permission to edit this event');
           throw new Error('You do not have permission to edit this event');
         }
         
@@ -60,6 +63,7 @@ export function useEventFormSubmit(onSuccess: () => void) {
       
       if (result.error) {
         console.error('Event save error:', result.error);
+        toast.error(result.error.message || 'Failed to save event');
         throw new Error(result.error.message || 'Failed to save event');
       }
       
@@ -74,7 +78,7 @@ export function useEventFormSubmit(onSuccess: () => void) {
       console.error('Event form submission error:', error);
       
       // Provide a more specific error message for permission issues
-      const errorMessage = error.message.includes('permission') 
+      const errorMessage = error.message?.includes('permission') 
         ? 'Permission denied: You do not have access to edit this event' 
         : error.message || 'Failed to save event. Please try again.';
       
