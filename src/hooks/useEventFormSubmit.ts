@@ -89,11 +89,14 @@ export function useEventFormSubmit(onSuccess: () => void) {
       if (!formData.location) throw new Error('Location is required');
       if (!formData.max_guests || formData.max_guests < 1) throw new Error('Maximum guests must be at least 1');
 
-      // Clean up the form data
+      // Clean up the form data - handle nullable fields properly
       const cleanedData = {
         ...formData,
+        description: formData.description || null,
         end_time: formData.end_time || null,
-        waitlist_capacity: formData.waitlist_enabled ? formData.waitlist_capacity : null
+        waitlist_capacity: formData.waitlist_enabled ? formData.waitlist_capacity : null,
+        latitude: formData.latitude || null,
+        longitude: formData.longitude || null
       };
 
       // Only geocode if location has changed
@@ -113,7 +116,7 @@ export function useEventFormSubmit(onSuccess: () => void) {
         end_time: cleanedData.end_time,
         location: cleanedData.location,
         max_guests: cleanedData.max_guests,
-        image_url: cleanedData.image_url,
+        image_url: cleanedData.image_url || "/lovable-uploads/609edf01-3169-439a-80f5-f6f15de7a5a6.png", // Ensure default image
         waitlist_enabled: cleanedData.waitlist_enabled,
         waitlist_capacity: cleanedData.waitlist_capacity,
         reminder_enabled: cleanedData.reminder_enabled,

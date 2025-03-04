@@ -25,7 +25,7 @@ export function EventForm({ onSuccess, initialData, isPastEvent, isWixEvent }: E
   
   const form = useForm<EventFormValues>({
     resolver: zodResolver(eventSchema),
-    mode: "onSubmit",
+    mode: "onBlur", // Change to onBlur to validate fields as user tabs away
     defaultValues: {
       title: initialData?.title || "",
       description: initialData?.description || "",
@@ -40,11 +40,10 @@ export function EventForm({ onSuccess, initialData, isPastEvent, isWixEvent }: E
       waitlist_enabled: initialData?.waitlist_enabled || false,
       waitlist_capacity: initialData?.waitlist_capacity || null,
       is_featured: initialData?.is_featured || false,
-      latitude: initialData?.latitude,
-      longitude: initialData?.longitude,
+      latitude: initialData?.latitude || null,
+      longitude: initialData?.longitude || null,
       created_by: initialData?.created_by || user?.id || "",
-    },
-    reValidateMode: "onSubmit"
+    }
   });
 
   // Make sure created_by is set when user loads
@@ -96,28 +95,11 @@ export function EventForm({ onSuccess, initialData, isPastEvent, isWixEvent }: E
     }
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      e.stopPropagation();
-    }
-  };
-
   return (
     <Form {...form}>
       <form 
-        onSubmit={(e) => {
-          e.preventDefault();
-          if (!localSubmitting && !isSubmitting) {
-            console.log('Form submission triggered');
-            form.handleSubmit(onSubmit)(e);
-          } else {
-            console.log('Ignoring submission - already in progress');
-          }
-        }}
+        onSubmit={form.handleSubmit(onSubmit)}
         className="space-y-4"
-        onKeyDown={handleKeyPress}
-        onKeyPress={handleKeyPress}
       >
         <EventBasicDetails form={form} />
         <EventScheduling form={form} disabled={isPastEvent} />

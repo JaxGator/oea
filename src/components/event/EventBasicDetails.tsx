@@ -62,7 +62,6 @@ export function EventBasicDetails({ form }: EventBasicDetailsProps) {
                 placeholder="Event title" 
                 {...field} 
                 value={field.value || ''}
-                onChange={(e) => field.onChange(e.target.value)}
               />
             </FormControl>
             <FormMessage />
@@ -85,7 +84,8 @@ export function EventBasicDetails({ form }: EventBasicDetailsProps) {
                   value={field.value || ''}
                   onChange={(content) => {
                     console.log('Quill content updated:', content);
-                    field.onChange(content);
+                    // Ensure we're not sending undefined to the form
+                    field.onChange(content === '' ? null : content);
                   }}
                   className="bg-white h-full"
                   style={{ minHeight: '250px' }}

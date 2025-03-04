@@ -13,6 +13,7 @@ import { EventForm } from "./event/EventForm";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { toast } from "sonner";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface CreateEventDialogProps {
   open?: boolean;
@@ -24,6 +25,7 @@ export function CreateEventDialog({ open, onOpenChange, onSuccess }: CreateEvent
   const [dialogOpen, setDialogOpen] = useState(open || false);
   const [canCreateEvents, setCanCreateEvents] = useState(false);
   const { toast: uiToast } = useToast();
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     setDialogOpen(open ?? false);
@@ -91,6 +93,10 @@ export function CreateEventDialog({ open, onOpenChange, onSuccess }: CreateEvent
     
     // Close the dialog
     handleOpenChange(false);
+    
+    // Invalidate queries to ensure fresh data
+    queryClient.invalidateQueries({ queryKey: ['events'] });
+    queryClient.invalidateQueries({ queryKey: ['featuredEvents'] });
     
     // Call the parent success handler
     if (onSuccess) {
