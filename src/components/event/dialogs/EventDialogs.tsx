@@ -4,6 +4,7 @@ import { EventCardDetailedView } from "@/components/event/card/EventCardDetailed
 import { EventEditDialog } from "@/components/event/EventEditDialog";
 import type { Event } from "@/types/event";
 import { useEffect } from "react";
+import { useAuthState } from "@/hooks/useAuthState";
 
 interface EventDialogsProps {
   event: Event;
@@ -48,21 +49,28 @@ export function EventDialogs({
   handleEditSuccess,
   isAuthenticated = false,
 }: EventDialogsProps) {
-  // Log dialog state for debugging
-  console.log("EventDialogs state:", {
-    eventId: event?.id,
-    showDetailsDialog,
-    showEditDialog,
-    isAuthenticated,
-    isAdmin,
-    canManageEvents,
-    createdBy: event?.created_by
-  });
+  const { user } = useAuthState();
+  
+  // Force isAdmin to be true if user has admin status in their profile
+  const effectiveIsAdmin = user?.is_admin === true || isAdmin === true;
+  const effectiveCanManage = effectiveIsAdmin || canManageEvents;
 
-  // Force re-render of edit dialog when admin status changes
+  // Log dialog state and admin status for debugging
   useEffect(() => {
-    console.log("Admin status in EventDialogs:", { isAdmin, canManageEvents });
-  }, [isAdmin, canManageEvents]);
+    console.log("EventDialogs state:", {
+      eventId: event?.id,
+      eventTitle: event?.title,
+      showDetailsDialog,
+      showEditDialog,
+      isAuthenticated,
+      userIsAdmin: user?.is_admin,
+      propsIsAdmin: isAdmin,
+      effectiveIsAdmin,
+      canManageEvents: effectiveCanManage,
+      createdBy: event?.created_by,
+      timestamp: new Date().toISOString()
+    });
+  }, [event, showDetailsDialog, showEditDialog, isAuthenticated, isAdmin, effectiveIsAdmin, effectiveCanManage, user?.is_admin]);
 
   return (
     <>
@@ -80,8 +88,8 @@ export function EventDialogs({
               rsvpCount={rsvpCount}
               attendeeNames={attendeeNames}
               userRSVPStatus={userRSVPStatus}
-              isAdmin={isAdmin}
-              canManageEvents={canManageEvents}
+              isAdmin={effectiveIsAdmin}
+              canManageEvents={effectiveCanManage}
               isPastEvent={isPastEvent}
               isWixEvent={isWixEvent}
               canAddGuests={canAddGuests}
@@ -108,6 +116,8 @@ export function EventDialogs({
         onSuccess={handleEditSuccess}
         isPastEvent={isPastEvent}
         isWixEvent={isWixEvent}
+        forceAdmin={effectiveIsAdmin}
+        forceCanManage={effectiveCanManage}
       />
     </>
   );

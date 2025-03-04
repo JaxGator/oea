@@ -1,3 +1,4 @@
+
 /**
  * Checks if a user has permission to edit an event
  * @param userId The current user's ID
@@ -12,21 +13,37 @@ export function canEditEvent(
   canManageEvents: boolean,
   createdBy: string
 ): boolean {
+  // More detailed logging for debugging
   console.log("Permission check for edit:", {
     userId,
     isAdmin,
     canManageEvents,
     createdBy,
-    hasPermission: isAdmin || canManageEvents || createdBy === userId
+    hasPermission: isAdmin || canManageEvents || createdBy === userId,
+    timestamp: new Date().toISOString()
   });
   
-  if (!userId) return false;
+  if (!userId) {
+    console.log("Edit permission denied: No user ID provided");
+    return false;
+  }
   
-  // Admin or users with event management permission can edit any event
-  if (isAdmin || canManageEvents) return true;
+  // Admin should always be able to edit any event
+  if (isAdmin) {
+    console.log("Edit permission granted: User is admin");
+    return true;
+  }
   
-  // Otherwise, check if the user created the event
-  return createdBy === userId;
+  // Users with event management permission can edit any event
+  if (canManageEvents) {
+    console.log("Edit permission granted: User can manage events");
+    return true;
+  }
+  
+  // Creator can edit their own events
+  const isCreator = createdBy === userId;
+  console.log(isCreator ? "Edit permission granted: User is event creator" : "Edit permission denied: User is not event creator");
+  return isCreator;
 }
 
 /**
@@ -43,11 +60,35 @@ export function canDeleteEvent(
   canManageEvents: boolean,
   createdBy: string
 ): boolean {
-  if (!userId) return false;
+  // More detailed logging for debugging
+  console.log("Permission check for delete:", {
+    userId,
+    isAdmin,
+    canManageEvents,
+    createdBy,
+    hasPermission: isAdmin || canManageEvents || createdBy === userId,
+    timestamp: new Date().toISOString()
+  });
   
-  // If user is admin or can manage events, they should be able to delete any event
-  if (isAdmin || canManageEvents) return true;
+  if (!userId) {
+    console.log("Delete permission denied: No user ID provided");
+    return false;
+  }
   
-  // Otherwise, check if the user created the event
-  return createdBy === userId;
+  // Admin should always be able to delete any event
+  if (isAdmin) {
+    console.log("Delete permission granted: User is admin");
+    return true;
+  }
+  
+  // Users with event management permission can delete any event
+  if (canManageEvents) {
+    console.log("Delete permission granted: User can manage events");
+    return true;
+  }
+  
+  // Creator can delete their own events
+  const isCreator = createdBy === userId;
+  console.log(isCreator ? "Delete permission granted: User is event creator" : "Delete permission denied: User is not event creator");
+  return isCreator;
 }

@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Edit, Trash2, ToggleLeft, ToggleRight } from "lucide-react";
 import { useAuthState } from "@/hooks/useAuthState";
 import { canEditEvent, canDeleteEvent } from "@/utils/permissionsUtils";
+import { useEffect } from "react";
 
 interface AdminActionsProps {
   isAdmin: boolean;
@@ -33,22 +34,42 @@ export function AdminActions({
 }: AdminActionsProps) {
   const { user } = useAuthState();
   
-  // Debug log the permission checks
-  if (user) {
-    console.log("AdminActions permissions:", {
-      userId: user.id,
-      eventCreator: createdBy,
-      isAdmin,
-      canManageEvents,
-      canEditResult: canEditEvent(user.id, isAdmin, canManageEvents, createdBy),
-      canDeleteResult: canDeleteEvent(user.id, isAdmin, canManageEvents, createdBy)
-    });
+  // Log auth state and permissions on mount and when they change
+  useEffect(() => {
+    if (user) {
+      console.log("AdminActions - Auth state:", {
+        userId: user?.id,
+        profileIsAdmin: user?.is_admin,
+        propsIsAdmin: isAdmin,
+        propsCanManageEvents: canManageEvents,
+        eventCreator: createdBy,
+        timestamp: new Date().toISOString()
+      });
+    }
+  }, [user, isAdmin, canManageEvents, createdBy]);
+  
+  // If no user, don't render anything
+  if (!user) {
+    console.log("AdminActions - No user found");
+    return null;
   }
   
-  if (!user) return null;
+  // Force isAdmin to be true if user.is_admin is true, regardless of prop
+  const effectiveIsAdmin = user.is_admin === true || isAdmin === true;
+  const effectiveCanManage = effectiveIsAdmin || canManageEvents;
   
-  const canEdit = canEditEvent(user.id, isAdmin, canManageEvents, createdBy);
-  const canDelete = canDeleteEvent(user.id, isAdmin, canManageEvents, createdBy);
+  // Calculate permissions with the effective admin status
+  const canEdit = canEditEvent(user.id, effectiveIsAdmin, effectiveCanManage, createdBy);
+  const canDelete = canDeleteEvent(user.id, effectiveIsAdmin, effectiveCanManage, createdBy);
+  
+  console.log("AdminActions - Final permissions:", {
+    userId: user.id,
+    effectiveIsAdmin,
+    effectiveCanManage,
+    canEdit,
+    canDelete,
+    timestamp: new Date().toISOString()
+  });
   
   return (
     <div className="flex flex-wrap items-center gap-2">

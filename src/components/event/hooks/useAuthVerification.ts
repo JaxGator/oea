@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -5,7 +6,11 @@ import { useAuthState } from "@/hooks/useAuthState";
 import { canEditEvent } from "@/utils/permissionsUtils";
 import type { Event } from "@/types/event";
 
-export function useAuthVerification(initialData: Event) {
+export function useAuthVerification(
+  initialData: Event, 
+  forceAdmin = false, 
+  forceCanManage = false
+) {
   const [verifyingAuth, setVerifyingAuth] = useState(true);
   const [checkedSessionData, setCheckedSessionData] = useState(false);
   const [hasValidPermission, setHasValidPermission] = useState(false);
@@ -15,6 +20,14 @@ export function useAuthVerification(initialData: Event) {
     try {
       console.log("Starting auth verification check for event:", initialData?.id);
       setVerifyingAuth(true);
+      
+      // If force admin or force can manage is true, grant permission immediately
+      if (forceAdmin || forceCanManage) {
+        console.log("Override detected: Admin status forced to true. Granting permission.");
+        setHasValidPermission(true);
+        setVerifyingAuth(false);
+        return true;
+      }
       
       // First check if the user object from useAuthState is available and has admin status
       if (user) {
@@ -124,7 +137,7 @@ export function useAuthVerification(initialData: Event) {
       setVerifyingAuth(false);
       return false;
     }
-  }, [initialData, user]);
+  }, [initialData, user, forceAdmin, forceCanManage]);
 
   // Run checks when component mounts or when user/initialData changes
   useEffect(() => {
@@ -132,7 +145,7 @@ export function useAuthVerification(initialData: Event) {
       console.log("Running auth check due to initialData or user change");
       checkAuthAndPermissions();
     }
-  }, [checkAuthAndPermissions, initialData, user?.id]);
+  }, [checkAuthAndPermissions, initialData, user?.id, forceAdmin, forceCanManage]);
 
   return {
     verifyingAuth,

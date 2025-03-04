@@ -15,6 +15,8 @@ interface EventEditDialogProps {
   onSuccess?: () => void;
   isPastEvent?: boolean;
   isWixEvent?: boolean;
+  forceAdmin?: boolean;
+  forceCanManage?: boolean;
 }
 
 export function EventEditDialog({ 
@@ -23,7 +25,9 @@ export function EventEditDialog({
   setShowDialog, 
   onSuccess,
   isPastEvent = false,
-  isWixEvent = false
+  isWixEvent = false,
+  forceAdmin = false,
+  forceCanManage = false
 }: EventEditDialogProps) {
   const [isClosing, setIsClosing] = useState(false);
   const [localShowDialog, setLocalShowDialog] = useState(showDialog);
@@ -32,7 +36,7 @@ export function EventEditDialog({
     verifyingAuth, 
     hasValidPermission, 
     checkAuthAndPermissions 
-  } = useAuthVerification(initialData);
+  } = useAuthVerification(initialData, forceAdmin, forceCanManage);
   
   // Sync the local state with the parent state
   useEffect(() => {
@@ -45,10 +49,13 @@ export function EventEditDialog({
   // Perform auth check whenever the dialog opens
   useEffect(() => {
     if (localShowDialog && initialData) {
-      console.log("Dialog opened, checking auth permissions");
+      console.log("Dialog opened, checking auth permissions with override:", { 
+        forceAdmin, 
+        forceCanManage 
+      });
       checkAuthAndPermissions();
     }
-  }, [localShowDialog, initialData, checkAuthAndPermissions]);
+  }, [localShowDialog, initialData, checkAuthAndPermissions, forceAdmin, forceCanManage]);
 
   console.log("EventEditDialog state:", { 
     eventId: initialData?.id,
@@ -56,10 +63,12 @@ export function EventEditDialog({
     showDialog,
     localShowDialog,
     userId: user?.id,
-    isAdmin: user?.is_admin,
+    isAdmin: user?.is_admin || forceAdmin,
     isAuthenticated,
     hasValidPermission,
-    verifyingAuth
+    verifyingAuth,
+    forceAdmin,
+    forceCanManage
   });
 
   const handleSuccess = useCallback(() => {
@@ -153,6 +162,7 @@ export function EventEditDialog({
               isPastEvent={isPastEvent}
               isWixEvent={isWixEvent}
               onSuccess={handleSuccess}
+              forceAdmin={forceAdmin}
             />
           </div>
         )}

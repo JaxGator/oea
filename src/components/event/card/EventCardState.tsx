@@ -7,6 +7,7 @@ import { useEventStateManager } from "@/hooks/events/useEventStateManager";
 import { useGuestListUpdates } from "@/hooks/events/useGuestListUpdates";
 import { useEffect } from "react";
 import { parseISO, set } from "date-fns";
+import { useAuthState } from "@/hooks/useAuthState";
 
 interface EventCardStateProps {
   event: Event;
@@ -47,10 +48,27 @@ export function EventCardState({
   children
 }: EventCardStateProps) {
   const { isAdmin, canManageEvents } = useAdminStatus();
+  const { user } = useAuthState();
   const { data: attendees = [] } = useEventRSVPData(event.id);
   const { data: guests = [], refetch: refetchGuests } = useEventGuestData(event.id, userRSVPStatus);
   
   useGuestListUpdates(event.id, refetchGuests);
+  
+  // Force isAdmin to true if the user profile has admin status
+  const effectiveIsAdmin = isAdmin || !!user?.is_admin;
+  const effectiveCanManage = effectiveIsAdmin || canManageEvents || !!(user?.is_approved);
+  
+  useEffect(() => {
+    console.log("EventCardState - Admin status:", {
+      hookIsAdmin: isAdmin,
+      userIsAdmin: user?.is_admin,
+      effectiveIsAdmin,
+      hookCanManage: canManageEvents,
+      userIsApproved: user?.is_approved,
+      effectiveCanManage,
+      timestamp: new Date().toISOString()
+    });
+  }, [isAdmin, user?.is_admin, effectiveIsAdmin, canManageEvents, user?.is_approved, effectiveCanManage]);
   
   const {
     showEditDialog,
@@ -88,7 +106,7 @@ export function EventCardState({
   });
   const isPastEvent = eventDateTime < now;
   const isWixEvent = !!event.imported_rsvp_count;
-  const canAddGuests = isAdmin || userRSVPStatus === 'attending';
+  const canAddGuests = effectiveIsAdmin || userRSVPStatus === 'attending';
 
   console.log('EventCardState - Event timing:', {
     eventDate: event.date,
@@ -99,8 +117,8 @@ export function EventCardState({
   });
 
   return children({
-    isAdmin,
-    canManageEvents,
+    isAdmin: effectiveIsAdmin,
+    canManageEvents: effectiveCanManage,
     rsvpData,
     attendees,
     guests,
