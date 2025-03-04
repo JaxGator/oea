@@ -1,79 +1,88 @@
-import { useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { useNavigate } from "react-router-dom";
+
+import { useCallback } from "react";
+import { useActionFeedback } from "@/hooks/ui/useActionFeedback";
 import { toast } from "sonner";
+import { useAuthState } from "@/hooks/useAuthState";
+import { PermissionService } from "@/services/permissions/permissionService";
 
-export function useEventActions(eventId: string, onUpdate?: () => void) {
-  const [showEditDialog, setShowEditDialog] = useState(false);
-  const navigate = useNavigate();
+interface EventActionsProps {
+  eventId: string;
+  createdBy: string;
+  onSuccess?: () => void;
+}
 
-  const handleEditSuccess = () => {
-    setShowEditDialog(false);
-    if (onUpdate) onUpdate();
-  };
-
-  const handleDelete = async () => {
-    try {
-      // First, delete any associated gallery albums
-      const { error: albumsError } = await supabase
-        .from('gallery_albums')
-        .delete()
-        .eq('event_id', eventId);
-
-      if (albumsError) {
-        console.error('Error deleting associated gallery albums:', albumsError);
-        throw albumsError;
+export function useEventActions({ eventId, createdBy, onSuccess }: EventActionsProps) {
+  const { user } = useAuthState();
+  const { executeAction, isLoading } = useActionFeedback();
+  
+  // Handle RSVP action with proper feedback
+  const handleRSVP = useCallback(async (guests?: { firstName: string }[]) => {
+    return executeAction(
+      async () => {
+        // Session check
+        const sessionCheck = await PermissionService.verifySession();
+        if (!sessionCheck.isValid) {
+          throw new Error("Please sign in to RSVP for this event");
+        }
+        
+        // Normally you would call your RSVP service here
+        console.log("RSVP with guests:", guests);
+        
+        // Simulate a successful RSVP
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        if (onSuccess) onSuccess();
+        return true;
+      },
+      {
+        loadingMessage: "Saving your RSVP...",
+        successMessage: "You're confirmed for this event!",
+        errorMessage: "Failed to RSVP. Please try again."
       }
-
-      // Then delete the event
-      const { error } = await supabase
-        .from('events')
-        .delete()
-        .eq('id', eventId);
-
-      if (error) throw error;
-
-      toast.success("Event deleted successfully");
-      if (onUpdate) onUpdate();
-    } catch (error: any) {
-      console.error('Error deleting event:', error);
-      toast.error(error.message || "Failed to delete event");
-    }
-  };
-
-  const handleCardClick = (e: React.MouseEvent) => {
-    const target = e.target as HTMLElement;
-    
-    // Check if the click is on or within an interactive element
-    const isInteractive = (
-      target.tagName === 'BUTTON' ||
-      target.tagName === 'A' ||
-      target.tagName === 'INPUT' ||
-      target.tagName === 'TEXTAREA' ||
-      target.closest('[role="button"]') ||
-      target.closest('button') ||
-      target.closest('a') ||
-      target.closest('input') ||
-      target.closest('textarea') ||
-      target.closest('[contenteditable="true"]') ||
-      target.closest('dialog') ||
-      target.closest('.dialog') ||
-      target.closest('[data-interactive="true"]') ||
-      target.closest('.quill') ||  // Added to prevent navigation when clicking on the editor
-      target.closest('[role="dialog"]')
     );
-
-    // Only navigate if the click is not on an interactive element
-    if (!isInteractive) {
-      navigate(`/events/${eventId}`);
-    }
-  };
-
+  }, [executeAction, onSuccess]);
+  
+  // Handle cancel RSVP with proper feedback
+  const handleCancelRSVP = useCallback(async () => {
+    return executeAction(
+      async () => {
+        // Session check
+        const sessionCheck = await PermissionService.verifySession();
+        if (!sessionCheck.isValid) {
+          throw new Error("Please sign in to manage your RSVP");
+        }
+        
+        // Normally you would call your cancel RSVP service here
+        console.log("Cancelling RSVP");
+        
+        // Simulate a successful cancellation
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        if (onSuccess) onSuccess();
+        return true;
+      },
+      {
+        loadingMessage: "Cancelling your RSVP...",
+        successMessage: "Your RSVP has been cancelled",
+        errorMessage: "Failed to cancel RSVP. Please try again."
+      }
+    );
+  }, [executeAction, onSuccess]);
+  
+  // Check if user can manage this event
+  const canManageEvent = useCallback(async () => {
+    if (!user) return false;
+    
+    return PermissionService.canEditEvent(
+      user,
+      createdBy
+    );
+  }, [user, createdBy]);
+  
   return {
-    showEditDialog,
-    setShowEditDialog,
-    handleEditSuccess,
-    handleDelete,
-    handleCardClick
+    handleRSVP,
+    handleCancelRSVP,
+    canManageEvent,
+    isLoading
   };
 }

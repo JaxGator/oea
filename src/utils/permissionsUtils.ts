@@ -1,4 +1,7 @@
 
+import { PermissionService } from "@/services/permissions/permissionService";
+import type { Profile } from "@/types/auth";
+
 /**
  * Checks if a user has permission to edit an event
  * @param userId The current user's ID
@@ -82,4 +85,31 @@ export function canDeleteEvent(
   const isCreator = createdBy === userId;
   console.log(isCreator ? "Delete permission granted: User is event creator" : "Delete permission denied: User is not event creator");
   return isCreator;
+}
+
+/**
+ * Helper function to check if a user is an administrator
+ * @param user User profile
+ * @returns Whether the user is an admin
+ */
+export function isAdministrator(user: Profile | null): boolean {
+  return !!user?.is_admin;
+}
+
+/**
+ * Helper function to check if a user is a member or approved user
+ * @param user User profile
+ * @returns Whether the user is a member or approved
+ */
+export function isMemberOrApproved(user: Profile | null): boolean {
+  return !!user?.is_member || !!user?.is_approved;
+}
+
+/**
+ * Helper function to check if a user can manage events
+ * @param user User profile
+ * @returns Whether the user can manage events
+ */
+export function canManageEvents(user: Profile | null): boolean {
+  return isAdministrator(user) || isMemberOrApproved(user);
 }

@@ -3,6 +3,7 @@ import { useState } from "react";
 import { RSVPActions } from "./actions/RSVPActions";
 import { AdminActions } from "./actions/AdminActions";
 import { EventDetailsActions } from "./actions/EventDetailsActions";
+import { useEventActions } from "@/hooks/events/useEventActions";
 
 interface EventActionsSectionProps {
   isAdmin: boolean;
@@ -58,6 +59,12 @@ export function EventActionsSection({
   isWixEvent = false
 }: EventActionsSectionProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  // Use our enhanced event actions hook for this event
+  const { isLoading: isActionLoading } = useEventActions({
+    eventId: event.id,
+    createdBy: event.created_by || ''
+  });
 
   const handleRSVP = async (guests?: { firstName: string }[]) => {
     setIsSubmitting(true);
@@ -94,7 +101,7 @@ export function EventActionsSection({
         canAddGuests={canAddGuests}
         isFullyBooked={isFullyBooked}
         isPastEvent={isPastEvent}
-        isSubmitting={isSubmitting}
+        isSubmitting={isSubmitting || isActionLoading}
         currentGuests={currentGuests}
         eventTitle={event.title}
         onRSVP={handleRSVP}

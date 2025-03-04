@@ -1,5 +1,7 @@
 
 import { Button } from "@/components/ui/button";
+import { Loader2 } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface EventFormSubmitButtonProps {
   isSubmitting: boolean;
@@ -12,15 +14,36 @@ export function EventFormSubmitButton({
   initialData, 
   showPermissionWarning 
 }: EventFormSubmitButtonProps) {
+  const buttonText = getButtonText(isSubmitting, initialData);
+  
   return (
-    <Button 
-      type="submit" 
-      className="w-full bg-[#0d97d1] hover:bg-[#0d97d1]/90"
-      disabled={isSubmitting || showPermissionWarning}
-    >
-      {isSubmitting ? 
-        (initialData ? "Updating Event..." : "Creating Event...") : 
-        (initialData ? "Update Event" : "Create Event")}
-    </Button>
+    <div className="space-y-4">
+      {showPermissionWarning && (
+        <Alert variant="destructive">
+          <AlertDescription>
+            You don't have permission to edit this event. Only admins, approved members, and the event creator can make changes.
+          </AlertDescription>
+        </Alert>
+      )}
+      
+      <Button 
+        type="submit" 
+        className="w-full bg-[#0d97d1] hover:bg-[#0d97d1]/90"
+        disabled={isSubmitting || showPermissionWarning}
+      >
+        {isSubmitting && (
+          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+        )}
+        {buttonText}
+      </Button>
+    </div>
   );
+}
+
+function getButtonText(isSubmitting: boolean, initialData?: any): string {
+  if (isSubmitting) {
+    return initialData ? "Updating Event..." : "Creating Event...";
+  } else {
+    return initialData ? "Update Event" : "Create Event";
+  }
 }
