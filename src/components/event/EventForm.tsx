@@ -17,11 +17,14 @@ import { useAdminStatus } from "@/hooks/events/useAdminStatus";
 import { useAuthState } from "@/hooks/useAuthState";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { InfoIcon } from "lucide-react";
 
 export function EventForm({ onSuccess, initialData, isPastEvent, isWixEvent }: EventFormProps) {
-  const { isAdmin, canManageEvents } = useAdminStatus();
+  const { isAdmin, canManageEvents, isLoading: checkingAdminStatus } = useAdminStatus();
   const { user } = useAuthState();
   const [localSubmitting, setLocalSubmitting] = useState(false);
+  const [hasPermissionToEdit, setHasPermissionToEdit] = useState(true);
   
   const form = useForm<EventFormValues>({
     resolver: zodResolver(eventSchema),
@@ -46,6 +49,25 @@ export function EventForm({ onSuccess, initialData, isPastEvent, isWixEvent }: E
     }
   });
 
+  // Check permissions for editing events
+  useEffect(() => {
+    if (initialData?.id && user?.id) {
+      const isCreator = initialData.created_by === user.id;
+      const canEdit = isAdmin || canManageEvents || isCreator;
+      
+      setHasPermissionToEdit(canEdit);
+      
+      if (!canEdit) {
+        console.warn("User does not have permission to edit this event", {
+          userId: user.id,
+          eventCreator: initialData.created_by,
+          isAdmin,
+          canManageEvents
+        });
+      }
+    }
+  }, [initialData, user, isAdmin, canManageEvents]);
+
   // Make sure created_by is set when user loads
   useEffect(() => {
     if (user?.id && !form.getValues('created_by')) {
@@ -59,6 +81,12 @@ export function EventForm({ onSuccess, initialData, isPastEvent, isWixEvent }: E
     if (!user?.id) {
       console.error('No user ID available');
       toast.error('You must be logged in to create an event');
+      return;
+    }
+    
+    // For editing events, check permissions first
+    if (initialData?.id && !hasPermissionToEdit) {
+      toast.error('You do not have permission to edit this event');
       return;
     }
     
@@ -89,11 +117,25 @@ export function EventForm({ onSuccess, initialData, isPastEvent, isWixEvent }: E
       await handleFormSubmit(eventData, initialData);
     } catch (error) {
       console.error('Form submission error:', error);
-      toast.error('Failed to save event. Please try again.');
     } finally {
       setLocalSubmitting(false);
     }
   };
+
+  // Show permission warning for edit operations
+  const showPermissionWarning = initialData?.id && !hasPermissionToEdit;
+
+  if (showPermissionWarning) {
+    return (
+      <Alert className="border-yellow-500 text-yellow-800 bg-yellow-50">
+        <InfoIcon className="h-4 w-4" />
+        <AlertDescription>
+          You do not have permission to edit this event. Only the event creator, administrators, 
+          or approved members can make changes.
+        </AlertDescription>
+      </Alert>
+    );
+  }
 
   return (
     <Form {...form}>
@@ -126,7 +168,7 @@ export function EventForm({ onSuccess, initialData, isPastEvent, isWixEvent }: E
         <Button 
           type="submit" 
           className="w-full bg-[#0d97d1] hover:bg-[#0d97d1]/90"
-          disabled={localSubmitting || isSubmitting}
+          disabled={localSubmitting || isSubmitting || showPermissionWarning}
         >
           {localSubmitting || isSubmitting ? 
             (initialData ? "Updating Event..." : "Creating Event...") : 

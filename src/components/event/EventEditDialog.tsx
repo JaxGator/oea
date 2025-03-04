@@ -3,6 +3,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { EventForm } from "@/components/event/EventForm";
 import type { Event } from "@/types/event";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { InfoIcon } from "lucide-react";
+import { useAuthState } from "@/hooks/useAuthState";
 
 interface EventEditDialogProps {
   initialData: Event;
@@ -23,6 +27,7 @@ export function EventEditDialog({
 }: EventEditDialogProps) {
   const [isClosing, setIsClosing] = useState(false);
   const [localShowDialog, setLocalShowDialog] = useState(showDialog);
+  const { user, isAuthenticated } = useAuthState();
   
   // Sync the local state with the parent state
   useEffect(() => {
@@ -33,7 +38,9 @@ export function EventEditDialog({
     eventId: initialData?.id,
     eventTitle: initialData?.title,
     showDialog,
-    localShowDialog
+    localShowDialog,
+    userId: user?.id,
+    isAuthenticated
   });
 
   const handleSuccess = () => {
@@ -61,6 +68,14 @@ export function EventEditDialog({
       setShowDialog(open);
     }
   };
+
+  // Check authentication first
+  if (!isAuthenticated && localShowDialog) {
+    toast.error("You must be logged in to edit events");
+    setLocalShowDialog(false);
+    setShowDialog(false);
+    return null;
+  }
 
   // Cleanup on unmount
   useEffect(() => {

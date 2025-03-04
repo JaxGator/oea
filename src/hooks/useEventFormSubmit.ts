@@ -33,11 +33,24 @@ export function useEventFormSubmit(onSuccess: () => void) {
         const isAdmin = user.is_admin || false;
         const canManageEvents = isAdmin || user.is_approved;
         
+        // Check permissions before attempting update
         if (!canEditEvent(user.id, isAdmin, canManageEvents, initialData.created_by)) {
+          console.error('Permission denied: user cannot edit this event', {
+            userId: user.id,
+            isAdmin,
+            canManageEvents,
+            eventCreator: initialData.created_by
+          });
           throw new Error('You do not have permission to edit this event');
         }
         
-        console.log(`Updating event with ID: ${initialData.id}`);
+        console.log(`Updating event with ID: ${initialData.id}`, {
+          userId: user.id,
+          isAdmin,
+          canManageEvents,
+          hasPermission: true
+        });
+        
         result = await updateEvent(initialData.id, cleanedData);
       } else {
         // This is a create operation
@@ -46,6 +59,7 @@ export function useEventFormSubmit(onSuccess: () => void) {
       }
       
       if (result.error) {
+        console.error('Event save error:', result.error);
         throw new Error(result.error.message || 'Failed to save event');
       }
       
@@ -58,7 +72,13 @@ export function useEventFormSubmit(onSuccess: () => void) {
       return result.data;
     } catch (error: any) {
       console.error('Event form submission error:', error);
-      toast.error(error.message || 'Failed to save event. Please try again.');
+      
+      // Provide a more specific error message for permission issues
+      const errorMessage = error.message.includes('permission') 
+        ? 'Permission denied: You do not have access to edit this event' 
+        : error.message || 'Failed to save event. Please try again.';
+      
+      toast.error(errorMessage);
       throw error;
     } finally {
       setIsSubmitting(false);

@@ -6,6 +6,7 @@ import { useAdminStatus } from "@/hooks/events/useAdminStatus";
 import { Input } from "@/components/ui/input";
 import { LocationSearchInput } from "./location/LocationSearchInput";
 import { LocationSuggestion } from "./location/types/location";
+import { toast } from "sonner";
 
 interface EventLocationCapacityProps {
   form: UseFormReturn<EventFormValues>;
@@ -22,24 +23,30 @@ export function EventLocationCapacity({
 
   const handleLocationSelect = (suggestion: LocationSuggestion) => {
     console.log("Location selected:", suggestion);
-    // Update form values silently without triggering validation or submission
-    form.setValue('location', suggestion.place_name, {
-      shouldValidate: false,
-      shouldDirty: true,
-      shouldTouch: false
-    });
     
-    form.setValue('latitude', suggestion.center[1], {
-      shouldValidate: false,
-      shouldDirty: true,
-      shouldTouch: false
-    });
-    
-    form.setValue('longitude', suggestion.center[0], {
-      shouldValidate: false,
-      shouldDirty: true,
-      shouldTouch: false
-    });
+    try {
+      // Update form values silently without triggering validation or submission
+      form.setValue('location', suggestion.place_name, {
+        shouldValidate: false,
+        shouldDirty: true,
+        shouldTouch: false
+      });
+      
+      form.setValue('latitude', suggestion.center[1], {
+        shouldValidate: false,
+        shouldDirty: true,
+        shouldTouch: false
+      });
+      
+      form.setValue('longitude', suggestion.center[0], {
+        shouldValidate: false,
+        shouldDirty: true,
+        shouldTouch: false
+      });
+    } catch (error) {
+      console.error("Error updating location data:", error);
+      toast.error("Failed to update location data");
+    }
   };
 
   return (
