@@ -2,7 +2,6 @@
 import { Event } from "@/types/event";
 import { EventLocationMap } from "./details/EventLocationMap";
 import { useEventLocations } from "@/hooks/useEventLocations";
-import { useMapboxToken } from "@/hooks/useMapboxToken";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AttendeeList } from "./details/AttendeeList";
 
@@ -11,11 +10,11 @@ interface EventDetailsProps {
 }
 
 export function EventDetails({ event }: EventDetailsProps) {
-  // Move all hooks to the top level - they must be called in the same order on every render
-  const { mapToken, isLoading: isTokenLoading, error: tokenError } = useMapboxToken();
+  // Get location data if available
   const locations = useEventLocations([event]);
   const location = locations?.[0];
-
+  
+  // Only try to display attendees if they exist in the event object
   const attendeeNames = event.rsvps
     ?.filter(rsvp => rsvp.response === 'attending' && rsvp.status === 'confirmed')
     .map(rsvp => ({
@@ -27,75 +26,38 @@ export function EventDetails({ event }: EventDetailsProps) {
       ...guests.map(guestName => `${guestName} (Guest of ${name})`)
     ]) || [];
 
-  // Render function to handle the loading state
-  const renderLoadingState = () => (
-    <div className="space-y-4">
-      <div className="space-y-2">
-        <h3 className="text-lg font-semibold">Location</h3>
-        <p className="text-gray-600">{event.location}</p>
-        <Skeleton className="h-[200px] w-full rounded-lg" />
-      </div>
-    </div>
-  );
+  console.log("EventDetails - Event data:", event);
+  console.log("EventDetails - Location data:", location);
 
-  // Render function to handle the error state
-  const renderErrorState = () => (
+  return (
     <div className="space-y-4">
       <div className="space-y-2">
         <h3 className="text-lg font-semibold">Location</h3>
         <p className="text-gray-600">{event.location}</p>
-        <div className="h-[200px] rounded-lg bg-gray-100 flex items-center justify-center">
-          <p className="text-gray-500">Unable to load map</p>
-        </div>
-      </div>
-    </div>
-  );
-
-  // Render function to handle missing location
-  const renderNoLocationState = () => (
-    <div className="space-y-4">
-      <div className="space-y-2">
-        <h3 className="text-lg font-semibold">Location</h3>
-        <p className="text-gray-600">{event.location}</p>
-        <div className="h-[200px] rounded-lg bg-gray-100 flex items-center justify-center">
-          <p className="text-gray-500">Location not available on map</p>
-        </div>
-      </div>
-    </div>
-  );
-
-  // Render function for the map
-  const renderMap = () => (
-    <div className="space-y-4">
-      <div className="space-y-2">
-        <h3 className="text-lg font-semibold">Location</h3>
-        <p className="text-gray-600">{event.location}</p>
-        <div className="h-[200px] rounded-lg overflow-hidden">
-          {location && (
+        
+        {location ? (
+          <div className="h-[200px] rounded-lg overflow-hidden">
             <EventLocationMap 
               location={event.location}
               lat={location.lat}
               lng={location.lng}
             />
-          )}
-        </div>
+          </div>
+        ) : (
+          <div className="h-[200px] rounded-lg bg-gray-100 flex items-center justify-center">
+            <p className="text-gray-500">Location map not available</p>
+          </div>
+        )}
       </div>
+      
+      {attendeeNames.length > 0 && (
+        <div className="space-y-2">
+          <h3 className="text-lg font-semibold">Attendees</h3>
+          <AttendeeList
+            attendeeNames={attendeeNames}
+          />
+        </div>
+      )}
     </div>
   );
-
-  // Determine which render function to use based on state
-  if (isTokenLoading) {
-    return renderLoadingState();
-  }
-
-  if (tokenError) {
-    console.error('Error loading map token:', tokenError);
-    return renderErrorState();
-  }
-
-  if (!location) {
-    return renderNoLocationState();
-  }
-
-  return renderMap();
 }

@@ -13,11 +13,19 @@ import { formatEventDate, formatEventTime } from "@/utils/dateUtils";
 export function PublicEventView() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+  
+  console.log("PublicEventView initialized with ID:", id);
 
   const { data: event, isLoading, error } = useQuery({
     queryKey: ['public-event', id],
     queryFn: async () => {
+      if (!id) {
+        toast.error("No event ID provided");
+        throw new Error('No event ID provided');
+      }
+      
+      console.log('Fetching public event data for ID:', id);
+
       const { data: eventData, error: eventError } = await supabase
         .from('events')
         .select('*')
@@ -27,26 +35,32 @@ export function PublicEventView() {
 
       if (eventError) {
         console.error('Error fetching event:', eventError);
+        toast.error("Error loading event");
         throw eventError;
       }
       
       if (!eventData) {
+        console.error('Event not found or not published:', id);
         toast.error("Event not found or not published");
         throw new Error('Event not found or not published');
       }
 
+      console.log('Successfully fetched public event data:', eventData);
       return eventData as Event;
     },
-    enabled: !!id
+    enabled: !!id,
+    staleTime: 0, // Always fetch fresh data
+    gcTime: 0     // Don't cache the data
   });
 
   if (error) {
+    console.error('Public event view error:', error);
     return (
       <div className="min-h-screen bg-[#222222] p-4">
         <div className="max-w-4xl mx-auto bg-white rounded-lg p-6">
           <Button
             variant="ghost"
-            className="text-white mb-4"
+            className="text-black mb-4"
             onClick={() => navigate('/')}
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
@@ -81,14 +95,14 @@ export function PublicEventView() {
         <div className="max-w-4xl mx-auto bg-white rounded-lg p-6">
           <Button
             variant="ghost"
-            className="text-white mb-4"
+            className="text-black mb-4"
             onClick={() => navigate('/')}
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Home
           </Button>
           <div className="text-center py-8">
-            <p>Event not found</p>
+            <p>Event not found or not published</p>
           </div>
         </div>
       </div>

@@ -1,98 +1,196 @@
-
-import { EventCardActions } from "../EventCardActions";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/components/ui/use-toast";
+import { useState } from "react";
+import { Edit, Trash2, ToggleLeft, ToggleRight, UserPlus, Loader2 } from "lucide-react";
+import { canEditEvent, canDeleteEvent } from "@/utils/permissionsUtils";
+import { useAuthState } from "@/hooks/useAuthState";
+import { EventShareMenu } from "@/components/event/share/EventShareMenu";
+import { EventGuestDialog } from "../../guests/EventGuestDialog";
 
 interface EventActionsSectionProps {
   isAdmin: boolean;
   canManageEvents: boolean;
   userRSVPStatus: string | null;
-  isPastEvent: boolean;
-  canAddGuests: boolean;
-  currentGuests: { firstName: string }[];
+  isFullyBooked: boolean;
+  canJoinWaitlist: boolean;
   onRSVP: (guests?: { firstName: string }[]) => void;
   onCancelRSVP: () => void;
-  onEdit: () => void;
-  onDelete: () => void;
-  showPublishToggle?: boolean;
-  isPublished?: boolean;
-  onViewDetails?: () => void;
+  onEdit?: () => void;
+  onDelete?: () => void;
   onTogglePublish?: () => void;
-  isAuthChecking?: boolean;
-  isFullyBooked?: boolean;
-  canJoinWaitlist?: boolean;
-  isWixEvent?: boolean;
-  requireAuth?: boolean;
-  event: { id: string; title: string; created_by?: string };
-  showDelete?: boolean;
-  isAuthenticated?: boolean;
+  isPastEvent: boolean;
+  isWixEvent: boolean;
+  isPublished: boolean;
+  showPublishToggle: boolean;
+  canAddGuests: boolean;
+  currentGuests?: { firstName: string }[];
+  event: {
+    id: string;
+    title: string;
+  };
+  isAuthenticated: boolean;
 }
 
 export function EventActionsSection({
   isAdmin,
   canManageEvents,
   userRSVPStatus,
-  isPastEvent,
-  canAddGuests,
-  currentGuests,
+  isFullyBooked,
+  canJoinWaitlist,
   onRSVP,
   onCancelRSVP,
   onEdit,
   onDelete,
-  showPublishToggle = false,
-  isPublished = true,
-  onViewDetails,
   onTogglePublish,
-  isAuthChecking = false,
-  isFullyBooked = false,
-  canJoinWaitlist = false,
-  isWixEvent = false,
-  requireAuth = false,
+  isPastEvent,
+  isWixEvent,
+  isPublished,
+  showPublishToggle,
+  canAddGuests,
+  currentGuests = [],
   event,
-  showDelete = false,
-  isAuthenticated = false
+  isAuthenticated
 }: EventActionsSectionProps) {
-  console.log('EventActionsSection - Admin status:', {
-    isAdmin,
-    canManageEvents,
-    isPastEvent,
-    showPublishToggle,
-    isWixEvent,
-    showDelete,
-    eventCreator: event.created_by
-  });
-  
-  if (isAuthChecking) {
-    return (
-      <div className="animate-pulse">
-        <div className="h-10 bg-gray-200 rounded w-24"></div>
-      </div>
-    );
-  }
+  const { toast } = useToast();
+  const { user } = useAuthState();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showGuestDialog, setShowGuestDialog] = useState(false);
+
+  const handleRSVP = async (guests?: { firstName: string }[]) => {
+    setIsSubmitting(true);
+    try {
+      await onRSVP(guests);
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Uh oh! Something went wrong.",
+        description: "There was a problem with your RSVP. Please try again.",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleCancelRSVP = async () => {
+    setIsSubmitting(true);
+    try {
+      await onCancelRSVP();
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Uh oh! Something went wrong.",
+        description: "Failed to cancel RSVP. Please try again.",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
-    <div className="mt-4">
-      <EventCardActions
-        isAdmin={isAdmin}
-        canManageEvents={canManageEvents}
-        userRSVPStatus={userRSVPStatus}
-        isPastEvent={isPastEvent}
-        canAddGuests={canAddGuests}
+    <div className="space-y-4">
+      {isAuthenticated ? (
+        <>
+          {userRSVPStatus === 'attending' ? (
+            <Button 
+              variant="destructive" 
+              onClick={handleCancelRSVP}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? (
+                <>
+                  Cancelling...
+                  <Loader2 className="ml-2 h-4 w-4 animate-spin" />
+                </>
+              ) : 'Cancel RSVP'}
+            </Button>
+          ) : (
+            <>
+              {canAddGuests && (
+                <Button onClick={() => setShowGuestDialog(true)}>
+                  RSVP with Guests
+                </Button>
+              )}
+              {!canAddGuests && (
+                <Button 
+                  onClick={handleRSVP} 
+                  disabled={isFullyBooked || isSubmitting}
+                >
+                  {isSubmitting ? (
+                    <>
+                      Reserving Spot...
+                      <Loader2 className="ml-2 h-4 w-4 animate-spin" />
+                    </>
+                  ) : (
+                    isFullyBooked ? 'Event Full' : 'RSVP'
+                  )}
+                </Button>
+              )}
+            </>
+          )}
+        </>
+      ) : (
+        <Button onClick={() => window.location.href = '/auth'}>
+          Sign In to RSVP
+        </Button>
+      )}
+      
+      <div className="flex flex-wrap items-center justify-between gap-2 mt-4">
+        <div className="flex flex-wrap items-center gap-2">
+          {(isAdmin || (user && canEditEvent(user.id, isAdmin, canManageEvents, user.id))) && !isWixEvent && (
+            <Button variant="outline" size="sm" onClick={onEdit} disabled={isPastEvent}>
+              <Edit className="h-4 w-4 mr-2" />
+              Edit
+            </Button>
+          )}
+          {(isAdmin || (user && canDeleteEvent(user.id, isAdmin, canManageEvents, user.id))) && !isWixEvent && (
+            <Button variant="destructive" size="sm" onClick={onDelete} disabled={isPastEvent}>
+              <Trash2 className="h-4 w-4 mr-2" />
+              Delete
+            </Button>
+          )}
+          {showPublishToggle && (
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={onTogglePublish}
+            >
+              {isPublished ? (
+                <>
+                  <ToggleRight className="h-4 w-4 mr-2" />
+                  Unpublish
+                </>
+              ) : (
+                <>
+                  <ToggleLeft className="h-4 w-4 mr-2" />
+                  Publish
+                </>
+              )}
+            </Button>
+          )}
+        </div>
+        
+        <div className="flex items-center gap-2">
+          {/* Add share button here */}
+          <EventShareMenu 
+            eventId={event.id} 
+            title={event.title} 
+          />
+          
+          {canAddGuests && (
+            <Button variant="outline" size="sm" onClick={() => setShowGuestDialog(true)}>
+              <UserPlus className="h-4 w-4 mr-2" />
+              Add Guests
+            </Button>
+          )}
+        </div>
+      </div>
+
+      <EventGuestDialog
+        open={showGuestDialog}
+        onOpenChange={setShowGuestDialog}
+        onSave={handleRSVP}
         currentGuests={currentGuests}
-        onRSVP={onRSVP}
-        onCancelRSVP={onCancelRSVP}
-        onEdit={onEdit}
-        onDelete={onDelete}
-        showPublishToggle={showPublishToggle}
-        isPublished={isPublished}
-        onViewDetails={onViewDetails}
-        onTogglePublish={onTogglePublish}
-        isAuthChecking={isAuthChecking}
-        isFullyBooked={isFullyBooked}
-        canJoinWaitlist={canJoinWaitlist}
-        isWixEvent={isWixEvent}
-        requireAuth={requireAuth}
-        event={event}
-        showDelete={showDelete}
-        isAuthenticated={isAuthenticated}
+        eventTitle={event.title}
       />
     </div>
   );
