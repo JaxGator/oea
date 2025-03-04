@@ -23,27 +23,30 @@ export function useAuthVerification(
       
       // If force admin or force can manage is true, grant permission immediately
       if (forceAdmin || forceCanManage) {
-        console.log("Override detected: Admin status forced to true. Granting permission.");
+        console.log("Override detected: Admin or management status forced to true. Granting permission.");
         setHasValidPermission(true);
         setVerifyingAuth(false);
         return true;
       }
       
-      // First check if the user object from useAuthState is available and has admin status
+      // First check if the user object from useAuthState is available and has admin or approval status
       if (user) {
         const isAdmin = !!user.is_admin;
-        const canManageEvents = isAdmin || !!user.is_approved;
+        // Updated: Consider both is_approved and is_member status for permission to manage events
+        const canManageEvents = isAdmin || !!user.is_approved || !!user.is_member;
         
         console.log("Auth from useAuthState:", { 
           userId: user.id, 
           isAdmin, 
+          isApproved: !!user.is_approved,
+          isMember: !!user.is_member,
           canManageEvents,
           eventCreator: initialData?.created_by || 'unknown'
         });
         
-        // If user is admin or can manage events, grant permission immediately
+        // If user is admin or can manage events (approved or member), grant permission immediately
         if (isAdmin || canManageEvents) {
-          console.log("Admin or manager detected, granting permission");
+          console.log("Admin, approved member, or member detected, granting permission");
           setHasValidPermission(true);
           setVerifyingAuth(false);
           return true;
@@ -88,21 +91,25 @@ export function useAuthVerification(
 
       // If we reach here, we need to do a full permission check
       if (user && user.id) {
-        // Recheck admin status directly from the profile
+        // Recheck admin and approval status directly from the profile
         const { data: profileData } = await supabase
           .from('profiles')
-          .select('is_admin, is_approved')
+          .select('is_admin, is_approved, is_member')
           .eq('id', user.id)
           .single();
         
         const isAdmin = profileData?.is_admin || user.is_admin || false;
         const isApproved = profileData?.is_approved || user.is_approved || false;
-        const canManageEvents = isAdmin || isApproved;
+        const isMember = profileData?.is_member || user.is_member || false;
+        
+        // Updated: Consider both is_approved and is_member for permission to manage events
+        const canManageEvents = isAdmin || isApproved || isMember;
         
         console.log("Profile data re-fetched:", {
           profileData,
           isAdmin,
           isApproved,
+          isMember,
           canManageEvents
         });
         
@@ -112,6 +119,8 @@ export function useAuthVerification(
           userId: user.id,
           eventCreator: initialData.created_by,
           isAdmin,
+          isApproved,
+          isMember,
           canManageEvents,
           hasPermission: hasEditPermission
         });

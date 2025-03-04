@@ -40,6 +40,8 @@ export function AdminActions({
       console.log("AdminActions - Auth state:", {
         userId: user?.id,
         profileIsAdmin: user?.is_admin,
+        profileIsApproved: user?.is_approved,
+        profileIsMember: user?.is_member,
         propsIsAdmin: isAdmin,
         propsCanManageEvents: canManageEvents,
         eventCreator: createdBy,
@@ -56,9 +58,12 @@ export function AdminActions({
   
   // Force isAdmin to be true if user.is_admin is true, regardless of prop
   const effectiveIsAdmin = user.is_admin === true || isAdmin === true;
-  const effectiveCanManage = effectiveIsAdmin || canManageEvents;
   
-  // Calculate permissions with the effective admin status
+  // Updated: Consider both admin status and the canManageEvents prop for permissions
+  // Any approved member (is_approved=true) or member (is_member=true) should be able to manage events
+  const effectiveCanManage = effectiveIsAdmin || canManageEvents || user.is_approved === true || user.is_member === true;
+  
+  // Calculate permissions with the effective admin and management status
   const canEdit = canEditEvent(user.id, effectiveIsAdmin, effectiveCanManage, createdBy);
   const canDelete = canDeleteEvent(user.id, effectiveIsAdmin, effectiveCanManage, createdBy);
   

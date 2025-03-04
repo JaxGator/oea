@@ -42,6 +42,7 @@ export function useEventFormSubmit(onSuccess: () => void) {
         userId: user?.id,
         isAdmin: user?.is_admin,
         isApproved: user?.is_approved,
+        isMember: user?.is_member,
         isLoading,
         checkedAuth,
         timestamp: new Date().toISOString()
@@ -76,6 +77,7 @@ export function useEventFormSubmit(onSuccess: () => void) {
         userId,
         isAdmin: user?.is_admin,
         isApproved: user?.is_approved,
+        isMember: user?.is_member,
         actionType: initialData?.id ? 'update' : 'create',
         sessionUserId: sessionData.session?.user?.id
       });
@@ -100,10 +102,20 @@ export function useEventFormSubmit(onSuccess: () => void) {
       if (initialData?.id) {
         // This is an update operation
         const isAdmin = (user?.is_admin || false);
-        const canManageEvents = isAdmin || (user?.is_approved || false);
+        // Updated: Consider both admin status, approved status, and member status
+        const canManageEvents = isAdmin || (user?.is_approved || false) || (user?.is_member || false);
         
         // Check permissions before attempting update
         const hasPermission = canEditEvent(userId, isAdmin, canManageEvents, initialData.created_by || '');
+        
+        // For debugging - log the permission check
+        console.log('Permission check for update operation:', {
+          userId,
+          isAdmin,
+          canManageEvents,
+          eventCreator: initialData.created_by,
+          hasPermission
+        });
         
         if (!hasPermission) {
           console.error('Permission denied: user cannot edit this event', {

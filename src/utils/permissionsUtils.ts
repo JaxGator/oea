@@ -36,6 +36,7 @@ export function canEditEvent(
   }
   
   // Users with event management permission can edit any event
+  // This includes approved members
   if (canManageEvents) {
     console.log("Edit permission granted: User can manage events");
     return true;
@@ -83,6 +84,7 @@ export function canDeleteEvent(
   }
   
   // Users with event management permission can delete any event
+  // This includes approved members
   if (canManageEvents) {
     console.log("Delete permission granted: User can manage events");
     return true;

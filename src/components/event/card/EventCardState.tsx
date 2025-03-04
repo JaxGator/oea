@@ -1,4 +1,3 @@
-
 import { Event } from "@/types/event";
 import { useEventRSVPData } from "@/hooks/events/useEventRSVPData";
 import { useEventGuestData } from "@/hooks/events/useEventGuestData";
@@ -56,7 +55,10 @@ export function EventCardState({
   
   // Force isAdmin to true if the user profile has admin status
   const effectiveIsAdmin = isAdmin || !!user?.is_admin;
-  const effectiveCanManage = effectiveIsAdmin || canManageEvents || !!(user?.is_approved);
+  
+  // Update: Ensure that approved members can manage events (not just admins)
+  // If user is approved or a member, they can manage events
+  const effectiveCanManage = effectiveIsAdmin || canManageEvents || !!(user?.is_approved) || !!(user?.is_member);
   
   useEffect(() => {
     console.log("EventCardState - Admin status:", {
@@ -65,10 +67,11 @@ export function EventCardState({
       effectiveIsAdmin,
       hookCanManage: canManageEvents,
       userIsApproved: user?.is_approved,
+      userIsMember: user?.is_member,
       effectiveCanManage,
       timestamp: new Date().toISOString()
     });
-  }, [isAdmin, user?.is_admin, effectiveIsAdmin, canManageEvents, user?.is_approved, effectiveCanManage]);
+  }, [isAdmin, user?.is_admin, effectiveIsAdmin, canManageEvents, user?.is_approved, user?.is_member, effectiveCanManage]);
   
   const {
     showEditDialog,
@@ -106,7 +109,9 @@ export function EventCardState({
   });
   const isPastEvent = eventDateTime < now;
   const isWixEvent = !!event.imported_rsvp_count;
-  const canAddGuests = effectiveIsAdmin || userRSVPStatus === 'attending';
+  
+  // Update: Allow admins, approved members, and the event creator to add guests
+  const canAddGuests = effectiveIsAdmin || effectiveCanManage || userRSVPStatus === 'attending';
 
   console.log('EventCardState - Event timing:', {
     eventDate: event.date,
