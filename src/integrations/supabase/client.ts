@@ -13,9 +13,11 @@ const logError = (message: string, ...args: any[]) => {
   console.error(`${message} [${new Date().toISOString()}]`, ...args);
 };
 
+let supabaseClient;
+
 try {
-  // Export the Supabase client with enhanced configuration
-  export const supabase = createClient<Database>(
+  // Create the Supabase client with enhanced configuration
+  supabaseClient = createClient<Database>(
     SUPABASE_URL,
     SUPABASE_ANON_KEY,
     {
@@ -46,11 +48,14 @@ try {
   logError('Failed to initialize Supabase client:', error);
   
   // Still provide a fallback client to prevent app from completely crashing
-  export const supabase = createClient<Database>(
+  supabaseClient = createClient<Database>(
     SUPABASE_URL,
     SUPABASE_ANON_KEY
   );
 }
+
+// Export the client
+export const supabase = supabaseClient;
 
 // Enhanced connection test with detailed logging
 export const testSupabaseConnection = async () => {
