@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useEventFormSubmit } from "@/hooks/useEventFormSubmit";
 import type { Profile } from "@/types/auth";
-import { usePermissions } from "@/hooks/usePermissions";
+import { usePermissionStore } from "@/hooks/auth/usePermissionStore";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface FormSubmissionProps {
@@ -28,10 +28,11 @@ export function useEventFormSubmission({
   const [localSubmitting, setLocalSubmitting] = useState(false);
   const [permissionError, setPermissionError] = useState<string | null>(null);
   const { handleSubmit: handleFormSubmit, isSubmitting } = useEventFormSubmit(onSuccess);
-  const { getEffectivePermissions } = usePermissions();
+  const { getEffectivePermissions } = usePermissionStore();
   
-  // Get synchronous permissions
-  const { isAdmin, canManageEvents } = getEffectivePermissions();
+  // Get synchronous permissions from the central store
+  const effectivePermissions = getEffectivePermissions();
+  const { isAdmin, canManageEvents } = effectivePermissions;
   
   // Apply force overrides
   const effectiveIsAdmin = isAdmin || !!forceAdmin;

@@ -5,17 +5,19 @@ import { useAuthState } from "@/hooks/useAuthState";
 import { usePermissions } from "@/hooks/usePermissions";
 import { useEffect, useState } from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { usePermissionStore } from "@/hooks/auth/usePermissionStore";
 
 export function EventFormWrapper(props: EventFormProps) {
   const { user } = useAuthState();
   const { initialData, forceAdmin, forceCanManage } = props;
-  const { getEffectivePermissions } = usePermissions();
+  const { getEffectivePermissions } = usePermissionStore();
   const [hasValidPermission, setHasValidPermission] = useState<boolean>(false);
   const [permissionChecked, setPermissionChecked] = useState<boolean>(false);
   const [isVerifyingPermissions, setIsVerifyingPermissions] = useState<boolean>(false);
   
-  // Get effective permissions synchronously
-  const { isAdmin, canManageEvents } = getEffectivePermissions();
+  // Get effective permissions synchronously from the centralized store
+  const effectivePermissions = getEffectivePermissions();
+  const { isAdmin, canManageEvents } = effectivePermissions;
   
   // Perform permission check when component mounts
   useEffect(() => {

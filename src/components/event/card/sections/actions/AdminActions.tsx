@@ -43,8 +43,8 @@ export function AdminActions({
   const { isAdmin, canManageEvents } = getEffectivePermissions();
   
   // If user is admin or can manage events, they can perform any action
-  const effectiveCanEdit = isAdmin || canManageEvents || createdBy === (getEffectivePermissions().user?.id || "");
-  const effectiveCanDelete = isAdmin || canManageEvents || createdBy === (getEffectivePermissions().user?.id || "");
+  const effectiveCanEdit = isAdmin || canManageEvents || createdBy === getEffectivePermissions().userId;
+  const effectiveCanDelete = isAdmin || canManageEvents || createdBy === getEffectivePermissions().userId;
   const effectiveCanManage = isAdmin || canManageEvents;
 
   // Handle edit with feedback
