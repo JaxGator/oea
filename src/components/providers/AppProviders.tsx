@@ -32,28 +32,18 @@ const queryClient = new QueryClient({
 });
 
 // Set up global error handling for query cache
-queryClient.getQueryCache().subscribe({
-  onSuccess: undefined,
-  onSettled: undefined,
-  onMutate: undefined,
-  onChange: (event) => {
-    if (event.type === 'error' && event.error) {
-      console.error('Query cache error:', event.error);
-      toast.error('Failed to load data. Please try refreshing.');
-    }
+queryClient.getQueryCache().subscribe(event => {
+  if (event.type === 'error' && event.error) {
+    console.error('Query cache error:', event.error);
+    toast.error('Failed to load data. Please try refreshing.');
   }
 });
 
 // Set up global error handling for mutation cache
-queryClient.getMutationCache().subscribe({
-  onSuccess: undefined,
-  onSettled: undefined,
-  onMutate: undefined,
-  onChange: (event) => {
-    if (event.type === 'error' && event.error) {
-      console.error('Mutation cache error:', event.error);
-      toast.error('An operation failed. Please try again.');
-    }
+queryClient.getMutationCache().subscribe(event => {
+  if (event.type === 'error' && event.error) {
+    console.error('Mutation cache error:', event.error);
+    toast.error('An operation failed. Please try again.');
   }
 });
 
