@@ -22,7 +22,7 @@ const queryClient = new QueryClient({
       staleTime: 1000 * 60 * 5, // 5 minutes
     },
     mutations: {
-      // Handle mutation errors globally
+      // Handle mutation errors globally through the onError option
       onError: (error) => {
         console.error('Global mutation error:', error);
         toast.error('An operation failed. Please try again.');
@@ -33,7 +33,7 @@ const queryClient = new QueryClient({
 
 // Set up global error handling for query cache
 queryClient.getQueryCache().subscribe((event) => {
-  if (event.type === 'removed' && event.query.state.status === 'error') {
+  if (event.query?.state.status === 'error') {
     console.error('Query cache error:', event.query.state.error);
     toast.error('Failed to load data. Please try refreshing.');
   }
@@ -41,7 +41,7 @@ queryClient.getQueryCache().subscribe((event) => {
 
 // Set up global error handling for mutation cache
 queryClient.getMutationCache().subscribe((event) => {
-  if (event.type === 'removed' && event.mutation.state.status === 'error') {
+  if (event.mutation?.state.status === 'error') {
     console.error('Mutation cache error:', event.mutation.state.error);
     toast.error('An operation failed. Please try again.');
   }
