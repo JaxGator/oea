@@ -28,7 +28,8 @@ export const PermissionContext = createContext<PermissionContextType>({
     canDelete: false,
     canManage: false,
     isAdmin: false,
-    canManageEvents: false
+    canManageEvents: false,
+    userId: undefined
   }),
   invalidateCache: () => {},
   isAdmin: false,

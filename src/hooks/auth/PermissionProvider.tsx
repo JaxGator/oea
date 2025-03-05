@@ -12,6 +12,17 @@ export function PermissionProvider({ children }: PermissionProviderProps) {
   const { profile, isLoading } = useAuthState();
   const [cacheBuster, setCacheBuster] = useState(0);
 
+  // Log auth state to debug
+  useEffect(() => {
+    console.log("PermissionProvider: Auth state:", {
+      hasProfile: !!profile,
+      profileId: profile?.id,
+      isAdmin: profile?.is_admin,
+      isApproved: profile?.is_approved,
+      isLoading
+    });
+  }, [profile, isLoading]);
+
   const isAdmin = !!profile?.is_admin;
   const isMember = !!profile?.is_member;
   const isApproved = !!profile?.is_approved;

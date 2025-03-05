@@ -21,6 +21,8 @@ const queryClient = new QueryClient({
 });
 
 export function AppProviders({ children }: AppProvidersProps) {
+  console.log('Rendering AppProviders...');
+  
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider
@@ -31,7 +33,9 @@ export function AppProviders({ children }: AppProvidersProps) {
       >
         <PermissionProvider>
           <NotificationProvider>
-            <StreamChatProvider>{children}</StreamChatProvider>
+            <StreamChatProvider>
+              {children}
+            </StreamChatProvider>
           </NotificationProvider>
         </PermissionProvider>
       </ThemeProvider>
