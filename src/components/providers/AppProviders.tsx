@@ -18,17 +18,21 @@ const queryClient = new QueryClient({
     queries: {
       refetchOnWindowFocus: false,
       retry: 1,
-      onError: (error) => {
-        console.error('Query error:', error);
-      }
+      gcTime: 1000 * 60 * 60 * 24, // 24 hours
+      staleTime: 1000 * 60 * 5, // 5 minutes
     },
-    mutations: {
-      onError: (error) => {
-        console.error('Mutation error:', error);
-        toast.error('An operation failed. Please try again.');
-      }
+  },
+  queryCache: {
+    onError: (error) => {
+      console.error('Query cache error:', error);
     }
   },
+  mutationCache: {
+    onError: (error) => {
+      console.error('Mutation cache error:', error);
+      toast.error('An operation failed. Please try again.');
+    }
+  }
 });
 
 export function AppProviders({ children }: AppProvidersProps) {
