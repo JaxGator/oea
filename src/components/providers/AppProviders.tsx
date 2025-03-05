@@ -24,18 +24,24 @@ const queryClient = new QueryClient({
   },
 });
 
-// Set up error handlers using the correct subscription pattern for React Query v5+
-queryClient.getQueryCache().subscribe({
-  onError: (error) => {
-    console.error('Query cache error:', error);
-  }
+// Set up error handlers using the correct event subscription format for React Query v5+
+queryClient.getQueryCache().subscribe(() => {
+  console.log('Query cache subscription active');
+  return {
+    onError: (error: unknown) => {
+      console.error('Query cache error:', error);
+    }
+  };
 });
 
-queryClient.getMutationCache().subscribe({
-  onError: (error) => {
-    console.error('Mutation cache error:', error);
-    toast.error('An operation failed. Please try again.');
-  }
+queryClient.getMutationCache().subscribe(() => {
+  console.log('Mutation cache subscription active');
+  return {
+    onError: (error: unknown) => {
+      console.error('Mutation cache error:', error);
+      toast.error('An operation failed. Please try again.');
+    }
+  };
 });
 
 export function AppProviders({ children }: AppProvidersProps) {
