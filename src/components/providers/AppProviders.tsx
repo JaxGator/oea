@@ -31,18 +31,29 @@ const queryClient = new QueryClient({
   },
 });
 
-// Set up global query error handler using onError option instead of direct subscription
+// Set up global error handling for query cache
 queryClient.getQueryCache().subscribe({
-  onError: (error) => {
-    console.error('Query cache error:', error);
-    toast.error('Failed to load data. Please try refreshing.');
+  onSuccess: undefined,
+  onSettled: undefined,
+  onMutate: undefined,
+  onChange: (event) => {
+    if (event.type === 'error' && event.error) {
+      console.error('Query cache error:', event.error);
+      toast.error('Failed to load data. Please try refreshing.');
+    }
   }
 });
 
+// Set up global error handling for mutation cache
 queryClient.getMutationCache().subscribe({
-  onError: (error) => {
-    console.error('Mutation cache error:', error);
-    toast.error('An operation failed. Please try again.');
+  onSuccess: undefined,
+  onSettled: undefined,
+  onMutate: undefined,
+  onChange: (event) => {
+    if (event.type === 'error' && event.error) {
+      console.error('Mutation cache error:', event.error);
+      toast.error('An operation failed. Please try again.');
+    }
   }
 });
 
