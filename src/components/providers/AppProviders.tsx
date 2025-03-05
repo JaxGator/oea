@@ -22,17 +22,20 @@ const queryClient = new QueryClient({
       staleTime: 1000 * 60 * 5, // 5 minutes
     },
   },
-  queryCache: {
-    onError: (error) => {
-      console.error('Query cache error:', error);
-    }
+});
+
+// Set up error handlers
+queryClient.getQueryCache().subscribe({
+  onError: (error) => {
+    console.error('Query cache error:', error);
   },
-  mutationCache: {
-    onError: (error) => {
-      console.error('Mutation cache error:', error);
-      toast.error('An operation failed. Please try again.');
-    }
-  }
+});
+
+queryClient.getMutationCache().subscribe({
+  onError: (error) => {
+    console.error('Mutation cache error:', error);
+    toast.error('An operation failed. Please try again.');
+  },
 });
 
 export function AppProviders({ children }: AppProvidersProps) {
