@@ -1,39 +1,35 @@
 
 import { createContext } from 'react';
 
-interface PermissionState {
+export interface PermissionContextType {
+  isVerifying: boolean;
+  checkPermission: (type: 'edit' | 'delete' | 'manage' | 'admin', entityId?: string, createdBy?: string) => boolean;
+  getEffectivePermissions: (entityId?: string, createdBy?: string) => {
+    canEdit: boolean;
+    canDelete: boolean;
+    canManage: boolean;
+    isAdmin: boolean;
+  };
+  invalidateCache: () => void;
   isAdmin: boolean;
-  canManageEvents: boolean;
   isMember: boolean;
   isApproved: boolean;
-  isAuthenticated: boolean;
-  userId: string | null;
-  permissionCache: Record<string, boolean>;
+  canManageEvents: boolean;
 }
 
-export type PermissionType = 'edit' | 'delete' | 'manage' | 'admin';
-
-export interface PermissionContextValue extends PermissionState {
-  isVerifying: boolean;
-  checkPermission: (type: PermissionType, entityId?: string, createdBy?: string, showFeedback?: boolean) => Promise<boolean>;
-  invalidateCache: () => void;
-  getEffectivePermissions: () => PermissionState;
-}
-
-export const initialPermissionState: PermissionState = {
+// Create the context with a default value
+export const PermissionContext = createContext<PermissionContextType>({
+  isVerifying: true,
+  checkPermission: () => false,
+  getEffectivePermissions: () => ({
+    canEdit: false,
+    canDelete: false,
+    canManage: false,
+    isAdmin: false
+  }),
+  invalidateCache: () => {},
   isAdmin: false,
-  canManageEvents: false,
   isMember: false,
   isApproved: false,
-  isAuthenticated: false,
-  userId: null,
-  permissionCache: {}
-};
-
-export const PermissionContext = createContext<PermissionContextValue>({
-  ...initialPermissionState,
-  isVerifying: false,
-  checkPermission: async () => false,
-  invalidateCache: () => {},
-  getEffectivePermissions: () => initialPermissionState,
+  canManageEvents: false
 });

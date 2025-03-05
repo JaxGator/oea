@@ -1,49 +1,47 @@
 
-import { useCallback, useState } from "react";
-import { useAuthState } from "@/hooks/useAuthState";
-import { PermissionService } from "@/services/permissions/permissionService";
-import { usePermissions } from "@/hooks/usePermissions";
+import { useState, useEffect } from 'react';
+import { PermissionService } from '@/services/permissions/permissionService';
 
-export const useEventPermissions = (eventId?: string, createdBy?: string) => {
-  const { user } = useAuthState();
-  const [canEditEvent, setCanEditEvent] = useState<boolean | null>(null);
-  const [canDeleteEvent, setCanDeleteEvent] = useState<boolean | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const { getEffectivePermissions } = usePermissions();
+export function useEventPermissions(eventId?: string, createdBy?: string, user?: any) {
+  const [canEditEvent, setCanEditEvent] = useState<boolean>(false);
+  const [canDeleteEvent, setCanDeleteEvent] = useState<boolean>(false);
+  const [canManageEvent, setCanManageEvent] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [error, setError] = useState<Error | null>(null);
 
-  // Get effective permissions synchronously
-  const { isAdmin, canManageEvents } = getEffectivePermissions();
+  useEffect(() => {
+    if (!user) {
+      setIsLoading(false);
+      return;
+    }
 
-  const checkPermissions = useCallback(async () => {
     setIsLoading(true);
+    setError(null);
 
     try {
       // Check if the user can edit this event
       if (eventId && createdBy) {
         const canEdit = PermissionService.hasPermission(user, 'edit', eventId, createdBy);
         const canDelete = PermissionService.hasPermission(user, 'delete', eventId, createdBy);
+        const canManage = PermissionService.hasPermission(user, 'manage', eventId, createdBy);
 
         setCanEditEvent(canEdit);
         setCanDeleteEvent(canDelete);
-      } else {
-        setCanEditEvent(false);
-        setCanDeleteEvent(false);
+        setCanManageEvent(canManage);
       }
-    } catch (error) {
-      console.error("Error checking event permissions:", error);
-      setCanEditEvent(false);
-      setCanDeleteEvent(false);
+    } catch (err) {
+      console.error('Error checking permissions:', err);
+      setError(err instanceof Error ? err : new Error('Unknown error checking permissions'));
     } finally {
       setIsLoading(false);
     }
-  }, [user, eventId, createdBy]);
+  }, [eventId, createdBy, user]);
 
   return {
+    canEditEvent,
+    canDeleteEvent,
+    canManageEvent,
     isLoading,
-    checkPermissions,
-    canEditEvent: canEditEvent ?? false,
-    canDeleteEvent: canDeleteEvent ?? false,
-    isAdmin,
-    canManageEvents,
+    error
   };
-};
+}

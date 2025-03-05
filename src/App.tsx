@@ -34,9 +34,12 @@ const ErrorFallback = () => (
 );
 
 const App = () => {
+  console.log('App rendering - initializing routes');
+  
   return (
     <ErrorBoundary fallback={ErrorFallback}>
       <AppProviders>
+        {console.log('AppProviders rendered successfully')}
         <Routes>
           <Route path="/auth" element={<Auth />} />
           <Route element={<AppLayout />}>
