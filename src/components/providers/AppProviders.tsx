@@ -12,14 +12,14 @@ interface AppProvidersProps {
   children: React.ReactNode;
 }
 
-// Create a new query client instance
+// Create a fresh query client instance each time to avoid stale state issues
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       refetchOnWindowFocus: false,
-      retry: 1,
-      gcTime: 1000 * 60 * 60 * 24, // 24 hours
-      staleTime: 1000 * 60 * 5, // 5 minutes
+      retry: false, // Disable retries to prevent infinite loading states
+      gcTime: 1000 * 60 * 5, // 5 minutes - reduced from 24 hours
+      staleTime: 1000 * 60, // 1 minute - reduced from 5 minutes
     },
   },
 });
@@ -30,70 +30,51 @@ export function AppProviders({ children }: AppProvidersProps) {
   useEffect(() => {
     console.log('AppProviders mounted');
     
-    // Set up global error handling for query cache without filtering by specific event types
-    const unsubscribeQuery = queryClient.getQueryCache().subscribe(event => {
-      if (event.query.state.status === 'error') {
-        console.error('Query error detected:', event.query.state.error);
+    // Simpler error handling approach
+    const unsubscribeQuery = queryClient.getQueryCache().subscribe(() => {
+      const queries = queryClient.getQueryCache().findAll({ predicate: query => query.state.status === 'error' });
+      if (queries.length > 0) {
+        console.error('Query errors detected:', queries.map(q => q.state.error));
         toast.error('Failed to load data. Please try refreshing.');
       }
     });
     
-    // Set up global error handling for mutation cache without filtering by specific event types
-    const unsubscribeMutation = queryClient.getMutationCache().subscribe(event => {
-      if (event.mutation.state.status === 'error') {
-        console.error('Mutation error detected:', event.mutation.state.error);
+    const unsubscribeMutation = queryClient.getMutationCache().subscribe(() => {
+      const mutations = queryClient.getMutationCache().getAll().filter(mutation => mutation.state.status === 'error');
+      if (mutations.length > 0) {
+        console.error('Mutation errors detected:', mutations.map(m => m.state.error));
         toast.error('An operation failed. Please try again.');
       }
     });
     
     return () => {
-      console.log('AppProviders unmounted');
+      console.log('AppProviders unmounted - cleaning up subscriptions');
       unsubscribeQuery();
       unsubscribeMutation();
     };
   }, []);
   
-  // Wrap each provider in its own error boundary
+  // Simplify provider nesting to reduce potential points of failure
   return (
     <ErrorBoundary 
-      fallback={<div className="p-4 text-red-500">Query client provider error</div>}
-      onError={(error) => console.error("QueryClientProvider error:", error)}
+      fallback={<div className="p-4 text-red-500">Application failed to load. Please refresh the page.</div>}
+      onError={(error) => console.error("Root error boundary caught:", error)}
     >
       <QueryClientProvider client={queryClient}>
-        <ErrorBoundary 
-          fallback={<div className="p-4 text-red-500">Theme provider error</div>}
-          onError={(error) => console.error("ThemeProvider error:", error)}
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
         >
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange
-          >
-            <ErrorBoundary 
-              fallback={<div className="p-4 text-red-500">Permission provider error</div>}
-              onError={(error) => console.error("PermissionProvider error:", error)}
-            >
-              <PermissionProvider>
-                <ErrorBoundary 
-                  fallback={<div className="p-4 text-red-500">Notification provider error</div>}
-                  onError={(error) => console.error("NotificationProvider error:", error)}
-                >
-                  <NotificationProvider>
-                    <ErrorBoundary 
-                      fallback={<div className="p-4 text-red-500">Chat provider error</div>}
-                      onError={(error) => console.error("StreamChatProvider error:", error)}
-                    >
-                      <StreamChatProvider>
-                        {children}
-                      </StreamChatProvider>
-                    </ErrorBoundary>
-                  </NotificationProvider>
-                </ErrorBoundary>
-              </PermissionProvider>
-            </ErrorBoundary>
-          </ThemeProvider>
-        </ErrorBoundary>
+          <PermissionProvider>
+            <NotificationProvider>
+              <StreamChatProvider>
+                {children}
+              </StreamChatProvider>
+            </NotificationProvider>
+          </PermissionProvider>
+        </ThemeProvider>
       </QueryClientProvider>
     </ErrorBoundary>
   );

@@ -6,7 +6,7 @@ import './index.css';
 import { AppProviders } from './components/providers/AppProviders';
 import { Toaster } from "sonner";
 
-// Setup global error handling
+// Simplified error handling
 window.addEventListener('error', (event) => {
   console.error('Global error caught:', event.error);
 });
@@ -21,6 +21,7 @@ try {
 
   const root = createRoot(rootElement);
   
+  // Render without StrictMode to avoid double rendering and potential issues
   root.render(
     <BrowserRouter>
       <AppProviders>
