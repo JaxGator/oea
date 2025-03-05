@@ -34,4 +34,37 @@ export class PermissionService {
         return 'This action has specific permission requirements.';
     }
   }
+
+  /**
+   * Checks if a user has permission for a specific action
+   */
+  static hasPermission(
+    user: any | null, 
+    type: 'edit' | 'delete' | 'manage' | 'admin',
+    entityId?: string,
+    createdBy?: string
+  ): boolean {
+    if (!user) {
+      return false;
+    }
+
+    // Admin has all permissions
+    if (user.is_admin === true) {
+      return true;
+    }
+
+    // For manage, edit, or delete actions, approved members have permission
+    if ((type === 'manage' || type === 'edit' || type === 'delete') && 
+        (user.is_member === true && user.is_approved === true)) {
+      return true;
+    }
+
+    // For edit or delete actions, creators have permission for their own content
+    if ((type === 'edit' || type === 'delete') && 
+        createdBy && user.id === createdBy) {
+      return true;
+    }
+
+    return false;
+  }
 }

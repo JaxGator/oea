@@ -20,10 +20,8 @@ export const useEventPermissions = (eventId?: string, createdBy?: string) => {
     try {
       // Check if the user can edit this event
       if (eventId && createdBy) {
-        const [canEdit, canDelete] = await Promise.all([
-          PermissionService.hasPermission(user, 'edit', eventId, createdBy),
-          PermissionService.hasPermission(user, 'delete', eventId, createdBy)
-        ]);
+        const canEdit = PermissionService.hasPermission(user, 'edit', eventId, createdBy);
+        const canDelete = PermissionService.hasPermission(user, 'delete', eventId, createdBy);
 
         setCanEditEvent(canEdit);
         setCanDeleteEvent(canDelete);
