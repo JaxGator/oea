@@ -12,7 +12,7 @@ interface AppProvidersProps {
   children: React.ReactNode;
 }
 
-// Create a client with enhanced error handling
+// Create a client
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -22,7 +22,6 @@ const queryClient = new QueryClient({
       staleTime: 1000 * 60 * 5, // 5 minutes
     },
     mutations: {
-      // Handle mutation errors globally through the onError option
       onError: (error) => {
         console.error('Global mutation error:', error);
         toast.error('An operation failed. Please try again.');
@@ -31,29 +30,32 @@ const queryClient = new QueryClient({
   },
 });
 
-// Set up global error handling for query cache
-queryClient.getQueryCache().subscribe((event) => {
-  if (event.query?.state.status === 'error') {
-    console.error('Query cache error:', event.query.state.error);
-    toast.error('Failed to load data. Please try refreshing.');
-  }
-});
-
-// Set up global error handling for mutation cache
-queryClient.getMutationCache().subscribe((event) => {
-  if (event.mutation?.state.status === 'error') {
-    console.error('Mutation cache error:', event.mutation.state.error);
-    toast.error('An operation failed. Please try again.');
-  }
-});
-
 export function AppProviders({ children }: AppProvidersProps) {
   console.log('Rendering AppProviders...');
   
   useEffect(() => {
     console.log('AppProviders mounted');
+    
+    // Set up global error handling for query cache
+    const unsubscribeQuery = queryClient.getQueryCache().subscribe(event => {
+      if (event.type === 'observerResultsUpdated' && event.query.state.status === 'error') {
+        console.error('Query error:', event.query.state.error);
+        toast.error('Failed to load data. Please try refreshing.');
+      }
+    });
+    
+    // Set up global error handling for mutation cache
+    const unsubscribeMutation = queryClient.getMutationCache().subscribe(event => {
+      if (event.type === 'observerAdded' && event.mutation.state.status === 'error') {
+        console.error('Mutation error:', event.mutation.state.error);
+        toast.error('An operation failed. Please try again.');
+      }
+    });
+    
     return () => {
       console.log('AppProviders unmounted');
+      unsubscribeQuery();
+      unsubscribeMutation();
     };
   }, []);
   
