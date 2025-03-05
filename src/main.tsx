@@ -25,7 +25,7 @@ try {
     <BrowserRouter>
       <AppProviders>
         <App />
-        <Toaster />
+        <Toaster position="top-right" />
       </AppProviders>
     </BrowserRouter>
   );

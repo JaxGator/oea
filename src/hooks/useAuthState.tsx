@@ -27,11 +27,10 @@ export function useAuthState(): AuthState {
   // Update authentication state whenever authUser changes
   useEffect(() => {
     try {
-      const authState = !!authUser;
-      setIsAuthenticated(authState);
+      setIsAuthenticated(!!authUser);
       
       console.log("Auth state updated:", {
-        isAuthenticated: authState,
+        isAuthenticated: !!authUser,
         userId: authUser?.id,
         timestamp: new Date().toISOString()
       });
@@ -40,20 +39,18 @@ export function useAuthState(): AuthState {
     }
   }, [authUser]);
 
-  // Force refresh of authentication state on component mount
+  // Check auth status on mount
   useEffect(() => {
     const checkAuthStatus = async () => {
       try {
         const { data } = await supabase.auth.getSession();
-        const hasSession = !!data.session;
+        setIsAuthenticated(!!data.session);
         
         console.log("Initial auth check:", {
-          hasSession,
+          hasSession: !!data.session,
           sessionId: data.session?.user?.id,
           timestamp: new Date().toISOString()
         });
-        
-        setIsAuthenticated(hasSession);
       } catch (error) {
         console.error("Error checking auth status:", error);
       }
@@ -62,6 +59,7 @@ export function useAuthState(): AuthState {
     checkAuthStatus();
   }, []);
 
+  // Set up subscription for profile changes
   useEffect(() => {
     if (!authUser?.id) return;
 
@@ -77,21 +75,13 @@ export function useAuthState(): AuthState {
             filter: `id=eq.${authUser.id}`
           },
           (payload) => {
-            console.log('Profile changed:', {
-              payload,
-              timestamp: new Date().toISOString()
-            });
+            console.log('Profile changed:', payload);
             queryClient.invalidateQueries({
               queryKey: ['profile', authUser.id]
             });
           }
         )
-        .subscribe((status) => {
-          console.log('Profile subscription status:', {
-            status,
-            timestamp: new Date().toISOString()
-          });
-        });
+        .subscribe();
 
       return () => {
         console.log('Cleaning up profile subscription');
@@ -102,52 +92,19 @@ export function useAuthState(): AuthState {
     }
   }, [authUser?.id, queryClient]);
 
-  // Enhanced error handling for profile errors
+  // Handle profile errors
   useEffect(() => {
-    if (profileError) {
-      // Skip showing error for expected "no profile" cases
-      if (!profileError.message?.includes('JSON object requested, multiple (or no) rows returned')) {
-        console.error('Profile error:', {
-          error: profileError,
-          timestamp: new Date().toISOString()
-        });
-        toast({
-          title: "Profile Error",
-          description: "Unable to load user profile",
-          variant: "destructive",
-        });
-      }
+    if (profileError && !profileError.message?.includes('JSON object requested, multiple (or no) rows returned')) {
+      console.error('Profile error:', profileError);
     }
-  }, [profileError, toast]);
+  }, [profileError]);
 
-  // Enhanced error handling for session errors
+  // Handle session errors
   useEffect(() => {
     if (sessionError) {
-      console.error('Session error:', {
-        error: sessionError,
-        timestamp: new Date().toISOString()
-      });
-      toast({
-        title: "Authentication Error",
-        description: "Please try signing in again",
-        variant: "destructive",
-      });
+      console.error('Session error:', sessionError);
     }
-  }, [sessionError, toast]);
-
-  // Debug logging
-  useEffect(() => {
-    console.log('useAuthState - Current state:', {
-      isAuthenticated,
-      userId: authUser?.id,
-      hasProfile: !!profile,
-      profileError,
-      isAdmin: profile?.is_admin,
-      profileLoading: isProfileLoading,
-      sessionLoading: isSessionLoading,
-      timestamp: new Date().toISOString()
-    });
-  }, [isAuthenticated, authUser, profile, profileError, isProfileLoading, isSessionLoading]);
+  }, [sessionError]);
 
   return {
     user: profile || null,

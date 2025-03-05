@@ -13,58 +13,69 @@ import { Loader2 } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 
 const LoadingSection = () => (
-  <div className="flex justify-center items-center py-12">
-    <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
+  <div className="flex justify-center items-center py-8 my-4">
+    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+    <span className="ml-2 text-muted-foreground">Loading content...</span>
+  </div>
+);
+
+const ErrorSection = ({ message }: { message: string }) => (
+  <div className="flex justify-center items-center py-8 my-4">
+    <div className="p-4 rounded-lg bg-red-50 text-red-800 max-w-md">
+      <p>{message}</p>
+      <button 
+        onClick={() => window.location.reload()}
+        className="mt-2 px-3 py-1 bg-red-600 text-white rounded text-sm hover:bg-red-700"
+      >
+        Retry
+      </button>
+    </div>
   </div>
 );
 
 export default function Index() {
   const queryClient = useQueryClient();
   
-  // Prefetch data for components that will be rendered
   useEffect(() => {
-    // Prefetch queries that might be needed
-    queryClient.prefetchQuery({
-      queryKey: ['featured-events'],
-      queryFn: () => fetch('/api/events/featured').then(res => res.json()),
-      staleTime: 1000 * 60 * 5 // 5 minutes
-    });
-    
-    // Prefetch other important queries
-    queryClient.prefetchQuery({
-      queryKey: ['gallery-preview'],
-      queryFn: () => fetch('/api/gallery/preview').then(res => res.json()),
-      staleTime: 1000 * 60 * 15 // 15 minutes
-    });
-  }, [queryClient]);
+    console.log('Index page mounted');
+    return () => console.log('Index page unmounted');
+  }, []);
 
   return (
     <NotificationProvider>
       <HomeLayout>
-        <Suspense fallback={<LoadingSection />}>
-          <div className="space-y-8">
-            <FeaturedEvents />
-          </div>
-        </Suspense>
+        <ErrorBoundary fallback={<ErrorSection message="Failed to load events section" />}>
+          <Suspense fallback={<LoadingSection />}>
+            <div className="space-y-8">
+              <FeaturedEvents />
+            </div>
+          </Suspense>
+        </ErrorBoundary>
 
-        <Suspense fallback={<LoadingSection />}>
-          <div className="space-y-8">
-            <LeaderboardSection />
-          </div>
-        </Suspense>
+        <ErrorBoundary fallback={<ErrorSection message="Failed to load leaderboard section" />}>
+          <Suspense fallback={<LoadingSection />}>
+            <div className="space-y-8">
+              <LeaderboardSection />
+            </div>
+          </Suspense>
+        </ErrorBoundary>
 
-        <Suspense fallback={<LoadingSection />}>
-          <div className="space-y-8">
-            <GalleryPreview />
-          </div>
-        </Suspense>
+        <ErrorBoundary fallback={<ErrorSection message="Failed to load gallery section" />}>
+          <Suspense fallback={<LoadingSection />}>
+            <div className="space-y-8">
+              <GalleryPreview />
+            </div>
+          </Suspense>
+        </ErrorBoundary>
 
-        <Suspense fallback={<LoadingSection />}>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <TacoTracker />
-            <SocialFeed />
-          </div>
-        </Suspense>
+        <ErrorBoundary fallback={<ErrorSection message="Failed to load social features" />}>
+          <Suspense fallback={<LoadingSection />}>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <TacoTracker />
+              <SocialFeed />
+            </div>
+          </Suspense>
+        </ErrorBoundary>
       </HomeLayout>
     </NotificationProvider>
   );
