@@ -1,11 +1,11 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { CheckCircle, UserPlus, X, Calendar, Users } from "lucide-react";
-import { GuestInput } from "@/components/event/guest/GuestInput";
-import { GuestListDisplay } from "@/components/event/guest/GuestListDisplay";
 import { toast } from "sonner";
-import { LoadingButton } from "@/components/ui/loading-button";
+import { AttendingActions } from "./AttendingActions";
+import { GuestManagement } from "./GuestManagement";
+import { WaitlistActions } from "./WaitlistActions";
+import { RSVPButton } from "./RSVPButton";
 
 interface RSVPActionsProps {
   isAuthenticated: boolean;
@@ -34,9 +34,8 @@ export function RSVPActions({
   onRSVP,
   onCancelRSVP
 }: RSVPActionsProps) {
-  const [showGuestInput, setShowGuestInput] = useState(false);
-  const [guests, setGuests] = useState<{ firstName: string }[]>(currentGuests);
   const [isAddingGuests, setIsAddingGuests] = useState(false);
+  const [guests, setGuests] = useState<{ firstName: string }[]>(currentGuests);
 
   // Determine RSVP state
   const isAttending = userRSVPStatus === 'attending';
@@ -69,8 +68,18 @@ export function RSVPActions({
   // Handle RSVP with the current guest list
   const handleRSVP = () => {
     onRSVP(guests.length > 0 ? guests : undefined);
-    setShowGuestInput(false);
     setIsAddingGuests(false);
+  };
+
+  // Handle starting the add guests flow
+  const handleStartAddGuests = () => {
+    setIsAddingGuests(true);
+  };
+
+  // Handle canceling the add guests flow
+  const handleCancelAddGuests = () => {
+    setIsAddingGuests(false);
+    setGuests(currentGuests);
   };
 
   // Don't render anything for past events to avoid confusion
@@ -91,78 +100,24 @@ export function RSVPActions({
   if (isAttending) {
     return (
       <div className="space-y-4">
-        <div className="flex flex-wrap items-center gap-2">
-          <Button 
-            variant="outline" 
-            className="flex items-center gap-2 bg-green-50 text-green-600 border-green-200"
-            disabled
-          >
-            <CheckCircle className="h-4 w-4" />
-            Attending
-          </Button>
-          
-          {!isAddingGuests && canAddGuests && (
-            <Button 
-              variant="outline" 
-              onClick={() => setIsAddingGuests(true)}
-              className="flex items-center gap-2"
-            >
-              <UserPlus className="h-4 w-4" />
-              Add Guests
-            </Button>
-          )}
-          
-          <LoadingButton 
-            variant="outline" 
-            onClick={onCancelRSVP}
-            isLoading={isSubmitting}
-            className="flex items-center gap-2 text-red-500 hover:bg-red-50"
-          >
-            <X className="h-4 w-4" />
-            Cancel RSVP
-          </LoadingButton>
-        </div>
+        <AttendingActions
+          canAddGuests={canAddGuests}
+          isAddingGuests={isAddingGuests}
+          isSubmitting={isSubmitting}
+          onAddGuests={handleStartAddGuests}
+          onCancelRSVP={onCancelRSVP}
+        />
         
         {isAddingGuests && (
-          <div className="space-y-3 p-3 border rounded-md bg-gray-50">
-            <h4 className="text-sm font-medium">Add Guests</h4>
-            
-            {guests.length > 0 && (
-              <GuestListDisplay 
-                guests={guests} 
-                onRemoveGuest={handleRemoveGuest}
-                isApproved={true} 
-              />
-            )}
-            
-            <GuestInput 
-              onAddGuest={handleAddGuest}
-              isApproved={true}
-            />
-            
-            <div className="flex gap-2 justify-end mt-2">
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={() => {
-                  setIsAddingGuests(false);
-                  setGuests(currentGuests);
-                }}
-              >
-                Cancel
-              </Button>
-              
-              <LoadingButton 
-                size="sm" 
-                onClick={handleRSVP}
-                isLoading={isSubmitting}
-              >
-                {guests.length > currentGuests.length
-                  ? `Save ${guests.length - currentGuests.length} New Guests`
-                  : "Update Guests"}
-              </LoadingButton>
-            </div>
-          </div>
+          <GuestManagement
+            guests={guests}
+            currentGuests={currentGuests}
+            onAddGuest={handleAddGuest}
+            onRemoveGuest={handleRemoveGuest}
+            onCancel={handleCancelAddGuests}
+            onSave={handleRSVP}
+            isSubmitting={isSubmitting}
+          />
         )}
       </div>
     );
@@ -171,47 +126,22 @@ export function RSVPActions({
   // Handle waitlist state
   if (isWaitlisted) {
     return (
-      <div className="flex gap-2">
-        <Button 
-          variant="outline" 
-          className="flex items-center gap-2 bg-yellow-50 text-yellow-600 border-yellow-200"
-          disabled
-        >
-          <Users className="h-4 w-4" />
-          On Waitlist
-        </Button>
-        
-        <LoadingButton 
-          variant="outline" 
-          onClick={onCancelRSVP}
-          isLoading={isSubmitting}
-          className="flex items-center gap-2 text-red-500 hover:bg-red-50"
-        >
-          <X className="h-4 w-4" />
-          Leave Waitlist
-        </LoadingButton>
-      </div>
+      <WaitlistActions
+        isSubmitting={isSubmitting}
+        onCancelRSVP={onCancelRSVP}
+      />
     );
   }
 
   // Normal RSVP button for non-attending users
   return (
     <div className="flex gap-2">
-      {isFullyBooked && !canJoinWaitlist ? (
-        <Button disabled className="flex items-center gap-2 opacity-70">
-          <Calendar className="h-4 w-4" />
-          Event Full
-        </Button>
-      ) : (
-        <LoadingButton
-          onClick={handleRSVP}
-          isLoading={isSubmitting}
-          className="flex items-center gap-2"
-        >
-          <Calendar className="h-4 w-4" />
-          {isFullyBooked && canJoinWaitlist ? "Join Waitlist" : "RSVP"}
-        </LoadingButton>
-      )}
+      <RSVPButton
+        isFullyBooked={isFullyBooked}
+        canJoinWaitlist={canJoinWaitlist}
+        isSubmitting={isSubmitting}
+        onRSVP={handleRSVP}
+      />
     </div>
   );
 }
