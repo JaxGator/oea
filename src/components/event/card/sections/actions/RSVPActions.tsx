@@ -1,147 +1,94 @@
 
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
-import { AttendingActions } from "./AttendingActions";
-import { GuestManagement } from "./GuestManagement";
-import { WaitlistActions } from "./WaitlistActions";
-import { RSVPButton } from "./RSVPButton";
+import { Loader2 } from "lucide-react";
+import { useState } from "react";
+import { EventGuestDialog } from "@/components/event/guests/EventGuestDialog";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface RSVPActionsProps {
   isAuthenticated: boolean;
   userRSVPStatus: string | null;
-  isPastEvent: boolean;
-  isSubmitting?: boolean;
-  isFullyBooked?: boolean;
-  canJoinWaitlist?: boolean;
   canAddGuests: boolean;
-  currentGuests: { firstName: string }[];
+  isFullyBooked?: boolean;
+  isPastEvent: boolean;
+  isSubmitting: boolean;
+  currentGuests: {
+    firstName: string;
+  }[];
   eventTitle: string;
-  onRSVP: (guests?: { firstName: string }[]) => void;
+  onRSVP: (guests?: {
+    firstName: string;
+  }[]) => void;
   onCancelRSVP: () => void;
+  canJoinWaitlist?: boolean;
 }
 
 export function RSVPActions({
   isAuthenticated,
   userRSVPStatus,
-  isPastEvent,
-  isSubmitting = false,
-  isFullyBooked = false,
-  canJoinWaitlist = false,
   canAddGuests,
-  currentGuests = [],
+  isFullyBooked = false,
+  isPastEvent,
+  isSubmitting,
+  currentGuests,
   eventTitle,
   onRSVP,
-  onCancelRSVP
+  onCancelRSVP,
+  canJoinWaitlist = false
 }: RSVPActionsProps) {
-  const [isAddingGuests, setIsAddingGuests] = useState(false);
-  const [guests, setGuests] = useState<{ firstName: string }[]>(currentGuests);
+  const [showGuestDialog, setShowGuestDialog] = useState(false);
 
-  // Determine RSVP state
-  const isAttending = userRSVPStatus === 'attending';
-  const isWaitlisted = userRSVPStatus === 'waitlist';
-  
-  // Handle adding a guest
-  const handleAddGuest = (firstName: string) => {
-    if (firstName.trim()) {
-      const updatedGuests = [...guests, { firstName: firstName.trim() }];
-      setGuests(updatedGuests);
-      
-      // Show success message for better feedback
-      toast.success(`Added ${firstName} to your guest list`);
-    }
-  };
-
-  // Handle removing a guest
-  const handleRemoveGuest = (index: number) => {
-    const updatedGuests = [...guests];
-    const removedGuest = updatedGuests[index];
-    updatedGuests.splice(index, 1);
-    setGuests(updatedGuests);
-    
-    // Show feedback on guest removal
-    if (removedGuest && removedGuest.firstName) {
-      toast.info(`Removed ${removedGuest.firstName} from your guest list`);
-    }
-  };
-
-  // Handle RSVP with the current guest list
-  const handleRSVP = () => {
-    onRSVP(guests.length > 0 ? guests : undefined);
-    setIsAddingGuests(false);
-  };
-
-  // Handle starting the add guests flow
-  const handleStartAddGuests = () => {
-    setIsAddingGuests(true);
-  };
-
-  // Handle canceling the add guests flow
-  const handleCancelAddGuests = () => {
-    setIsAddingGuests(false);
-    setGuests(currentGuests);
-  };
-
-  // Don't render anything for past events to avoid confusion
+  // Don't show RSVP actions for past events
   if (isPastEvent) {
     return null;
   }
 
-  // If not authenticated, simply show a message
+  // Show login prompt if not authenticated
   if (!isAuthenticated) {
-    return (
-      <Button variant="outline" disabled className="w-full md:w-auto opacity-70">
-        Sign in to RSVP
-      </Button>
-    );
+    return <Button onClick={() => window.location.href = '/auth'}>
+        Sign In to RSVP
+      </Button>;
   }
 
-  // If user is already attending, show cancel and guest options
-  if (isAttending) {
-    return (
-      <div className="space-y-4">
-        <AttendingActions
-          canAddGuests={canAddGuests}
-          isAddingGuests={isAddingGuests}
-          isSubmitting={isSubmitting}
-          onAddGuests={handleStartAddGuests}
-          onCancelRSVP={onCancelRSVP}
-        />
-        
-        {isAddingGuests && (
-          <GuestManagement
-            guests={guests}
-            currentGuests={currentGuests}
-            onAddGuest={handleAddGuest}
-            onRemoveGuest={handleRemoveGuest}
-            onCancel={handleCancelAddGuests}
-            onSave={handleRSVP}
-            isSubmitting={isSubmitting}
-          />
-        )}
-      </div>
-    );
+  // Show cancel button if already RSVP'd
+  if (userRSVPStatus === 'attending') {
+    return <>
+        <Button variant="destructive" onClick={onCancelRSVP} disabled={isSubmitting}>
+          {isSubmitting ? <>
+              Cancelling...
+              <Loader2 className="ml-2 h-4 w-4 animate-spin" />
+            </> : 'Cancel RSVP'}
+        </Button>
+        {canAddGuests && <EventGuestDialog open={showGuestDialog} onOpenChange={setShowGuestDialog} onSave={onRSVP} currentGuests={currentGuests} eventTitle={eventTitle} />}
+      </>;
+  }
+  
+  // Show waitlist status if user is on the waitlist
+  if (userRSVPStatus === 'waitlisted') {
+    return <>
+        <Alert variant="warning" className="mb-3">
+          <AlertDescription>
+            You're on the waitlist. We'll notify you if a spot becomes available.
+          </AlertDescription>
+        </Alert>
+        <Button variant="destructive" onClick={onCancelRSVP} disabled={isSubmitting}>
+          {isSubmitting ? <>
+              Cancelling...
+              <Loader2 className="ml-2 h-4 w-4 animate-spin" />
+            </> : 'Leave Waitlist'}
+        </Button>
+      </>;
   }
 
-  // Handle waitlist state
-  if (isWaitlisted) {
-    return (
-      <WaitlistActions
-        isSubmitting={isSubmitting}
-        onCancelRSVP={onCancelRSVP}
-      />
-    );
-  }
-
-  // Normal RSVP button for non-attending users
-  return (
-    <div className="flex gap-2">
-      <RSVPButton
-        isFullyBooked={isFullyBooked}
-        canJoinWaitlist={canJoinWaitlist}
-        isSubmitting={isSubmitting}
-        onRSVP={handleRSVP}
-      />
-    </div>
-  );
+  // Show RSVP options if not already RSVP'd
+  return <>
+      {canAddGuests ? <Button onClick={() => setShowGuestDialog(true)} disabled={isSubmitting || isFullyBooked && !canJoinWaitlist}>RSVP</Button> : <Button onClick={() => onRSVP()} disabled={(isFullyBooked && !canJoinWaitlist) || isSubmitting}>
+          {isSubmitting ? <>
+              {isFullyBooked && canJoinWaitlist ? 'Joining Waitlist...' : 'Reserving Spot...'}
+              <Loader2 className="ml-2 h-4 w-4 animate-spin" />
+            </> : isFullyBooked ? (canJoinWaitlist ? 'Join Waitlist' : 'Event Full') : 'RSVP'}
+        </Button>}
+      
+      {canAddGuests && <EventGuestDialog open={showGuestDialog} onOpenChange={setShowGuestDialog} onSave={onRSVP} currentGuests={currentGuests} eventTitle={eventTitle} />}
+    </>;
 }

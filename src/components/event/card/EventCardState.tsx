@@ -2,13 +2,12 @@
 import { Event } from "@/types/event";
 import { useEventRSVPData } from "@/hooks/events/useEventRSVPData";
 import { useEventGuestData } from "@/hooks/events/useEventGuestData";
+import { useAdminStatus } from "@/hooks/events/useAdminStatus";
 import { useEventStateManager } from "@/hooks/events/useEventStateManager";
 import { useGuestListUpdates } from "@/hooks/events/useGuestListUpdates";
 import { useEffect } from "react";
 import { parseISO, set } from "date-fns";
 import { useAuthState } from "@/hooks/useAuthState";
-import { useCarouselConfig } from "@/hooks/gallery/useCarouselConfig";
-import { usePermissions } from "@/hooks/usePermissions";
 
 interface EventCardStateProps {
   event: Event;
@@ -38,7 +37,6 @@ interface EventCardStateProps {
     handleCancelEdit: () => void;
     handleRSVPCountChange: (value: string) => void;
     isAuthenticated?: boolean;
-    isConfiguring?: boolean;
   }) => React.ReactNode;
 }
 
@@ -49,19 +47,36 @@ export function EventCardState({
   isAuthenticated = false,
   children
 }: EventCardStateProps) {
+  const { isAdmin, canManageEvents } = useAdminStatus();
+  const { user } = useAuthState();
   const { data: attendees = [] } = useEventRSVPData(event.id);
   const { data: guests = [], refetch: refetchGuests } = useEventGuestData(event.id, userRSVPStatus);
-  const { carouselEnabled } = useCarouselConfig();
-  const { user } = useAuthState();
-  const { getEffectivePermissions } = usePermissions();
-  
-  // Get synchronous permissions
-  const { isAdmin, canManageEvents } = getEffectivePermissions();
   
   useGuestListUpdates(event.id, refetchGuests);
   
   // Use the authenticated state from props if provided, otherwise use the value from useAuthState
   const effectiveIsAuthenticated = isAuthenticated !== undefined ? isAuthenticated : user !== null;
+  
+  // Force isAdmin to true if the user profile has admin status
+  const effectiveIsAdmin = isAdmin || !!user?.is_admin;
+  
+  // Ensure that approved members can manage events (not just admins)
+  // If user is approved or a member, they can manage events
+  const effectiveCanManage = effectiveIsAdmin || canManageEvents || !!(user?.is_approved) || !!(user?.is_member);
+  
+  useEffect(() => {
+    console.log("EventCardState - Auth status:", {
+      hookIsAdmin: isAdmin,
+      userIsAdmin: user?.is_admin,
+      effectiveIsAdmin,
+      hookCanManage: canManageEvents,
+      userIsApproved: user?.is_approved,
+      userIsMember: user?.is_member,
+      effectiveCanManage,
+      isAuthenticated: effectiveIsAuthenticated,
+      timestamp: new Date().toISOString()
+    });
+  }, [isAdmin, user?.is_admin, effectiveIsAdmin, canManageEvents, user?.is_approved, user?.is_member, effectiveCanManage, effectiveIsAuthenticated]);
   
   const {
     showEditDialog,
@@ -102,13 +117,20 @@ export function EventCardState({
   
   // Allow admins, approved members, and the event creator to add guests
   // Also check authentication status before allowing guest additions
-  const canAddGuests = effectiveIsAuthenticated && (
-    isAdmin || canManageEvents || userRSVPStatus === 'attending'
-  );
+  const canAddGuests = effectiveIsAuthenticated && (effectiveIsAdmin || effectiveCanManage || userRSVPStatus === 'attending');
+
+  console.log('EventCardState - Event timing:', {
+    eventDate: event.date,
+    eventTime: event.time,
+    eventDateTime,
+    now,
+    isPastEvent,
+    canAddGuests
+  });
 
   return children({
-    isAdmin,
-    canManageEvents,
+    isAdmin: effectiveIsAdmin,
+    canManageEvents: effectiveCanManage,
     rsvpData,
     attendees,
     guests,
@@ -128,7 +150,6 @@ export function EventCardState({
     handleSaveRSVP,
     handleCancelEdit,
     handleRSVPCountChange,
-    isAuthenticated: effectiveIsAuthenticated,
-    isConfiguring: isEditingRSVP
+    isAuthenticated: effectiveIsAuthenticated
   });
 }

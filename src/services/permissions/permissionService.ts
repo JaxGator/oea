@@ -1,70 +1,120 @@
 
+import { supabase } from "@/integrations/supabase/client";
+import type { Profile } from "@/types/auth";
+
+/**
+ * Centralized service for managing permissions across the application
+ */
 export class PermissionService {
   /**
-   * Returns a standardized error message for permission denials based on the type
+   * Checks if a user has permission to edit an event
+   * @param currentUser The current user profile
+   * @param createdBy The ID of the user who created the event
+   * @param forceAdmin Override to grant admin privileges
+   * @param forceCanManage Override to grant management privileges
+   * @returns Whether the user has permission to edit the event
    */
-  static getPermissionErrorMessage(type: 'edit' | 'delete' | 'manage' | 'admin'): string {
-    switch (type) {
-      case 'admin':
-        return 'This action requires administrator privileges';
-      case 'manage':
-        return 'This action requires approved member status';
-      case 'edit':
-        return 'You don\'t have permission to edit this item';
-      case 'delete':
-        return 'You don\'t have permission to delete this item';
-      default:
-        return 'You don\'t have permission to perform this action';
-    }
-  }
-
-  /**
-   * Returns a more detailed explanation for permission requirements
-   */
-  static getPermissionRequirements(type: 'edit' | 'delete' | 'manage' | 'admin'): string {
-    switch (type) {
-      case 'admin':
-        return 'Only administrators can perform this action.';
-      case 'manage':
-        return 'This action requires you to be an approved member or administrator.';
-      case 'edit':
-      case 'delete':
-        return 'You can only modify content that you created, unless you are an administrator or approved member.';
-      default:
-        return 'This action has specific permission requirements.';
-    }
-  }
-
-  /**
-   * Checks if a user has permission for a specific action
-   */
-  static hasPermission(
-    user: any | null, 
-    type: 'edit' | 'delete' | 'manage' | 'admin',
-    entityId?: string,
-    createdBy?: string
-  ): boolean {
-    if (!user) {
+  static async canEditEvent(
+    currentUser: Profile | null,
+    createdBy: string,
+    forceAdmin = false,
+    forceCanManage = false
+  ): Promise<boolean> {
+    // If no user is logged in, deny permission
+    if (!currentUser?.id) {
+      console.log("Permission denied: No user logged in");
       return false;
     }
 
-    // Admin has all permissions
-    if (user.is_admin === true) {
+    // Check if user is admin or has management capabilities
+    const effectiveIsAdmin = forceAdmin || !!currentUser.is_admin;
+    const effectiveCanManage = effectiveIsAdmin || 
+                              forceCanManage || 
+                              !!currentUser.is_approved || 
+                              !!currentUser.is_member;
+
+    // Log permission check details
+    console.log("Permission check for edit:", {
+      userId: currentUser.id,
+      effectiveIsAdmin,
+      effectiveCanManage,
+      eventCreator: createdBy,
+      timestamp: new Date().toISOString()
+    });
+
+    // Always grant access to admins and managers
+    if (effectiveCanManage) {
       return true;
     }
 
-    // For manage, edit, or delete actions, approved members have permission
-    if ((type === 'manage' || type === 'edit' || type === 'delete') && 
-        (user.is_member === true && user.is_approved === true)) {
+    // Check if user is the creator of the event
+    return currentUser.id === createdBy;
+  }
+
+  /**
+   * Checks if a user has permission to delete an event
+   * @param currentUser The current user profile
+   * @param createdBy The ID of the user who created the event
+   * @param forceAdmin Override to grant admin privileges
+   * @param forceCanManage Override to grant management privileges
+   * @returns Whether the user has permission to delete the event
+   */
+  static async canDeleteEvent(
+    currentUser: Profile | null,
+    createdBy: string,
+    forceAdmin = false,
+    forceCanManage = false
+  ): Promise<boolean> {
+    // Use the same logic as edit permissions for now
+    return this.canEditEvent(currentUser, createdBy, forceAdmin, forceCanManage);
+  }
+
+  /**
+   * Checks if a user has RSVP management capabilities
+   * @param currentUser The current user profile
+   * @param createdBy The ID of the user who created the event
+   * @param userRSVPStatus The current RSVP status of the user
+   * @returns Whether the user can manage RSVPs
+   */
+  static canManageRSVPs(
+    currentUser: Profile | null,
+    createdBy: string,
+    userRSVPStatus: string | null
+  ): boolean {
+    // Admin/approved users can always manage RSVPs
+    if (currentUser?.is_admin || currentUser?.is_approved || currentUser?.is_member) {
       return true;
     }
-
-    // For edit or delete actions, creators have permission for their own content
-    if ((type === 'edit' || type === 'delete') && 
-        createdBy && user.id === createdBy) {
+    
+    // Event creator can manage RSVPs
+    if (currentUser?.id === createdBy) {
       return true;
     }
+    
+    // Users who are attending can manage their own RSVPs
+    return userRSVPStatus === 'attending';
+  }
 
-    return false;
+  /**
+   * Verifies if the current session is valid and refreshes auth state
+   * @returns Whether the session is valid
+   */
+  static async verifySession(): Promise<{isValid: boolean, userId?: string}> {
+    try {
+      const { data, error } = await supabase.auth.getSession();
+      
+      if (error) {
+        console.error("Session verification error:", error);
+        return { isValid: false };
+      }
+      
+      return { 
+        isValid: !!data.session, 
+        userId: data.session?.user?.id 
+      };
+    } catch (err) {
+      console.error("Error verifying session:", err);
+      return { isValid: false };
+    }
   }
 }

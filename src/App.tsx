@@ -23,7 +23,6 @@ import { TermsAndConditions } from "./components/legal/TermsAndConditions";
 import { ErrorBoundary } from "./components/error/ErrorBoundary";
 import { PublicPollView } from "./components/members/polls/PublicPollView";
 import { PublicEventView } from "./components/event/public/PublicEventView";
-import { useEffect } from "react";
 
 const ErrorFallback = () => (
   <div className="min-h-screen flex items-center justify-center">
@@ -35,43 +34,41 @@ const ErrorFallback = () => (
 );
 
 const App = () => {
-  useEffect(() => {
-    console.log('App rendering - initializing routes');
-  }, []);
-  
   return (
     <ErrorBoundary fallback={ErrorFallback}>
-      <Routes>
-        <Route path="/auth" element={<Auth />} />
-        <Route element={<AppLayout />}>
-          {/* Public Routes */}
-          <Route index element={<Index />} />
-          <Route path="about" element={<About />} />
-          <Route path="events" element={<Events />} />
-          <Route path="privacy" element={<PrivacyPolicy />} />
-          <Route path="terms" element={<TermsAndConditions />} />
-          <Route path="resources" element={<Resources />} />
-          <Route path="polls/share/:token" element={<PublicPollView />} />
-          <Route path="events/share/:id" element={<PublicEventView />} />
-          
-          {/* Protected Routes */}
-          <Route path="events/:id" element={<RequireAuth><EventDetails /></RequireAuth>} />
-          <Route path="users" element={<RequireAuth><Users /></RequireAuth>} />
-          <Route path="members" element={<RequireAuth><Members /></RequireAuth>} />
-          <Route path="profile" element={<RequireAuth><Profile /></RequireAuth>} />
-          <Route path="messages" element={<RequireAuth><Messages /></RequireAuth>} />
-          <Route path="admin" element={
-            <RequireAuth>
-              <RequireAdmin>
-                <Admin />
-              </RequireAdmin>
-            </RequireAuth>
-          } />
-          <Route path="test" element={<RequireAuth><Test /></RequireAuth>} />
-          <Route path="store" element={<RequireAuth><Store /></RequireAuth>} />
-          <Route path="maintenance" element={<RequireAuth><Maintenance /></RequireAuth>} />
-        </Route>
-      </Routes>
+      <AppProviders>
+        <Routes>
+          <Route path="/auth" element={<Auth />} />
+          <Route element={<AppLayout />}>
+            {/* Public Routes */}
+            <Route index element={<Index />} />
+            <Route path="about" element={<About />} />
+            <Route path="events" element={<Events />} />
+            <Route path="privacy" element={<PrivacyPolicy />} />
+            <Route path="terms" element={<TermsAndConditions />} />
+            <Route path="resources" element={<Resources />} />
+            <Route path="polls/share/:token" element={<PublicPollView />} />
+            <Route path="events/share/:id" element={<PublicEventView />} />
+            
+            {/* Protected Routes */}
+            <Route path="events/:id" element={<RequireAuth><EventDetails /></RequireAuth>} />
+            <Route path="users" element={<RequireAuth><Users /></RequireAuth>} />
+            <Route path="members" element={<RequireAuth><Members /></RequireAuth>} />
+            <Route path="profile" element={<RequireAuth><Profile /></RequireAuth>} />
+            <Route path="messages" element={<RequireAuth><Messages /></RequireAuth>} />
+            <Route path="admin" element={
+              <RequireAuth>
+                <RequireAdmin>
+                  <Admin />
+                </RequireAdmin>
+              </RequireAuth>
+            } />
+            <Route path="test" element={<RequireAuth><Test /></RequireAuth>} />
+            <Route path="store" element={<RequireAuth><Store /></RequireAuth>} />
+            <Route path="maintenance" element={<RequireAuth><Maintenance /></RequireAuth>} />
+          </Route>
+        </Routes>
+      </AppProviders>
     </ErrorBoundary>
   );
 };

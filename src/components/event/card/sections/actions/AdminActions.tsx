@@ -1,61 +1,88 @@
 
 import { Button } from "@/components/ui/button";
 import { Edit, Trash2, ToggleLeft, ToggleRight } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useAuthState } from "@/hooks/useAuthState";
+import { canEditEvent, canDeleteEvent, isAdministrator, canManageEvents } from "@/utils/permissionsUtils";
+import { useEffect } from "react";
 import { useActionFeedback } from "@/hooks/ui/useActionFeedback";
 import { toast } from "sonner";
-import { usePermissions } from "@/hooks/usePermissions";
-import { LoadingButton } from "@/components/ui/loading-button";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface AdminActionsProps {
+  isAdmin: boolean;
+  canManageEvents: boolean;
   isPastEvent: boolean;
   isWixEvent: boolean;
   showDelete?: boolean;
   showPublishToggle?: boolean;
   isPublished?: boolean;
   createdBy: string;
-  eventId: string;
   onEdit?: () => void;
   onDelete?: () => void;
   onTogglePublish?: () => void;
 }
 
 export function AdminActions({
+  isAdmin,
+  canManageEvents: propsCanManageEvents,
   isPastEvent,
   isWixEvent,
   showDelete = false,
   showPublishToggle = false,
   isPublished = true,
   createdBy,
-  eventId,
   onEdit,
   onDelete,
   onTogglePublish
 }: AdminActionsProps) {
+  const { user } = useAuthState();
   const { executeAction, isLoading } = useActionFeedback();
-  const { 
-    getEffectivePermissions,
-    isVerifying
-  } = usePermissions();
   
-  // Get synchronous permissions for immediate render decision
-  const { isAdmin, canManageEvents } = getEffectivePermissions();
+  // Log auth state and permissions on mount and when they change
+  useEffect(() => {
+    if (user) {
+      console.log("AdminActions - Auth state:", {
+        userId: user?.id,
+        profileIsAdmin: user?.is_admin,
+        profileIsApproved: user?.is_approved,
+        profileIsMember: user?.is_member,
+        propsIsAdmin: isAdmin,
+        propsCanManageEvents,
+        eventCreator: createdBy,
+        timestamp: new Date().toISOString()
+      });
+    }
+  }, [user, isAdmin, propsCanManageEvents, createdBy]);
   
-  // If user is admin or can manage events, they can perform any action
-  const effectiveCanEdit = isAdmin || canManageEvents || createdBy === getEffectivePermissions().userId;
-  const effectiveCanDelete = isAdmin || canManageEvents || createdBy === getEffectivePermissions().userId;
-  const effectiveCanManage = isAdmin || canManageEvents;
+  // If no user, don't render anything
+  if (!user) {
+    console.log("AdminActions - No user found");
+    return null;
+  }
+  
+  // Force isAdmin to be true if user.is_admin is true, regardless of prop
+  const effectiveIsAdmin = user.is_admin === true || isAdmin === true;
+  
+  // Updated: Consider both admin status and the canManageEvents prop for permissions
+  // Any approved member (is_approved=true) or member (is_member=true) should be able to manage events
+  const effectiveCanManage = effectiveIsAdmin || propsCanManageEvents || user.is_approved === true || user.is_member === true;
+  
+  // Calculate permissions with the effective admin and management status
+  const canEdit = canEditEvent(user.id, effectiveIsAdmin, effectiveCanManage, createdBy);
+  const canDelete = canDeleteEvent(user.id, effectiveIsAdmin, effectiveCanManage, createdBy);
+  
+  console.log("AdminActions - Final permissions:", {
+    userId: user.id,
+    effectiveIsAdmin,
+    effectiveCanManage,
+    canEdit,
+    canDelete,
+    timestamp: new Date().toISOString()
+  });
 
   // Handle edit with feedback
   const handleEdit = () => {
-    if (isPastEvent && !isAdmin) {
+    if (isPastEvent) {
       toast.info("Past events can only be edited by administrators");
-      return;
-    }
-    
-    if (!effectiveCanEdit) {
-      toast.error("You don't have permission to edit this event");
       return;
     }
     
@@ -64,13 +91,8 @@ export function AdminActions({
 
   // Handle delete with confirmation and feedback
   const handleDelete = async () => {
-    if (isPastEvent && !isAdmin) {
+    if (isPastEvent) {
       toast.info("Past events can only be deleted by administrators");
-      return;
-    }
-    
-    if (!effectiveCanDelete) {
-      toast.error("You don't have permission to delete this event");
       return;
     }
     
@@ -91,11 +113,6 @@ export function AdminActions({
 
   // Handle publish/unpublish with feedback
   const handleTogglePublish = async () => {
-    if (!effectiveCanManage) {
-      toast.error("You don't have permission to publish or unpublish events");
-      return;
-    }
-    
     if (onTogglePublish) {
       await executeAction(
         () => {
@@ -111,63 +128,52 @@ export function AdminActions({
     }
   };
   
-  // Nothing to display if no actions are available or the user is still being verified
-  if (!onEdit && !onDelete && !onTogglePublish) {
-    return null;
-  }
-
-  // Render the admin actions based on permissions
   return (
-    <div className="space-y-2">
-      <div className="flex flex-wrap items-center gap-2">
-        {!isWixEvent && onEdit && (
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={handleEdit}
-            disabled={isPastEvent && !isAdmin || isVerifying}
-            className={!effectiveCanEdit ? "opacity-70" : ""}
-          >
-            <Edit className="h-4 w-4 mr-2" />
-            Edit
-          </Button>
-        )}
-        
-        {!isWixEvent && showDelete && onDelete && (
-          <Button 
-            variant="destructive" 
-            size="sm" 
-            onClick={handleDelete}
-            disabled={isPastEvent && !isAdmin || isLoading || isVerifying}
-            className={!effectiveCanDelete ? "opacity-70" : ""}
-          >
-            <Trash2 className="h-4 w-4 mr-2" />
-            Delete
-          </Button>
-        )}
-        
-        {showPublishToggle && onTogglePublish && (
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={handleTogglePublish}
-            disabled={isLoading || isVerifying}
-            className={!effectiveCanManage ? "opacity-70" : ""}
-          >
-            {isPublished ? (
-              <>
-                <ToggleRight className="h-4 w-4 mr-2" />
-                Unpublish
-              </>
-            ) : (
-              <>
-                <ToggleLeft className="h-4 w-4 mr-2" />
-                Publish
-              </>
-            )}
-          </Button>
-        )}
-      </div>
+    <div className="flex flex-wrap items-center gap-2">
+      {canEdit && !isWixEvent && onEdit && (
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={handleEdit}
+          disabled={isPastEvent && !effectiveIsAdmin}
+        >
+          <Edit className="h-4 w-4 mr-2" />
+          Edit
+        </Button>
+      )}
+      
+      {canDelete && !isWixEvent && showDelete && onDelete && (
+        <Button 
+          variant="destructive" 
+          size="sm" 
+          onClick={handleDelete}
+          disabled={isPastEvent && !effectiveIsAdmin || isLoading}
+        >
+          <Trash2 className="h-4 w-4 mr-2" />
+          Delete
+        </Button>
+      )}
+      
+      {showPublishToggle && onTogglePublish && (effectiveIsAdmin || effectiveCanManage) && (
+        <Button
+          variant="secondary"
+          size="sm"
+          onClick={handleTogglePublish}
+          disabled={isLoading}
+        >
+          {isPublished ? (
+            <>
+              <ToggleRight className="h-4 w-4 mr-2" />
+              Unpublish
+            </>
+          ) : (
+            <>
+              <ToggleLeft className="h-4 w-4 mr-2" />
+              Publish
+            </>
+          )}
+        </Button>
+      )}
     </div>
   );
 }

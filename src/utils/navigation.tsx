@@ -1,5 +1,4 @@
-
-import { Info, Calendar, Users, Star, Mail, Shield, Plus, Settings } from "lucide-react";
+import { Info, Calendar, Users, Star, Mail, Shield } from "lucide-react";
 import { Profile } from "@/types/auth";
 
 interface NavigationItem {
@@ -9,7 +8,6 @@ interface NavigationItem {
   external?: boolean;
   show?: (user: any, profile: Profile | null) => boolean;
   onClick?: () => void;
-  highlight?: boolean;
 }
 
 export const createNavigationItems = (user: any, profile: Profile | null, handleSignOut: () => void): NavigationItem[] => [
@@ -17,14 +15,6 @@ export const createNavigationItems = (user: any, profile: Profile | null, handle
     label: "Events",
     path: "/events",
     icon: Calendar,
-  },
-  {
-    label: "Create Event",
-    path: "/events?create=true",
-    icon: Plus,
-    show: (user: any, profile: Profile | null) => 
-      !!user && profile && (profile.is_approved || profile.is_member || profile.is_admin),
-    highlight: true,
   },
   {
     label: "Users",
@@ -63,11 +53,5 @@ export const createNavigationItems = (user: any, profile: Profile | null, handle
     icon: Shield,
     show: (user: any, profile: Profile | null) => 
       !!user && profile?.is_admin === true,
-  },
-  {
-    label: "Settings",
-    path: "/profile",
-    icon: Settings,
-    show: (user: any) => !!user,
   },
 ];

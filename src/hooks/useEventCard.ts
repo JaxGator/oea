@@ -1,56 +1,51 @@
 
 import { useState } from "react";
-import { Event } from "@/types/event";
-import { usePermissions } from "@/hooks/usePermissions";
-import { toast } from "sonner";
+import { useAdminStatus } from "./events/useAdminStatus";
+import { useRSVPDetails } from "./events/useRSVPDetails";
+import { useEventActions } from "./events/useEventActions";
 
-export function useEventCard(event: Event) {
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const { verifyPermission } = usePermissions();
-  
-  const handleEdit = async () => {
-    // Check if user has permission to edit
-    const hasPermission = await verifyPermission(
-      'edit',
-      event.id,
-      event.created_by
-    );
-    
-    if (hasPermission) {
-      setIsDialogOpen(true);
-    }
+export function useEventCard(eventId: string, onUpdate?: () => void) {
+  const { isAdmin } = useAdminStatus();
+  const { rsvpCount, attendees } = useRSVPDetails(eventId);
+  const { handleRSVP, handleCancelRSVP, isLoading } = useEventActions({
+    eventId,
+    createdBy: '', // We need to provide this, but it's only used for permission checks
+    onSuccess: onUpdate
+  });
+
+  // Add local state for managing dialogs since useEventActions doesn't provide these
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [showDetailsDialog, setShowDetailsDialog] = useState(false);
+
+  // Define these functions locally since they're not provided by useEventActions
+  const handleEditSuccess = () => {
+    setShowEditDialog(false);
+    if (onUpdate) onUpdate();
   };
-  
+
   const handleDelete = async () => {
-    // Check if user has permission to delete
-    const hasPermission = await verifyPermission(
-      'delete',
-      event.id,
-      event.created_by
-    );
-    
-    if (!hasPermission) {
-      toast.error("You don't have permission to delete this event");
-      return;
-    }
-    
-    // Deletion logic would go here
-    console.log("Deleting event:", event.id);
+    console.log('Delete event:', eventId);
+    // This would need to be implemented or brought in from another hook
+    if (onUpdate) onUpdate();
   };
-  
-  const handleOpenDialog = () => {
-    setIsDialogOpen(true);
+
+  const handleCardClick = () => {
+    setShowDetailsDialog(true);
   };
-  
-  const handleCloseDialog = () => {
-    setIsDialogOpen(false);
-  };
-  
+
   return {
-    isDialogOpen,
-    handleOpenDialog,
-    handleCloseDialog,
-    handleEdit,
-    handleDelete
+    showEditDialog,
+    setShowEditDialog,
+    isAdmin,
+    rsvpCount,
+    attendees,
+    handleEditSuccess,
+    handleCardClick,
+    handleDelete,
+    showDetailsDialog,
+    setShowDetailsDialog,
+    handleRSVP,
+    handleCancelRSVP,
+    isLoading
   };
 }

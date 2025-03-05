@@ -26,85 +26,116 @@ export function useAuthState(): AuthState {
   
   // Update authentication state whenever authUser changes
   useEffect(() => {
-    try {
-      setIsAuthenticated(!!authUser);
-      
-      console.log("Auth state updated:", {
-        isAuthenticated: !!authUser,
-        userId: authUser?.id,
-        timestamp: new Date().toISOString()
-      });
-    } catch (error) {
-      console.error("Error updating auth state:", error);
-    }
+    const authState = !!authUser;
+    setIsAuthenticated(authState);
+    
+    console.log("Auth state updated:", {
+      isAuthenticated: authState,
+      userId: authUser?.id,
+      timestamp: new Date().toISOString()
+    });
   }, [authUser]);
 
-  // Check auth status on mount
+  // Force refresh of authentication state on component mount
   useEffect(() => {
     const checkAuthStatus = async () => {
-      try {
-        const { data } = await supabase.auth.getSession();
-        setIsAuthenticated(!!data.session);
-        
-        console.log("Initial auth check:", {
-          hasSession: !!data.session,
-          sessionId: data.session?.user?.id,
-          timestamp: new Date().toISOString()
-        });
-      } catch (error) {
-        console.error("Error checking auth status:", error);
-      }
+      const { data } = await supabase.auth.getSession();
+      const hasSession = !!data.session;
+      
+      console.log("Initial auth check:", {
+        hasSession,
+        sessionId: data.session?.user?.id, // Fixed: access user.id instead of session.id
+        timestamp: new Date().toISOString()
+      });
+      
+      setIsAuthenticated(hasSession);
     };
     
     checkAuthStatus();
   }, []);
 
-  // Set up subscription for profile changes
   useEffect(() => {
     if (!authUser?.id) return;
 
-    try {
-      const channel = supabase
-        .channel(`public:profiles:id=eq.${authUser.id}`)
-        .on(
-          'postgres_changes',
-          {
-            event: '*',
-            schema: 'public',
-            table: 'profiles',
-            filter: `id=eq.${authUser.id}`
-          },
-          (payload) => {
-            console.log('Profile changed:', payload);
-            queryClient.invalidateQueries({
-              queryKey: ['profile', authUser.id]
-            });
-          }
-        )
-        .subscribe();
+    const channel = supabase
+      .channel(`public:profiles:id=eq.${authUser.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'profiles',
+          filter: `id=eq.${authUser.id}`
+        },
+        (payload) => {
+          console.log('Profile changed:', {
+            payload,
+            timestamp: new Date().toISOString()
+          });
+          queryClient.invalidateQueries({
+            queryKey: ['profile', authUser.id]
+          });
+        }
+      )
+      .subscribe((status) => {
+        console.log('Profile subscription status:', {
+          status,
+          timestamp: new Date().toISOString()
+        });
+      });
 
-      return () => {
-        console.log('Cleaning up profile subscription');
-        supabase.removeChannel(channel);
-      };
-    } catch (error) {
-      console.error("Error setting up profile subscription:", error);
-    }
+    return () => {
+      console.log('Cleaning up profile subscription');
+      supabase.removeChannel(channel);
+    };
   }, [authUser?.id, queryClient]);
 
-  // Handle profile errors
+  // Enhanced error handling for profile errors
   useEffect(() => {
-    if (profileError && !profileError.message?.includes('JSON object requested, multiple (or no) rows returned')) {
-      console.error('Profile error:', profileError);
+    if (profileError) {
+      // Skip showing error for expected "no profile" cases
+      if (!profileError.message?.includes('JSON object requested, multiple (or no) rows returned')) {
+        console.error('Profile error:', {
+          error: profileError,
+          timestamp: new Date().toISOString()
+        });
+        toast({
+          title: "Profile Error",
+          description: "Unable to load user profile",
+          variant: "destructive",
+        });
+      }
     }
-  }, [profileError]);
+  }, [profileError, toast]);
 
-  // Handle session errors
+  // Enhanced error handling for session errors
   useEffect(() => {
     if (sessionError) {
-      console.error('Session error:', sessionError);
+      console.error('Session error:', {
+        error: sessionError,
+        timestamp: new Date().toISOString()
+      });
+      toast({
+        title: "Authentication Error",
+        description: "Please try signing in again",
+        variant: "destructive",
+      });
     }
-  }, [sessionError]);
+  }, [sessionError, toast]);
+
+  // Debug logging
+  useEffect(() => {
+    console.log('useAuthState - Current state:', {
+      isAuthenticated,
+      userId: authUser?.id,
+      hasProfile: !!profile,
+      profileError,
+      isAdmin: profile?.is_admin,
+      profileLoading: isProfileLoading,
+      sessionLoading: isSessionLoading,
+      timestamp: new Date().toISOString()
+    });
+  }, [isAuthenticated, authUser, profile, profileError, isProfileLoading, isSessionLoading]);
 
   return {
     user: profile || null,

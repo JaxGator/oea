@@ -1,81 +1,78 @@
 
-import React, { useEffect } from "react";
-import { ThemeProvider } from "next-themes";
+import { ReactNode, useState, useEffect } from "react";
+import { Toaster } from "@/components/ui/toaster";
+import { Toaster as Sonner } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { NotificationProvider } from "./NotificationProvider";
-import { StreamChatProvider } from "@/components/messages/StreamChatProvider";
-import { PermissionProvider } from "@/hooks/auth/PermissionProvider";
-import { ErrorBoundary } from "@/components/error/ErrorBoundary";
-import { toast } from "sonner";
+import { SessionContextProvider } from "@supabase/auth-helpers-react";
+import { supabase } from "@/integrations/supabase/client";
+import { LoadingScreen } from "@/components/ui/loading-screen";
+import { SessionManager } from "@/components/auth/SessionManager";
 
 interface AppProvidersProps {
-  children: React.ReactNode;
+  children: ReactNode;
 }
 
-// Create a fresh query client instance each time to avoid stale state issues
+// Create a persistent query client to maintain data between renders
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
+      retry: 2,
       refetchOnWindowFocus: false,
-      retry: false, // Disable retries to prevent infinite loading states
-      gcTime: 1000 * 60 * 5, // 5 minutes - reduced from 24 hours
-      staleTime: 1000 * 60, // 1 minute - reduced from 5 minutes
+      staleTime: 1000 * 60 * 5, // 5 minutes
+      // Use the meta property for error handling which is supported in new versions
+      meta: {
+        onError: (error: Error) => {
+          console.error("Query error:", error);
+        }
+      }
     },
   },
 });
 
 export function AppProviders({ children }: AppProvidersProps) {
-  console.log('Rendering AppProviders...');
-  
+  const [isLoading, setIsLoading] = useState(true);
+  const [initialSession, setInitialSession] = useState(null);
+
+  // Get initial session on component mount
   useEffect(() => {
-    console.log('AppProviders mounted');
-    
-    // Simpler error handling approach
-    const unsubscribeQuery = queryClient.getQueryCache().subscribe(() => {
-      const queries = queryClient.getQueryCache().findAll({ predicate: query => query.state.status === 'error' });
-      if (queries.length > 0) {
-        console.error('Query errors detected:', queries.map(q => q.state.error));
-        toast.error('Failed to load data. Please try refreshing.');
+    const getInitialSession = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (error) {
+          console.error("Error getting initial session:", error);
+        } else {
+          console.log("Initial session loaded successfully:", !!session);
+          setInitialSession(session);
+        }
+      } catch (err) {
+        console.error("Failed to get initial session:", err);
+      } finally {
+        setTimeout(() => setIsLoading(false), 100);
       }
-    });
-    
-    const unsubscribeMutation = queryClient.getMutationCache().subscribe(() => {
-      const mutations = queryClient.getMutationCache().getAll().filter(mutation => mutation.state.status === 'error');
-      if (mutations.length > 0) {
-        console.error('Mutation errors detected:', mutations.map(m => m.state.error));
-        toast.error('An operation failed. Please try again.');
-      }
-    });
-    
-    return () => {
-      console.log('AppProviders unmounted - cleaning up subscriptions');
-      unsubscribeQuery();
-      unsubscribeMutation();
     };
+
+    getInitialSession();
   }, []);
-  
-  // Simplify provider nesting to reduce potential points of failure
+
+  if (isLoading) {
+    return <LoadingScreen message="Initializing application..." />;
+  }
+
   return (
-    <ErrorBoundary 
-      fallback={<div className="p-4 text-red-500">Application failed to load. Please refresh the page.</div>}
-      onError={(error) => console.error("Root error boundary caught:", error)}
-    >
-      <QueryClientProvider client={queryClient}>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <PermissionProvider>
-            <NotificationProvider>
-              <StreamChatProvider>
-                {children}
-              </StreamChatProvider>
-            </NotificationProvider>
-          </PermissionProvider>
-        </ThemeProvider>
-      </QueryClientProvider>
-    </ErrorBoundary>
+    <QueryClientProvider client={queryClient}>
+      <SessionContextProvider 
+        supabaseClient={supabase}
+        initialSession={initialSession}
+      >
+        <TooltipProvider>
+          <SessionManager queryClient={queryClient}>
+            {children}
+          </SessionManager>
+          <Toaster />
+          <Sonner />
+        </TooltipProvider>
+      </SessionContextProvider>
+    </QueryClientProvider>
   );
 }

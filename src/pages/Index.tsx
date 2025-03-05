@@ -1,52 +1,71 @@
 
-import React, { useEffect } from 'react';
-import { HomeLayout } from '@/components/home/HomeLayout';
+import { ErrorBoundary } from '@/components/error/ErrorBoundary';
+import { Hero } from '@/components/home/Hero';
 import { FeaturedEvents } from "@/components/home/FeaturedEvents";
 import { GalleryPreview } from "@/components/home/GalleryPreview";
 import { SocialFeed } from "@/components/home/SocialFeed";
+import { HomeLayout } from '@/components/home/HomeLayout';
 import { LeaderboardSection } from '@/components/home/LeaderboardSection';
+import { NotificationProvider } from "@/components/providers/NotificationProvider";
 import { TacoTracker } from "@/components/home/TacoTracker";
-import { toast } from 'sonner';
+import { Suspense, useEffect } from 'react';
+import { Loader2 } from 'lucide-react';
+import { useQueryClient } from '@tanstack/react-query';
+
+const LoadingSection = () => (
+  <div className="flex justify-center items-center py-12">
+    <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
+  </div>
+);
 
 export default function Index() {
+  const queryClient = useQueryClient();
+  
+  // Prefetch data for components that will be rendered
   useEffect(() => {
-    console.log('Index page mounted');
+    // Prefetch queries that might be needed
+    queryClient.prefetchQuery({
+      queryKey: ['featured-events'],
+      queryFn: () => fetch('/api/events/featured').then(res => res.json()),
+      staleTime: 1000 * 60 * 5 // 5 minutes
+    });
     
-    // Simple check to confirm the page is loading
-    toast.success("Welcome to the application!");
-    
-    return () => console.log('Index page unmounted');
-  }, []);
+    // Prefetch other important queries
+    queryClient.prefetchQuery({
+      queryKey: ['gallery-preview'],
+      queryFn: () => fetch('/api/gallery/preview').then(res => res.json()),
+      staleTime: 1000 * 60 * 15 // 15 minutes
+    });
+  }, [queryClient]);
 
   return (
-    <HomeLayout>
-      <div className="space-y-8">
-        <div className="p-4 bg-white rounded-lg shadow">
-          <h2 className="text-2xl font-bold mb-4">Featured Events</h2>
-          <FeaturedEvents />
-        </div>
-        
-        <div className="p-4 bg-white rounded-lg shadow">
-          <h2 className="text-2xl font-bold mb-4">Leaderboard</h2>
-          <LeaderboardSection />
-        </div>
-        
-        <div className="p-4 bg-white rounded-lg shadow">
-          <h2 className="text-2xl font-bold mb-4">Gallery</h2>
-          <GalleryPreview />
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <div className="p-4 bg-white rounded-lg shadow">
-            <h2 className="text-2xl font-bold mb-4">Taco Tracker</h2>
-            <TacoTracker />
+    <NotificationProvider>
+      <HomeLayout>
+        <Suspense fallback={<LoadingSection />}>
+          <div className="space-y-8">
+            <FeaturedEvents />
           </div>
-          <div className="p-4 bg-white rounded-lg shadow">
-            <h2 className="text-2xl font-bold mb-4">Social Feed</h2>
+        </Suspense>
+
+        <Suspense fallback={<LoadingSection />}>
+          <div className="space-y-8">
+            <LeaderboardSection />
+          </div>
+        </Suspense>
+
+        <Suspense fallback={<LoadingSection />}>
+          <div className="space-y-8">
+            <GalleryPreview />
+          </div>
+        </Suspense>
+
+        <Suspense fallback={<LoadingSection />}>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <TacoTracker />
             <SocialFeed />
           </div>
-        </div>
-      </div>
-    </HomeLayout>
+        </Suspense>
+      </HomeLayout>
+    </NotificationProvider>
   );
 }

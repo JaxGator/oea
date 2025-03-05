@@ -29,12 +29,25 @@ export function EventList({
 }: EventListProps) {
   const { isLoading: isAuthChecking } = useAuthState();
 
-  // Show better loading state skeleton
   if (isLoading) {
     return (
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {Array.from({ length: 6 }).map((_, i) => (
-          <EventCardSkeleton key={i} />
+        {[...Array(6)].map((_, i) => (
+          <div key={i} className="relative h-[400px] rounded-lg overflow-hidden border border-gray-200 animate-pulse">
+            <div className="h-48 bg-gray-100" />
+            <div className="p-4 space-y-4">
+              <div className="h-6 bg-gray-100 rounded w-3/4" />
+              <div className="space-y-2">
+                <div className="h-4 bg-gray-100 rounded w-full" />
+                <div className="h-4 bg-gray-100 rounded w-2/3" />
+              </div>
+              <div className="absolute bottom-4 left-4 right-4">
+                <div className="flex gap-2">
+                  <div className="h-10 bg-gray-100 rounded w-full" />
+                </div>
+              </div>
+            </div>
+          </div>
         ))}
       </div>
     );
@@ -43,7 +56,7 @@ export function EventList({
   if (!Array.isArray(events)) {
     console.error("Events is not an array:", events);
     return (
-      <div className="text-center py-8 rounded-lg bg-white shadow p-6">
+      <div className="text-center py-8">
         <p className="text-gray-500">Error loading events. Please try again.</p>
       </div>
     );
@@ -51,9 +64,8 @@ export function EventList({
 
   if (events.length === 0) {
     return (
-      <div className="text-center py-8 bg-white rounded-lg shadow p-6 animate-fade-in">
+      <div className="text-center py-8 animate-fade-in">
         <p className="text-gray-500">No events found for the selected date.</p>
-        <p className="text-gray-400 mt-2">Try selecting a different date or check back later.</p>
       </div>
     );
   }
@@ -61,7 +73,7 @@ export function EventList({
   return (
     <div className="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3 animate-fade-in">
       {events.map((event) => (
-        <div key={event.id} className="h-full w-full">
+        <div key={event.id} className="w-full">
           <EventCard
             event={event}
             onRSVP={onRSVP}
@@ -79,25 +91,6 @@ export function EventList({
           />
         </div>
       ))}
-    </div>
-  );
-}
-
-function EventCardSkeleton() {
-  return (
-    <div className="h-[450px] rounded-lg overflow-hidden border border-gray-200 bg-white shadow animate-pulse">
-      <div className="h-48 bg-gray-200" />
-      <div className="p-4 space-y-4">
-        <div className="h-6 bg-gray-200 rounded w-3/4" />
-        <div className="space-y-2">
-          <div className="h-4 bg-gray-200 rounded w-full" />
-          <div className="h-4 bg-gray-200 rounded w-2/3" />
-        </div>
-        <div className="flex flex-col gap-2 mt-8">
-          <div className="h-10 bg-gray-200 rounded w-full" />
-          <div className="h-10 bg-gray-200 rounded w-full opacity-60" />
-        </div>
-      </div>
     </div>
   );
 }

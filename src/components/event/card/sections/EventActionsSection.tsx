@@ -1,13 +1,15 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { RSVPActions } from "./actions/RSVPActions";
 import { AdminActions } from "./actions/AdminActions";
 import { EventDetailsActions } from "./actions/EventDetailsActions";
+import { useEventActions } from "@/hooks/events/useEventActions";
+import { useAuthState } from "@/hooks/useAuthState";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { useIsMobile } from "@/hooks/use-mobile";
-import { usePermissions } from "@/hooks/usePermissions";
 
 interface EventActionsSectionProps {
+  isAdmin: boolean;
+  canManageEvents: boolean;
   userRSVPStatus: string | null;
   isPastEvent: boolean;
   canAddGuests: boolean;
@@ -16,10 +18,10 @@ interface EventActionsSectionProps {
   onCancelRSVP: () => void;
   onEdit?: () => void;
   onDelete?: () => void;
-  onTogglePublish?: () => void;
-  onViewDetails?: () => void;
   showPublishToggle?: boolean;
   isPublished?: boolean;
+  onViewDetails?: () => void;
+  onTogglePublish?: () => void;
   isAuthChecking?: boolean;
   requireAuth?: boolean;
   event: {
@@ -32,11 +34,11 @@ interface EventActionsSectionProps {
   isFullyBooked?: boolean;
   canJoinWaitlist?: boolean;
   isWixEvent?: boolean;
-  isAdmin?: boolean;
-  canManageEvents?: boolean;
 }
 
 export function EventActionsSection({
+  isAdmin,
+  canManageEvents,
   userRSVPStatus,
   isPastEvent,
   canAddGuests,
@@ -56,18 +58,19 @@ export function EventActionsSection({
   isAuthenticated = false,
   isFullyBooked = false,
   canJoinWaitlist = false,
-  isWixEvent = false,
-  isAdmin,
-  canManageEvents
+  isWixEvent = false
 }: EventActionsSectionProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const isMobile = useIsMobile();
-  const { getEffectivePermissions } = usePermissions();
+  const { user } = useAuthState();
   
-  // Get synchronous permissions for rendering if not provided from props
-  const permissions = getEffectivePermissions();
-  const effectiveIsAdmin = isAdmin !== undefined ? isAdmin : permissions.isAdmin;
-  const effectiveCanManage = canManageEvents !== undefined ? canManageEvents : permissions.canManageEvents;
+  // Enhanced event actions with permission checks
+  const { isLoading: isActionLoading } = useEventActions({
+    eventId: event.id,
+    createdBy: event.created_by || ''
+  });
+
+  // Check if the current user is the creator of this event
+  const isCreator = user?.id === event.created_by;
 
   const handleRSVP = async (guests?: { firstName: string }[]) => {
     setIsSubmitting(true);
@@ -109,14 +112,13 @@ export function EventActionsSection({
 
   return (
     <div className="space-y-4">
-      {/* RSVP Actions - Always at the top for easy access */}
       <RSVPActions
         isAuthenticated={isAuthenticated}
         userRSVPStatus={userRSVPStatus}
         canAddGuests={canAddGuests}
         isFullyBooked={isFullyBooked}
         isPastEvent={isPastEvent}
-        isSubmitting={isSubmitting}
+        isSubmitting={isSubmitting || isActionLoading}
         currentGuests={currentGuests}
         eventTitle={event.title}
         onRSVP={handleRSVP}
@@ -124,16 +126,16 @@ export function EventActionsSection({
         canJoinWaitlist={canJoinWaitlist}
       />
       
-      {/* Admin and Details actions - Responsive layout */}
-      <div className={`flex ${isMobile ? 'flex-col space-y-2' : 'flex-wrap items-center justify-between'} gap-2 mt-4`}>
+      <div className="flex flex-wrap items-center justify-between gap-2 mt-4">
         <AdminActions
+          isAdmin={isAdmin}
+          canManageEvents={canManageEvents || isCreator}
           isPastEvent={isPastEvent}
           isWixEvent={isWixEvent}
           showDelete={showDelete}
           showPublishToggle={showPublishToggle}
           isPublished={isPublished}
           createdBy={event.created_by || ''}
-          eventId={event.id}
           onEdit={onEdit}
           onDelete={onDelete}
           onTogglePublish={onTogglePublish}

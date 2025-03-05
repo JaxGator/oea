@@ -8,54 +8,31 @@ const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 if (!SUPABASE_URL) throw new Error('Missing SUPABASE_URL');
 if (!SUPABASE_ANON_KEY) throw new Error('Missing SUPABASE_ANON_KEY');
 
-// Create a wrapper for console.error that includes timestamps
-const logError = (message: string, ...args: any[]) => {
-  console.error(`${message} [${new Date().toISOString()}]`, ...args);
-};
-
-let supabaseClient;
-
-try {
-  // Create the Supabase client with enhanced configuration
-  supabaseClient = createClient<Database>(
-    SUPABASE_URL,
-    SUPABASE_ANON_KEY,
-    {
-      auth: {
-        autoRefreshToken: true,
-        persistSession: true,
-        detectSessionInUrl: true,
-        flowType: 'pkce',
-        storage: typeof window !== 'undefined' ? window.localStorage : undefined,
-        storageKey: 'oea-auth-token',
+export const supabase = createClient<Database>(
+  SUPABASE_URL,
+  SUPABASE_ANON_KEY,
+  {
+    auth: {
+      autoRefreshToken: true,
+      persistSession: true,
+      detectSessionInUrl: true,
+      flowType: 'pkce',
+      storage: typeof window !== 'undefined' ? window.localStorage : undefined,
+      storageKey: 'oea-auth-token',
+    },
+    global: {
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': SUPABASE_ANON_KEY,
       },
-      global: {
-        headers: {
-          'Content-Type': 'application/json',
-          'apikey': SUPABASE_ANON_KEY,
-        },
-      },
-      realtime: {
-        params: {
-          eventsPerSecond: 10
-        }
+    },
+    realtime: {
+      params: {
+        eventsPerSecond: 10
       }
     }
-  );
-  
-  console.log('Supabase client initialized successfully');
-} catch (error) {
-  logError('Failed to initialize Supabase client:', error);
-  
-  // Still provide a fallback client to prevent app from completely crashing
-  supabaseClient = createClient<Database>(
-    SUPABASE_URL,
-    SUPABASE_ANON_KEY
-  );
-}
-
-// Export the client
-export const supabase = supabaseClient;
+  }
+);
 
 // Enhanced connection test with detailed logging
 export const testSupabaseConnection = async () => {
@@ -69,11 +46,12 @@ export const testSupabaseConnection = async () => {
     const { data: { session }, error: sessionError } = await supabase.auth.getSession();
     
     if (sessionError) {
-      logError('Supabase auth test error:', {
+      console.error('Supabase auth test error:', {
         error: sessionError,
         errorCode: sessionError.code || 'unknown',
         errorMessage: sessionError.message,
         url: SUPABASE_URL,
+        timestamp: new Date().toISOString()
       });
       return false;
     }
@@ -86,11 +64,12 @@ export const testSupabaseConnection = async () => {
       .maybeSingle();
     
     if (dbError) {
-      logError('Supabase database test error:', {
+      console.error('Supabase database test error:', {
         error: dbError,
         errorCode: dbError.code,
         errorMessage: dbError.message,
         url: SUPABASE_URL,
+        timestamp: new Date().toISOString()
       });
       return false;
     }
@@ -103,9 +82,10 @@ export const testSupabaseConnection = async () => {
     
     return true;
   } catch (error) {
-    logError('Supabase connection test failed:', {
+    console.error('Supabase connection test failed:', {
       error,
       url: SUPABASE_URL,
+      timestamp: new Date().toISOString()
     });
     return false;
   }
@@ -115,7 +95,7 @@ export const testSupabaseConnection = async () => {
 if (typeof window !== 'undefined') {
   testSupabaseConnection().then(isConnected => {
     if (!isConnected) {
-      logError('Failed to establish initial Supabase connection');
+      console.error('Failed to establish initial Supabase connection');
     }
   });
 }

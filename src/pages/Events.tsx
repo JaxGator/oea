@@ -11,7 +11,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import type { Event, EventsPage } from "@/types/database";
 import { toast } from "sonner";
-import { LoadingScreen } from "@/components/ui/loading-screen";
 
 export default function Events() {
   const { isAuthenticated, profile } = useAuthState();
@@ -28,7 +27,7 @@ export default function Events() {
   const { handleRSVP, cancelRSVP } = useRSVP();
 
   // Fetch RSVPs for all events
-  const { data: eventsWithRSVPs, isLoading: isRSVPsLoading } = useQuery({
+  const { data: eventsWithRSVPs } = useQuery({
     queryKey: ['events-with-rsvps'],
     queryFn: async () => {
       if (!eventsData?.pages?.[0]?.data) return [];
@@ -85,7 +84,7 @@ export default function Events() {
   });
 
   // Fetch user's RSVP statuses
-  const { data: userRSVPs, isLoading: isUserRSVPsLoading } = useQuery({
+  const { data: userRSVPs } = useQuery({
     queryKey: ['user-rsvps', eventsData?.pages?.[0]?.data?.map(e => e.id)],
     queryFn: async () => {
       if (!profile?.id || !eventsData?.pages?.[0]?.data) return null;
@@ -119,13 +118,6 @@ export default function Events() {
     retry: 3,
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000)
   });
-
-  const isLoading = isEventsLoading || isRSVPsLoading || isUserRSVPsLoading;
-
-  // Show a full-page loading state on initial load
-  if (isLoading && !eventsWithRSVPs) {
-    return <LoadingScreen message="Loading events..." />;
-  }
 
   const allEvents = eventsWithRSVPs || eventsData?.pages?.flatMap(page => (page as EventsPage).data) || [];
   const totalCount = eventsData?.pages?.[0] ? (eventsData.pages[0] as EventsPage).count : 0;
@@ -163,10 +155,7 @@ export default function Events() {
     toast.error("Failed to load events. Please try again.");
     return (
       <div className="min-h-screen bg-[#F1F0FB] flex items-center justify-center animate-fade-in">
-        <div className="text-black p-6 bg-white rounded-lg shadow-lg">
-          <h3 className="text-xl font-semibold mb-2">Error Loading Events</h3>
-          <p>We couldn't load the events. Please try refreshing the page.</p>
-        </div>
+        <div className="text-black">Error loading events. Please try again.</div>
       </div>
     );
   }
@@ -189,7 +178,7 @@ export default function Events() {
           pastEvents={pastEvents}
           onRSVP={handleRSVP}
           onCancelRSVP={cancelRSVP}
-          isLoading={isLoading}
+          isLoading={isEventsLoading}
           onUpdate={handleEventUpdate}
           userRSVPs={userRSVPs || {}}
           isAuthenticated={isAuthenticated}

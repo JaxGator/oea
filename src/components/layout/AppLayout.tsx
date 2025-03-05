@@ -5,12 +5,11 @@ import { DesktopNavigation } from "../DesktopNavigation";
 import { MobileNavigation } from "../MobileNavigation";
 import { useMaintenanceMode } from "@/hooks/useMaintenanceMode";
 import Maintenance from "@/pages/Maintenance";
+import { supabase } from "@/integrations/supabase/client";
 import { Toaster } from "@/components/ui/sonner";
 import { Footer } from "@/components/home/Footer";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { Loader2 } from "lucide-react";
-import { ErrorBoundary } from "@/components/error/ErrorBoundary";
 
 const skipLinkStyles = `
   sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 
@@ -21,22 +20,6 @@ const skipLinkStyles = `
 const LoadingFallback = () => (
   <div className="min-h-screen flex items-center justify-center">
     <Loader2 className="h-8 w-8 animate-spin text-primary" />
-    <span className="ml-2">Loading content...</span>
-  </div>
-);
-
-const ErrorFallback = () => (
-  <div className="min-h-screen flex items-center justify-center">
-    <div className="p-4 rounded-lg bg-red-50 text-red-800 max-w-md">
-      <h2 className="text-lg font-semibold mb-2">Something went wrong</h2>
-      <p>We encountered an error loading this page. Please try refreshing.</p>
-      <button 
-        onClick={() => window.location.reload()} 
-        className="mt-4 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
-      >
-        Refresh Page
-      </button>
-    </div>
   </div>
 );
 
@@ -48,19 +31,13 @@ export function AppLayout() {
   const { data: gaId } = useQuery({
     queryKey: ['google-analytics-id'],
     queryFn: async () => {
-      try {
-        const { data } = await supabase
-          .from('site_config')
-          .select('value')
-          .eq('key', 'google_analytics_id')
-          .single();
-        return data?.value;
-      } catch (error) {
-        console.error('Failed to fetch Google Analytics ID:', error);
-        return null;
-      }
-    },
-    staleTime: Infinity
+      const { data } = await supabase
+        .from('site_config')
+        .select('value')
+        .eq('key', 'google_analytics_id')
+        .single();
+      return data?.value;
+    }
   });
 
   useEffect(() => {
@@ -69,8 +46,8 @@ export function AppLayout() {
   }, [location.pathname]);
 
   useEffect(() => {
-    if (gaId && typeof window !== 'undefined') {
-      try {
+    const initializeGA = async () => {
+      if (gaId && typeof window !== 'undefined') {
         // Load Google Analytics script
         const script = document.createElement('script');
         script.async = true;
@@ -86,11 +63,38 @@ export function AppLayout() {
         gtag('config', gaId);
 
         console.log('Google Analytics initialized with ID:', gaId);
-      } catch (error) {
-        console.error('Failed to initialize Google Analytics:', error);
       }
-    }
+    };
+
+    initializeGA();
   }, [gaId]);
+
+  useEffect(() => {
+    const fetchFavicon = async () => {
+      const { data } = await supabase
+        .from('site_config')
+        .select('value')
+        .eq('key', 'favicon_url')
+        .single();
+
+      if (data?.value) {
+        // Remove any existing favicon
+        const existingFavicon = document.querySelector("link[rel*='icon']");
+        if (existingFavicon) {
+          existingFavicon.remove();
+        }
+
+        // Create and append new favicon
+        const link = document.createElement('link');
+        link.setAttribute('type', 'image/x-icon');
+        link.setAttribute('rel', 'shortcut icon');
+        link.setAttribute('href', data.value);
+        document.head.appendChild(link);
+      }
+    };
+
+    fetchFavicon();
+  }, []);
 
   if (isMaintenanceMode) {
     return <Maintenance />;
@@ -119,11 +123,9 @@ export function AppLayout() {
 
       {/* Main Content */}
       <main id="main-content" className="flex-1" tabIndex={-1}>
-        <ErrorBoundary fallback={<ErrorFallback />}>
-          <Suspense fallback={<LoadingFallback />}>
-            <Outlet />
-          </Suspense>
-        </ErrorBoundary>
+        <Suspense fallback={<LoadingFallback />}>
+          <Outlet />
+        </Suspense>
       </main>
 
       {/* Footer */}
