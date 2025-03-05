@@ -23,6 +23,7 @@ import { TermsAndConditions } from "./components/legal/TermsAndConditions";
 import { ErrorBoundary } from "./components/error/ErrorBoundary";
 import { PublicPollView } from "./components/members/polls/PublicPollView";
 import { PublicEventView } from "./components/event/public/PublicEventView";
+import { useEffect } from "react";
 
 const ErrorFallback = () => (
   <div className="min-h-screen flex items-center justify-center">
@@ -34,12 +35,15 @@ const ErrorFallback = () => (
 );
 
 const App = () => {
-  console.log('App rendering - initializing routes');
+  useEffect(() => {
+    console.log('App rendering - initializing routes');
+  }, []);
   
   return (
     <ErrorBoundary fallback={ErrorFallback}>
       <AppProviders>
-        {console.log('AppProviders rendered successfully')}
+        {/* Log via comment to avoid rendering issues */}
+        {/* App providers rendered successfully */}
         <Routes>
           <Route path="/auth" element={<Auth />} />
           <Route element={<AppLayout />}>

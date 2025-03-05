@@ -9,6 +9,8 @@ export interface PermissionContextType {
     canDelete: boolean;
     canManage: boolean;
     isAdmin: boolean;
+    canManageEvents: boolean;
+    userId?: string;
   };
   invalidateCache: () => void;
   isAdmin: boolean;
@@ -25,7 +27,8 @@ export const PermissionContext = createContext<PermissionContextType>({
     canEdit: false,
     canDelete: false,
     canManage: false,
-    isAdmin: false
+    isAdmin: false,
+    canManageEvents: false
   }),
   invalidateCache: () => {},
   isAdmin: false,

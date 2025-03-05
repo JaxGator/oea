@@ -35,12 +35,16 @@ export function usePermissions() {
     const showFeedback = options?.showFeedback || false;
     const customMessage = options?.customErrorMessage;
     
-    // Use the store's check permission with custom error handling
-    const result = await storeCheckPermission(type, entityId, createdBy, showFeedback);
+    // Use the store's check permission (modified to not expect showFeedback)
+    const result = await storeCheckPermission(type, entityId, createdBy);
     
     // If custom message is provided and permission is denied, show it
     if (!result && showFeedback && customMessage) {
       toast.error(customMessage);
+    } else if (!result && showFeedback) {
+      // Use the service to get a default error message
+      const message = PermissionService.getPermissionErrorMessage(type);
+      toast.error(message);
     }
     
     return result;

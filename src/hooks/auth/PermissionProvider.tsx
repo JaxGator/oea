@@ -35,7 +35,9 @@ export function PermissionProvider({ children }: PermissionProviderProps) {
         canEdit: checkPermission('edit', entityId, createdBy),
         canDelete: checkPermission('delete', entityId, createdBy),
         canManage: checkPermission('manage', entityId, createdBy),
-        isAdmin: checkPermission('admin', entityId, createdBy)
+        isAdmin: checkPermission('admin', entityId, createdBy),
+        canManageEvents: isAdmin || (isMember && isApproved),
+        userId: profile?.id
       };
     };
 
