@@ -21,21 +21,27 @@ const queryClient = new QueryClient({
       gcTime: 1000 * 60 * 60 * 24, // 24 hours
       staleTime: 1000 * 60 * 5, // 5 minutes
     },
+    mutations: {
+      // Handle mutation errors globally
+      onError: (error) => {
+        console.error('Global mutation error:', error);
+        toast.error('An operation failed. Please try again.');
+      }
+    }
   },
 });
 
-// Fix the query cache subscription issue by using the correct pattern
-queryClient.getQueryCache().subscribe(event => {
-  console.log('Query cache event:', event);
-  if (event.type === 'error') {
-    console.error('Query cache error:', event.error);
+// Set up global query error handler using onError option instead of direct subscription
+queryClient.getQueryCache().subscribe({
+  onError: (error) => {
+    console.error('Query cache error:', error);
+    toast.error('Failed to load data. Please try refreshing.');
   }
 });
 
-queryClient.getMutationCache().subscribe(event => {
-  console.log('Mutation cache event:', event);
-  if (event.type === 'error') {
-    console.error('Mutation cache error:', event.error);
+queryClient.getMutationCache().subscribe({
+  onError: (error) => {
+    console.error('Mutation cache error:', error);
     toast.error('An operation failed. Please try again.');
   }
 });
