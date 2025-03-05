@@ -1,10 +1,9 @@
-
 import React from "react";
 import { ThemeProvider } from "next-themes";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { NotificationProvider } from "./NotificationProvider";
 import { StreamChatProvider } from "@/components/messages/StreamChatProvider";
-import { PermissionProvider } from "@/hooks/auth/usePermissionStore";
+import { PermissionProvider } from "@/hooks/auth/PermissionProvider";
 
 interface AppProvidersProps {
   children: React.ReactNode;
