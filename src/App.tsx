@@ -40,7 +40,7 @@ const App = () => {
   }, []);
   
   return (
-    <ErrorBoundary fallback={<ErrorFallback />}>
+    <ErrorBoundary fallback={ErrorFallback}>
       <Routes>
         <Route path="/auth" element={<Auth />} />
         <Route element={<AppLayout />}>

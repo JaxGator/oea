@@ -26,29 +26,37 @@ export function useAuthState(): AuthState {
   
   // Update authentication state whenever authUser changes
   useEffect(() => {
-    const authState = !!authUser;
-    setIsAuthenticated(authState);
-    
-    console.log("Auth state updated:", {
-      isAuthenticated: authState,
-      userId: authUser?.id,
-      timestamp: new Date().toISOString()
-    });
+    try {
+      const authState = !!authUser;
+      setIsAuthenticated(authState);
+      
+      console.log("Auth state updated:", {
+        isAuthenticated: authState,
+        userId: authUser?.id,
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error("Error updating auth state:", error);
+    }
   }, [authUser]);
 
   // Force refresh of authentication state on component mount
   useEffect(() => {
     const checkAuthStatus = async () => {
-      const { data } = await supabase.auth.getSession();
-      const hasSession = !!data.session;
-      
-      console.log("Initial auth check:", {
-        hasSession,
-        sessionId: data.session?.user?.id, // Fixed: access user.id instead of session.id
-        timestamp: new Date().toISOString()
-      });
-      
-      setIsAuthenticated(hasSession);
+      try {
+        const { data } = await supabase.auth.getSession();
+        const hasSession = !!data.session;
+        
+        console.log("Initial auth check:", {
+          hasSession,
+          sessionId: data.session?.user?.id,
+          timestamp: new Date().toISOString()
+        });
+        
+        setIsAuthenticated(hasSession);
+      } catch (error) {
+        console.error("Error checking auth status:", error);
+      }
     };
     
     checkAuthStatus();
@@ -57,37 +65,41 @@ export function useAuthState(): AuthState {
   useEffect(() => {
     if (!authUser?.id) return;
 
-    const channel = supabase
-      .channel(`public:profiles:id=eq.${authUser.id}`)
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'profiles',
-          filter: `id=eq.${authUser.id}`
-        },
-        (payload) => {
-          console.log('Profile changed:', {
-            payload,
+    try {
+      const channel = supabase
+        .channel(`public:profiles:id=eq.${authUser.id}`)
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'profiles',
+            filter: `id=eq.${authUser.id}`
+          },
+          (payload) => {
+            console.log('Profile changed:', {
+              payload,
+              timestamp: new Date().toISOString()
+            });
+            queryClient.invalidateQueries({
+              queryKey: ['profile', authUser.id]
+            });
+          }
+        )
+        .subscribe((status) => {
+          console.log('Profile subscription status:', {
+            status,
             timestamp: new Date().toISOString()
           });
-          queryClient.invalidateQueries({
-            queryKey: ['profile', authUser.id]
-          });
-        }
-      )
-      .subscribe((status) => {
-        console.log('Profile subscription status:', {
-          status,
-          timestamp: new Date().toISOString()
         });
-      });
 
-    return () => {
-      console.log('Cleaning up profile subscription');
-      supabase.removeChannel(channel);
-    };
+      return () => {
+        console.log('Cleaning up profile subscription');
+        supabase.removeChannel(channel);
+      };
+    } catch (error) {
+      console.error("Error setting up profile subscription:", error);
+    }
   }, [authUser?.id, queryClient]);
 
   // Enhanced error handling for profile errors
