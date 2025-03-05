@@ -1,4 +1,4 @@
 
-export { PermissionProvider } from './PermissionProvider';
 export { usePermissionStore, usePermissionCache } from './usePermissionStore';
-export type { PermissionType } from './permissionContext';
+export { PermissionProvider } from './PermissionProvider';
+export type { PermissionType, PermissionContextValue } from './permissionContext';
