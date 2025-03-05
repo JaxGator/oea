@@ -4,7 +4,7 @@ import { BrowserRouter } from 'react-router-dom';
 import App from './App';
 import './index.css';
 import { AppProviders } from './components/providers/AppProviders';
-import { Toaster } from "@/components/ui/toaster";
+import { Toaster } from "sonner";
 
 // Setup global error handling
 window.addEventListener('error', (event) => {
