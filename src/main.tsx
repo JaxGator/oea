@@ -4,6 +4,7 @@ import { BrowserRouter } from 'react-router-dom';
 import App from './App';
 import './index.css';
 import { AppProviders } from './components/providers/AppProviders';
+import { Toaster } from "@/components/ui/toaster";
 
 // Setup global error handling
 window.addEventListener('error', (event) => {
@@ -24,6 +25,7 @@ try {
     <BrowserRouter>
       <AppProviders>
         <App />
+        <Toaster />
       </AppProviders>
     </BrowserRouter>
   );

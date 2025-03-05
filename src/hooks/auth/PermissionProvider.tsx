@@ -31,60 +31,82 @@ export function PermissionProvider({ children }: PermissionProviderProps) {
 
   // Memoize the context value to prevent unnecessary re-renders
   const contextValue = useMemo(() => {
-    const checkPermission = (
-      type: 'edit' | 'delete' | 'manage' | 'admin',
-      entityId?: string,
-      createdBy?: string
-    ): boolean => {
-      try {
-        return PermissionService.hasPermission(profile, type, entityId, createdBy);
-      } catch (error) {
-        console.error("Permission check error:", error);
-        return false; // Fail safe by denying permission on error
-      }
-    };
+    try {
+      const checkPermission = (
+        type: 'edit' | 'delete' | 'manage' | 'admin',
+        entityId?: string,
+        createdBy?: string
+      ): boolean => {
+        try {
+          return PermissionService.hasPermission(profile, type, entityId, createdBy);
+        } catch (error) {
+          console.error("Permission check error:", error);
+          return false; // Fail safe by denying permission on error
+        }
+      };
 
-    const getEffectivePermissions = (
-      entityId?: string,
-      createdBy?: string
-    ) => {
-      try {
-        return {
-          canEdit: checkPermission('edit', entityId, createdBy),
-          canDelete: checkPermission('delete', entityId, createdBy),
-          canManage: checkPermission('manage', entityId, createdBy),
-          isAdmin: checkPermission('admin', entityId, createdBy),
-          canManageEvents: isAdmin || (isMember && isApproved),
-          userId: profile?.id
-        };
-      } catch (error) {
-        console.error("Getting effective permissions error:", error);
-        // Return fail-safe permissions (no permissions) on error
-        return {
+      const getEffectivePermissions = (
+        entityId?: string,
+        createdBy?: string
+      ) => {
+        try {
+          return {
+            canEdit: checkPermission('edit', entityId, createdBy),
+            canDelete: checkPermission('delete', entityId, createdBy),
+            canManage: checkPermission('manage', entityId, createdBy),
+            isAdmin: checkPermission('admin', entityId, createdBy),
+            canManageEvents: isAdmin || (isMember && isApproved),
+            userId: profile?.id
+          };
+        } catch (error) {
+          console.error("Getting effective permissions error:", error);
+          // Return fail-safe permissions (no permissions) on error
+          return {
+            canEdit: false,
+            canDelete: false,
+            canManage: false,
+            isAdmin: false,
+            canManageEvents: false,
+            userId: profile?.id
+          };
+        }
+      };
+
+      const invalidateCache = () => {
+        setCacheBuster(prev => prev + 1);
+      };
+
+      return {
+        isVerifying: isLoading,
+        checkPermission,
+        getEffectivePermissions,
+        invalidateCache,
+        isAdmin,
+        isMember,
+        isApproved,
+        canManageEvents
+      };
+    } catch (error) {
+      console.error("Error creating permission context:", error);
+      // Return fallback context with no permissions
+      return {
+        isVerifying: true,
+        checkPermission: () => false,
+        getEffectivePermissions: () => ({
           canEdit: false,
           canDelete: false,
           canManage: false,
           isAdmin: false,
           canManageEvents: false,
-          userId: profile?.id
-        };
-      }
-    };
-
-    const invalidateCache = () => {
-      setCacheBuster(prev => prev + 1);
-    };
-
-    return {
-      isVerifying: isLoading,
-      checkPermission,
-      getEffectivePermissions,
-      invalidateCache,
-      isAdmin,
-      isMember,
-      isApproved,
-      canManageEvents
-    };
+          userId: undefined
+        }),
+        invalidateCache: () => {},
+        isAdmin: false,
+        isMember: false,
+        isApproved: false,
+        canManageEvents: false
+      };
+    }
   }, [profile, isLoading, isAdmin, isMember, isApproved, canManageEvents, cacheBuster]);
 
   return (
