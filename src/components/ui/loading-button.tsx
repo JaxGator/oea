@@ -32,7 +32,7 @@ export const LoadingButton = React.forwardRef<HTMLButtonElement, LoadingButtonPr
     ...props 
   }, ref) => {
     // Determine overall disabled state
-    const isDisabled = disabled || isLoading || isVerifyingPermission || permissionDenied;
+    const isDisabled = disabled || isLoading || isVerifyingPermission;
     
     // Determine what to show
     const showLoading = isLoading;

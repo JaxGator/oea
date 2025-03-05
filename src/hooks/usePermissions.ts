@@ -1,5 +1,4 @@
-
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { useAuthState } from "@/hooks/useAuthState";
 import { supabase } from "@/integrations/supabase/client";
 import { PermissionService } from "@/services/permissions/permissionService";
@@ -18,6 +17,30 @@ export function usePermissions() {
   const [isVerifying, setIsVerifying] = useState(false);
   const [permissionCache, setPermissionCache] = useState<Record<string, boolean>>({});
 
+  // Compute effective permissions synchronously, available immediately
+  const effectivePermissions = useMemo(() => {
+    // Default permission state when no user is present
+    if (!user) {
+      return {
+        isAdmin: false,
+        canManageEvents: false,
+        isAuthenticated: false
+      };
+    }
+    
+    const isAdmin = user.is_admin === true;
+    const isMember = user.is_member === true;
+    const isApproved = user.is_approved === true;
+    
+    return {
+      isAdmin,
+      isMember,
+      isApproved,
+      canManageEvents: isAdmin || isMember || isApproved,
+      isAuthenticated
+    };
+  }, [user, isAuthenticated]);
+
   // Direct permission check that does not update state
   const checkPermission = useCallback(async (
     type: 'edit' | 'delete' | 'manage' | 'admin', 
@@ -26,6 +49,19 @@ export function usePermissions() {
     options?: PermissionOptions
   ): Promise<boolean> => {
     const showFeedback = options?.showFeedback || false;
+    
+    // CRITICAL: Always check admin status first and grant all permissions
+    if (effectivePermissions.isAdmin) {
+      console.log('Admin user detected, bypassing permission check for:', type);
+      return true;
+    }
+
+    // CRITICAL: For member and approved users, grant all manage permissions
+    if ((type === 'manage' || type === 'edit' || type === 'delete') && 
+        (effectivePermissions.isMember || effectivePermissions.isApproved)) {
+      console.log('Member/approved user detected, granting permission for:', type);
+      return true;
+    }
     
     // Always check session validity first
     const { data } = await supabase.auth.getSession();
@@ -38,29 +74,20 @@ export function usePermissions() {
       return false;
     }
     
-    // Immediate checks for admin and member status
-    const isAdmin = user.is_admin === true;
-    const isMember = user.is_member === true;
-    const isApproved = user.is_approved === true;
-    
-    // Admin/member/approved users always have all permissions
-    if (isAdmin || isMember || isApproved) {
-      return true;
-    }
-    
-    // Type-specific checks
+    // Type-specific checks for non-admin, non-member users
     switch (type) {
       case 'admin':
-        if (showFeedback && !isAdmin) {
+        if (showFeedback && !effectivePermissions.isAdmin) {
           toast.error(options?.customErrorMessage || "This action requires administrator privileges");
         }
-        return isAdmin;
+        return effectivePermissions.isAdmin;
         
       case 'manage':
-        if (showFeedback && !(isAdmin || isMember || isApproved)) {
+        // This should already be handled above, but keeping for safety
+        if (showFeedback && !effectivePermissions.canManageEvents) {
           toast.error(options?.customErrorMessage || "This action requires approved member privileges");
         }
-        return isAdmin || isMember || isApproved;
+        return effectivePermissions.canManageEvents;
         
       case 'edit':
       case 'delete':
@@ -85,7 +112,7 @@ export function usePermissions() {
         }
         return false;
     }
-  }, [user]);
+  }, [user, effectivePermissions]);
 
   // Cached permission check with optional state update
   const verifyPermission = useCallback(async (
@@ -94,7 +121,20 @@ export function usePermissions() {
     createdBy?: string,
     options?: PermissionOptions
   ): Promise<boolean> => {
-    // Generate cache key
+    // CRITICAL: Admin users always have all permissions - early return
+    if (effectivePermissions.isAdmin) {
+      console.log('Admin user detected, bypassing permission verification for:', type);
+      return true;
+    }
+    
+    // CRITICAL: For member and approved users, grant all manage permissions - early return
+    if ((type === 'manage' || type === 'edit' || type === 'delete') && 
+        (effectivePermissions.isMember || effectivePermissions.isApproved)) {
+      console.log('Member/approved user detected, granting permission for:', type);
+      return true;
+    }
+    
+    // Generate cache key for specific permission check
     const cacheKey = `${type}:${entityId || ''}:${createdBy || ''}`;
     
     // Return cached result if available
@@ -126,28 +166,12 @@ export function usePermissions() {
     } finally {
       setIsVerifying(false);
     }
-  }, [checkPermission, permissionCache]);
+  }, [checkPermission, permissionCache, effectivePermissions]);
   
   // Helper function to get effective permission values synchronously
   const getEffectivePermissions = useCallback(() => {
-    if (!user) {
-      return {
-        isAdmin: false,
-        canManageEvents: false,
-        isAuthenticated: false
-      };
-    }
-    
-    const isAdmin = user.is_admin === true;
-    const isMember = user.is_member === true;
-    const isApproved = user.is_approved === true;
-    
-    return {
-      isAdmin,
-      canManageEvents: isAdmin || isMember || isApproved,
-      isAuthenticated
-    };
-  }, [user, isAuthenticated]);
+    return effectivePermissions;
+  }, [effectivePermissions]);
   
   // Clear cache when user changes
   useEffect(() => {
@@ -170,9 +194,9 @@ export function usePermissions() {
     getEffectivePermissions,
     showPermissionDeniedToast,
     // Expose these for backward compatibility
-    isAdmin: user?.is_admin === true,
-    isMember: user?.is_member === true, 
-    isApproved: user?.is_approved === true,
-    canManageEvents: user?.is_admin === true || user?.is_member === true || user?.is_approved === true
+    isAdmin: effectivePermissions.isAdmin,
+    isMember: effectivePermissions.isMember, 
+    isApproved: effectivePermissions.isApproved,
+    canManageEvents: effectivePermissions.canManageEvents
   };
 }

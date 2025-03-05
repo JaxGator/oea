@@ -35,42 +35,17 @@ export function AdminActions({
 }: AdminActionsProps) {
   const { executeAction, isLoading } = useActionFeedback();
   const { 
-    verifyPermission, 
-    isVerifying,
     getEffectivePermissions,
-    showPermissionDeniedToast
+    isVerifying
   } = usePermissions();
   
-  const [canEdit, setCanEdit] = useState(false);
-  const [canDelete, setCanDelete] = useState(false);
-  const [canManage, setCanManage] = useState(false);
-  const [isCheckingPermissions, setIsCheckingPermissions] = useState(true);
-  const [permissionError, setPermissionError] = useState<string | null>(null);
-  
-  // Get synchronous permissions for initial render
+  // Get synchronous permissions for immediate render decision
   const { isAdmin, canManageEvents } = getEffectivePermissions();
   
-  // Check permissions when component mounts
-  useEffect(() => {
-    const checkPermissions = async () => {
-      setIsCheckingPermissions(true);
-      setPermissionError(null);
-      
-      // Check all required permissions
-      const [canEditResult, canDeleteResult, canManageResult] = await Promise.all([
-        verifyPermission('edit', eventId, createdBy),
-        verifyPermission('delete', eventId, createdBy),
-        verifyPermission('manage', eventId, createdBy)
-      ]);
-      
-      setCanEdit(canEditResult);
-      setCanDelete(canDeleteResult);
-      setCanManage(canManageResult);
-      setIsCheckingPermissions(false);
-    };
-    
-    checkPermissions();
-  }, [eventId, createdBy, verifyPermission]);
+  // If user is admin or can manage events, they can perform any action
+  const effectiveCanEdit = isAdmin || canManageEvents || createdBy === (getEffectivePermissions().user?.id || "");
+  const effectiveCanDelete = isAdmin || canManageEvents || createdBy === (getEffectivePermissions().user?.id || "");
+  const effectiveCanManage = isAdmin || canManageEvents;
 
   // Handle edit with feedback
   const handleEdit = () => {
@@ -79,8 +54,8 @@ export function AdminActions({
       return;
     }
     
-    if (!canEdit) {
-      showPermissionDeniedToast('edit', "You don't have permission to edit this event");
+    if (!effectiveCanEdit) {
+      toast.error("You don't have permission to edit this event");
       return;
     }
     
@@ -94,8 +69,8 @@ export function AdminActions({
       return;
     }
     
-    if (!canDelete) {
-      showPermissionDeniedToast('delete', "You don't have permission to delete this event");
+    if (!effectiveCanDelete) {
+      toast.error("You don't have permission to delete this event");
       return;
     }
     
@@ -116,8 +91,8 @@ export function AdminActions({
 
   // Handle publish/unpublish with feedback
   const handleTogglePublish = async () => {
-    if (!canManage) {
-      showPermissionDeniedToast('manage', "You don't have permission to publish or unpublish events");
+    if (!effectiveCanManage) {
+      toast.error("You don't have permission to publish or unpublish events");
       return;
     }
     
@@ -136,58 +111,48 @@ export function AdminActions({
     }
   };
   
-  const isCheckingAnyPermission = isCheckingPermissions || isVerifying;
-  
+  // Nothing to display if no actions are available or the user is still being verified
+  if (!onEdit && !onDelete && !onTogglePublish) {
+    return null;
+  }
+
+  // Render the admin actions based on permissions
   return (
     <div className="space-y-2">
-      {permissionError && (
-        <Alert variant="warning" className="mb-2">
-          <AlertDescription>{permissionError}</AlertDescription>
-        </Alert>
-      )}
-      
       <div className="flex flex-wrap items-center gap-2">
         {!isWixEvent && onEdit && (
-          <LoadingButton 
+          <Button 
             variant="outline" 
             size="sm" 
             onClick={handleEdit}
-            disabled={isPastEvent && !isAdmin}
-            isVerifyingPermission={isCheckingAnyPermission}
-            permissionDenied={!isCheckingAnyPermission && !canEdit}
-            permissionMessage="You don't have permission to edit this event"
+            disabled={isPastEvent && !isAdmin || isVerifying}
+            className={!effectiveCanEdit ? "opacity-70" : ""}
           >
             <Edit className="h-4 w-4 mr-2" />
             Edit
-          </LoadingButton>
+          </Button>
         )}
         
         {!isWixEvent && showDelete && onDelete && (
-          <LoadingButton 
+          <Button 
             variant="destructive" 
             size="sm" 
             onClick={handleDelete}
-            disabled={isPastEvent && !isAdmin || isLoading}
-            isVerifyingPermission={isCheckingAnyPermission}
-            permissionDenied={!isCheckingAnyPermission && !canDelete}
-            permissionMessage="You don't have permission to delete this event"
-            isLoading={isLoading}
+            disabled={isPastEvent && !isAdmin || isLoading || isVerifying}
+            className={!effectiveCanDelete ? "opacity-70" : ""}
           >
             <Trash2 className="h-4 w-4 mr-2" />
             Delete
-          </LoadingButton>
+          </Button>
         )}
         
         {showPublishToggle && onTogglePublish && (
-          <LoadingButton
+          <Button
             variant="secondary"
             size="sm"
             onClick={handleTogglePublish}
-            disabled={isLoading}
-            isVerifyingPermission={isCheckingAnyPermission}
-            permissionDenied={!isCheckingAnyPermission && !canManage}
-            permissionMessage="You don't have permission to publish/unpublish events"
-            isLoading={isLoading}
+            disabled={isLoading || isVerifying}
+            className={!effectiveCanManage ? "opacity-70" : ""}
           >
             {isPublished ? (
               <>
@@ -200,7 +165,7 @@ export function AdminActions({
                 Publish
               </>
             )}
-          </LoadingButton>
+          </Button>
         )}
       </div>
     </div>

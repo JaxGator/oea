@@ -9,39 +9,58 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 export function EventFormWrapper(props: EventFormProps) {
   const { user } = useAuthState();
   const { initialData, forceAdmin, forceCanManage } = props;
-  const { verifyPermission, isVerifying } = usePermissions();
+  const { getEffectivePermissions } = usePermissions();
   const [hasValidPermission, setHasValidPermission] = useState<boolean>(false);
   const [permissionChecked, setPermissionChecked] = useState<boolean>(false);
+  const [isVerifyingPermissions, setIsVerifyingPermissions] = useState<boolean>(false);
+  
+  // Get effective permissions synchronously
+  const { isAdmin, canManageEvents } = getEffectivePermissions();
   
   // Perform permission check when component mounts
   useEffect(() => {
     const checkPermissions = async () => {
-      if (!initialData?.id) {
-        // New event creation - permission granted
-        setHasValidPermission(true);
+      setIsVerifyingPermissions(true);
+      
+      try {
+        if (!initialData?.id) {
+          // New event creation - permission granted
+          setHasValidPermission(true);
+          setPermissionChecked(true);
+          return;
+        }
+        
+        // For existing events, admins and managers always have permission
+        if (isAdmin || canManageEvents || forceAdmin || forceCanManage) {
+          console.log("Admin or manager detected, granting edit permission");
+          setHasValidPermission(true);
+          setPermissionChecked(true);
+          return;
+        }
+        
+        // For regular users, only the creator can edit
+        const isCreator = initialData.created_by === user?.id;
+        setHasValidPermission(isCreator);
         setPermissionChecked(true);
-        return;
+        
+        console.log("Permission check complete:", {
+          isAdmin,
+          canManageEvents,
+          isCreator,
+          userId: user?.id,
+          eventCreator: initialData.created_by,
+          hasPermission: isAdmin || canManageEvents || isCreator
+        });
+      } finally {
+        setIsVerifyingPermissions(false);
       }
-      
-      // For existing events, verify edit permission
-      const hasPermission = await verifyPermission(
-        'edit',
-        initialData.id,
-        initialData.created_by,
-        { showFeedback: false } // Don't show toast here, we'll use inline message
-      );
-      
-      // Force permission if needed
-      const effectivePermission = hasPermission || forceAdmin || forceCanManage;
-      setHasValidPermission(effectivePermission);
-      setPermissionChecked(true);
     };
     
     checkPermissions();
-  }, [initialData, verifyPermission, forceAdmin, forceCanManage]);
+  }, [initialData, isAdmin, canManageEvents, user?.id, forceAdmin, forceCanManage]);
   
   // If we're editing and permissions check has completed but denied
-  if (initialData?.id && permissionChecked && !hasValidPermission && !isVerifying) {
+  if (initialData?.id && permissionChecked && !hasValidPermission && !isVerifyingPermissions) {
     return (
       <div className="space-y-4">
         <Alert variant="destructive">
@@ -66,7 +85,7 @@ export function EventFormWrapper(props: EventFormProps) {
       {...props}
       hasPermissionToEdit={hasValidPermission}
       user={user}
-      isVerifyingPermission={isVerifying}
+      isVerifyingPermission={isVerifyingPermissions}
     />
   );
 }

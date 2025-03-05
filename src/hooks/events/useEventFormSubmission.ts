@@ -28,7 +28,7 @@ export function useEventFormSubmission({
   const [localSubmitting, setLocalSubmitting] = useState(false);
   const [permissionError, setPermissionError] = useState<string | null>(null);
   const { handleSubmit: handleFormSubmit, isSubmitting } = useEventFormSubmit(onSuccess);
-  const { getEffectivePermissions, showPermissionDeniedToast } = usePermissions();
+  const { getEffectivePermissions } = usePermissions();
   
   // Get synchronous permissions
   const { isAdmin, canManageEvents } = getEffectivePermissions();
@@ -46,6 +46,14 @@ export function useEventFormSubmission({
     try {
       // Clear any previous errors
       setPermissionError(null);
+      
+      // Log current permissions state for debugging
+      console.log('Form submission - Permission state:', {
+        isAdmin: effectiveIsAdmin,
+        canManageEvents: effectiveCanManage,
+        hasPermissionToEdit,
+        isEditingExistingEvent: !!initialData?.id,
+      });
       
       const { data: sessionData } = await supabase.auth.getSession();
       const hasValidSession = !!sessionData.session;
@@ -66,8 +74,11 @@ export function useEventFormSubmission({
         return;
       }
       
-      // CRITICAL: Always let admins and members bypass permission checks
-      if (initialData?.id && !hasPermissionToEdit && !effectiveCanManage) {
+      // CRITICAL FIX: Always let admins bypass permission checks
+      const bypassPermissionCheck = effectiveIsAdmin || effectiveCanManage;
+      
+      // Only do permission check for existing events, not for new ones
+      if (initialData?.id && !hasPermissionToEdit && !bypassPermissionCheck) {
         const errorMessage = 'You do not have permission to edit this event';
         setPermissionError(errorMessage);
         toast.error(errorMessage);
