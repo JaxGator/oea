@@ -12,7 +12,7 @@ interface AppProvidersProps {
   children: React.ReactNode;
 }
 
-// Create a client
+// Create a new query client instance
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -21,12 +21,6 @@ const queryClient = new QueryClient({
       gcTime: 1000 * 60 * 60 * 24, // 24 hours
       staleTime: 1000 * 60 * 5, // 5 minutes
     },
-    mutations: {
-      onError: (error) => {
-        console.error('Global mutation error:', error);
-        toast.error('An operation failed. Please try again.');
-      }
-    }
   },
 });
 
@@ -36,18 +30,18 @@ export function AppProviders({ children }: AppProvidersProps) {
   useEffect(() => {
     console.log('AppProviders mounted');
     
-    // Set up global error handling for query cache
+    // Set up global error handling for query cache without filtering by specific event types
     const unsubscribeQuery = queryClient.getQueryCache().subscribe(event => {
-      if (event.type === 'observerResultsUpdated' && event.query.state.status === 'error') {
-        console.error('Query error:', event.query.state.error);
+      if (event.query.state.status === 'error') {
+        console.error('Query error detected:', event.query.state.error);
         toast.error('Failed to load data. Please try refreshing.');
       }
     });
     
-    // Set up global error handling for mutation cache
+    // Set up global error handling for mutation cache without filtering by specific event types
     const unsubscribeMutation = queryClient.getMutationCache().subscribe(event => {
-      if (event.type === 'observerAdded' && event.mutation.state.status === 'error') {
-        console.error('Mutation error:', event.mutation.state.error);
+      if (event.mutation.state.status === 'error') {
+        console.error('Mutation error detected:', event.mutation.state.error);
         toast.error('An operation failed. Please try again.');
       }
     });
