@@ -6,9 +6,11 @@ import { EventsHeader } from "@/components/event/sections/EventsHeader";
 import { EventsContent } from "@/components/event/sections/EventsContent";
 import { useAuthState } from "@/hooks/useAuthState";
 import { usePageTitle } from "@/hooks/usePageTitle";
+import { Event } from "@/types/event";
 
 export default function Events() {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
+  // Remove argument from useEvents call
   const { 
     data, 
     isLoading, 
@@ -16,7 +18,7 @@ export default function Events() {
     hasNextPage, 
     isFetchingNextPage,
     refetch
-  } = useEvents(selectedDate);
+  } = useEvents();
   
   const { userRSVPs, handleRSVP, handleCancelRSVP } = useRSVPManagement();
   const { isAuthenticated, isLoading: isAuthLoading } = useAuthState();
@@ -26,6 +28,28 @@ export default function Events() {
 
   // Flatten the pages of events into a single array
   const events = data?.pages.flatMap(page => page.data) || [];
+  
+  // Filter events by date if selected
+  const filteredEvents = selectedDate ? events.filter(event => {
+    const eventDate = new Date(event.date);
+    return eventDate >= selectedDate;
+  }) : events;
+  
+  // Separate upcoming and past events
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  
+  const upcomingEvents = filteredEvents.filter(event => {
+    const eventDate = new Date(event.date);
+    eventDate.setHours(0, 0, 0, 0);
+    return eventDate >= today;
+  });
+  
+  const pastEvents = filteredEvents.filter(event => {
+    const eventDate = new Date(event.date);
+    eventDate.setHours(0, 0, 0, 0);
+    return eventDate < today;
+  });
   
   // Log current state for debugging
   useEffect(() => {
@@ -49,20 +73,14 @@ export default function Events() {
         />
         
         <EventsContent 
-          events={events}
+          upcomingEvents={upcomingEvents}
+          pastEvents={pastEvents}
+          onRSVP={handleRSVP}
+          onCancelRSVP={handleCancelRSVP}
           isLoading={isLoading}
-          onLoadMore={() => {
-            if (hasNextPage && !isFetchingNextPage) {
-              fetchNextPage();
-            }
-          }}
-          hasMore={!!hasNextPage}
-          isLoadingMore={isFetchingNextPage}
+          onUpdate={() => refetch()}
           userRSVPs={userRSVPs}
-          isAuthLoading={isAuthLoading}
           isAuthenticated={isAuthenticated}
-          handleRSVP={handleRSVP}
-          handleCancelRSVP={handleCancelRSVP}
         />
       </div>
     </div>

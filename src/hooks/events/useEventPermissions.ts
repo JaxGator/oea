@@ -1,10 +1,10 @@
 
 import { useState, useCallback } from "react";
-import { PermissionService } from "@/services/permissions/permissionService";
 import { useAuthState } from "@/hooks/useAuthState";
-import { Event } from "@/types/event";
+import { Event, EventFormData } from "@/types/event";
 
-export function useEventPermissions(event?: Event, forceAdmin = false, forceCanManage = false) {
+// Update the function to accept either Event or EventFormData
+export function useEventPermissions(event?: Event | EventFormData, forceAdmin = false, forceCanManage = false) {
   const { user } = useAuthState();
   const [hasValidPermission, setHasValidPermission] = useState(false);
   const [verifyingAuth, setVerifyingAuth] = useState(false);
