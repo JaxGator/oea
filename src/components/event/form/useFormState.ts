@@ -7,20 +7,9 @@ import { toast } from "sonner";
 export function useFormState(initialData?: any, onSuccess?: () => void) {
   const [localSubmitting, setLocalSubmitting] = useState(false);
 
+  // Session verification is not necessary for viewing event details
   const verifySession = async () => {
-    try {
-      const { data, error } = await supabase.auth.getSession();
-      
-      if (error) {
-        console.error("Session verification error:", error);
-        return false;
-      }
-      
-      return !!data.session;
-    } catch (err) {
-      console.error("Session verification failed:", err);
-      return false;
-    }
+    return true;
   };
 
   return {

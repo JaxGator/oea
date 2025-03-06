@@ -1,187 +1,68 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useEvents } from "@/hooks/useEvents";
-import { useRSVP } from "@/hooks/useRSVP";
-import { useAuthState } from "@/hooks/useAuthState";
+import { useRSVPManagement } from "@/hooks/events/useRSVPManagement";
 import { EventsHeader } from "@/components/event/sections/EventsHeader";
 import { EventsContent } from "@/components/event/sections/EventsContent";
-import { useQueryClient } from "@tanstack/react-query";
-import { endOfDay, parseISO, startOfDay, set } from "date-fns";
-import { supabase } from "@/integrations/supabase/client";
-import { useQuery } from "@tanstack/react-query";
-import type { Event, EventsPage } from "@/types/database";
-import { toast } from "sonner";
+import { useAuthState } from "@/hooks/useAuthState";
+import { usePageTitle } from "@/hooks/usePageTitle";
 
 export default function Events() {
-  const { isAuthenticated, profile } = useAuthState();
-  const [isCreateEventOpen, setIsCreateEventOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
-  const queryClient = useQueryClient();
-  
   const { 
-    data: eventsData, 
-    isLoading: isEventsLoading, 
-    error,
+    data, 
+    isLoading, 
+    fetchNextPage, 
+    hasNextPage, 
+    isFetchingNextPage,
+    refetch
   } = useEvents(selectedDate);
-
-  const { handleRSVP, cancelRSVP } = useRSVP();
-
-  // Fetch RSVPs for all events
-  const { data: eventsWithRSVPs } = useQuery({
-    queryKey: ['events-with-rsvps'],
-    queryFn: async () => {
-      if (!eventsData?.pages?.[0]?.data) return [];
-
-      const eventIds = eventsData.pages[0].data.map(e => e.id);
-      
-      if (eventIds.length === 0) return [];
-      
-      try {
-        const { data: rsvpsData, error } = await supabase
-          .from('event_rsvps')
-          .select(`
-            event_id,
-            response,
-            status,
-            profiles:profiles (
-              username,
-              full_name
-            ),
-            event_guests (
-              id,
-              first_name
-            )
-          `)
-          .in('event_id', eventIds);
-
-        if (error) {
-          console.error('Error fetching RSVPs:', error);
-          return [];
-        }
-
-        // Group RSVPs by event
-        const rsvpsByEvent = rsvpsData.reduce((acc, rsvp) => {
-          if (!acc[rsvp.event_id]) {
-            acc[rsvp.event_id] = [];
-          }
-          acc[rsvp.event_id].push(rsvp);
-          return acc;
-        }, {} as Record<string, any[]>);
-
-        // Merge events with their RSVPs
-        return eventsData.pages[0].data.map(event => ({
-          ...event,
-          rsvps: rsvpsByEvent[event.id] || []
-        }));
-      } catch (error) {
-        console.error('Failed to fetch RSVPs:', error);
-        return eventsData.pages[0].data || [];
-      }
-    },
-    enabled: !!eventsData?.pages?.[0]?.data?.length,
-    retry: 3,
-    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000)
-  });
-
-  // Fetch user's RSVP statuses
-  const { data: userRSVPs } = useQuery({
-    queryKey: ['user-rsvps', eventsData?.pages?.[0]?.data?.map(e => e.id)],
-    queryFn: async () => {
-      if (!profile?.id || !eventsData?.pages?.[0]?.data) return null;
-
-      const eventIds = eventsData.pages[0].data.map(e => e.id);
-      
-      if (eventIds.length === 0) return {};
-      
-      try {
-        const { data, error } = await supabase
-          .from('event_rsvps')
-          .select('event_id, response, status')
-          .eq('user_id', profile.id)
-          .in('event_id', eventIds);
-
-        if (error) {
-          console.error('Error fetching user RSVPs:', error);
-          return null;
-        }
-
-        return data.reduce((acc, rsvp) => ({
-          ...acc,
-          [rsvp.event_id]: rsvp.response
-        }), {} as Record<string, string>);
-      } catch (error) {
-        console.error('Failed to fetch RSVPs:', error);
-        return null;
-      }
-    },
-    enabled: !!isAuthenticated && !!profile?.id && !!eventsData?.pages?.[0]?.data?.length,
-    retry: 3,
-    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000)
-  });
-
-  const allEvents = eventsWithRSVPs || eventsData?.pages?.flatMap(page => (page as EventsPage).data) || [];
-  const totalCount = eventsData?.pages?.[0] ? (eventsData.pages[0] as EventsPage).count : 0;
-
-  const filteredEvents = selectedDate ? allEvents : allEvents;
   
-  const now = new Date();
-  const startOfToday = startOfDay(now);
+  const { userRSVPs, handleRSVP, handleCancelRSVP } = useRSVPManagement();
+  const { isAuthenticated, isLoading: isAuthLoading } = useAuthState();
+  
+  // Set page title
+  usePageTitle("Events");
 
-  const upcomingEvents = filteredEvents.filter(event => {
-    const eventDate = parseISO(event.date);
-    return endOfDay(eventDate) >= startOfToday;
-  }) as Event[];
-
-  const pastEvents = filteredEvents.filter(event => {
-    const eventDate = parseISO(event.date);
-    return endOfDay(eventDate) < startOfToday;
-  }).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()) as Event[];
-
-  const isEventPast = (event: Event) => {
-    const [hours, minutes] = event.time.split(':').map(Number);
-    const eventDateTime = set(parseISO(event.date), {
-      hours: hours || 0,
-      minutes: minutes || 0,
+  // Flatten the pages of events into a single array
+  const events = data?.pages.flatMap(page => page.data) || [];
+  
+  // Log current state for debugging
+  useEffect(() => {
+    console.log("Events page state:", { 
+      eventsCount: events.length,
+      isAuthLoading,
+      isAuthenticated,
+      selectedDate,
+      hasUserRSVPs: Object.keys(userRSVPs).length > 0
     });
-    return eventDateTime < now;
-  };
-
-  const handleEventUpdate = () => {
-    queryClient.invalidateQueries({ queryKey: ['events'] });
-  };
-
-  if (error) {
-    console.error("Events loading error:", error);
-    toast.error("Failed to load events. Please try again.");
-    return (
-      <div className="min-h-screen bg-[#F1F0FB] flex items-center justify-center animate-fade-in">
-        <div className="text-black">Error loading events. Please try again.</div>
-      </div>
-    );
-  }
+  }, [events.length, isAuthLoading, isAuthenticated, selectedDate, userRSVPs]);
 
   return (
-    <div className="min-h-screen bg-white">
-      <div className="max-w-7xl mx-auto px-4 py-8">
+    <div className="min-h-screen bg-[#222222]">
+      <div className="max-w-7xl mx-auto p-4 pt-8">
         <EventsHeader
           selectedDate={selectedDate}
           onDateSelect={setSelectedDate}
           isAuthenticated={isAuthenticated}
-          onCreateEvent={() => setIsCreateEventOpen(true)}
+          onCreateEvent={() => refetch()}
         />
-
-        <EventsContent
-          upcomingEvents={upcomingEvents.map(event => ({
-            ...event,
-            isPastEvent: isEventPast(event)
-          }))}
-          pastEvents={pastEvents}
-          onRSVP={handleRSVP}
-          onCancelRSVP={cancelRSVP}
-          isLoading={isEventsLoading}
-          onUpdate={handleEventUpdate}
-          userRSVPs={userRSVPs || {}}
+        
+        <EventsContent 
+          events={events}
+          isLoading={isLoading}
+          onLoadMore={() => {
+            if (hasNextPage && !isFetchingNextPage) {
+              fetchNextPage();
+            }
+          }}
+          hasMore={!!hasNextPage}
+          isLoadingMore={isFetchingNextPage}
+          userRSVPs={userRSVPs}
+          isAuthLoading={isAuthLoading}
           isAuthenticated={isAuthenticated}
+          handleRSVP={handleRSVP}
+          handleCancelRSVP={handleCancelRSVP}
         />
       </div>
     </div>

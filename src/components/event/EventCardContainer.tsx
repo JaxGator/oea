@@ -25,7 +25,6 @@ export function EventCardContainer({
   onSelect,
   isSelected = false,
   isAuthChecking = false,
-  requireAuth = false,
   showDelete = false,
   isAuthenticated = false
 }: EventCardContainerProps) {
@@ -44,7 +43,6 @@ export function EventCardContainer({
       onSelect={onSelect}
       isSelected={isSelected}
       isAuthChecking={isAuthChecking}
-      requireAuth={requireAuth}
       showDelete={showDelete}
       isAuthenticated={isAuthenticated}
     />

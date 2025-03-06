@@ -1,5 +1,4 @@
 
-import { useAuthState } from "@/hooks/useAuthState";
 import { formatInTimeZone } from "date-fns-tz";
 import { parseISO } from "date-fns";
 
@@ -27,12 +26,8 @@ export function EventCardBasicInfo({
   waitlistEnabled,
   waitlistCapacity,
   importedRsvpCount,
-  isPastEvent,
-  canViewDetails = false
+  isPastEvent
 }: EventCardBasicInfoProps) {
-  const { profile, isAuthenticated } = useAuthState();
-  const showDetails = canViewDetails || (isAuthenticated && profile?.is_approved);
-
   // Create a local ISO string without the UTC 'Z' suffix
   const localIsoString = `${date}T${time}`;
   const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
@@ -59,24 +54,18 @@ export function EventCardBasicInfo({
           </p>
         </div>
         <p className="text-sm text-muted-foreground">
-          {showDetails ? (
-            location
+          {location}
+        </p>
+        <p className="text-sm text-muted-foreground">
+          {isWixEvent ? (
+            `${importedRsvpCount || 0} attendees`
           ) : (
-            "Location visible after approval"
+            `${rsvpCount} / ${maxGuests} attendees`
+          )}
+          {waitlistEnabled && (
+            ` (Waitlist: ${waitlistCapacity || 'unlimited'})`
           )}
         </p>
-        {showDetails && (
-          <p className="text-sm text-muted-foreground">
-            {isWixEvent ? (
-              `${importedRsvpCount || 0} attendees`
-            ) : (
-              `${rsvpCount} / ${maxGuests} attendees`
-            )}
-            {waitlistEnabled && (
-              ` (Waitlist: ${waitlistCapacity || 'unlimited'})`
-            )}
-          </p>
-        )}
         {isPastEvent && (
           <p className="text-sm text-muted-foreground italic">
             This event has already taken place
@@ -86,4 +75,3 @@ export function EventCardBasicInfo({
     </div>
   );
 }
-

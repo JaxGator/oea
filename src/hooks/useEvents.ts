@@ -2,19 +2,13 @@
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { useAuthState } from './useAuthState';
-import { useQueryClient } from '@tanstack/react-query';
 import type { Event, EventsPage } from '@/types/database';
-import { startOfDay } from 'date-fns';
 
 export function useEvents(selectedDate?: Date, eventId?: string) {
-  const { profile, isAuthenticated } = useAuthState();
-  const isApproved = profile?.is_approved;
-
   console.log('Fetching events with params:', { selectedDate, eventId });
 
   return useInfiniteQuery<EventsPage>({
-    queryKey: ['events', selectedDate?.toISOString(), isAuthenticated, isApproved, eventId],
+    queryKey: ['events', selectedDate?.toISOString(), eventId],
     initialPageParam: 0,
     queryFn: async ({ pageParam = 0 }) => {
       try {
@@ -43,12 +37,8 @@ export function useEvents(selectedDate?: Date, eventId?: string) {
         if (eventId) {
           query = query.eq('id', eventId);
         } else {
-          // Filter by published status for non-admin users
-          if (!isAuthenticated) {
-            query = query.eq('is_published', true);
-          } else if (!isApproved) {
-            query = query.eq('is_published', true);
-          }
+          // Only filter published events
+          query = query.eq('is_published', true);
 
           // Apply date filter if selected
           if (selectedDate) {

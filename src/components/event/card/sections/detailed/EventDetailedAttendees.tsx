@@ -1,26 +1,43 @@
 
-import { AttendeeList } from "@/components/event/details/AttendeeList";
+import { Separator } from "@/components/ui/separator";
 
 interface EventDetailedAttendeesProps {
   attendeeNames: string[];
   waitlistNames: string[];
-  canViewRSVPs: boolean;
+  canViewRSVPs?: boolean;
 }
 
-export function EventDetailedAttendees({ 
-  attendeeNames, 
-  waitlistNames, 
-  canViewRSVPs 
+export function EventDetailedAttendees({
+  attendeeNames,
+  waitlistNames
 }: EventDetailedAttendeesProps) {
-  if (!canViewRSVPs) return null;
-  
+  // If there are no attendees, don't show this section
+  if (attendeeNames.length === 0) {
+    return null;
+  }
+
   return (
-    <div className="border rounded-lg p-4 bg-gray-50">
-      <h3 className="text-lg font-semibold mb-4">Event Attendees</h3>
-      <AttendeeList
-        attendeeNames={attendeeNames}
-        waitlistNames={waitlistNames}
-      />
+    <div className="space-y-4">
+      <Separator />
+      <div>
+        <h3 className="text-lg font-semibold mb-2">Attendees</h3>
+        <ul className="list-disc pl-5 space-y-1">
+          {attendeeNames.map((name, index) => (
+            <li key={index} className="text-gray-700">{name}</li>
+          ))}
+        </ul>
+      </div>
+      
+      {waitlistNames.length > 0 && (
+        <div>
+          <h3 className="text-lg font-semibold mb-2">Waitlist</h3>
+          <ul className="list-disc pl-5 space-y-1">
+            {waitlistNames.map((name, index) => (
+              <li key={index} className="text-gray-700">{name}</li>
+            ))}
+          </ul>
+        </div>
+      )}
     </div>
   );
 }

@@ -25,7 +25,7 @@ export function EventFormWrapper(props: EventFormProps) {
   return (
     <EventFormContent
       {...props}
-      hasPermissionToEdit={hasValidPermission}
+      hasPermissionToEdit={user ? hasValidPermission : false}
       user={user}
     />
   );

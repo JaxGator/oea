@@ -5,7 +5,6 @@ import { AdminActions } from "./actions/AdminActions";
 import { EventDetailsActions } from "./actions/EventDetailsActions";
 import { useEventActions } from "@/hooks/events/useEventActions";
 import { useAuthState } from "@/hooks/useAuthState";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface EventActionsSectionProps {
   isAdmin: boolean;
@@ -52,7 +51,6 @@ export function EventActionsSection({
   showPublishToggle = false,
   isPublished = true,
   isAuthChecking = false,
-  requireAuth = false,
   event,
   showDelete = false,
   isAuthenticated = false,
@@ -99,53 +97,46 @@ export function EventActionsSection({
     return null;
   }
 
-  // Show message if authentication is required but user isn't authenticated
-  if (requireAuth && !isAuthenticated) {
-    return (
-      <Alert className="mb-4">
-        <AlertDescription>
-          Please sign in to interact with this event.
-        </AlertDescription>
-      </Alert>
-    );
-  }
-
   return (
     <div className="space-y-4">
-      <RSVPActions
-        isAuthenticated={isAuthenticated}
-        userRSVPStatus={userRSVPStatus}
-        canAddGuests={canAddGuests}
-        isFullyBooked={isFullyBooked}
-        isPastEvent={isPastEvent}
-        isSubmitting={isSubmitting || isActionLoading}
-        currentGuests={currentGuests}
-        eventTitle={event.title}
-        onRSVP={handleRSVP}
-        onCancelRSVP={handleCancelRSVP}
-        canJoinWaitlist={canJoinWaitlist}
-      />
+      {isAuthenticated && (
+        <RSVPActions
+          isAuthenticated={isAuthenticated}
+          userRSVPStatus={userRSVPStatus}
+          canAddGuests={canAddGuests}
+          isFullyBooked={isFullyBooked}
+          isPastEvent={isPastEvent}
+          isSubmitting={isSubmitting || isActionLoading}
+          currentGuests={currentGuests}
+          eventTitle={event.title}
+          onRSVP={handleRSVP}
+          onCancelRSVP={handleCancelRSVP}
+          canJoinWaitlist={canJoinWaitlist}
+        />
+      )}
       
       <div className="flex flex-wrap items-center justify-between gap-2 mt-4">
-        <AdminActions
-          isAdmin={isAdmin}
-          canManageEvents={canManageEvents || isCreator}
-          isPastEvent={isPastEvent}
-          isWixEvent={isWixEvent}
-          showDelete={showDelete}
-          showPublishToggle={showPublishToggle}
-          isPublished={isPublished}
-          createdBy={event.created_by || ''}
-          onEdit={onEdit}
-          onDelete={onDelete}
-          onTogglePublish={onTogglePublish}
-        />
+        {isAuthenticated && (
+          <AdminActions
+            isAdmin={isAdmin}
+            canManageEvents={canManageEvents || isCreator}
+            isPastEvent={isPastEvent}
+            isWixEvent={isWixEvent}
+            showDelete={showDelete}
+            showPublishToggle={showPublishToggle}
+            isPublished={isPublished}
+            createdBy={event.created_by || ''}
+            onEdit={onEdit}
+            onDelete={onDelete}
+            onTogglePublish={onTogglePublish}
+          />
+        )}
         
         <EventDetailsActions
           eventId={event.id}
           eventTitle={event.title}
           onViewDetails={onViewDetails}
-          canAddGuests={canAddGuests}
+          canAddGuests={canAddGuests && isAuthenticated}
           currentGuests={currentGuests}
           onRSVP={handleRSVP}
         />

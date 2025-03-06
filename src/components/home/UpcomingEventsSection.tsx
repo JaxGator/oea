@@ -5,7 +5,6 @@ import { useNavigate } from "react-router-dom";
 import { EventCard } from "@/components/EventCard";
 import { Event } from "@/types/event";
 import { CalendarDays, Loader2 } from "lucide-react";
-import { useAuthState } from "@/hooks/useAuthState";
 
 interface UpcomingEventsSectionProps {
   events: Event[];
@@ -13,6 +12,7 @@ interface UpcomingEventsSectionProps {
   handleRSVP: (eventId: string) => void;
   handleCancelRSVP: (eventId: string) => void;
   isLoading: boolean;
+  isAuthenticated?: boolean;
 }
 
 export const UpcomingEventsSection = ({
@@ -21,9 +21,9 @@ export const UpcomingEventsSection = ({
   handleRSVP,
   handleCancelRSVP,
   isLoading,
+  isAuthenticated = false,
 }: UpcomingEventsSectionProps) => {
   const navigate = useNavigate();
-  const { isAuthenticated } = useAuthState();
 
   console.log('UpcomingEventsSection render:', { events, isLoading, userRSVPs, isAuthenticated });
 
@@ -69,7 +69,6 @@ export const UpcomingEventsSection = ({
                 onCancelRSVP={handleCancelRSVP}
                 userRSVPStatus={userRSVPs[event.id]}
                 isAuthChecking={false}
-                requireAuth={!isAuthenticated}
                 isAuthenticated={isAuthenticated}
               />
             </div>

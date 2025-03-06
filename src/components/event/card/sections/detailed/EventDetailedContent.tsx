@@ -42,7 +42,6 @@ export function EventDetailedContent({
   isWixEvent,
   canAddGuests,
   currentGuests,
-  canViewRSVPs,
   isFullyBooked,
   canJoinWaitlist,
   onRSVP,
@@ -66,29 +65,30 @@ export function EventDetailedContent({
       <EventDetailedAttendees
         attendeeNames={processedAttendeeNames}
         waitlistNames={waitlistNames}
-        canViewRSVPs={canViewRSVPs}
       />
       
       <EventDetailedDescription description={event.description} />
       
-      <EventDetailedActions
-        isAdmin={isAdmin}
-        canManageEvents={canManageEvents}
-        userRSVPStatus={userRSVPStatus}
-        isPastEvent={isPastEvent}
-        canAddGuests={canAddGuests}
-        currentGuests={currentGuests}
-        onRSVP={onRSVP}
-        onCancelRSVP={onCancelRSVP}
-        onEdit={onEdit}
-        onDelete={onDelete}
-        onTogglePublish={onTogglePublish}
-        isFullyBooked={isFullyBooked}
-        canJoinWaitlist={canJoinWaitlist}
-        isWixEvent={isWixEvent}
-        event={event}
-        isAuthenticated={isAuthenticated}
-      />
+      {isAuthenticated && (
+        <EventDetailedActions
+          isAdmin={isAdmin}
+          canManageEvents={canManageEvents}
+          userRSVPStatus={userRSVPStatus}
+          isPastEvent={isPastEvent}
+          canAddGuests={canAddGuests}
+          currentGuests={currentGuests}
+          onRSVP={onRSVP}
+          onCancelRSVP={onCancelRSVP}
+          onEdit={onEdit}
+          onDelete={onDelete}
+          onTogglePublish={onTogglePublish}
+          isFullyBooked={isFullyBooked}
+          canJoinWaitlist={canJoinWaitlist}
+          isWixEvent={isWixEvent}
+          event={event}
+          isAuthenticated={isAuthenticated}
+        />
+      )}
       
       <EventDetailedWaitlist
         waitlistEnabled={event.waitlist_enabled}

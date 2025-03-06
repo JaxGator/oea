@@ -146,11 +146,11 @@ export function EventEditDialog({
       );
     }
     
-    // Check permissions only for existing events (editing)
-    const needsPermissionCheck = initialData?.id;
-    const isAdminOrMember = user?.is_admin || user?.is_member || user?.is_approved || forceAdmin || forceCanManage;
+    // For creating events, make sure the user is logged in
+    const isCreatingEvent = !initialData?.id;
     
-    if (needsPermissionCheck && !hasValidPermission && !isAdminOrMember) {
+    // For editing events, check if the user has permission
+    if (!isCreatingEvent && !hasValidPermission && !(user?.is_admin || user?.is_member || user?.is_approved)) {
       return (
         <div className="text-center py-6">
           <p className="text-yellow-500">You don't have permission to edit this event</p>

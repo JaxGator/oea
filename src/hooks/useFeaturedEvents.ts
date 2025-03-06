@@ -125,10 +125,15 @@ export const useFeaturedEvents = () => {
     error,
     userRSVPs: isAuthenticated ? userRSVPs : {},
     handleRSVP: isAuthenticated ? handleRSVP : () => {
-      toast.error("Please log in to RSVP for events");
+      toast("Please log in to RSVP for events", {
+        description: "Sign in to manage your event RSVPs"
+      });
     },
     handleCancelRSVP: isAuthenticated ? handleCancelRSVP : () => {
-      toast.error("Please log in to manage your RSVPs");
+      toast("Please log in to manage your RSVPs", {
+        description: "Sign in to manage your event RSVPs"
+      });
     },
+    isAuthenticated
   };
 };
