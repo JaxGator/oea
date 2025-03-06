@@ -24,7 +24,6 @@ interface RSVPActionsProps {
 }
 
 export function RSVPActions({
-  isAuthenticated,
   userRSVPStatus,
   canAddGuests,
   isFullyBooked = false,
@@ -41,13 +40,6 @@ export function RSVPActions({
   // Don't show RSVP actions for past events
   if (isPastEvent) {
     return null;
-  }
-
-  // Show login prompt if not authenticated
-  if (!isAuthenticated) {
-    return <Button onClick={() => window.location.href = '/auth'}>
-        Sign In to RSVP
-      </Button>;
   }
 
   // Show cancel button if already RSVP'd

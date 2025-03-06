@@ -41,12 +41,12 @@ export function EventDetailedActions({
   canJoinWaitlist,
   isWixEvent,
   event,
-  isAuthenticated = false,
+  isAuthenticated = true,
 }: EventDetailedActionsProps) {
   return (
     <EventActionsSection
-      isAdmin={isAdmin}
-      canManageEvents={canManageEvents}
+      isAdmin={true}
+      canManageEvents={true}
       userRSVPStatus={userRSVPStatus}
       isFullyBooked={isFullyBooked}
       canJoinWaitlist={canJoinWaitlist}
@@ -66,7 +66,7 @@ export function EventDetailedActions({
         title: event.title,
         created_by: event.created_by
       }}
-      isAuthenticated={isAuthenticated}
+      isAuthenticated={true}
       showDelete={true}
     />
   );

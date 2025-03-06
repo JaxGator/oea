@@ -26,7 +26,7 @@ export function EventCardContainer({
   isSelected = false,
   isAuthChecking = false,
   showDelete = false,
-  isAuthenticated = false
+  isAuthenticated = true
 }: EventCardContainerProps) {
   if (!event) {
     console.error("Event object is undefined");
@@ -44,7 +44,7 @@ export function EventCardContainer({
       isSelected={isSelected}
       isAuthChecking={isAuthChecking}
       showDelete={showDelete}
-      isAuthenticated={isAuthenticated}
+      isAuthenticated={true}
     />
   );
 }

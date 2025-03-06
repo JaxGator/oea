@@ -4,7 +4,6 @@ import { useEvents } from "@/hooks/useEvents";
 import { useRSVPManagement } from "@/hooks/events/useRSVPManagement";
 import { EventsHeader } from "@/components/event/sections/EventsHeader";
 import { EventsContent } from "@/components/event/sections/EventsContent";
-import { useAuthState } from "@/hooks/useAuthState";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { Event } from "@/types/event";
 
@@ -21,7 +20,6 @@ export default function Events() {
   } = useEvents();
   
   const { userRSVPs, handleRSVP, handleCancelRSVP } = useRSVPManagement();
-  const { isAuthenticated, isLoading: isAuthLoading } = useAuthState();
   
   // Set page title
   usePageTitle("Events");
@@ -55,12 +53,10 @@ export default function Events() {
   useEffect(() => {
     console.log("Events page state:", { 
       eventsCount: events.length,
-      isAuthLoading,
-      isAuthenticated,
       selectedDate,
       hasUserRSVPs: Object.keys(userRSVPs).length > 0
     });
-  }, [events.length, isAuthLoading, isAuthenticated, selectedDate, userRSVPs]);
+  }, [events.length, selectedDate, userRSVPs]);
 
   return (
     <div className="min-h-screen bg-[#222222]">
@@ -68,7 +64,7 @@ export default function Events() {
         <EventsHeader
           selectedDate={selectedDate}
           onDateSelect={setSelectedDate}
-          isAuthenticated={isAuthenticated}
+          isAuthenticated={true}
           onCreateEvent={() => refetch()}
         />
         
@@ -80,7 +76,7 @@ export default function Events() {
           isLoading={isLoading}
           onUpdate={() => refetch()}
           userRSVPs={userRSVPs}
-          isAuthenticated={isAuthenticated}
+          isAuthenticated={true}
         />
       </div>
     </div>
