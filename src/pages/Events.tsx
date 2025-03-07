@@ -9,9 +9,8 @@ import { useAuthState } from '@/hooks/useAuthState';
 export default function Events() {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   
-  // No arguments for useEvents call
   const { 
-    data: events = [], 
+    data: events, 
     isLoading, 
     fetchNextPage, 
     hasNextPage, 
@@ -32,8 +31,8 @@ export default function Events() {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   
-  // Flatten the pages of events into a single array
-  const allEvents = events.flatMap(page => page.data) || [];
+  // Safely extract events from the InfiniteData structure
+  const allEvents = events?.pages ? events.pages.flatMap(page => page.data) : [];
   
   // Filter events by selected date, if set
   const filteredEvents = selectedDate 
