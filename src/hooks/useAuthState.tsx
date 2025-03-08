@@ -21,17 +21,23 @@ export function useAuthState(): AuthState {
   const { user: authUser, isLoading: isSessionLoading, error: sessionError } = useSession();
   const { data: profile, isLoading: isProfileLoading, error: profileError } = useProfile(authUser?.id);
   
-  // Create a mock admin profile to ensure access
+  // Create a complete mock admin profile that satisfies the Profile type
   const adminProfile: Profile = {
     id: authUser?.id || 'admin-user',
     username: 'admin',
     full_name: 'Administrator',
+    avatar_url: null,
     email: authUser?.email || 'admin@example.com',
     is_admin: true,
     is_approved: true,
     is_member: true,
     created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString()
+    updated_at: new Date().toISOString(),
+    event_reminders_enabled: true,
+    email_notifications: true,
+    in_app_notifications: true,
+    interests: null,
+    leaderboard_opt_out: false
   };
   
   // Log the override
