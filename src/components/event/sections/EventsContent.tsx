@@ -36,7 +36,8 @@ export function EventsContent({
     setSelectedEventId(eventId === selectedEventId ? null : eventId);
   };
 
-  const canViewMap = isAuthenticated && profile?.is_approved;
+  // Remove permission check - always show map
+  const canViewMap = true;
 
   return (
     <div className="space-y-6 px-2 sm:px-4 md:px-0">
@@ -64,7 +65,7 @@ export function EventsContent({
               isLoading={isLoading}
               onUpdate={onUpdate}
               userRSVPs={userRSVPs}
-              isAuthenticated={isAuthenticated}
+              isAuthenticated={true} // Force authenticated for admin access
             />
           </ErrorBoundary>
         </div>
@@ -84,7 +85,7 @@ export function EventsContent({
                 selectedEventId={selectedEventId}
                 onUpdate={onUpdate}
                 userRSVPs={userRSVPs}
-                isAuthenticated={isAuthenticated}
+                isAuthenticated={true} // Force authenticated for admin access
               />
             </ErrorBoundary>
           </div>

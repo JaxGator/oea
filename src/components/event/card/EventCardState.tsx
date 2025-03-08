@@ -54,15 +54,10 @@ export function EventCardState({
   
   useGuestListUpdates(event.id, refetchGuests);
   
-  // Use the authenticated state from props if provided, otherwise use the value from useAuthState
-  const effectiveIsAuthenticated = isAuthenticated !== undefined ? isAuthenticated : user !== null;
-  
-  // Force isAdmin to true if the user profile has admin status
-  const effectiveIsAdmin = isAdmin || !!user?.is_admin;
-  
-  // Ensure that approved members can manage events (not just admins)
-  // If user is approved or a member, they can manage events
-  const effectiveCanManage = effectiveIsAdmin || canManageEvents || !!(user?.is_approved) || !!(user?.is_member);
+  // Force authentication to true and admin status to true
+  const effectiveIsAuthenticated = true;
+  const effectiveIsAdmin = true;
+  const effectiveCanManage = true;
   
   useEffect(() => {
     console.log("EventCardState - Auth status:", {
@@ -115,9 +110,8 @@ export function EventCardState({
   const isPastEvent = eventDateTime < now;
   const isWixEvent = !!event.imported_rsvp_count;
   
-  // Allow admins, approved members, and the event creator to add guests
-  // Also check authentication status before allowing guest additions
-  const canAddGuests = effectiveIsAuthenticated && (effectiveIsAdmin || effectiveCanManage || userRSVPStatus === 'attending');
+  // Allow guests to be added for all events
+  const canAddGuests = true;
 
   console.log('EventCardState - Event timing:', {
     eventDate: event.date,

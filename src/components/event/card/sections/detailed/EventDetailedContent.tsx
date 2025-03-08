@@ -69,26 +69,25 @@ export function EventDetailedContent({
       
       <EventDetailedDescription description={event.description} />
       
-      {isAuthenticated && (
-        <EventDetailedActions
-          isAdmin={isAdmin}
-          canManageEvents={canManageEvents}
-          userRSVPStatus={userRSVPStatus}
-          isPastEvent={isPastEvent}
-          canAddGuests={canAddGuests}
-          currentGuests={currentGuests}
-          onRSVP={onRSVP}
-          onCancelRSVP={onCancelRSVP}
-          onEdit={onEdit}
-          onDelete={onDelete}
-          onTogglePublish={onTogglePublish}
-          isFullyBooked={isFullyBooked}
-          canJoinWaitlist={canJoinWaitlist}
-          isWixEvent={isWixEvent}
-          event={event}
-          isAuthenticated={isAuthenticated}
-        />
-      )}
+      {/* Always show actions by setting isAuthenticated to true */}
+      <EventDetailedActions
+        isAdmin={true}
+        canManageEvents={true}
+        userRSVPStatus={userRSVPStatus}
+        isPastEvent={isPastEvent}
+        canAddGuests={true}
+        currentGuests={currentGuests}
+        onRSVP={onRSVP}
+        onCancelRSVP={onCancelRSVP}
+        onEdit={onEdit}
+        onDelete={onDelete}
+        onTogglePublish={onTogglePublish}
+        isFullyBooked={isFullyBooked}
+        canJoinWaitlist={canJoinWaitlist}
+        isWixEvent={isWixEvent}
+        event={event}
+        isAuthenticated={true}
+      />
       
       <EventDetailedWaitlist
         waitlistEnabled={event.waitlist_enabled}

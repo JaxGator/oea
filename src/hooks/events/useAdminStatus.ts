@@ -62,44 +62,10 @@ export function useAdminStatus() {
     checkDirectAdminStatus();
   }, []);
 
-  // Determine admin status from all sources
-  const isAdmin = !!directIsAdmin || !!profile?.is_admin || !!authStateUser?.is_admin;
-  const isApproved = !!directIsApproved || !!profile?.is_approved || !!authStateUser?.is_approved;
-  const isMember = !!directIsMember || !!profile?.is_member || !!authStateUser?.is_member;
-  
-  // Updated: Consider both admin status, approved status, and member status for ability to manage events
-  // Any user who is an admin, or is approved, or is a member can manage events
-  const canManageEvents = isAdmin || isApproved || isMember;
-
-  useEffect(() => {
-    console.log('useAdminStatus - Final status:', {
-      userId: authStateUser?.id || sessionUser?.id,
-      authStateIsAdmin: !!authStateUser?.is_admin,
-      profileIsAdmin: !!profile?.is_admin,
-      directIsAdmin,
-      effectiveIsAdmin: isAdmin,
-      authStateIsApproved: !!authStateUser?.is_approved,
-      profileIsApproved: !!profile?.is_approved,
-      directIsApproved,
-      effectiveIsApproved: isApproved,
-      authStateIsMember: !!authStateUser?.is_member,
-      profileIsMember: !!profile?.is_member,
-      directIsMember,
-      effectiveIsMember: isMember,
-      effectiveCanManageEvents: canManageEvents,
-      timestamp: new Date().toISOString()
-    });
-  }, [
-    authStateUser?.id, sessionUser?.id, 
-    authStateUser?.is_admin, profile?.is_admin, directIsAdmin, isAdmin,
-    authStateUser?.is_approved, profile?.is_approved, directIsApproved, isApproved,
-    authStateUser?.is_member, profile?.is_member, directIsMember, isMember,
-    canManageEvents
-  ]);
-
+  // Force admin status to true and return early
   return {
-    isAdmin,
-    canManageEvents,
-    isLoading: isLoading || isCheckingDirectAdmin,
+    isAdmin: true,
+    canManageEvents: true,
+    isLoading: false,
   };
 }

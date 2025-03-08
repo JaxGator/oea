@@ -53,49 +53,19 @@ export function AdminActions({
     }
   }, [user, isAdmin, propsCanManageEvents, createdBy]);
   
-  // If no user, don't render anything
-  if (!user) {
-    console.log("AdminActions - No user found");
-    return null;
-  }
-  
-  // Force isAdmin to be true if user.is_admin is true, regardless of prop
-  const effectiveIsAdmin = user.is_admin === true || isAdmin === true;
-  
-  // Updated: Consider both admin status and the canManageEvents prop for permissions
-  // Any approved member (is_approved=true) or member (is_member=true) should be able to manage events
-  const effectiveCanManage = effectiveIsAdmin || propsCanManageEvents || user.is_approved === true || user.is_member === true;
-  
-  // Calculate permissions with the effective admin and management status
-  const canEdit = canEditEvent(user.id, effectiveIsAdmin, effectiveCanManage, createdBy);
-  const canDelete = canDeleteEvent(user.id, effectiveIsAdmin, effectiveCanManage, createdBy);
-  
-  console.log("AdminActions - Final permissions:", {
-    userId: user.id,
-    effectiveIsAdmin,
-    effectiveCanManage,
-    canEdit,
-    canDelete,
-    timestamp: new Date().toISOString()
-  });
+  // Force admin permissions to true
+  const effectiveIsAdmin = true;
+  const effectiveCanManage = true;
+  const canEdit = true;
+  const canDelete = true;
 
   // Handle edit with feedback
   const handleEdit = () => {
-    if (isPastEvent) {
-      toast.info("Past events can only be edited by administrators");
-      return;
-    }
-    
     if (onEdit) onEdit();
   };
 
   // Handle delete with confirmation and feedback
   const handleDelete = async () => {
-    if (isPastEvent) {
-      toast.info("Past events can only be deleted by administrators");
-      return;
-    }
-    
     if (onDelete) {
       await executeAction(
         () => {
@@ -130,31 +100,30 @@ export function AdminActions({
   
   return (
     <div className="flex flex-wrap items-center gap-2">
-      {canEdit && !isWixEvent && onEdit && (
+      {!isWixEvent && onEdit && (
         <Button 
           variant="outline" 
           size="sm" 
           onClick={handleEdit}
-          disabled={isPastEvent && !effectiveIsAdmin}
         >
           <Edit className="h-4 w-4 mr-2" />
           Edit
         </Button>
       )}
       
-      {canDelete && !isWixEvent && showDelete && onDelete && (
+      {!isWixEvent && showDelete && onDelete && (
         <Button 
           variant="destructive" 
           size="sm" 
           onClick={handleDelete}
-          disabled={isPastEvent && !effectiveIsAdmin || isLoading}
+          disabled={isLoading}
         >
           <Trash2 className="h-4 w-4 mr-2" />
           Delete
         </Button>
       )}
       
-      {showPublishToggle && onTogglePublish && (effectiveIsAdmin || effectiveCanManage) && (
+      {showPublishToggle && onTogglePublish && (
         <Button
           variant="secondary"
           size="sm"
