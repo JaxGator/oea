@@ -48,7 +48,15 @@ export function EditMemberContent({
         is_admin: isAdmin,
         is_approved: isApproved,
         is_member: isMember,
-        email
+        email,
+        // Ensure all required properties are present
+        created_at: member.created_at || new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        event_reminders_enabled: member.event_reminders_enabled || true,
+        email_notifications: member.email_notifications || true,
+        in_app_notifications: member.in_app_notifications || true,
+        interests: member.interests || [],
+        leaderboard_opt_out: member.leaderboard_opt_out || false
       };
       console.log('Submitting updated member:', updatedMember);
       await onUpdate(updatedMember);

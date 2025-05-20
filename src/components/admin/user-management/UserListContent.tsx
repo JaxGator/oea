@@ -23,7 +23,7 @@ interface UserListContentProps {
 }
 
 export const UserListContent = memo(function UserListContent({
-  members,
+  members = [], // Provide default empty array to prevent null/undefined errors
   isLoading,
   error,
   onEditMember,
@@ -39,10 +39,13 @@ export const UserListContent = memo(function UserListContent({
   if (isLoading) return <LoadingState />;
   
   if (error) {
+    console.error('UserListContent error:', error);
     return <ErrorState message="Error loading members. Please try refreshing the page." />;
   }
 
+  // Add extra safety check for members data
   if (!Array.isArray(members)) {
+    console.error('UserListContent: Invalid members data:', members);
     return <ErrorState message="Invalid data format. Please try refreshing the page." />;
   }
 
@@ -95,4 +98,3 @@ export const UserListContent = memo(function UserListContent({
     </div>
   );
 });
-
