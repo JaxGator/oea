@@ -1,6 +1,6 @@
+
 import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { Bell } from "lucide-react";
 import {
   HoverCard,
@@ -10,6 +10,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface AdminNotification {
   id: string;
@@ -24,18 +25,13 @@ export function NotificationCenter() {
   const { data: notifications = [] } = useQuery({
     queryKey: ['admin-notifications'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('admin_logs')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(10);
-
-      if (error) {
-        console.error('Error fetching notifications:', error);
-        throw error;
+      const response = await fetch('/api/admin/notifications/logs');
+      if (!response.ok) {
+        throw new Error('Failed to fetch admin logs');
       }
-
-      return data.map((log): AdminNotification => ({
+      
+      const data = await response.json();
+      return data.map((log: any): AdminNotification => ({
         id: log.id,
         message: `${log.action_type} performed on ${log.target_type}`,
         type: 'info',
@@ -55,7 +51,7 @@ export function NotificationCenter() {
           table: 'admin_logs'
         },
         (payload) => {
-          const newLog = payload.new;
+          const newLog = payload.new as any;
           toast({
             title: "New Admin Action",
             description: `${newLog.action_type} performed on ${newLog.target_type}`,

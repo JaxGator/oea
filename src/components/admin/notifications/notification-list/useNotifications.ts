@@ -1,6 +1,5 @@
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useState } from "react";
 import { AdminNotification } from "./types";
@@ -12,17 +11,16 @@ export function useNotifications() {
   const { data: notifications = [], isLoading, error } = useQuery({
     queryKey: ['admin-notifications'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('admin_notifications')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        console.error('Error fetching admin notifications:', error);
+      const response = await fetch('/api/admin/notifications/all');
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Error fetching admin notifications:', errorData);
         toast.error("Failed to load notifications");
-        throw error;
+        throw new Error(errorData.error || 'Failed to fetch notifications');
       }
-
+      
+      const data = await response.json();
       return data as AdminNotification[];
     },
   });
@@ -30,28 +28,31 @@ export function useNotifications() {
   const { data: authNotifications = [] } = useQuery({
     queryKey: ['auth-notifications'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('auth_notifications')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        console.error('Error fetching auth notifications:', error);
+      const response = await fetch('/api/admin/notifications/auth');
+      
+      if (!response.ok) {
+        console.error('Error fetching auth notifications:', response.statusText);
         return [];
       }
-
-      return data || [];
+      
+      return await response.json();
     },
   });
 
   const markAsReadMutation = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase
-        .from('admin_notifications')
-        .update({ is_read: true })
-        .eq('id', id);
-
-      if (error) throw error;
+      const response = await fetch('/api/admin/notifications/mark-read', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ id }),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to mark notification as read');
+      }
+      
       return id;
     },
     onSuccess: () => {
@@ -66,12 +67,18 @@ export function useNotifications() {
 
   const deleteNotificationMutation = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase
-        .from('admin_notifications')
-        .delete()
-        .eq('id', id);
-
-      if (error) throw error;
+      const response = await fetch('/api/admin/notifications/delete', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ id }),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to delete notification');
+      }
+      
       return id;
     },
     onSuccess: () => {
@@ -93,12 +100,13 @@ export function useNotifications() {
     try {
       setIsDeleting(true);
       
-      const { error } = await supabase
-        .from('admin_notifications')
-        .delete()
-        .eq('is_read', true);
-
-      if (error) throw error;
+      const response = await fetch('/api/admin/notifications/delete-read', {
+        method: 'DELETE',
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to delete read notifications');
+      }
       
       queryClient.invalidateQueries({ queryKey: ['admin-notifications'] });
       toast.success("All read notifications deleted");

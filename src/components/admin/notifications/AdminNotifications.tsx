@@ -1,6 +1,5 @@
 
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { Bell, UserPlus } from "lucide-react";
 import {
   HoverCard,
@@ -17,27 +16,22 @@ export function AdminNotifications() {
   const { data: unapprovedUsers = [] } = useQuery({
     queryKey: ['unapproved-users'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('is_approved', false)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      return data || [];
+      const response = await fetch('/api/admin/users/unapproved');
+      if (!response.ok) {
+        throw new Error('Failed to fetch unapproved users');
+      }
+      return await response.json();
     },
   });
 
   const { data: unreadNotifications = [] } = useQuery({
     queryKey: ['unread-notifications'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('admin_notifications')
-        .select('*')
-        .eq('is_read', false);
-
-      if (error) throw error;
-      return data || [];
+      const response = await fetch('/api/admin/notifications/unread');
+      if (!response.ok) {
+        throw new Error('Failed to fetch unread notifications');
+      }
+      return await response.json();
     },
   });
 
@@ -46,15 +40,12 @@ export function AdminNotifications() {
     queryKey: ['unread-auth-notifications'],
     queryFn: async () => {
       try {
-        const { data, error } = await supabase
-          .from('auth_notifications')
-          .select('*')
-          .eq('is_read', false);
-
-        if (error) {
-          console.error('Error fetching auth notifications:', error);
+        const response = await fetch('/api/admin/notifications/auth-unread');
+        if (!response.ok) {
+          console.error('Error fetching auth notifications:', response.statusText);
           return [];
         }
+        const data = await response.json();
         console.log('Unread auth notifications:', data);
         return data || [];
       } catch (err) {

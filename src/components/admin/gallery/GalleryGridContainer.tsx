@@ -1,6 +1,5 @@
 
 import { useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { GalleryItem } from "./GalleryItem";
 import { toast } from "sonner";
 import { useSession } from "@/hooks/auth/useSession";
@@ -26,28 +25,15 @@ export function GalleryGridContainer({ images, onImageDelete }: GalleryGridConta
         fileName = urlParts[urlParts.length - 1].split('?')[0];
       }
 
-      // Delete from database using RPC to avoid type issues
-      try {
-        await supabase.rpc('delete_gallery_image', {
-          p_file_name: fileName
-        });
-      } catch (dbError) {
-        console.error('Database deletion error:', dbError);
-        // Try direct delete as fallback
-        await fetch('/api/gallery/delete', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ fileName })
-        });
-      }
+      // Use the API endpoint instead of direct database access
+      const response = await fetch('/api/gallery/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fileName })
+      });
 
-      // Then delete from storage (this might still have type issues but is less critical)
-      try {
-        await supabase.storage
-          .from('gallery')
-          .remove([fileName]);
-      } catch (storageError) {
-        console.warn('Storage deletion error:', storageError);
+      if (!response.ok) {
+        throw new Error('Failed to delete image from database');
       }
 
       onImageDelete();

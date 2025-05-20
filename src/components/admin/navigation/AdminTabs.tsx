@@ -13,6 +13,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 export function AdminTabs() {
   const isMobile = useIsMobile();

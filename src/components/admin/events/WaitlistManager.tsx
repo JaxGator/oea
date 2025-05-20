@@ -87,14 +87,23 @@ export function WaitlistManager({
 
       if (rsvpError) throw rsvpError;
 
-      // Create notification - using plain object instead of typed insert
+      // Create notification using fetch API instead of direct database access
       try {
-        // Create notification with untyped approach to bypass TypeScript limitations
-        await supabase.rpc('create_waitlist_notification', {
-          p_event_id: eventId,
-          p_user_id: entry.profiles.user_id,
-          p_notification_type: 'promoted'
+        const response = await fetch('/api/notifications/create-waitlist', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            eventId,
+            userId: entry.profiles.user_id,
+            notificationType: 'promoted'
+          }),
         });
+        
+        if (!response.ok) {
+          throw new Error('Failed to create notification');
+        }
       } catch (notificationError) {
         console.error('Error creating notification:', notificationError);
         // Continue execution even if notification creation fails
