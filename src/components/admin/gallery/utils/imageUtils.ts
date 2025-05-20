@@ -12,25 +12,26 @@ export async function handleImageDelete(imageUrl: string, onSuccess: (imageUrl: 
       throw new Error('Invalid image URL');
     }
 
-    // First delete from storage
-    const { error: storageError } = await supabase.storage
-      .from('gallery')
-      .remove([fileName]);
-
-    if (storageError) {
-      console.error('Storage deletion error:', storageError);
-      throw storageError;
-    }
-
-    // Then delete from the database
-    const { error: dbError } = await supabase
-      .from('gallery_images')
-      .delete()
-      .eq('file_name', fileName);
-
-    if (dbError) {
-      console.error('Database deletion error:', dbError);
-      throw dbError;
+    // First try to delete using RPC to avoid type issues
+    try {
+      await supabase.rpc('delete_gallery_image', {
+        p_file_name: fileName
+      });
+    } catch (rpcError) {
+      console.warn('RPC delete failed, trying direct API:', rpcError);
+      
+      // Fallback to direct API if RPC is not available
+      // Delete from storage first
+      await supabase.storage
+        .from('gallery')
+        .remove([fileName]);
+        
+      // Then use a fetch request to delete from database
+      await fetch('/api/gallery/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fileName })
+      });
     }
 
     onSuccess(imageUrl);

@@ -182,6 +182,87 @@ export interface Database {
           }
         ]
       }
+      waitlist_notifications: {
+        Row: {
+          id: string
+          event_id: string
+          user_id: string
+          sent_at: string
+          notification_type: string
+          is_read: boolean
+        }
+        Insert: {
+          id?: string
+          event_id: string
+          user_id: string
+          sent_at?: string
+          notification_type: string
+          is_read?: boolean
+        }
+        Update: {
+          id?: string
+          event_id?: string
+          user_id?: string
+          sent_at?: string
+          notification_type?: string
+          is_read?: boolean
+        }
+      }
+      gallery_images: {
+        Row: {
+          id: string
+          file_name: string
+          display_order: number
+          created_at: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          file_name: string
+          display_order?: number
+          created_at?: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          file_name?: string
+          display_order?: number
+          created_at?: string
+          user_id?: string
+        }
+      }
+      payments: {
+        Row: {
+          id: string
+          user_id: string
+          event_id: string
+          amount: number
+          status: string
+          created_at: string
+          transaction_id: string | null
+          payment_method: string | null
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          event_id: string
+          amount: number
+          status: string
+          created_at?: string
+          transaction_id?: string | null
+          payment_method?: string | null
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          event_id?: string
+          amount?: number
+          status?: string
+          created_at?: string
+          transaction_id?: string | null
+          payment_method?: string | null
+        }
+      }
     }
     Views: {
       [_ in never]: never

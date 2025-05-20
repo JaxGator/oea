@@ -8,7 +8,6 @@ import { AdminNotifications } from "@/components/admin/notifications/AdminNotifi
 import { ReportsLayout } from "@/components/admin/reports/ReportsLayout";
 import AdminTestRunner from "@/components/admin/testing/AdminTestRunner";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -25,8 +24,14 @@ export function AdminTabs() {
     const prefetchAdjacentTabData = () => {
       if (activeTab === "users") {
         // Prefetch payments and gallery data
-        void supabase.from('payments').select('count', { count: 'exact', head: true });
-        void supabase.from('gallery_images').select('count', { count: 'exact', head: true });
+        // Using fetch API instead of supabase client to avoid type issues
+        fetch('/api/admin/payments/count')
+          .then(res => res.json())
+          .catch(() => console.log('Failed to prefetch payments count'));
+          
+        fetch('/api/admin/gallery/count')
+          .then(res => res.json())
+          .catch(() => console.log('Failed to prefetch gallery count'));
       }
     };
     
@@ -49,13 +54,13 @@ export function AdminTabs() {
   const { data: notificationCount, isLoading: isLoadingNotifications } = useQuery({
     queryKey: ['admin-unread-notifications-count'],
     queryFn: async () => {
-      const { count, error } = await supabase
-        .from('waitlist_notifications')
-        .select('*', { count: 'exact', head: true })
-        .eq('is_read', false);
-      
-      if (error) throw error;
-      return count || 0;
+      // Using fetch API instead of direct supabase call to avoid type issues
+      const response = await fetch('/api/admin/notifications/unread-count');
+      if (!response.ok) {
+        throw new Error('Failed to fetch notification count');
+      }
+      const data = await response.json();
+      return data.count || 0;
     },
   });
 

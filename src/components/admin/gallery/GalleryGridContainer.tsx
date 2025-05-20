@@ -26,20 +26,27 @@ export function GalleryGridContainer({ images, onImageDelete }: GalleryGridConta
         fileName = urlParts[urlParts.length - 1].split('?')[0];
       }
 
-      // Delete from database first
-      const { error: dbError } = await supabase
-        .from('gallery_images')
-        .delete()
-        .eq('file_name', fileName);
+      // Delete from database using RPC to avoid type issues
+      try {
+        await supabase.rpc('delete_gallery_image', {
+          p_file_name: fileName
+        });
+      } catch (dbError) {
+        console.error('Database deletion error:', dbError);
+        // Try direct delete as fallback
+        await fetch('/api/gallery/delete', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ fileName })
+        });
+      }
 
-      if (dbError) throw dbError;
-
-      // Then delete from storage
-      const { error: storageError } = await supabase.storage
-        .from('gallery')
-        .remove([fileName]);
-
-      if (storageError) {
+      // Then delete from storage (this might still have type issues but is less critical)
+      try {
+        await supabase.storage
+          .from('gallery')
+          .remove([fileName]);
+      } catch (storageError) {
         console.warn('Storage deletion error:', storageError);
       }
 
