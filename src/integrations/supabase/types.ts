@@ -7,6 +7,11 @@ export type Json =
   | Json[]
 
 export type Database = {
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
+  __InternalSupabase: {
+    PostgrestVersion: "12.2.3 (519615d)"
+  }
   public: {
     Tables: {
       admin_logs: {
@@ -1659,69 +1664,66 @@ export type Database = {
       admin_update_user: {
         Args: {
           admin_id: string
-          target_user_id: string
-          new_username: string
-          new_full_name: string
           new_avatar_url: string
+          new_full_name: string
           new_is_admin: boolean
           new_is_approved: boolean
           new_is_member: boolean
+          new_username: string
+          target_user_id: string
         }
         Returns: undefined
       }
-      can_message_user: {
-        Args: { target_user_id: string }
-        Returns: boolean
-      }
+      can_message_user: { Args: { target_user_id: string }; Returns: boolean }
       create_profile: {
         Args: {
-          user_id: string
-          user_username: string
-          user_full_name?: string
           user_avatar_url?: string
+          user_full_name?: string
+          user_id: string
           user_is_admin?: boolean
+          user_username: string
         }
         Returns: undefined
       }
       handle_poll_vote: {
-        Args: { p_poll_id: string; p_option_id: string; p_user_id: string }
+        Args: { p_option_id: string; p_poll_id: string; p_user_id: string }
         Returns: Database["public"]["Enums"]["vote_result"]
       }
       has_user_voted: {
         Args: { p_poll_id: string; p_user_id: string }
         Returns: boolean
       }
-      import_wix_event: {
-        Args:
-          | {
-              p_title: string
-              p_description: string
-              p_date: string
-              p_time: string
-              p_location: string
-              p_max_guests: number
-              p_created_by: string
-              p_image_url: string
+      import_wix_event:
+        | {
+            Args: {
               p_created_at?: string
-            }
-          | {
-              p_title: string
-              p_description: string
+              p_created_by: string
               p_date: string
-              p_time: string
+              p_description: string
+              p_image_url: string
               p_location: string
               p_max_guests: number
+              p_time: string
+              p_title: string
+            }
+            Returns: string
+          }
+        | {
+            Args: {
+              p_created_at?: string
               p_created_by: string
+              p_date: string
+              p_description: string
               p_image_url: string
+              p_location: string
+              p_max_guests: number
               p_rsvp_count?: number
-              p_created_at?: string
+              p_time: string
+              p_title: string
             }
-        Returns: string
-      }
-      mark_message_as_read: {
-        Args: { message_id: string }
-        Returns: undefined
-      }
+            Returns: string
+          }
+      mark_message_as_read: { Args: { message_id: string }; Returns: undefined }
       mark_messages_as_read: {
         Args: { p_receiver_id: string; p_sender_id: string }
         Returns: undefined
@@ -1729,22 +1731,19 @@ export type Database = {
       search_site: {
         Args: { search_term: string }
         Returns: {
-          type: string
+          created_at: string
+          description: string
           id: string
           title: string
-          description: string
+          type: string
           url: string
-          created_at: string
         }[]
       }
       test_email_template: {
-        Args: { template_name: string; test_email: string; test_data?: Json }
+        Args: { template_name: string; test_data?: Json; test_email: string }
         Returns: string
       }
-      update_leaderboard_metrics: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
+      update_leaderboard_metrics: { Args: never; Returns: undefined }
     }
     Enums: {
       message_status: "draft" | "scheduled" | "sent" | "failed"
@@ -1762,21 +1761,25 @@ export type Database = {
   }
 }
 
-type DefaultSchema = Database[Extract<keyof Database, "public">]
+type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
+
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
 
 export type Tables<
   DefaultSchemaTableNameOrOptions extends
     | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
-    | { schema: keyof Database },
+    | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof Database
+    schema: keyof DatabaseWithoutInternals
   }
-    ? keyof (Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-        Database[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
+    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
     : never = never,
-> = DefaultSchemaTableNameOrOptions extends { schema: keyof Database }
-  ? (Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-      Database[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
       Row: infer R
     }
     ? R
@@ -1794,14 +1797,16 @@ export type Tables<
 export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
-    | { schema: keyof Database },
+    | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof Database
+    schema: keyof DatabaseWithoutInternals
   }
-    ? keyof Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
     : never = never,
-> = DefaultSchemaTableNameOrOptions extends { schema: keyof Database }
-  ? Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
       Insert: infer I
     }
     ? I
@@ -1817,14 +1822,16 @@ export type TablesInsert<
 export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
-    | { schema: keyof Database },
+    | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof Database
+    schema: keyof DatabaseWithoutInternals
   }
-    ? keyof Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
     : never = never,
-> = DefaultSchemaTableNameOrOptions extends { schema: keyof Database }
-  ? Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
       Update: infer U
     }
     ? U
@@ -1840,14 +1847,16 @@ export type TablesUpdate<
 export type Enums<
   DefaultSchemaEnumNameOrOptions extends
     | keyof DefaultSchema["Enums"]
-    | { schema: keyof Database },
+    | { schema: keyof DatabaseWithoutInternals },
   EnumName extends DefaultSchemaEnumNameOrOptions extends {
-    schema: keyof Database
+    schema: keyof DatabaseWithoutInternals
   }
-    ? keyof Database[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
+    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
     : never = never,
-> = DefaultSchemaEnumNameOrOptions extends { schema: keyof Database }
-  ? Database[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
+> = DefaultSchemaEnumNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
   : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
     ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
     : never
@@ -1855,14 +1864,16 @@ export type Enums<
 export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
     | keyof DefaultSchema["CompositeTypes"]
-    | { schema: keyof Database },
+    | { schema: keyof DatabaseWithoutInternals },
   CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
-    schema: keyof Database
+    schema: keyof DatabaseWithoutInternals
   }
-    ? keyof Database[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
     : never = never,
-> = PublicCompositeTypeNameOrOptions extends { schema: keyof Database }
-  ? Database[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+> = PublicCompositeTypeNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
   : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
     ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
     : never
