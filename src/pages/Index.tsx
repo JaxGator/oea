@@ -1,5 +1,6 @@
 
 import { ErrorBoundary } from '@/components/error/ErrorBoundary';
+import { supabase } from '@/integrations/supabase/client';
 import { Hero } from '@/components/home/Hero';
 import { FeaturedEvents } from "@/components/home/FeaturedEvents";
 import { GalleryPreview } from "@/components/home/GalleryPreview";
@@ -21,20 +22,21 @@ const LoadingSection = () => (
 export default function Index() {
   const queryClient = useQueryClient();
   
-  // Prefetch data for components that will be rendered
+  // Prefetch featured events using the same query key as useFeaturedEvents
   useEffect(() => {
-    // Prefetch queries that might be needed
     queryClient.prefetchQuery({
-      queryKey: ['featured-events'],
-      queryFn: () => fetch('/api/events/featured').then(res => res.json()),
-      staleTime: 1000 * 60 * 5 // 5 minutes
-    });
-    
-    // Prefetch other important queries
-    queryClient.prefetchQuery({
-      queryKey: ['gallery-preview'],
-      queryFn: () => fetch('/api/gallery/preview').then(res => res.json()),
-      staleTime: 1000 * 60 * 15 // 15 minutes
+      queryKey: ['featuredEvents'],
+      queryFn: async () => {
+        const today = new Date().toISOString().split('T')[0];
+        const { data } = await supabase
+          .from('events')
+          .select('*')
+          .eq('is_published', true)
+          .gte('date', today)
+          .order('date', { ascending: true });
+        return data || [];
+      },
+      staleTime: 1000 * 60 * 5,
     });
   }, [queryClient]);
 
