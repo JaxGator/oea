@@ -10,14 +10,23 @@ interface RequireAdminProps {
 }
 
 export function RequireAdmin({ children }: RequireAdminProps) {
-  // Always set isAdmin to true and isLoading to false
-  const isAdmin = true;
-  const isLoading = false;
+  const { isAdmin, isLoading } = useAdminCheck();
   const navigate = useNavigate();
 
-  // We're bypassing the actual admin check since we're forcing admin access
-  console.log('RequireAdmin: Admin access granted (forced)');
+  useEffect(() => {
+    if (!isLoading && !isAdmin) {
+      toast.error("You don't have permission to access this page.");
+      navigate("/");
+    }
+  }, [isAdmin, isLoading, navigate]);
 
-  // Just render children directly since we're forcing admin access
+  if (isLoading) {
+    return <LoadingScreen />;
+  }
+
+  if (!isAdmin) {
+    return null;
+  }
+
   return <>{children}</>;
 }

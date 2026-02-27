@@ -2,10 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { Edit, Trash2, ToggleLeft, ToggleRight } from "lucide-react";
 import { useAuthState } from "@/hooks/useAuthState";
-import { canEditEvent, canDeleteEvent, isAdministrator, canManageEvents } from "@/utils/permissionsUtils";
-import { useEffect } from "react";
 import { useActionFeedback } from "@/hooks/ui/useActionFeedback";
-import { toast } from "sonner";
 
 interface AdminActionsProps {
   isAdmin: boolean;
@@ -36,110 +33,56 @@ export function AdminActions({
 }: AdminActionsProps) {
   const { user } = useAuthState();
   const { executeAction, isLoading } = useActionFeedback();
-  
-  // Log auth state and permissions on mount and when they change
-  useEffect(() => {
-    if (user) {
-      console.log("AdminActions - Auth state:", {
-        userId: user?.id,
-        profileIsAdmin: user?.is_admin,
-        profileIsApproved: user?.is_approved,
-        profileIsMember: user?.is_member,
-        propsIsAdmin: isAdmin,
-        propsCanManageEvents,
-        eventCreator: createdBy,
-        timestamp: new Date().toISOString()
-      });
-    }
-  }, [user, isAdmin, propsCanManageEvents, createdBy]);
-  
-  // Force admin permissions to true
-  const effectiveIsAdmin = true;
-  const effectiveCanManage = true;
-  const canEdit = true;
-  const canDelete = true;
 
-  // Handle edit with feedback
+  const effectiveIsAdmin = isAdmin || !!user?.is_admin;
+  const effectiveCanManage = effectiveIsAdmin || propsCanManageEvents || !!user?.is_approved || !!user?.is_member;
+  const canEdit = effectiveCanManage || user?.id === createdBy;
+  const canDelete = effectiveIsAdmin || (!!user?.is_member && user?.id === createdBy);
+
+  if (!canEdit) return null;
+
   const handleEdit = () => {
     if (onEdit) onEdit();
   };
 
-  // Handle delete with confirmation and feedback
   const handleDelete = async () => {
     if (onDelete) {
       await executeAction(
-        () => {
-          onDelete();
-          return Promise.resolve(true);
-        },
-        {
-          loadingMessage: "Deleting event...",
-          successMessage: "Event deleted successfully",
-          errorMessage: "Failed to delete event"
-        }
+        () => { onDelete(); return Promise.resolve(true); },
+        { loadingMessage: "Deleting event...", successMessage: "Event deleted successfully", errorMessage: "Failed to delete event" }
       );
     }
   };
 
-  // Handle publish/unpublish with feedback
   const handleTogglePublish = async () => {
     if (onTogglePublish) {
       await executeAction(
-        () => {
-          onTogglePublish();
-          return Promise.resolve(true);
-        },
-        {
-          loadingMessage: isPublished ? "Unpublishing event..." : "Publishing event...",
-          successMessage: isPublished ? "Event unpublished" : "Event published",
-          errorMessage: isPublished ? "Failed to unpublish event" : "Failed to publish event"
-        }
+        () => { onTogglePublish(); return Promise.resolve(true); },
+        { loadingMessage: isPublished ? "Unpublishing event..." : "Publishing event...", successMessage: isPublished ? "Event unpublished" : "Event published", errorMessage: isPublished ? "Failed to unpublish event" : "Failed to publish event" }
       );
     }
   };
-  
+
   return (
     <div className="flex flex-wrap items-center gap-2">
-      {!isWixEvent && onEdit && (
-        <Button 
-          variant="outline" 
-          size="sm" 
-          onClick={handleEdit}
-        >
+      {!isWixEvent && onEdit && canEdit && (
+        <Button variant="outline" size="sm" onClick={handleEdit}>
           <Edit className="h-4 w-4 mr-2" />
           Edit
         </Button>
       )}
-      
-      {!isWixEvent && showDelete && onDelete && (
-        <Button 
-          variant="destructive" 
-          size="sm" 
-          onClick={handleDelete}
-          disabled={isLoading}
-        >
+      {!isWixEvent && showDelete && onDelete && canDelete && (
+        <Button variant="destructive" size="sm" onClick={handleDelete} disabled={isLoading}>
           <Trash2 className="h-4 w-4 mr-2" />
           Delete
         </Button>
       )}
-      
-      {showPublishToggle && onTogglePublish && (
-        <Button
-          variant="secondary"
-          size="sm"
-          onClick={handleTogglePublish}
-          disabled={isLoading}
-        >
+      {showPublishToggle && onTogglePublish && effectiveCanManage && (
+        <Button variant="secondary" size="sm" onClick={handleTogglePublish} disabled={isLoading}>
           {isPublished ? (
-            <>
-              <ToggleRight className="h-4 w-4 mr-2" />
-              Unpublish
-            </>
+            <><ToggleRight className="h-4 w-4 mr-2" />Unpublish</>
           ) : (
-            <>
-              <ToggleLeft className="h-4 w-4 mr-2" />
-              Publish
-            </>
+            <><ToggleLeft className="h-4 w-4 mr-2" />Publish</>
           )}
         </Button>
       )}
