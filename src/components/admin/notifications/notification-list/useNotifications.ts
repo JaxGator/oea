@@ -30,7 +30,7 @@ export function useNotifications() {
     queryKey: ['auth-notifications'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('admin_notifications')
+        .from('admin_notifications' as any)
         .select('*')
         .eq('type', 'auth')
         .order('created_at', { ascending: false });
