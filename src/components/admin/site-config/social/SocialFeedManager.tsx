@@ -8,7 +8,7 @@ export function SocialFeedManager() {
     queryKey: ['social-feed-admin'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('social_media_feeds')
+        .from('social_media_feeds' as any)
         .select('*')
         .order('created_at', { ascending: false })
         .limit(1)
