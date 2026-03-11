@@ -62,7 +62,7 @@ export async function castPublicVote(pollId: string, optionId: string, userId: s
       throw new Error("This poll is not public");
     }
     
-    if (poll.closes_at && new Date(poll.closes_at) < new Date()) {
+    if ((poll as any).closes_at && new Date((poll as any).closes_at) < new Date()) {
       throw new Error("This poll has closed");
     }
 
