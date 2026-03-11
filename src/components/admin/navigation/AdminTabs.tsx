@@ -23,13 +23,9 @@ export function AdminTabs() {
   useEffect(() => {
     if (activeTab === "users") {
       // Prefetch payments count
-      supabase.from('payments').select('*', { count: 'exact', head: true })
-        .then(() => undefined)
-        .catch(() => console.log('Failed to prefetch payments count'));
-      // Prefetch gallery count  
-      supabase.from('gallery_images').select('*', { count: 'exact', head: true })
-        .then(() => undefined)
-        .catch(() => console.log('Failed to prefetch gallery count'));
+      void supabase.from('payments').select('*', { count: 'exact', head: true });
+      // Prefetch gallery count
+      void supabase.from('gallery_images').select('*', { count: 'exact', head: true });
     }
   }, [activeTab]);
 
