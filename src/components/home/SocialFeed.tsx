@@ -11,7 +11,7 @@ export function SocialFeed() {
     queryFn: async () => {
       console.log('Fetching social feeds...');
       const { data, error } = await supabase
-        .from('social_media_feeds')
+        .from('social_media_feeds' as any)
         .select('*')
         .eq('is_active', true)
         .order('created_at', { ascending: false })
