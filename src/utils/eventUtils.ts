@@ -68,7 +68,7 @@ export const joinEventWaitlist = async (eventId: string) => {
 
     // First check if already on waitlist
     const { data: existingEntry, error: checkError } = await supabase
-      .from('event_waitlist')
+      .from('event_waitlist' as any)
       .select('id')
       .match({ event_id: eventId, user_id: user.id })
       .maybeSingle();
