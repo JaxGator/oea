@@ -58,7 +58,7 @@ export async function castPublicVote(pollId: string, optionId: string, userId: s
 
     if (pollError) throw new Error("Poll not found");
     
-    if (!poll.is_public) {
+    if (!(poll as any).is_public) {
       throw new Error("This poll is not public");
     }
     
