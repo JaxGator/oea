@@ -24,11 +24,11 @@ export function AdminTabs() {
     if (activeTab === "users") {
       // Prefetch payments count
       supabase.from('payments').select('*', { count: 'exact', head: true })
-        .then(() => {})
+        .then(() => undefined)
         .catch(() => console.log('Failed to prefetch payments count'));
-      // Prefetch gallery count
+      // Prefetch gallery count  
       supabase.from('gallery_images').select('*', { count: 'exact', head: true })
-        .then(() => {})
+        .then(() => undefined)
         .catch(() => console.log('Failed to prefetch gallery count'));
     }
   }, [activeTab]);
