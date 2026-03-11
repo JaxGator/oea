@@ -59,7 +59,7 @@ export function PublicPollView() {
       }
 
       // Transform the data to match PollWithDetails type
-      const transformedPoll: PollWithDetails = {
+      const transformedPoll = {
         ...data,
         poll_options: data.poll_options.map((option: any) => ({
           ...option,

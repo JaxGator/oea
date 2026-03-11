@@ -94,7 +94,7 @@ export function useConversations(userId: string | undefined) {
         })) as GroupChatRaw[];
 
         return {
-          directMessages: (directMessages || []) as Message[],
+          directMessages: (directMessages || []) as unknown as Message[],
           groupMessages: transformedGroupChats
         };
       } catch (error) {

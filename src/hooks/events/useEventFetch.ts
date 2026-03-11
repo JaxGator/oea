@@ -35,7 +35,7 @@ export const fetchFeaturedEvents = async (): Promise<Event[]> => {
   }
 
   console.log('Fetched events:', data);
-  return transformEventData(data || []);
+  return transformEventData((data as any[]) || []);
 };
 
 export const useEventFetch = () => {

@@ -31,7 +31,7 @@ export function LeaderboardPage() {
         }
 
         console.log(`Leaderboard data (${timeRange}):`, data);
-        setMembers(data || []);
+        setMembers((data as any[]) || []);
       } catch (error) {
         console.error("Error fetching leaderboard data:", error);
         toast.error("Failed to load leaderboard data");
