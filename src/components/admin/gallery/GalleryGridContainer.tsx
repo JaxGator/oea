@@ -25,14 +25,12 @@ export function GalleryGridContainer({ images, onImageDelete }: GalleryGridConta
         fileName = urlParts[urlParts.length - 1].split('?')[0];
       }
 
-      // Use the API endpoint instead of direct database access
-      const response = await fetch('/api/gallery/delete', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ fileName })
-      });
+      const { error: dbError } = await supabase
+        .from('gallery_images')
+        .delete()
+        .eq('file_name', fileName);
 
-      if (!response.ok) {
+      if (dbError) {
         throw new Error('Failed to delete image from database');
       }
 
