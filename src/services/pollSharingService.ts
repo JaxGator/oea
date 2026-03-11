@@ -184,7 +184,7 @@ export async function sharePoll(pollId: string, userIds: string[], shareUrl: str
     
     const { error } = await supabase
       .from('poll_shares')
-      .insert(shareData);
+      .insert(shareData as any);
     
     if (error) throw error;
     
