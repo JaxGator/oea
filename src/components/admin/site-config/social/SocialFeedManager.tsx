@@ -29,7 +29,7 @@ export function SocialFeedManager() {
       </div>
 
       <SocialFeedForm 
-        existingFeed={existingFeed}
+        existingFeed={existingFeed as any}
         onSave={refetch}
       />
     </div>

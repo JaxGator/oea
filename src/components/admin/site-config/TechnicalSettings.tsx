@@ -44,12 +44,12 @@ export function TechnicalSettings() {
   const updateConfig = async (key: string, value: string) => {
     try {
       const { error } = await supabase
-        .from('site_config')
+        .from('site_config' as any)
         .upsert({ 
           key, 
           value,
           updated_at: new Date().toISOString()
-        }, {
+        } as any, {
           onConflict: 'key'
         });
 

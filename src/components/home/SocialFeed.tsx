@@ -22,7 +22,7 @@ export function SocialFeed() {
         throw error;
       }
       console.log('Fetched social feeds:', data);
-      return data as SocialMediaFeed[];
+      return data as unknown as SocialMediaFeed[];
     },
     retry: 1,
     staleTime: 1000 * 60 * 5, // Cache for 5 minutes

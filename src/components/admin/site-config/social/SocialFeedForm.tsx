@@ -27,19 +27,18 @@ export function SocialFeedForm({ existingFeed, onSave }: SocialFeedFormProps) {
     try {
       // Delete any existing feeds first
       await supabase
-        .from('social_media_feeds')
+        .from('social_media_feeds' as any)
         .delete()
         .neq('id', 'placeholder');
 
-      // Insert the new feed
       const { error } = await supabase
-        .from('social_media_feeds')
+        .from('social_media_feeds' as any)
         .insert({
           platform: 'Social Feed',
           feed_url: embedCode,
           is_active: true,
           display_order: 1
-        });
+        } as any);
 
       if (error) throw error;
 

@@ -51,12 +51,12 @@ export function AuthForm() {
       const errorMessage = details.errorDescription || `Auth error: ${details.error}`;
       
       const { error } = await supabase
-        .from('auth_notifications')
+        .from('auth_notifications' as any)
         .insert([{
           message: errorMessage,
           metadata: details,
           is_read: false
-        }]);
+        }] as any);
         
       if (error) {
         console.error('Failed to create auth notification:', error);

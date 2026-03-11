@@ -78,7 +78,7 @@ export function WixEventImporter() {
         const formattedDate = eventDate.toISOString().split('T')[0];
         const formattedTime = eventDate.toTimeString().split(' ')[0].substring(0, 5);
 
-        const { data, error } = await supabase.rpc('import_wix_event', {
+        const { data, error } = await supabase.rpc('import_wix_event' as any, {
           p_title: event.title,
           p_description: 'Imported from Wix',
           p_date: formattedDate,
