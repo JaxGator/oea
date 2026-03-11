@@ -50,7 +50,7 @@ export function AdminTabs() {
     queryKey: ['admin-unread-notifications-count'],
     queryFn: async () => {
       const { count, error } = await supabase
-        .from('admin_notifications')
+        .from('admin_notifications' as any)
         .select('*', { count: 'exact', head: true })
         .eq('is_read', false);
 

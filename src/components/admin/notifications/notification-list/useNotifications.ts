@@ -93,7 +93,7 @@ export function useNotifications() {
       setIsDeleting(true);
       
       const { error } = await supabase
-        .from('admin_notifications')
+        .from('admin_notifications' as any)
         .delete()
         .eq('is_read', true);
 

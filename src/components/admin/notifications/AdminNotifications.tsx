@@ -45,7 +45,7 @@ export function AdminNotifications() {
     queryKey: ['unread-auth-notifications'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('admin_notifications')
+        .from('admin_notifications' as any)
         .select('*')
         .eq('is_read', false)
         .eq('type', 'auth');

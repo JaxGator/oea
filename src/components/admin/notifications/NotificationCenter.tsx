@@ -26,7 +26,7 @@ export function NotificationCenter() {
     queryKey: ['admin-notifications'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('admin_logs')
+        .from('admin_logs' as any)
         .select('*')
         .order('created_at', { ascending: false })
         .limit(10);
