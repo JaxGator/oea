@@ -21,22 +21,12 @@ export function AdminTabs() {
 
   // Pre-fetch data for other tabs to improve tab switching performance
   useEffect(() => {
-    // When a tab becomes active, prefetch data for the next possible tabs
-    const prefetchAdjacentTabData = () => {
-      if (activeTab === "users") {
-        // Prefetch payments and gallery data
-        // Using fetch API instead of supabase client to avoid type issues
-        fetch('/api/admin/payments/count')
-          .then(res => res.json())
-          .catch(() => console.log('Failed to prefetch payments count'));
-          
-        fetch('/api/admin/gallery/count')
-          .then(res => res.json())
-          .catch(() => console.log('Failed to prefetch gallery count'));
-      }
-    };
-    
-    prefetchAdjacentTabData();
+    if (activeTab === "users") {
+      // Prefetch payments count
+      void supabase.from('payments').select('*', { count: 'exact', head: true });
+      // Prefetch gallery count
+      void supabase.from('gallery_images').select('*', { count: 'exact', head: true });
+    }
   }, [activeTab]);
 
   const { data: userCount, isLoading: isLoadingUsers } = useQuery({
@@ -55,13 +45,13 @@ export function AdminTabs() {
   const { data: notificationCount, isLoading: isLoadingNotifications } = useQuery({
     queryKey: ['admin-unread-notifications-count'],
     queryFn: async () => {
-      // Using fetch API instead of direct supabase call to avoid type issues
-      const response = await fetch('/api/admin/notifications/unread-count');
-      if (!response.ok) {
-        throw new Error('Failed to fetch notification count');
-      }
-      const data = await response.json();
-      return data.count || 0;
+      const { count, error } = await supabase
+        .from('admin_notifications' as any)
+        .select('*', { count: 'exact', head: true })
+        .eq('is_read', false);
+
+      if (error) throw error;
+      return count || 0;
     },
   });
 
