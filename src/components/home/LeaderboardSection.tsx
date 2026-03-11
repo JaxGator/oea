@@ -16,7 +16,7 @@ export function LeaderboardSection() {
       console.log('Fetching leaderboard data...');
       try {
         const { data, error } = await supabase
-          .from("leaderboard_metrics")
+          .from("leaderboard_metrics" as any)
           .select(`
             *,
             profiles:user_id (
@@ -46,7 +46,7 @@ export function LeaderboardSection() {
         }
         
         // Filter out any entries that don't have associated profile data
-        const filteredData = data?.filter(item => item.profiles && item.profiles.username) || [];
+        const filteredData = (data as any[])?.filter((item: any) => item.profiles && item.profiles.username) || [];
         console.log('Filtered leaderboard data:', filteredData);
         
         return filteredData;

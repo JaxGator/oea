@@ -34,7 +34,7 @@ export default function PaymentManager() {
         throw error;
       }
 
-      return data;
+      return data as any[];
     },
   });
 

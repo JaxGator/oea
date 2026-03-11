@@ -16,12 +16,12 @@ export function SocialLinksManager({ socialLinks, setSocialLinks }: SocialLinksM
   const updateSocialLinks = async () => {
     try {
       const { error } = await supabase
-        .from('site_config')
+        .from('site_config' as any)
         .upsert({ 
           key: 'social_links',
           value: JSON.stringify(socialLinks),
           updated_at: new Date().toISOString()
-        }, {
+        } as any, {
           onConflict: 'key'
         });
 

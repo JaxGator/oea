@@ -68,7 +68,7 @@ export const joinEventWaitlist = async (eventId: string) => {
 
     // First check if already on waitlist
     const { data: existingEntry, error: checkError } = await supabase
-      .from('event_waitlist')
+      .from('event_waitlist' as any)
       .select('id')
       .match({ event_id: eventId, user_id: user.id })
       .maybeSingle();
@@ -82,7 +82,7 @@ export const joinEventWaitlist = async (eventId: string) => {
 
     // Add to waitlist
     const { error } = await supabase
-      .from('event_waitlist')
+      .from('event_waitlist' as any)
       .insert({
         event_id: eventId,
         user_id: user.id,
@@ -109,7 +109,7 @@ export const leaveEventWaitlist = async (eventId: string) => {
     }
 
     const { error } = await supabase
-      .from('event_waitlist')
+      .from('event_waitlist' as any)
       .delete()
       .match({ event_id: eventId, user_id: user.id });
 

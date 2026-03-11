@@ -46,7 +46,7 @@ export function useGroupChat(groupId: string) {
         .order('created_at', { ascending: true });
 
       if (error) throw error;
-      return data as GroupChatMessage[];
+      return data as unknown as GroupChatMessage[];
     },
     enabled: !!groupId,
   });

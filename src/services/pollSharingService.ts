@@ -52,17 +52,17 @@ export async function castPublicVote(pollId: string, optionId: string, userId: s
     // Check if poll is public
     const { data: poll, error: pollError } = await supabase
       .from('polls')
-      .select('is_public, closes_at')
+      .select('is_public, closes_at' as any)
       .eq('id', pollId)
       .single();
 
     if (pollError) throw new Error("Poll not found");
     
-    if (!poll.is_public) {
+    if (!(poll as any).is_public) {
       throw new Error("This poll is not public");
     }
     
-    if (poll.closes_at && new Date(poll.closes_at) < new Date()) {
+    if ((poll as any).closes_at && new Date((poll as any).closes_at) < new Date()) {
       throw new Error("This poll has closed");
     }
 
@@ -91,7 +91,7 @@ export async function castPublicVote(pollId: string, optionId: string, userId: s
       .from('poll_votes')
       .insert({
         poll_id: pollId,
-        poll_option_id: optionId,
+        option_id: optionId,
         user_id: userId
       });
 
@@ -184,7 +184,7 @@ export async function sharePoll(pollId: string, userIds: string[], shareUrl: str
     
     const { error } = await supabase
       .from('poll_shares')
-      .insert(shareData);
+      .insert(shareData as any);
     
     if (error) throw error;
     
@@ -218,11 +218,10 @@ async function createPollShareNotification(
       .from('notifications')
       .insert({
         user_id: userId,
-        type: 'poll_share',
+        type: 'message' as const,
         title: 'New Poll Shared With You',
-        content: 'Someone has shared a poll with you',
-        link: shareUrl,
-        metadata: { poll_id: pollId },
+        message: 'Someone has shared a poll with you',
+        related_entity_id: pollId,
         is_read: false
       });
     

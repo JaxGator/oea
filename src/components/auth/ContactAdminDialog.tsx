@@ -58,13 +58,13 @@ export function ContactAdminDialog() {
         // Also create a local auth_notification record for immediate feedback
         try {
           const { error: authNotifError } = await supabase
-            .from('auth_notifications')
+            .from('auth_notifications' as any)
             .insert({
               type: 'contact',
               message: 'User contact message', 
-              metadata: trimmedMessage, // Store full message in metadata
+              metadata: trimmedMessage,
               is_read: false
-            });
+            } as any);
 
           if (authNotifError) {
             console.error('Error creating local auth notification:', authNotifError);

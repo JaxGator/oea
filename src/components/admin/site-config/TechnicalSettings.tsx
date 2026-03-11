@@ -15,14 +15,14 @@ export function TechnicalSettings() {
     const fetchConfigs = async () => {
       try {
         const { data, error } = await supabase
-          .from('site_config')
+          .from('site_config' as any)
           .select('key, value');
         
         if (error) {
           throw error;
         }
 
-        const configObj = data.reduce((acc: Record<string, string>, curr) => {
+        const configObj = (data as any[]).reduce((acc: Record<string, string>, curr: any) => {
           acc[curr.key] = curr.value || "";
           return acc;
         }, {});
@@ -44,12 +44,12 @@ export function TechnicalSettings() {
   const updateConfig = async (key: string, value: string) => {
     try {
       const { error } = await supabase
-        .from('site_config')
+        .from('site_config' as any)
         .upsert({ 
           key, 
           value,
           updated_at: new Date().toISOString()
-        }, {
+        } as any, {
           onConflict: 'key'
         });
 

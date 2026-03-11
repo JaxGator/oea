@@ -59,7 +59,7 @@ export function PublicPollView() {
       }
 
       // Transform the data to match PollWithDetails type
-      const transformedPoll: PollWithDetails = {
+      const transformedPoll = {
         ...data,
         poll_options: data.poll_options.map((option: any) => ({
           ...option,
@@ -119,7 +119,7 @@ export function PublicPollView() {
         </div>
       )}
       <PollCard 
-        poll={poll}
+        poll={poll as any}
         canEdit={false}
         onDelete={() => {}}
         isPublicView={!user}

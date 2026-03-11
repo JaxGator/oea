@@ -24,14 +24,14 @@ export function LeaderboardPage() {
           functionName = "get_all_time_leaderboard";
         }
 
-        const { data, error } = await supabase.rpc(functionName);
+        const { data, error } = await supabase.rpc(functionName as any);
 
         if (error) {
           throw error;
         }
 
         console.log(`Leaderboard data (${timeRange}):`, data);
-        setMembers(data || []);
+        setMembers((data as any[]) || []);
       } catch (error) {
         console.error("Error fetching leaderboard data:", error);
         toast.error("Failed to load leaderboard data");
