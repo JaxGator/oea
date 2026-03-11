@@ -16,7 +16,7 @@ export function LeaderboardSection() {
       console.log('Fetching leaderboard data...');
       try {
         const { data, error } = await supabase
-          .from("leaderboard_metrics")
+          .from("leaderboard_metrics" as any)
           .select(`
             *,
             profiles:user_id (
