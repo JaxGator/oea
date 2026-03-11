@@ -82,7 +82,7 @@ export const joinEventWaitlist = async (eventId: string) => {
 
     // Add to waitlist
     const { error } = await supabase
-      .from('event_waitlist')
+      .from('event_waitlist' as any)
       .insert({
         event_id: eventId,
         user_id: user.id,
