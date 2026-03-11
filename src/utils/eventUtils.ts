@@ -109,7 +109,7 @@ export const leaveEventWaitlist = async (eventId: string) => {
     }
 
     const { error } = await supabase
-      .from('event_waitlist')
+      .from('event_waitlist' as any)
       .delete()
       .match({ event_id: eventId, user_id: user.id });
 

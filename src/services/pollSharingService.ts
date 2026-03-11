@@ -218,11 +218,10 @@ async function createPollShareNotification(
       .from('notifications')
       .insert({
         user_id: userId,
-        type: 'poll_share',
+        type: 'message' as const,
         title: 'New Poll Shared With You',
-        content: 'Someone has shared a poll with you',
-        link: shareUrl,
-        metadata: { poll_id: pollId },
+        message: 'Someone has shared a poll with you',
+        related_entity_id: pollId,
         is_read: false
       });
     

@@ -71,7 +71,7 @@ export async function executeTableQuery<T>(
 
   return executeQuery<T>(async () => {
     const response = await supabase
-      .from(table)
+      .from(table as any)
       .select(query) as PostgrestResponse<T>;
     
     if (response.error) throw response.error;

@@ -119,7 +119,7 @@ export function PublicPollView() {
         </div>
       )}
       <PollCard 
-        poll={poll}
+        poll={poll as any}
         canEdit={false}
         onDelete={() => {}}
         isPublicView={!user}
