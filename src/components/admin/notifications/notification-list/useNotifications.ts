@@ -13,7 +13,7 @@ export function useNotifications() {
     queryKey: ['admin-notifications'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('admin_notifications')
+        .from('admin_notifications' as any)
         .select('*')
         .order('created_at', { ascending: false });
 
@@ -22,7 +22,7 @@ export function useNotifications() {
         toast.error("Failed to load notifications");
         throw error;
       }
-      return (data || []) as AdminNotification[];
+      return (data || []) as unknown as AdminNotification[];
     },
   });
 
