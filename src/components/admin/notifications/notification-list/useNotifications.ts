@@ -2,6 +2,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { AdminNotification } from "./types";
 
 export function useNotifications() {
@@ -11,48 +12,45 @@ export function useNotifications() {
   const { data: notifications = [], isLoading, error } = useQuery({
     queryKey: ['admin-notifications'],
     queryFn: async () => {
-      const response = await fetch('/api/admin/notifications/all');
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error('Error fetching admin notifications:', errorData);
+      const { data, error } = await supabase
+        .from('admin_notifications')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching admin notifications:', error);
         toast.error("Failed to load notifications");
-        throw new Error(errorData.error || 'Failed to fetch notifications');
+        throw error;
       }
-      
-      const data = await response.json();
-      return data as AdminNotification[];
+      return (data || []) as AdminNotification[];
     },
   });
 
   const { data: authNotifications = [] } = useQuery({
     queryKey: ['auth-notifications'],
     queryFn: async () => {
-      const response = await fetch('/api/admin/notifications/auth');
-      
-      if (!response.ok) {
-        console.error('Error fetching auth notifications:', response.statusText);
+      const { data, error } = await supabase
+        .from('admin_notifications')
+        .select('*')
+        .eq('type', 'auth')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching auth notifications:', error);
         return [];
       }
-      
-      return await response.json();
+      return data || [];
     },
   });
 
   const markAsReadMutation = useMutation({
     mutationFn: async (id: string) => {
-      const response = await fetch('/api/admin/notifications/mark-read', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ id }),
-      });
-      
-      if (!response.ok) {
-        throw new Error('Failed to mark notification as read');
-      }
-      
+      const { error } = await supabase
+        .from('admin_notifications')
+        .update({ is_read: true })
+        .eq('id', id);
+
+      if (error) throw error;
       return id;
     },
     onSuccess: () => {
@@ -67,18 +65,12 @@ export function useNotifications() {
 
   const deleteNotificationMutation = useMutation({
     mutationFn: async (id: string) => {
-      const response = await fetch('/api/admin/notifications/delete', {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ id }),
-      });
-      
-      if (!response.ok) {
-        throw new Error('Failed to delete notification');
-      }
-      
+      const { error } = await supabase
+        .from('admin_notifications')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
       return id;
     },
     onSuccess: () => {
@@ -100,13 +92,12 @@ export function useNotifications() {
     try {
       setIsDeleting(true);
       
-      const response = await fetch('/api/admin/notifications/delete-read', {
-        method: 'DELETE',
-      });
-      
-      if (!response.ok) {
-        throw new Error('Failed to delete read notifications');
-      }
+      const { error } = await supabase
+        .from('admin_notifications')
+        .delete()
+        .eq('is_read', true);
+
+      if (error) throw error;
       
       queryClient.invalidateQueries({ queryKey: ['admin-notifications'] });
       toast.success("All read notifications deleted");
@@ -121,14 +112,16 @@ export function useNotifications() {
   // Combine and process notifications
   const allNotifications = [
     ...notifications,
-    ...authNotifications.map((n: any) => ({
-      id: n.id,
-      type: 'auth',
-      message: n.message || 'Authentication event',
-      metadata: n.metadata,
-      created_at: n.created_at,
-      is_read: n.is_read || false
-    }))
+    ...authNotifications
+      .filter((n: any) => !notifications.some(existing => existing.id === n.id))
+      .map((n: any) => ({
+        id: n.id,
+        type: 'auth',
+        message: n.message || 'Authentication event',
+        metadata: n.metadata,
+        created_at: n.created_at,
+        is_read: n.is_read || false
+      }))
   ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
   const readCount = allNotifications.filter(n => n.is_read).length;

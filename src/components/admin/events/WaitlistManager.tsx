@@ -87,26 +87,21 @@ export function WaitlistManager({
 
       if (rsvpError) throw rsvpError;
 
-      // Create notification using fetch API instead of direct database access
+      // Create waitlist notification directly via Supabase
       try {
-        const response = await fetch('/api/notifications/create-waitlist', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            eventId,
-            userId: entry.profiles.user_id,
-            notificationType: 'promoted'
-          }),
-        });
-        
-        if (!response.ok) {
-          throw new Error('Failed to create notification');
+        const { error: notifError } = await supabase
+          .from('waitlist_notifications')
+          .insert({
+            event_id: eventId,
+            user_id: entry.profiles.user_id,
+            notification_type: 'promoted'
+          });
+
+        if (notifError) {
+          console.error('Error creating notification:', notifError);
         }
       } catch (notificationError) {
         console.error('Error creating notification:', notificationError);
-        // Continue execution even if notification creation fails
       }
 
       notify("success", "Attendee Promoted", "Successfully promoted from waitlist");

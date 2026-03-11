@@ -49,13 +49,13 @@ export function AdminTabs() {
   const { data: notificationCount, isLoading: isLoadingNotifications } = useQuery({
     queryKey: ['admin-unread-notifications-count'],
     queryFn: async () => {
-      // Using fetch API instead of direct supabase call to avoid type issues
-      const response = await fetch('/api/admin/notifications/unread-count');
-      if (!response.ok) {
-        throw new Error('Failed to fetch notification count');
-      }
-      const data = await response.json();
-      return data.count || 0;
+      const { count, error } = await supabase
+        .from('admin_notifications')
+        .select('*', { count: 'exact', head: true })
+        .eq('is_read', false);
+
+      if (error) throw error;
+      return count || 0;
     },
   });
 

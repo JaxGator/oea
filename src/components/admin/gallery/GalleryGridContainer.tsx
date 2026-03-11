@@ -3,6 +3,7 @@ import { useState } from "react";
 import { GalleryItem } from "./GalleryItem";
 import { toast } from "sonner";
 import { useSession } from "@/hooks/auth/useSession";
+import { supabase } from "@/integrations/supabase/client";
 
 interface GalleryGridContainerProps {
   images: Array<{ url: string; id: string }>;

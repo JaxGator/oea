@@ -25,13 +25,15 @@ export function NotificationCenter() {
   const { data: notifications = [] } = useQuery({
     queryKey: ['admin-notifications'],
     queryFn: async () => {
-      const response = await fetch('/api/admin/notifications/logs');
-      if (!response.ok) {
-        throw new Error('Failed to fetch admin logs');
-      }
+      const { data, error } = await supabase
+        .from('admin_logs')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(10);
+
+      if (error) throw error;
       
-      const data = await response.json();
-      return data.map((log: any): AdminNotification => ({
+      return (data || []).map((log: any): AdminNotification => ({
         id: log.id,
         message: `${log.action_type} performed on ${log.target_type}`,
         type: 'info',

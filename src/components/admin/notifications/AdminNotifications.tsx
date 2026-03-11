@@ -9,6 +9,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { AdminNotificationList } from "./AdminNotificationList";
+import { supabase } from "@/integrations/supabase/client";
 
 export function AdminNotifications() {
   const navigate = useNavigate();
@@ -16,42 +17,44 @@ export function AdminNotifications() {
   const { data: unapprovedUsers = [] } = useQuery({
     queryKey: ['unapproved-users'],
     queryFn: async () => {
-      const response = await fetch('/api/admin/users/unapproved');
-      if (!response.ok) {
-        throw new Error('Failed to fetch unapproved users');
-      }
-      return await response.json();
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('id, username, email, full_name')
+        .eq('is_approved', false);
+
+      if (error) throw error;
+      return data || [];
     },
   });
 
   const { data: unreadNotifications = [] } = useQuery({
     queryKey: ['unread-notifications'],
     queryFn: async () => {
-      const response = await fetch('/api/admin/notifications/unread');
-      if (!response.ok) {
-        throw new Error('Failed to fetch unread notifications');
-      }
-      return await response.json();
+      const { data, error } = await supabase
+        .from('admin_notifications')
+        .select('*')
+        .eq('is_read', false);
+
+      if (error) throw error;
+      return data || [];
     },
   });
 
-  // Also get auth notifications
+  // Also get auth notifications (unread, type=auth)
   const { data: authNotifications = [] } = useQuery({
     queryKey: ['unread-auth-notifications'],
     queryFn: async () => {
-      try {
-        const response = await fetch('/api/admin/notifications/auth-unread');
-        if (!response.ok) {
-          console.error('Error fetching auth notifications:', response.statusText);
-          return [];
-        }
-        const data = await response.json();
-        console.log('Unread auth notifications:', data);
-        return data || [];
-      } catch (err) {
-        console.error('Exception fetching auth notifications:', err);
+      const { data, error } = await supabase
+        .from('admin_notifications')
+        .select('*')
+        .eq('is_read', false)
+        .eq('type', 'auth');
+
+      if (error) {
+        console.error('Error fetching auth notifications:', error);
         return [];
       }
+      return data || [];
     },
   });
 
