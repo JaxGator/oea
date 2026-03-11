@@ -14,7 +14,7 @@ export function useConfigManager() {
   const fetchConfigs = async () => {
     try {
       const { data, error } = await supabase
-        .from('site_config')
+        .from('site_config' as any)
         .select('key, value');
       
       if (error) throw error;
