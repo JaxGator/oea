@@ -66,7 +66,7 @@ export function useNotifications() {
   const deleteNotificationMutation = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase
-        .from('admin_notifications')
+        .from('admin_notifications' as any)
         .delete()
         .eq('id', id);
 
