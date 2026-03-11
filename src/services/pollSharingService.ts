@@ -52,7 +52,7 @@ export async function castPublicVote(pollId: string, optionId: string, userId: s
     // Check if poll is public
     const { data: poll, error: pollError } = await supabase
       .from('polls')
-      .select('is_public, closes_at')
+      .select('is_public, closes_at' as any)
       .eq('id', pollId)
       .single();
 
