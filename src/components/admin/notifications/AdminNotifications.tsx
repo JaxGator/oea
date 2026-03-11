@@ -18,7 +18,7 @@ export function AdminNotifications() {
     queryKey: ['unapproved-users'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('profiles')
+        .from('profiles' as any)
         .select('id, username, email, full_name')
         .eq('is_approved', false);
 
