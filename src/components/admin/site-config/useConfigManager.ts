@@ -19,7 +19,7 @@ export function useConfigManager() {
       
       if (error) throw error;
 
-      const configObj = data.reduce((acc: Record<string, string>, curr) => {
+      const configObj = (data as any[]).reduce((acc: Record<string, string>, curr: any) => {
         acc[curr.key] = curr.value || "";
         return acc;
       }, {});
