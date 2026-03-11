@@ -24,7 +24,7 @@ export function LeaderboardPage() {
           functionName = "get_all_time_leaderboard";
         }
 
-        const { data, error } = await supabase.rpc(functionName);
+        const { data, error } = await supabase.rpc(functionName as any);
 
         if (error) {
           throw error;
