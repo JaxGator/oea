@@ -91,7 +91,7 @@ export async function castPublicVote(pollId: string, optionId: string, userId: s
       .from('poll_votes')
       .insert({
         poll_id: pollId,
-        poll_option_id: optionId,
+        option_id: optionId,
         user_id: userId
       });
 
