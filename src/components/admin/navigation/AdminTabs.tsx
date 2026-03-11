@@ -21,22 +21,16 @@ export function AdminTabs() {
 
   // Pre-fetch data for other tabs to improve tab switching performance
   useEffect(() => {
-    // When a tab becomes active, prefetch data for the next possible tabs
-    const prefetchAdjacentTabData = () => {
-      if (activeTab === "users") {
-        // Prefetch payments and gallery data
-        // Using fetch API instead of supabase client to avoid type issues
-        fetch('/api/admin/payments/count')
-          .then(res => res.json())
-          .catch(() => console.log('Failed to prefetch payments count'));
-          
-        fetch('/api/admin/gallery/count')
-          .then(res => res.json())
-          .catch(() => console.log('Failed to prefetch gallery count'));
-      }
-    };
-    
-    prefetchAdjacentTabData();
+    if (activeTab === "users") {
+      // Prefetch payments count
+      supabase.from('payments').select('*', { count: 'exact', head: true })
+        .then(() => {})
+        .catch(() => console.log('Failed to prefetch payments count'));
+      // Prefetch gallery count
+      supabase.from('gallery_images').select('*', { count: 'exact', head: true })
+        .then(() => {})
+        .catch(() => console.log('Failed to prefetch gallery count'));
+    }
   }, [activeTab]);
 
   const { data: userCount, isLoading: isLoadingUsers } = useQuery({
