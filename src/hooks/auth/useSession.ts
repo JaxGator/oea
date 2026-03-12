@@ -3,7 +3,6 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { User } from '@supabase/supabase-js';
 import { Profile } from '@/types/auth';
-import { useToast } from '@/hooks/use-toast';
 
 interface SessionState {
   user: User | null;
@@ -19,14 +18,12 @@ export function useSession() {
     isLoading: true,
     error: null,
   });
-  const { toast } = useToast();
 
   useEffect(() => {
     let mounted = true;
 
     const initializeSession = async () => {
       try {
-        // Get initial session
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         
         if (sessionError) {
@@ -47,7 +44,6 @@ export function useSession() {
 
         console.log('Session found:', session.user.id);
 
-        // Fetch profile data if we have a session
         if (session?.user) {
           const { data: profile, error: profileError } = await supabase
             .from('profiles')
@@ -87,70 +83,13 @@ export function useSession() {
 
     initializeSession();
 
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        console.log('Auth state changed:', event, session?.user?.id);
-
-        if (!session) {
-          if (mounted) {
-            setState({
-              user: null,
-              profile: null,
-              isLoading: false,
-              error: null
-            });
-          }
-          return;
-        }
-
-        try {
-          const { data: profile, error: profileError } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', session.user.id)
-            .maybeSingle();
-
-          if (profileError) {
-            console.error('Error fetching profile:', profileError);
-            toast({
-              title: "Error loading profile",
-              description: "Please try refreshing the page",
-              variant: "destructive",
-            });
-            if (mounted) {
-              setState({
-                user: session.user,
-                profile: null,
-                isLoading: false,
-                error: profileError
-              });
-            }
-            return;
-          }
-
-          if (mounted) {
-            setState({
-              user: session.user,
-              profile: profile as Profile,
-              isLoading: false,
-              error: null
-            });
-          }
-        } catch (error) {
-          console.error('Profile fetch error:', error);
-          if (mounted) {
-            setState(prev => ({ ...prev, error: error as Error }));
-          }
-        }
-      }
-    );
+    // No onAuthStateChange here — SessionManager handles all auth state
+    // changes centrally and invalidates queries, which triggers refetches.
 
     return () => {
       mounted = false;
-      subscription.unsubscribe();
     };
-  }, [toast]);
+  }, []);
 
   return state;
 }
