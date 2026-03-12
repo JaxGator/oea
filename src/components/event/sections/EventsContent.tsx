@@ -65,7 +65,7 @@ export function EventsContent({
               isLoading={isLoading}
               onUpdate={onUpdate}
               userRSVPs={userRSVPs}
-              isAuthenticated={true} // Force authenticated for admin access
+              isAuthenticated={isAuthenticated}
             />
           </ErrorBoundary>
         </div>
