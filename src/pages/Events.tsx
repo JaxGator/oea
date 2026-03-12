@@ -60,7 +60,7 @@ export default function Events() {
       <EventsHeader
         selectedDate={selectedDate}
         onDateSelect={setSelectedDate}
-        isAuthenticated={true} // Force authenticated for admin access
+        isAuthenticated={isAuthenticated}
         onCreateEvent={() => refetch()}
       />
       <EventsContent 
@@ -71,7 +71,7 @@ export default function Events() {
         isLoading={isLoading}
         onUpdate={() => refetch()}
         userRSVPs={userRSVPs}
-        isAuthenticated={true} // Force authenticated for admin access
+        isAuthenticated={isAuthenticated}
       />
     </div>
   );
