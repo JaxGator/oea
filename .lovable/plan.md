@@ -1,52 +1,43 @@
 
 
-## Problem: Session Initialization Loop
+## Plan: Restore Real Authentication
 
-### Root Cause
+### Summary
+Remove all hardcoded admin bypasses and restore proper session-based authentication across 4 files.
 
-Three overlapping session management layers create an infinite re-mount loop:
+### Changes
 
-1. **`AppProviders`** calls `getSession()` on mount
-2. **`SessionManager`** calls `getSession()` again AND sets up `onAuthStateChange`
-3. **`useSessionManager`** (called inside SessionManager) calls `getSession()` a THIRD time AND sets up a SECOND `onAuthStateChange`
+**1. `src/hooks/useAuthState.tsx`** — Remove mock admin profile, use real session/profile data:
+- Remove the `adminProfile` constant and `useEffect` log
+- Return real data from `useSession()` and `useProfile()`:
+  - `user: profile || null`
+  - `profile: profile || null`
+  - `isLoading: isSessionLoading || isProfileLoading`
+  - `error: sessionError || profileError || null`
+  - `isAuthenticated: !!authUser && !!profile`
 
-The critical bug: both `useEffect` hooks include `location.pathname` in their dependency arrays. When the `SIGNED_IN` handler in `SessionManager` (line 114) calls `navigate('/')`, it changes `location.pathname`, which re-runs both effects, which create new subscriptions, which fire `INITIAL_SESSION` again — causing the infinite loop visible in the logs.
+**2. `src/hooks/events/useEventPermissions.ts`** — Restore real permission checking:
+- Import `useAuthState` and `PermissionService`
+- Use `useAuthState()` to get the current user
+- In `checkPermissions`, call `PermissionService.canEditEvent()` with the real user, event's `created_by`, and the `forceAdmin`/`forceCanManage` overrides
+- Default `hasValidPermission` to `false` instead of `true`
 
-```text
-SessionManager mounts
-  → getSession() + onAuthStateChange listener #1
-  → useSessionManager() → getSession() + onAuthStateChange listener #2
-  → INITIAL_SESSION fires on both listeners
-  → Listener #1 handles SIGNED_IN → navigate('/')
-  → location.pathname changes → effects re-run
-  → New listeners created → INITIAL_SESSION fires again
-  → Loop repeats
-```
+**3. `src/components/auth/RequireAdmin.tsx`** — Restore real admin gate:
+- Use `useAdminCheck()` hook (already imported)
+- Show `LoadingScreen` while loading
+- Redirect to `/` with a toast if not admin
+- Render children only if admin
 
-### Plan
+**4. `src/components/event/form/EventFormWrapper.tsx`** — Use real auth instead of mock profile:
+- Import `useAuthState` and `useEventPermissions`
+- Get real `user`/`profile` from `useAuthState()`
+- Get `hasValidPermission` from `useEventPermissions(props.initialData)`
+- Pass real `user` and `hasPermissionToEdit` to `EventFormContent`
+- Show loading state while auth is resolving
 
-**1. Replace `SessionManager.tsx` with a simple, loop-free implementation**
+**5. `src/components/event/card/sections/actions/AdminActions.tsx`** — Remove forced `true` permissions:
+- Replace hardcoded `effectiveIsAdmin = true` etc. with real checks using the `user` profile and utility functions (`isAdministrator`, `canManageEvents`, `canEditEvent`, `canDeleteEvent`)
 
-- Call `getSession()` once to set `isInitialized`
-- Set up ONE `onAuthStateChange` listener (remove `useSessionManager` call)
-- Use `useRef` for location/navigate to keep them OUT of the dependency array
-- Handle `INITIAL_SESSION` as a no-op (just mark ready)
-- Only navigate to `/auth` on `SIGNED_OUT`, only navigate to `/` on `SIGNED_IN` if currently on `/auth`
-- Remove `location.pathname` from deps entirely
-
-**2. Simplify `useSessionManager.ts`** — delete or gut it
-
-Since SessionManager will handle everything, `useSessionManager` becomes dead code. Remove the import and call from SessionManager.
-
-**3. Simplify `AppProviders.tsx`**
-
-Remove the redundant `getSession()` + loading state. SessionManager already gates rendering via `isInitialized`. This eliminates the triple session check.
-
-### Files Changed
-
-| File | Change |
-|------|--------|
-| `src/components/auth/SessionManager.tsx` | Rewrite: single `getSession` + single `onAuthStateChange`, stable deps, no loop |
-| `src/hooks/useSessionManager.ts` | Delete or empty out — no longer used |
-| `src/components/providers/AppProviders.tsx` | Remove redundant `getSession`/loading state; render SessionManager directly |
+### Technical Note
+The `useAdminCheck` hook already derives `isAdmin` from the real profile via `useAuthState`, so once `useAuthState` is fixed, `RequireAdmin` and all admin checks will work correctly end-to-end.
 
