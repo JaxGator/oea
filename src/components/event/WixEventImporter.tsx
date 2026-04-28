@@ -35,7 +35,7 @@ export function WixEventImporter() {
           let currentValue = '';
           let insideQuotes = false;
           
-          for (let char of line) {
+          for (const char of line) {
             if (char === '"') {
               insideQuotes = !insideQuotes;
             } else if (char === ',' && !insideQuotes) {
@@ -78,6 +78,7 @@ export function WixEventImporter() {
         const formattedDate = eventDate.toISOString().split('T')[0];
         const formattedTime = eventDate.toTimeString().split(' ')[0].substring(0, 5);
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const { data, error } = await supabase.rpc('import_wix_event' as any, {
           p_title: event.title,
           p_description: 'Imported from Wix',

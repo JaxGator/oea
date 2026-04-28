@@ -1,6 +1,6 @@
 
 
-// @ts-ignore
+// @ts-expect-error Deno imports are not resolved by TypeScript
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 
 const corsHeaders = {
@@ -10,7 +10,6 @@ const corsHeaders = {
   'Access-Control-Max-Age': '3600'
 }
 
-console.log('Initializing get-mapbox-token function')
 
 serve((req: Request) => {
   // Handle CORS preflight requests

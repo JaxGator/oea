@@ -20,12 +20,12 @@ export interface Communication {
   content: string;
   sender_id: string | null;
   recipient_type: RecipientType;
-  recipient_data: Record<string, any>;
+  recipient_data: Record<string, unknown>;
   status: MessageStatus;
   scheduled_for: string | null;
   sent_at: string | null;
   template_id: string | null;
-  metadata: Record<string, any> | null;
+  metadata: Record<string, unknown> | null;
   created_at: string | null;
   updated_at: string | null;
 }

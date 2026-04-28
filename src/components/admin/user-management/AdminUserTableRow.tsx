@@ -4,7 +4,7 @@ import { UserStatusBadges } from "./UserStatusBadges";
 import { AdminUserActions } from "../AdminUserActions";
 import { Member } from "@/components/members/types";
 
-interface Profile extends Member {}
+type Profile = Member;
 
 interface AdminUserTableRowProps {
   profile: Profile;
@@ -23,20 +23,16 @@ export function AdminUserTableRow({
   isUpdating,
   isMobile = false
 }: AdminUserTableRowProps) {
-  console.log('AdminUserTableRow render:', { profile });
 
   if (!profile?.id || !profile?.username) {
-    console.warn('Invalid profile data:', profile);
     return null;
   }
 
   const handleDelete = () => {
-    console.log('AdminUserTableRow: Delete clicked for user:', profile.id);
     onDelete(profile.id);
   };
 
   const handleEdit = () => {
-    console.log('AdminUserTableRow: Edit clicked for profile:', profile);
     onEdit(profile);
   };
 

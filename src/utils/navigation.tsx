@@ -1,16 +1,17 @@
-import { Info, Calendar, Users, Star, Mail, Shield } from "lucide-react";
+import { Info, Calendar, Users, Star, Mail, Shield, LucideIcon } from "lucide-react";
 import { Profile } from "@/types/auth";
+import { User } from "@supabase/supabase-js";
 
 interface NavigationItem {
   label: string;
   path: string;
-  icon: any;
+  icon: LucideIcon;
   external?: boolean;
-  show?: (user: any, profile: Profile | null) => boolean;
+  show?: (user: User | null, profile: Profile | null) => boolean;
   onClick?: () => void;
 }
 
-export const createNavigationItems = (user: any, profile: Profile | null, handleSignOut: () => void): NavigationItem[] => [
+export const createNavigationItems = (user: User | null, profile: Profile | null, handleSignOut: () => void): NavigationItem[] => [
   {
     label: "Events",
     path: "/events",
@@ -20,15 +21,15 @@ export const createNavigationItems = (user: any, profile: Profile | null, handle
     label: "Users",
     path: "/users",
     icon: Users,
-    show: (user: any, profile: Profile | null) => 
-      !!user && profile && (profile.is_admin || (profile.is_approved && profile.is_member)),
+    show: (_user: User | null, profile: Profile | null) => 
+      !!_user && !!profile && (profile.is_admin || (profile.is_approved && profile.is_member)),
   },
   {
     label: "Messages",
     path: "/messages",
     icon: Mail,
-    show: (user: any, profile: Profile | null) => 
-      !!user && profile && (profile.is_admin || (profile.is_approved && profile.is_member)),
+    show: (_user: User | null, profile: Profile | null) => 
+      !!_user && !!profile && (profile.is_admin || (profile.is_approved && profile.is_member)),
   },
   {
     label: "Resources",
@@ -44,14 +45,14 @@ export const createNavigationItems = (user: any, profile: Profile | null, handle
     label: "Members",
     path: "/members",
     icon: Star,
-    show: (user: any, profile: Profile | null) => 
-      !!user && profile && (profile.is_member || profile.is_admin),
+    show: (_user: User | null, profile: Profile | null) => 
+      !!_user && !!profile && (profile.is_member || profile.is_admin),
   },
   {
     label: "Admin",
     path: "/admin",
     icon: Shield,
-    show: (user: any, profile: Profile | null) => 
-      !!user && profile?.is_admin === true,
+    show: (_user: User | null, profile: Profile | null) => 
+      !!_user && profile?.is_admin === true,
   },
 ];
