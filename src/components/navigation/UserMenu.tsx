@@ -8,6 +8,7 @@ import { useCallback, useState, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 
 interface UserMenuProps {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   user: any;
   profile: Profile | null;
 }

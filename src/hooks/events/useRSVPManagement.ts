@@ -49,7 +49,6 @@ export const useRSVPManagement = () => {
             filter: `user_id=eq.${user.id}`
           },
           (payload) => {
-            console.log('RSVP change received:', payload);
             
             // Refresh RSVPs when changes occur
             fetchUserRSVPs();
@@ -79,6 +78,7 @@ export const useRSVPManagement = () => {
     };
 
     // Set up subscription and store for cleanup
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let channel: any;
     setupRealtimeSubscription().then(ch => {
       channel = ch;

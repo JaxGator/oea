@@ -68,13 +68,6 @@ export function EventCardDetailedView({
     .map(rsvp => rsvp.profiles?.username)
     .filter(name => name) || [];
 
-  console.log('EventCardDetailedView - Attendees:', { 
-    processedAttendeeNames,
-    rsvpCount,
-    userRSVPStatus,
-    canViewRSVPs,
-    event
-  });
 
   return (
     <div className="flex flex-col gap-6 animate-fade-in">

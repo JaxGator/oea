@@ -88,7 +88,6 @@ export function CreateEventDialog({ open, onOpenChange, onSuccess }: CreateEvent
   }, [uiToast]);
 
   const handleEventSuccess = () => {
-    console.log('Event created successfully');
     toast.success('Event created successfully');
     
     // Close the dialog

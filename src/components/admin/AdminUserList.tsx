@@ -89,7 +89,6 @@ export function AdminUserList() {
       return;
     }
     
-    console.log('AdminUserList: Setting selected member for edit:', member);
     setSelectedMember(member);
   }, [toast]);
 
@@ -106,7 +105,6 @@ export function AdminUserList() {
     
     try {
       // Since we're forcing admin access, we'll simulate successful deletion
-      console.log('AdminUserList: Simulating user deletion for ID:', userId);
       
       toast({
         title: "Success",
@@ -127,12 +125,10 @@ export function AdminUserList() {
   }, [refetch, toast]);
 
   const handleUpdateStatus = useCallback(async (username: string) => {
-    console.log('Update status for:', username);
     // Status update logic will be implemented later
   }, []);
 
   const handleUpdateComplete = useCallback(async () => {
-    console.log('AdminUserList: Update completed, refreshing data');
     await refetch();
     setSelectedMember(null);
   }, [refetch]);

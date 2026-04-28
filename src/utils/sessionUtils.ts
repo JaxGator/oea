@@ -9,7 +9,6 @@ export const clearSessionData = async () => {
     queryClient.clear();
     localStorage.clear();
     sessionStorage.clear();
-    console.log('Session data cleared successfully');
   } catch (error) {
     console.error('Error clearing session data:', error);
   }

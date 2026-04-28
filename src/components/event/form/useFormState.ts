@@ -4,6 +4,7 @@ import { EventFormValues } from "../EventFormTypes";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function useFormState(initialData?: any, onSuccess?: () => void) {
   const [localSubmitting, setLocalSubmitting] = useState(false);
 

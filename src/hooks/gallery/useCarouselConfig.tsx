@@ -8,7 +8,6 @@ export function useCarouselConfig() {
 
   const fetchCarouselConfig = async () => {
     try {
-      console.log('Fetching carousel configuration...');
       const { data, error } = await supabase
         .from('site_config')
         .select('value')
@@ -17,7 +16,6 @@ export function useCarouselConfig() {
 
       if (error) throw error;
       
-      console.log('Carousel config fetched:', data?.value);
       setCarouselEnabled(data?.value === 'true');
     } catch (error) {
       console.error('Error fetching carousel config:', error);
@@ -27,7 +25,6 @@ export function useCarouselConfig() {
 
   const updateCarouselConfig = async (enabled: boolean) => {
     try {
-      console.log('Updating carousel configuration:', enabled);
       const { error } = await supabase
         .from('site_config')
         .upsert({
@@ -40,7 +37,6 @@ export function useCarouselConfig() {
 
       if (error) throw error;
 
-      console.log('Carousel configuration updated successfully');
       setCarouselEnabled(enabled);
       toast.success(`Gallery carousel ${enabled ? 'enabled' : 'disabled'}`);
     } catch (error) {

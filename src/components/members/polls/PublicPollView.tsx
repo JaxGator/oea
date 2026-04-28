@@ -61,16 +61,20 @@ export function PublicPollView() {
       // Transform the data to match PollWithDetails type
       const transformedPoll = {
         ...data,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         poll_options: data.poll_options.map((option: any) => ({
           ...option,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           has_voted: data.poll_votes?.some((vote: any) => 
             vote.option_id === option.id && vote.user_id === user?.id
           ),
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           vote_count: data.poll_votes?.filter((vote: any) => 
             vote.option_id === option.id
           ).length || 0
         })),
         total_votes: data.poll_votes?.length || 0,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         poll_votes: data.poll_votes?.map((vote: any) => ({
           ...vote,
           profiles: vote.profiles || { username: '', avatar_url: null }
@@ -119,6 +123,7 @@ export function PublicPollView() {
         </div>
       )}
       <PollCard 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         poll={poll as any}
         canEdit={false}
         onDelete={() => {}}

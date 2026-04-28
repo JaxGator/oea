@@ -15,7 +15,6 @@ export function useGuestListUpdates(eventId: string, refetchGuests: () => void) 
           filter: `rsvp_id=eq.${eventId}`
         },
         async (payload) => {
-          console.log('Guest list changed:', payload);
           await refetchGuests();
           
           switch (payload.eventType) {

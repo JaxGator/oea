@@ -55,13 +55,11 @@ export function NewDirectMessageDialog() {
     }
 
     if (isCreatingChat) {
-      console.log('Already creating a chat, please wait...');
       return;
     }
 
     try {
       setIsCreatingChat(true);
-      console.log('Starting chat creation process with user:', userId);
 
       const { data: canMessage } = await supabase.rpc('can_message_user', {
         target_user_id: userId
@@ -100,14 +98,12 @@ export function NewDirectMessageDialog() {
         });
 
         if (error) throw error;
-        console.log('Target user created/updated in Stream Chat');
       } catch (error) {
         console.error('Error creating target user in Stream:', error);
         throw new Error('Failed to create target user in chat system');
       }
 
       const channelId = createChannelId(chatClient.userID!, userId);
-      console.log('Creating channel with ID:', channelId);
 
       const channel = chatClient.channel('messaging', channelId, {
         members: [chatClient.userID!, userId],
@@ -115,10 +111,8 @@ export function NewDirectMessageDialog() {
       });
 
       const { channel: createdChannel } = await channel.create();
-      console.log('Channel created:', createdChannel);
 
       await channel.watch();
-      console.log('Channel watch successful');
 
       setOpen(false);
       navigate(`/messages/${channelId}`);

@@ -41,6 +41,7 @@ export function useMessageSubscription(initialMembers: Member[]) {
           schema: 'public',
           table: 'messages'
         },
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         async (payload: any) => {
           // Update unread status for the receiver
           setMembers(prevMembers => 

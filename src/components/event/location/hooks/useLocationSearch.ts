@@ -21,7 +21,6 @@ export function useLocationSearch(mapToken: string | undefined) {
       }
 
       const data: RetrieveResponse = await response.json();
-      console.log('Coordinate retrieval response:', data);
 
       if (data.features?.[0]?.geometry?.coordinates) {
         return data.features[0].geometry.coordinates;
@@ -41,7 +40,6 @@ export function useLocationSearch(mapToken: string | undefined) {
     }
 
     setIsSearching(true);
-    console.log('Searching locations with query:', searchValue);
 
     try {
       const endpoint = `https://api.mapbox.com/search/searchbox/v1/suggest?q=${encodeURIComponent(
@@ -54,7 +52,6 @@ export function useLocationSearch(mapToken: string | undefined) {
       }
 
       const data = await response.json();
-      console.log('Mapbox Search API response:', data);
       
       if (!data?.suggestions || !Array.isArray(data.suggestions)) {
         setSuggestions([]);
@@ -62,18 +59,19 @@ export function useLocationSearch(mapToken: string | undefined) {
       }
 
       const validSuggestions = data.suggestions
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .filter((suggestion: any) => 
           suggestion &&
           suggestion.name &&
           suggestion.full_address
         )
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .map((suggestion: any) => ({
           place_name: `${suggestion.name}, ${suggestion.full_address}`,
           mapbox_id: suggestion.mapbox_id,
           center: [0, 0] // Will be updated when selected
         }));
       
-      console.log('Found suggestions:', validSuggestions.length);
       setSuggestions(validSuggestions);
       setIsDropdownOpen(validSuggestions.length > 0);
     } catch (error) {

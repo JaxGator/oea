@@ -8,17 +8,14 @@ export async function geocodeAddress(address: string) {
   try {
     // Simple validation
     if (!address.trim()) {
-      console.warn('Empty address provided for geocoding');
       return null;
     }
     
-    console.log(`Geocoding address: ${address}`);
     
     // Using MapBox Geocoding API
     // Note: In a real app, you would use your own API key
     const apiKey = process.env.MAPBOX_API_KEY;
     if (!apiKey) {
-      console.warn('No Mapbox API key available for geocoding');
       return null;
     }
     

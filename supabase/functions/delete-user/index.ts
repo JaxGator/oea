@@ -14,7 +14,6 @@ serve(async (req) => {
   }
 
   try {
-    console.log('Delete user function started');
     
     // Initialize Supabase admin client
     const supabaseAdmin = createClient(
@@ -24,7 +23,6 @@ serve(async (req) => {
 
     // Get auth header
     const authHeader = req.headers.get('Authorization')?.split(' ')[1]
-    console.log('Auth header present:', !!authHeader);
 
     if (!authHeader) {
       throw new Error('No authorization header')
@@ -37,7 +35,6 @@ serve(async (req) => {
       throw new Error('Invalid token')
     }
 
-    console.log('Authenticated as user:', user.id);
 
     // Verify admin status
     const { data: adminCheck, error: adminCheckError } = await supabaseAdmin
@@ -55,7 +52,6 @@ serve(async (req) => {
       throw new Error('Unauthorized - Admin access required')
     }
 
-    console.log('Admin status verified');
 
     // Get and validate userId from request body
     const { userId } = await req.json()
@@ -63,7 +59,6 @@ serve(async (req) => {
       throw new Error('User ID is required')
     }
 
-    console.log('Starting deletion process for user:', userId);
 
     // Delete auth user - this will trigger cascading deletes in the database
     const { error: deleteError } = await supabaseAdmin.auth.admin.deleteUser(userId)
@@ -73,7 +68,6 @@ serve(async (req) => {
       throw deleteError
     }
 
-    console.log('Successfully deleted user:', userId);
 
     // Log the admin action
     const { error: logError } = await supabaseAdmin

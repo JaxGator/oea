@@ -25,6 +25,7 @@ export function useEventCardState(event: Event, onUpdate?: () => void) {
 
       toast.success("Event deleted successfully");
       if (onUpdate) onUpdate();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       console.error('Error deleting event:', error);
       toast.error(error.message || "Failed to delete event");
@@ -42,6 +43,7 @@ export function useEventCardState(event: Event, onUpdate?: () => void) {
 
       toast.success(`Event ${event.is_published ? 'unpublished' : 'published'} successfully`);
       if (onUpdate) onUpdate();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       console.error('Error toggling event publish status:', error);
       toast.error(error.message || "Failed to update event status");

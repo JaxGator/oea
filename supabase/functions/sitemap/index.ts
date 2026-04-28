@@ -13,7 +13,6 @@ serve(async (req) => {
   }
 
   try {
-    console.log('Generating sitemap...');
     
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
@@ -79,7 +78,6 @@ ${allRoutes.map(route => {
 }).join('\n')}
 </urlset>`;
 
-    console.log('Generated sitemap XML');
 
     return new Response(xml.trim(), {
       headers: {

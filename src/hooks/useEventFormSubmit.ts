@@ -19,11 +19,6 @@ export function useEventFormSubmit(onSuccess: () => void) {
         const { data } = await supabase.auth.getSession();
         const isAuthVerified = !!data.session;
         
-        console.log('useEventFormSubmit - Auth verification:', {
-          sessionExists: isAuthVerified,
-          sessionUserId: data.session?.user?.id,
-          timestamp: new Date().toISOString()
-        });
         
         setCheckedAuth(true);
       } catch (err) {
@@ -34,18 +29,9 @@ export function useEventFormSubmit(onSuccess: () => void) {
     verifyAuth();
   }, []);
   
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleSubmit = async (formData: EventFormValues, initialData?: any) => {
     try {
-      console.log('Event form submission starting with auth state:', {
-        isAuthenticated,
-        userId: user?.id,
-        isAdmin: user?.is_admin,
-        isApproved: user?.is_approved,
-        isMember: user?.is_member,
-        isLoading,
-        checkedAuth,
-        timestamp: new Date().toISOString()
-      });
       
       setIsSubmitting(true);
       
@@ -75,15 +61,6 @@ export function useEventFormSubmit(onSuccess: () => void) {
       const isApproved = user?.is_approved || false;
       const isMember = user?.is_member || false;
       
-      console.log('Authentication verified:', { 
-        isAuthenticated, 
-        userId,
-        isAdmin,
-        isApproved,
-        isMember,
-        actionType: initialData?.id ? 'update' : 'create',
-        sessionUserId: sessionData.session?.user?.id
-      });
       
       // Clean and validate data
       validateEventData(formData);
@@ -94,10 +71,6 @@ export function useEventFormSubmit(onSuccess: () => void) {
         cleanedData.created_by = userId;
       }
       
-      console.log('Processing event submission with data:', {
-        ...cleanedData,
-        created_by: cleanedData.created_by || userId
-      });
       
       let result;
       
@@ -109,13 +82,6 @@ export function useEventFormSubmit(onSuccess: () => void) {
         const isAdminOrMember = isAdmin || isMember || isApproved;
         
         if (isAdminOrMember) {
-          console.log('Admin or member detected, BYPASSING ALL permission checks:', {
-            userId,
-            isAdmin,
-            isMember,
-            isApproved,
-            eventId: initialData.id
-          });
           
           // Preserve the original created_by field for updates
           if (initialData.created_by) {
@@ -127,11 +93,6 @@ export function useEventFormSubmit(onSuccess: () => void) {
           // Regular user - only check if they are the creator
           const hasPermission = initialData.created_by === userId;
           
-          console.log('Permission check for regular user:', {
-            userId,
-            eventCreator: initialData.created_by,
-            hasPermission
-          });
           
           if (!hasPermission) {
             console.error('Permission denied: user cannot edit this event', {
@@ -148,7 +109,6 @@ export function useEventFormSubmit(onSuccess: () => void) {
         }
       } else {
         // This is a create operation
-        console.log('Creating new event with user ID:', userId);
         cleanedData.created_by = userId;
         result = await createEvent(cleanedData);
       }
@@ -166,6 +126,7 @@ export function useEventFormSubmit(onSuccess: () => void) {
       }
       
       return result.data;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       console.error('Event form submission error:', error);
       

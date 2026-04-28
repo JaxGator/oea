@@ -5,7 +5,6 @@ import { toast } from 'sonner';
 import type { Event, EventsPage } from '@/types/database';
 
 export function useEvents(selectedDate?: Date, eventId?: string) {
-  console.log('Fetching events with params:', { selectedDate, eventId });
 
   return useInfiniteQuery<EventsPage>({
     queryKey: ['events', selectedDate?.toISOString(), eventId],
@@ -59,7 +58,6 @@ export function useEvents(selectedDate?: Date, eventId?: string) {
           return new Date(a.date).getTime() - new Date(b.date).getTime();
         }) || [];
 
-        console.log('Fetched events:', sortedEvents);
 
         return {
           data: sortedEvents,

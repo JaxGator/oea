@@ -54,7 +54,6 @@ const AuthCallback = () => {
         // Handle password reset flow
         const type = queryParams.get("type") || hashParams.get("type");
         if (type === "recovery") {
-          console.log("Password reset flow detected");
           navigate("/auth", { 
             state: { 
               mode: "reset_password",

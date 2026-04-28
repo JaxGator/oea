@@ -26,6 +26,7 @@ export function NotificationCenter() {
     queryKey: ['admin-notifications'],
     queryFn: async () => {
       const { data, error } = await supabase
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .from('admin_logs' as any)
         .select('*')
         .order('created_at', { ascending: false })
@@ -33,6 +34,7 @@ export function NotificationCenter() {
 
       if (error) throw error;
       
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       return (data || []).map((log: any): AdminNotification => ({
         id: log.id,
         message: `${log.action_type} performed on ${log.target_type}`,
@@ -53,6 +55,7 @@ export function NotificationCenter() {
           table: 'admin_logs'
         },
         (payload) => {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const newLog = payload.new as any;
           toast({
             title: "New Admin Action",

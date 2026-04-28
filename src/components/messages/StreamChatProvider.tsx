@@ -1,6 +1,6 @@
 
-import { useEffect, PropsWithChildren, useState } from 'react';
-import { Chat, LoadingIndicator } from 'stream-chat-react';
+import { useEffect, PropsWithChildren, useState, useRef } from 'react';
+import { Chat } from 'stream-chat-react';
 import { StreamChat } from 'stream-chat';
 import { getStreamChat } from '@/integrations/stream/client';
 import { useAuthState } from '@/hooks/useAuthState';
@@ -14,6 +14,7 @@ export function StreamChatProvider({ children }: PropsWithChildren) {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(true);
   const [chatClient, setChatClient] = useState<StreamChat | null>(null);
+  const chatClientRef = useRef<StreamChat | null>(null);
 
   useEffect(() => {
     if (!user?.id) return;
@@ -24,18 +25,10 @@ export function StreamChatProvider({ children }: PropsWithChildren) {
       try {
         setIsLoading(true);
         
-        // Get Stream client instance
         const client = await getStreamChat();
 
         if (unmounted) return;
 
-        console.log('Initializing chat with user:', {
-          id: user.id,
-          username: user.username,
-          avatar: user.avatar_url
-        });
-
-        // Get user token from our backend
         const { data: streamResponse, error: streamError } = await supabase.functions
           .invoke('upsert-stream-user', {
             body: { 
@@ -57,9 +50,6 @@ export function StreamChatProvider({ children }: PropsWithChildren) {
           throw new Error('Failed to get Stream token');
         }
 
-        console.log('Got Stream token, connecting user...');
-
-        // Connect user to Stream
         await client.connectUser(
           {
             id: user.id,
@@ -69,18 +59,9 @@ export function StreamChatProvider({ children }: PropsWithChildren) {
           streamResponse.result.token
         );
 
-        // Watch for connection changes
-        client.on('connection.changed', (event) => {
-          console.log('Connection changed:', event);
-        });
-
-        client.on('connection.recovered', () => {
-          console.log('Connection recovered');
-        });
-
         if (!unmounted) {
+          chatClientRef.current = client;
           setChatClient(client);
-          console.log('Stream Chat initialized successfully');
         }
       } catch (error) {
         console.error('Stream Chat initialization error:', error);
@@ -102,10 +83,9 @@ export function StreamChatProvider({ children }: PropsWithChildren) {
 
     return () => {
       unmounted = true;
-      if (chatClient) {
-        chatClient.disconnectUser().then(() => {
-          console.log('User disconnected from Stream');
-        });
+      if (chatClientRef.current) {
+        chatClientRef.current.disconnectUser().catch(console.error);
+        chatClientRef.current = null;
       }
     };
   }, [user, toast]);

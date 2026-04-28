@@ -14,7 +14,6 @@ export function PublicEventView() {
   const { id } = useParams();
   const navigate = useNavigate();
   
-  console.log("PublicEventView initialized with ID:", id);
 
   const { data: event, isLoading, error } = useQuery({
     queryKey: ['public-event', id],
@@ -25,7 +24,6 @@ export function PublicEventView() {
         throw new Error('No event ID provided');
       }
       
-      console.log('Fetching public event data for ID:', id);
 
       const { data: eventData, error: eventError } = await supabase
         .from('events')
@@ -45,7 +43,6 @@ export function PublicEventView() {
         throw new Error('Event not found');
       }
 
-      console.log('Successfully fetched public event data:', eventData);
       return eventData as Event;
     },
     enabled: !!id,

@@ -33,6 +33,7 @@ export function UserActivityReport() {
         regular: data.filter(u => !u.is_member && !u.is_admin).length
       };
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const registrationData = data.reduce((acc: any[], user) => {
         const date = format(new Date(user.created_at), 'MMM dd');
         const existing = acc.find(item => item.date === date);
@@ -53,7 +54,6 @@ export function UserActivityReport() {
   });
 
   const handleExport = () => {
-    console.log("Exporting data...");
   };
 
   if (isLoading) {
@@ -151,6 +151,7 @@ export function UserActivityReport() {
               </tr>
             </thead>
             <tbody>
+              {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
               {userStats?.recentUsers.map((user: any) => (
                 <tr key={user.id} className="border-b">
                   <td className="py-3 px-4 truncate max-w-[200px]">{user.username}</td>

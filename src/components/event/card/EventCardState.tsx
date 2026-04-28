@@ -18,6 +18,7 @@ interface EventCardStateProps {
     isAdmin: boolean;
     canManageEvents: boolean;
     rsvpData: { confirmedCount: number; waitlistCount: number };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     attendees: any[];
     guests: { firstName: string }[];
     isPastEvent: boolean;
@@ -60,17 +61,6 @@ export function EventCardState({
   const effectiveCanManage = true;
   
   useEffect(() => {
-    console.log("EventCardState - Auth status:", {
-      hookIsAdmin: isAdmin,
-      userIsAdmin: user?.is_admin,
-      effectiveIsAdmin,
-      hookCanManage: canManageEvents,
-      userIsApproved: user?.is_approved,
-      userIsMember: user?.is_member,
-      effectiveCanManage,
-      isAuthenticated: effectiveIsAuthenticated,
-      timestamp: new Date().toISOString()
-    });
   }, [isAdmin, user?.is_admin, effectiveIsAdmin, canManageEvents, user?.is_approved, user?.is_member, effectiveCanManage, effectiveIsAuthenticated]);
   
   const {
@@ -113,14 +103,6 @@ export function EventCardState({
   // Allow guests to be added for all events
   const canAddGuests = true;
 
-  console.log('EventCardState - Event timing:', {
-    eventDate: event.date,
-    eventTime: event.time,
-    eventDateTime,
-    now,
-    isPastEvent,
-    canAddGuests
-  });
 
   return children({
     isAdmin: effectiveIsAdmin,

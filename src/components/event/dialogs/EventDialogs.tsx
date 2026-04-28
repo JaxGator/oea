@@ -57,19 +57,6 @@ export function EventDialogs({
 
   // Log dialog state and admin status for debugging
   useEffect(() => {
-    console.log("EventDialogs state:", {
-      eventId: event?.id,
-      eventTitle: event?.title,
-      showDetailsDialog,
-      showEditDialog,
-      isAuthenticated,
-      userIsAdmin: user?.is_admin,
-      propsIsAdmin: isAdmin,
-      effectiveIsAdmin,
-      canManageEvents: effectiveCanManage,
-      createdBy: event?.created_by,
-      timestamp: new Date().toISOString()
-    });
   }, [event, showDetailsDialog, showEditDialog, isAuthenticated, isAdmin, effectiveIsAdmin, effectiveCanManage, user?.is_admin]);
 
   return (
@@ -97,7 +84,6 @@ export function EventDialogs({
               onRSVP={onRSVP}
               onCancelRSVP={onCancelRSVP}
               onEdit={() => {
-                console.log("Edit button clicked in details view");
                 setShowEditDialog(true);
               }}
               onDelete={onDelete}

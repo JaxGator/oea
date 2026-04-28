@@ -14,7 +14,6 @@ serve(async (req) => {
   }
 
   try {
-    console.log('Starting Printful store scraping...');
     
     const firecrawlKey = Deno.env.get('FIRECRAWL_API_KEY')
     if (!firecrawlKey) {
@@ -33,7 +32,6 @@ serve(async (req) => {
       throw new Error('Failed to connect to Firecrawl API');
     }
 
-    console.log('Firecrawl API health check successful, proceeding with scrape request...');
 
     // Main scraping request with simplified selectors
     const response = await fetch('https://api.firecrawl.io/scrape', {
@@ -74,7 +72,6 @@ serve(async (req) => {
     }
 
     const data = await response.json();
-    console.log('Raw Firecrawl response:', JSON.stringify(data, null, 2));
 
     if (!data.products || !Array.isArray(data.products)) {
       console.error('Invalid data structure received:', data);
@@ -82,6 +79,7 @@ serve(async (req) => {
     }
 
     // Process and clean the data
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const processedProducts = data.products.map((product: any) => ({
       title: String(product.title).trim(),
       price: typeof product.price === 'string' 
@@ -90,7 +88,6 @@ serve(async (req) => {
       image_url: String(product.image || '').trim()
     })).filter(p => p.title && p.image_url && p.price > 0);
 
-    console.log('Processed products:', JSON.stringify(processedProducts, null, 2));
 
     // Store in Supabase
     const supabaseClient = createClient(
@@ -107,7 +104,6 @@ serve(async (req) => {
       throw dbError;
     }
 
-    console.log('Successfully stored products in database');
 
     return new Response(
       JSON.stringify({ products: processedProducts }),

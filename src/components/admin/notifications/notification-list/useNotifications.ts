@@ -13,6 +13,7 @@ export function useNotifications() {
     queryKey: ['admin-notifications'],
     queryFn: async () => {
       const { data, error } = await supabase
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .from('admin_notifications' as any)
         .select('*')
         .order('created_at', { ascending: false });
@@ -30,6 +31,7 @@ export function useNotifications() {
     queryKey: ['auth-notifications'],
     queryFn: async () => {
       const { data, error } = await supabase
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .from('admin_notifications' as any)
         .select('*')
         .eq('type', 'auth')
@@ -46,6 +48,7 @@ export function useNotifications() {
   const markAsReadMutation = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .from('admin_notifications' as any)
         .update({ is_read: true })
         .eq('id', id);
@@ -66,6 +69,7 @@ export function useNotifications() {
   const deleteNotificationMutation = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .from('admin_notifications' as any)
         .delete()
         .eq('id', id);
@@ -93,6 +97,7 @@ export function useNotifications() {
       setIsDeleting(true);
       
       const { error } = await supabase
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .from('admin_notifications' as any)
         .delete()
         .eq('is_read', true);
@@ -113,7 +118,9 @@ export function useNotifications() {
   const allNotifications = [
     ...notifications,
     ...authNotifications
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .filter((n: any) => !notifications.some(existing => existing.id === n.id))
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .map((n: any) => ({
         id: n.id,
         type: 'auth',

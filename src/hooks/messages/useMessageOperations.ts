@@ -10,7 +10,6 @@ export function useMessageOperations() {
 
   const deleteMessage = useMutation({
     mutationFn: async (messageId: string) => {
-      console.log('Deleting message:', messageId);
       
       const { error } = await supabase
         .from('messages')
@@ -36,7 +35,6 @@ export function useMessageOperations() {
 
   const editMessage = useMutation({
     mutationFn: async ({ messageId, content }: { messageId: string; content: string }) => {
-      console.log('Editing message:', { messageId, content });
       
       const { error } = await supabase
         .from('messages')

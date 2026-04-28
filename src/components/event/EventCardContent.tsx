@@ -60,13 +60,6 @@ export function EventCardContent({
   isAuthChecking = false,
   requireAuth = false
 }: EventCardContentProps) {
-  console.log('EventCardContent render:', { 
-    event, 
-    isPastEvent, 
-    userRSVPStatus,
-    date: event.date,
-    time: event.time 
-  });
 
   return (
     <div className="p-4">

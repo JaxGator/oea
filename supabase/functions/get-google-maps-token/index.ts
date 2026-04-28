@@ -1,7 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { corsHeaders } from '../_shared/cors.ts'
 
-console.log('Loading get-google-maps-token function...')
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -12,7 +11,6 @@ serve(async (req) => {
   }
 
   try {
-    console.log('Starting Google Maps token fetch...')
     const token = Deno.env.get('GOOGLE_MAPS_API_KEY')
     
     if (!token) {
@@ -20,7 +18,6 @@ serve(async (req) => {
       throw new Error('Google Maps API key not configured')
     }
 
-    console.log('Token retrieved successfully')
     
     return new Response(
       JSON.stringify({ token }),

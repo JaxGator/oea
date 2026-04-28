@@ -33,7 +33,6 @@ export function EventRSVPContainer({
   showDelete = false,
   isAuthenticated = false
 }: EventRSVPContainerProps) {
-  console.log('EventRSVPContainer - Auth state:', { isAuthenticated, userRSVPStatus });
 
   const handleCardClick = () => {
     if (onSelect && event.latitude && event.longitude) {

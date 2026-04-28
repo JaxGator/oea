@@ -28,7 +28,6 @@ export function EventWaitlistSettings({ form, disabled }: EventWaitlistSettingsP
               <Switch
                 checked={field.value || false}
                 onCheckedChange={(checked) => {
-                  console.log("Waitlist switch changed:", checked);
                   field.onChange(checked);
                 }}
                 disabled={disabled}

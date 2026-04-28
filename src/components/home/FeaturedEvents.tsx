@@ -7,7 +7,6 @@ import { Loader2 } from "lucide-react";
 export const FeaturedEvents = () => {
   const { events = [], isLoading, error, userRSVPs, handleRSVP, handleCancelRSVP } = useFeaturedEvents();
 
-  console.log('FeaturedEvents render:', { events, isLoading, error, userRSVPs });
 
   // Filter out past events and limit to 3 upcoming events
   const upcomingEvents = events

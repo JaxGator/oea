@@ -11,7 +11,6 @@ export function useUserActions(refetchUsers: () => void) {
   const handleUpdateUserStatus = useCallback(async (userId: string) => {
     try {
       setIsUpdating(true);
-      console.log('Updating user status:', userId);
       
       const { data: profile, error: fetchError } = await supabase
         .from('profiles')
@@ -51,7 +50,6 @@ export function useUserActions(refetchUsers: () => void) {
   const handleDeleteUser = useCallback(async (userId: string) => {
     try {
       setIsUpdating(true);
-      console.log('Attempting to delete user:', userId);
 
       const session = await getSession();
       if (!session) {
@@ -73,6 +71,7 @@ export function useUserActions(refetchUsers: () => void) {
       });
       
       await refetchUsers();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       console.error('Error deleting user:', error);
       toast({

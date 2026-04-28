@@ -27,17 +27,20 @@ export function SocialFeedForm({ existingFeed, onSave }: SocialFeedFormProps) {
     try {
       // Delete any existing feeds first
       await supabase
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .from('social_media_feeds' as any)
         .delete()
         .neq('id', 'placeholder');
 
       const { error } = await supabase
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .from('social_media_feeds' as any)
         .insert({
           platform: 'Social Feed',
           feed_url: embedCode,
           is_active: true,
           display_order: 1
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } as any);
 
       if (error) throw error;

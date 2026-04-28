@@ -24,7 +24,6 @@ export function useEventCard(eventId: string, onUpdate?: () => void) {
   };
 
   const handleDelete = async () => {
-    console.log('Delete event:', eventId);
     // This would need to be implemented or brought in from another hook
     if (onUpdate) onUpdate();
   };

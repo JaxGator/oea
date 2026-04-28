@@ -46,22 +46,23 @@ export function AuthForm() {
   }, [location]);
 
   // Function to create auth notifications in the database
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const createAuthNotification = async (details: any) => {
     try {
       const errorMessage = details.errorDescription || `Auth error: ${details.error}`;
       
       const { error } = await supabase
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .from('auth_notifications' as any)
         .insert([{
           message: errorMessage,
           metadata: details,
           is_read: false
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         }] as any);
         
       if (error) {
         console.error('Failed to create auth notification:', error);
-      } else {
-        console.log('Auth notification created successfully');
       }
     } catch (err) {
       console.error('Error creating auth notification:', err);
@@ -70,7 +71,6 @@ export function AuthForm() {
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log('Auth state change:', event);
       
       if (event === 'SIGNED_OUT') {
         setAuthError(null);

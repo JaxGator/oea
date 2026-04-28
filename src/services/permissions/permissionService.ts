@@ -22,7 +22,6 @@ export class PermissionService {
   ): Promise<boolean> {
     // If no user is logged in, deny permission
     if (!currentUser?.id) {
-      console.log("Permission denied: No user logged in");
       return false;
     }
 
@@ -34,13 +33,6 @@ export class PermissionService {
                               !!currentUser.is_member;
 
     // Log permission check details
-    console.log("Permission check for edit:", {
-      userId: currentUser.id,
-      effectiveIsAdmin,
-      effectiveCanManage,
-      eventCreator: createdBy,
-      timestamp: new Date().toISOString()
-    });
 
     // Always grant access to admins and managers
     if (effectiveCanManage) {

@@ -7,6 +7,7 @@ import { RequireAdmin } from "./components/auth/RequireAdmin";
 import Index from "./pages/Index";
 import About from "./pages/About";
 import Auth from "./pages/Auth";
+import AuthCallback from "./pages/Auth/callback";
 import Events from "./pages/Events";
 import EventDetails from "./pages/EventDetails";
 import Users from "./pages/Users";
@@ -39,6 +40,7 @@ const App = () => {
       <AppProviders>
         <Routes>
           <Route path="/auth" element={<Auth />} />
+          <Route path="/auth/callback" element={<AuthCallback />} />
           <Route element={<AppLayout />}>
             {/* Public Routes */}
             <Route index element={<Index />} />

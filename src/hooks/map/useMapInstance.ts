@@ -15,7 +15,6 @@ export const useMapInstance = (containerRef: React.RefObject<HTMLDivElement>) =>
 
     try {
       initializeAttempted.current = true;
-      console.log('Initializing map instance...');
       mapboxgl.accessToken = mapToken;
       
       const map = new mapboxgl.Map({
@@ -27,7 +26,6 @@ export const useMapInstance = (containerRef: React.RefObject<HTMLDivElement>) =>
       });
 
       map.on('load', () => {
-        console.log('Map style loaded successfully');
         if (map && !map._removed) {
           map.resize();
           map.addControl(new mapboxgl.NavigationControl(), 'top-right');

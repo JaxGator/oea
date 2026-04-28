@@ -50,7 +50,6 @@ export function SystemUsageReport() {
   });
 
   const handleExport = () => {
-    console.log("Exporting system data...");
   };
 
   if (statsLoading || healthLoading) {

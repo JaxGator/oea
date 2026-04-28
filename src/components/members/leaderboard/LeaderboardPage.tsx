@@ -24,13 +24,14 @@ export function LeaderboardPage() {
           functionName = "get_all_time_leaderboard";
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const { data, error } = await supabase.rpc(functionName as any);
 
         if (error) {
           throw error;
         }
 
-        console.log(`Leaderboard data (${timeRange}):`, data);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         setMembers((data as any[]) || []);
       } catch (error) {
         console.error("Error fetching leaderboard data:", error);

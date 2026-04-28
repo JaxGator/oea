@@ -27,7 +27,6 @@ export function EventReminderSettings({ form, disabled }: EventReminderSettingsP
               <Switch
                 checked={field.value || false}
                 onCheckedChange={(checked) => {
-                  console.log("Reminder switch changed:", checked);
                   field.onChange(checked);
                 }}
                 disabled={disabled}

@@ -44,13 +44,6 @@ export function useAdminStatus() {
           setDirectIsApproved(!!data.is_approved);
           setDirectIsMember(!!data.is_member);
           
-          console.log("Direct DB admin status check:", {
-            userId,
-            isAdmin: !!data.is_admin,
-            isApproved: !!data.is_approved,
-            isMember: !!data.is_member,
-            timestamp: new Date().toISOString()
-          });
         }
       } catch (err) {
         console.error("Error in direct admin check:", err);

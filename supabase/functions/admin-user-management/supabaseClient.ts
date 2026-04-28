@@ -17,10 +17,6 @@ export function createSupabaseAdmin() {
   // Remove trailing slash if present
   const cleanUrl = supabaseUrl.replace(/\/$/, '')
   
-  console.log('Creating Supabase admin client with URL:', {
-    url: cleanUrl,
-    hasServiceKey: !!supabaseServiceRoleKey
-  })
 
   return createClient(
     cleanUrl,

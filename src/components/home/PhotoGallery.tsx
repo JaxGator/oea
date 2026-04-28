@@ -5,7 +5,6 @@ export const PhotoGallery = () => {
   const folderId = "1at3FHbzf32luuL07mKGFwfMBpFJOwTHc";
   const embedUrl = `https://drive.google.com/embeddedfolder?id=${folderId}#grid`;
 
-  console.log('Embedding Google Drive folder with URL:', embedUrl);
 
   return (
     <div className="space-y-4 border-2 border-blue-500 p-4 rounded-lg">

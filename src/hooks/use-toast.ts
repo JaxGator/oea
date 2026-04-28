@@ -33,10 +33,12 @@ export const toast = sonnerToast;
 
 let memoryState: ToasterToastState = { toasts: [] }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function dispatch(action: any) {
   memoryState = reducer(memoryState, action)
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function reducer(state: ToasterToastState, action: any): ToasterToastState {
   switch (action.type) {
     case "ADD_TOAST":
@@ -95,6 +97,7 @@ export function useToast() {
       
       let actionConfig = {};
       if (action && typeof action === 'object' && 'props' in action) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const actionProps = action.props as any;
         if (actionProps) {
           actionConfig = {

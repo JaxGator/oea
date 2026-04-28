@@ -18,14 +18,12 @@ export function useSessionCheck() {
         }
 
         if (!session) {
-          console.log('No active session found, redirecting to auth');
           navigate('/auth');
           return;
         }
 
         // Set up auth state change listener
         const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-          console.log('Auth state changed:', event);
           
           if (event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED') {
             if (!session) {

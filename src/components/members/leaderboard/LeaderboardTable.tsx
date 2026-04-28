@@ -13,6 +13,7 @@ import { LeaderboardMetrics } from "./LeaderboardMetrics";
 import { createMemberFromPartial } from "../types";
 
 interface LeaderboardTableProps {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data: any[];
   category: "attendance";
   timeFilter: "all" | "monthly" | "weekly";
@@ -24,8 +25,8 @@ export function LeaderboardTable({
   timeFilter,
   limit
 }: LeaderboardTableProps) {
-  console.log("LeaderboardTable render:", { data, timeFilter });
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const getMetricValue = (item: any) => {
     if (timeFilter === "weekly") {
       return item.weekly_points || 0;

@@ -23,7 +23,6 @@ export function EventShareMenu({ eventId, title }: EventShareMenuProps) {
   
   const handleCopyLink = async () => {
     try {
-      console.log("Copying share link:", eventUrl);
       await navigator.clipboard.writeText(eventUrl);
       setCopied(true);
       toast.success("Link copied to clipboard");

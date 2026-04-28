@@ -81,7 +81,6 @@ export function EventsList({ events, isLoading, emptyMessage, isPastEvents = fal
   };
 
   const handleAddGuests = async (eventId: string, guests: { firstName: string }[]) => {
-    console.log('Adding guests for event:', eventId, guests);
   };
 
   const handleEditSuccess = () => {

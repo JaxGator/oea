@@ -32,7 +32,6 @@ export function EventsContent({
   const { profile } = useAuthState();
 
   const handleEventSelect = (eventId: string) => {
-    console.log('EventsContent - Event selected:', eventId);
     setSelectedEventId(eventId === selectedEventId ? null : eventId);
   };
 

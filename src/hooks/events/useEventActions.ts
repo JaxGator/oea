@@ -26,7 +26,6 @@ export function useEventActions({ eventId, createdBy, onSuccess }: EventActionsP
         }
         
         // Normally you would call your RSVP service here
-        console.log("RSVP with guests:", guests);
         
         // Simulate a successful RSVP
         await new Promise(resolve => setTimeout(resolve, 500));
@@ -53,7 +52,6 @@ export function useEventActions({ eventId, createdBy, onSuccess }: EventActionsP
         }
         
         // Normally you would call your cancel RSVP service here
-        console.log("Cancelling RSVP");
         
         // Simulate a successful cancellation
         await new Promise(resolve => setTimeout(resolve, 500));

@@ -48,14 +48,11 @@ export function UserListContainer() {
       notify("error", "Invalid Data", "Member data is incomplete. Please try again.");
       return;
     }
-    console.log('UserListContainer: Handling edit for member:', member);
     handleEditMember(member);
   }, [handleEditMember, notify]);
 
   const handleRefresh = useCallback(async () => {
-    console.log('UserListContainer: Refreshing user list');
     await refetch();
-    console.log('UserListContainer: User list refreshed');
   }, [refetch]);
 
   if (error) {

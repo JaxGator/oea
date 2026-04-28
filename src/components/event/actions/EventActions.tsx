@@ -58,13 +58,6 @@ export function EventActions({
 }: EventActionsProps) {
   const showViewDetails = isAdmin || canManageEvents || userRSVPStatus === "attending";
 
-  console.log('EventActions - Authentication state:', { 
-    isAuthenticated,
-    userRSVPStatus,
-    isAdmin,
-    canManageEvents,
-    isPastEvent
-  });
 
   if (isAuthChecking) {
     return (

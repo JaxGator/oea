@@ -13,7 +13,6 @@ export function useConversations(userId: string | undefined) {
     queryFn: async ({ signal }) => {
       if (!userId) return null;
 
-      console.log('Fetching messages for user:', userId);
 
       try {
         // Fetch direct messages
@@ -40,7 +39,6 @@ export function useConversations(userId: string | undefined) {
           throw directError;
         }
 
-        console.log('Direct messages fetched:', directMessages?.length);
 
         // Fetch group messages
         const { data: groupMessages, error: groupError } = await supabase
@@ -74,7 +72,6 @@ export function useConversations(userId: string | undefined) {
           throw groupError;
         }
 
-        console.log('Group messages fetched:', groupMessages?.length);
 
         // Transform group messages to match the expected GroupChatRaw type
         const transformedGroupChats = (groupMessages || []).map(chat => ({
@@ -120,7 +117,6 @@ export function useConversations(userId: string | undefined) {
           filter: `or(sender_id.eq.${userId},receiver_id.eq.${userId})`,
         },
         (payload) => {
-          console.log('Message change detected:', payload);
           queryClient.invalidateQueries({ queryKey: ['messages', userId] });
         }
       )
@@ -137,7 +133,6 @@ export function useConversations(userId: string | undefined) {
           table: 'group_chat_messages',
         },
         (payload) => {
-          console.log('Group message change detected:', payload);
           queryClient.invalidateQueries({ queryKey: ['messages', userId] });
         }
       )

@@ -26,8 +26,6 @@ export function EventDetails({ event }: EventDetailsProps) {
       ...guests.map(guestName => `${guestName} (Guest of ${name})`)
     ]) || [];
 
-  console.log("EventDetails - Event data:", event);
-  console.log("EventDetails - Location data:", location);
 
   return (
     <div className="space-y-4">

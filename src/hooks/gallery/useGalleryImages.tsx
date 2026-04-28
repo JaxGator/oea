@@ -31,7 +31,6 @@ export function useGalleryImages() {
 
             // Simple validation that the URL exists
             if (!publicUrl) {
-              console.log('No public URL generated for:', image.file_name);
               return null;
             }
 
@@ -50,11 +49,6 @@ export function useGalleryImages() {
 
       const validImages = processedImages.filter((img): img is ImageType => img !== null);
       
-      console.log('Processed gallery images:', {
-        total: galleryData.length,
-        valid: validImages.length,
-        images: validImages
-      });
 
       setImages(validImages);
     } catch (error) {

@@ -23,6 +23,7 @@ export async function createEvent(eventData: EventFormValues) {
     // Insert the event into the database
     const { data, error } = await supabase
       .from('events')
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .insert([eventData as any])
       .select()
       .single();
@@ -50,7 +51,6 @@ export async function createEvent(eventData: EventFormValues) {
  */
 export async function updateEvent(eventId: string, eventData: EventFormValues) {
   try {
-    console.log(`Updating event ${eventId} with data:`, eventData);
     
     // Try to geocode the address if it has changed
     if (eventData.location && (!eventData.latitude || !eventData.longitude)) {
@@ -77,7 +77,6 @@ export async function updateEvent(eventId: string, eventData: EventFormValues) {
     }
     
     if (!data) {
-      console.warn('No event was updated. Event may not exist or user may not have permission.');
       return { 
         data: null, 
         error: { message: 'No event was updated. The event may not exist or you may not have permission to update it.' } 

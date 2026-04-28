@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 interface EventFormSubmitButtonProps {
   isSubmitting: boolean;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   initialData?: any;
   showPermissionWarning: boolean;
 }
@@ -83,6 +84,7 @@ export function EventFormSubmitButton({
   );
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function getButtonText(isSubmitting: boolean, initialData?: any): string {
   if (isSubmitting) {
     return initialData ? "Updating Event..." : "Creating Event...";

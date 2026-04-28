@@ -63,7 +63,6 @@ export const useMapboxToken = (): UseMapboxTokenReturn => {
         // Check cache first
         const cachedToken = getTokenFromCache();
         if (cachedToken) {
-          console.log('Using cached Mapbox token');
           if (isMounted) {
             setMapToken(cachedToken);
             setIsLoading(false);
@@ -72,7 +71,6 @@ export const useMapboxToken = (): UseMapboxTokenReturn => {
           return;
         }
 
-        console.log('Fetching fresh Mapbox token...');
         const { data, error: fetchError } = await supabase.functions.invoke('get-mapbox-token', {
           method: 'GET',
           headers: {
@@ -92,7 +90,6 @@ export const useMapboxToken = (): UseMapboxTokenReturn => {
           throw new Error('No token returned from function');
         }
 
-        console.log('Token fetched successfully');
         setTokenInCache(data.token);
         setMapToken(data.token);
         setError(null);
@@ -105,7 +102,6 @@ export const useMapboxToken = (): UseMapboxTokenReturn => {
         
         if (retryCount < MAX_RETRIES) {
           const nextRetry = Math.min(RETRY_DELAY * Math.pow(2, retryCount), 8000);
-          console.log(`Retrying token fetch in ${nextRetry}ms (attempt ${retryCount + 1}/${MAX_RETRIES})`);
           retryTimeout = setTimeout(() => {
             if (isMounted) {
               setRetryCount(prev => prev + 1);

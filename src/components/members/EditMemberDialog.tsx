@@ -22,7 +22,6 @@ export function EditMemberDialog({
   onOpenChange, 
   onUpdate 
 }: EditMemberDialogProps) {
-  console.log('EditMemberDialog rendered with member:', member.id, 'open:', open);
   
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

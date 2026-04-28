@@ -28,8 +28,6 @@ export function EventCard({
   requireAuth = false,
   isAuthenticated = false
 }: EventCardProps) {
-  console.log('EventCard - Event data:', event);
-  console.log('EventCard - RSVPs:', event.rsvps);
 
   // Process attendees from RSVPs
   const processedAttendees = event.rsvps
@@ -39,7 +37,6 @@ export function EventCard({
       guests: rsvp.event_guests?.map(guest => guest.first_name) || []
     })) || [];
 
-  console.log('EventCard - Processed attendees:', processedAttendees);
 
   const attendeeNames = processedAttendees
     .flatMap(({name, guests}) => [
@@ -47,7 +44,6 @@ export function EventCard({
       ...guests.map(guestName => `${guestName} (Guest of ${name})`)
     ]);
 
-  console.log('EventCard - Final attendee names:', attendeeNames);
 
   if (!event) {
     console.error("Event object is undefined");

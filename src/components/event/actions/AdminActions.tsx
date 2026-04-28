@@ -32,17 +32,6 @@ export function AdminActions({
   const canDelete = profile?.is_admin || (profile?.is_member && event?.created_by === profile?.id);
 
   // Debug log for visibility into permissions
-  console.log('AdminActions - Permissions check:', {
-    isAdmin: profile?.is_admin,
-    canManageEvents,
-    profileId: profile?.id,
-    eventCreator: event?.created_by,
-    canDelete,
-    showDelete,
-    hasEditHandler: !!onEdit,
-    hasDeleteHandler: !!onDelete,
-    hasPublishToggleHandler: !!onTogglePublish
-  });
 
   if (!canManageEvents && !profile?.is_admin) return null;
 

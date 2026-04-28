@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function useEventStateManager(event: any, onUpdate?: () => void) {
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showDetailsDialog, setShowDetailsDialog] = useState(false);
@@ -13,7 +14,6 @@ export function useEventStateManager(event: any, onUpdate?: () => void) {
   const queryClient = useQueryClient();
 
   const handleEditSuccess = useCallback(() => {
-    console.log("Edit success triggered");
     setShowEditDialog(false);
     
     // Invalidate all event-related queries to force a refresh
@@ -52,6 +52,7 @@ export function useEventStateManager(event: any, onUpdate?: () => void) {
       if (onUpdate) {
         onUpdate();
       }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       console.error("Error deleting event:", error);
       toast.error(error.message || "Error deleting event");
@@ -79,6 +80,7 @@ export function useEventStateManager(event: any, onUpdate?: () => void) {
       if (onUpdate) {
         onUpdate();
       }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       console.error("Error updating event publish status:", error);
       toast.error(error.message || "Error updating event");
@@ -117,6 +119,7 @@ export function useEventStateManager(event: any, onUpdate?: () => void) {
       if (onUpdate) {
         onUpdate();
       }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       console.error("Error updating RSVP count:", error);
       toast.error(error.message || "Error updating RSVP count");

@@ -9,7 +9,6 @@ export const useEventWithRSVPs = (eventId: string | undefined) => {
     queryFn: async () => {
       if (!eventId) throw new Error('Event ID is required');
 
-      console.log('Fetching event data for ID:', eventId);
 
       // Fetch event data with RSVPs and profiles in a single query
       const { data: eventData, error: eventError } = await supabase
@@ -47,9 +46,9 @@ export const useEventWithRSVPs = (eventId: string | undefined) => {
         throw new Error('Event not found');
       }
 
-      console.log('Raw event data:', eventData);
 
       // Process the RSVPs to the expected format
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const rsvps = (eventData.rsvps as any[])?.map((rsvp): EventRSVP => ({
         id: rsvp.id,
         event_id: rsvp.event_id,
@@ -67,7 +66,6 @@ export const useEventWithRSVPs = (eventId: string | undefined) => {
         }))
       }));
 
-      console.log('Processed RSVPs:', rsvps);
 
       // Return the event with processed RSVPs
       const processedEvent = {
@@ -75,7 +73,6 @@ export const useEventWithRSVPs = (eventId: string | undefined) => {
         rsvps: rsvps || []
       } as Event;
 
-      console.log('Final processed event:', processedEvent);
 
       return processedEvent;
     },

@@ -7,23 +7,19 @@ interface Config {
 }
 
 Deno.serve(async (req) => {
-  console.log('Received request for ads.txt')
 
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    console.log('Handling CORS preflight request')
     return new Response('ok', { headers: corsHeaders })
   }
 
   try {
-    console.log('Initializing Supabase client')
     // Initialize Supabase client
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_ANON_KEY') ?? ''
     )
 
-    console.log('Fetching Google Ads ID from site_config')
     // Get the Google Ads ID from site_config
     const { data, error } = await supabaseClient
       .from('site_config')
@@ -36,10 +32,8 @@ Deno.serve(async (req) => {
       throw error
     }
 
-    console.log('Retrieved data from site_config:', data)
 
     if (!data?.value) {
-      console.log('No Google Ads ID configured')
       return new Response(
         'No Google Ads ID configured',
         { 
@@ -54,7 +48,6 @@ Deno.serve(async (req) => {
 
     // Format the ads.txt content
     const adsContent = `google.com, ${data.value}, DIRECT, f08c47fec0942fa0`
-    console.log('Generated ads.txt content:', adsContent)
 
     // Return the ads.txt content with appropriate headers
     return new Response(

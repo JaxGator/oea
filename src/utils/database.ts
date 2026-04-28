@@ -9,7 +9,6 @@ export async function executeQuery<T>(
   operation: () => Promise<PostgrestResponse<T> | PostgrestSingleResponse<T>>
 ): Promise<QueryResult<T>> {
   try {
-    console.log('Executing database query...');
     const { data, error } = await operation();
 
     if (error) {
@@ -25,10 +24,6 @@ export async function executeQuery<T>(
     // Handle empty data more gracefully
     const result = Array.isArray(data) ? (data.length > 0 ? data[0] : null) : data;
 
-    console.log('Database query completed successfully:', {
-      hasData: !!result,
-      timestamp: new Date().toISOString()
-    });
     return { data: result, error: null };
   } catch (error) {
     const message = isErrorWithMessage(error) 
@@ -62,15 +57,10 @@ export async function executeTableQuery<T>(
   query: string,
   params?: Record<string, unknown>[]
 ): Promise<QueryResult<T>> {
-  console.log('Executing table query:', { 
-    table, 
-    query, 
-    params,
-    timestamp: new Date().toISOString()
-  });
 
   return executeQuery<T>(async () => {
     const response = await supabase
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .from(table as any)
       .select(query) as PostgrestResponse<T>;
     
