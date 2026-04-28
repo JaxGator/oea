@@ -55,8 +55,10 @@ export function EventParticipationReport() {
           };
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const processedEvents = events.map((event: any) => ({
           name: event.title,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           attending: event.event_rsvps?.filter((rsvp: any) => rsvp.response === 'attending').length || 0,
           date: format(new Date(event.date), 'MMM dd, yyyy')
         }));

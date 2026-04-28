@@ -35,6 +35,7 @@ const createClient = () => {
   const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") as string;
   
   // We need to create our own fetch function with Deno compatibility
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const fetch = (url: string, options: any) => {
     return globalThis.fetch(url, options);
   };
@@ -57,7 +58,6 @@ serve(async (req) => {
   try {
     // Parse the request body
     const requestData: RSVPEmailRequest = await req.json();
-    console.log("Received request body:", JSON.stringify(requestData, null, 2));
 
     const { eventId, userId, type, eventDetails, userProfile, guestCount = 0 } = requestData;
 
@@ -187,7 +187,6 @@ serve(async (req) => {
       `;
     }
 
-    console.log("Sending email to:", profile.email);
 
     // Send email using Resend with the verified domain
     const { data: emailData, error: sendError } = await resend.emails.send({
@@ -203,7 +202,6 @@ serve(async (req) => {
       throw sendError;
     }
 
-    console.log("Email sent successfully:", emailData);
 
     // Return success response
     return new Response(

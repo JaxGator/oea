@@ -10,6 +10,7 @@ type SearchResult = {
 };
 
 interface MessageListProps {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   conversations: Record<string, any>;
   selectedConversation: string | null;
   isSending: boolean;

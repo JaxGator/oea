@@ -26,7 +26,6 @@ export function useUserList() {
   const { data, isLoading, error, refetch } = useQuery<QueryResult>({
     queryKey: ['members', debouncedSearch, filters, page],
     queryFn: async () => {
-      console.log('Fetching members with params:', { debouncedSearch, filters, page });
       let query = supabase
         .from('profiles')
         .select('*', { count: 'exact' });
@@ -78,7 +77,6 @@ export function useUserList() {
   }, []);
 
   const handlePageChange = useCallback((newPage: number) => {
-    console.log('Changing to page:', newPage);
     setPage(newPage);
   }, []);
 

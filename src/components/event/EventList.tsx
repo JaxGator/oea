@@ -80,7 +80,6 @@ export function EventList({
             onCancelRSVP={() => onCancelRSVP(event.id)}
             userRSVPStatus={userRSVPs[event.id]}
             onSelect={() => {
-              console.log('EventList - Card clicked:', event.id);
               onEventSelect?.(event.id);
             }}
             isSelected={event.id === selectedEventId}

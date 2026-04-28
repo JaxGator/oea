@@ -13,7 +13,6 @@ export function GalleryPreview() {
 
   const { data: images = [], isError, isLoading } = useGalleryPreview(6);
 
-  console.log('GalleryPreview render:', { images, isError, isLoading });
 
   const handleImageSelect = (imageUrl: string) => {
     setSelectedImage(imageUrl);

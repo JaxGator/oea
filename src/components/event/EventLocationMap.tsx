@@ -25,7 +25,6 @@ export function EventLocationMap({ location, lat, lng }: EventLocationMapProps) 
     }
 
     try {
-      console.log('Initializing map with coordinates:', { lat, lng });
       mapboxgl.accessToken = mapToken;
       
       map.current = new mapboxgl.Map({
@@ -43,7 +42,6 @@ export function EventLocationMap({ location, lat, lng }: EventLocationMapProps) 
       map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
 
       map.current.on('load', () => {
-        console.log('Map loaded successfully');
         if (map.current) {
           map.current.resize();
         }

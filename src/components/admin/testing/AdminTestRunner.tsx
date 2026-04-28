@@ -36,6 +36,7 @@ export default function AdminTestRunner() {
           status: 'passed',
           duration: performance.now() - startTime
         }]);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (error: any) {
         setResults(prev => [...prev, {
           name: test.name,

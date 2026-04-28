@@ -9,7 +9,6 @@ interface EventRSVPHandlerProps {
 
 export function EventRSVPHandler({ eventId, onRSVP, children }: EventRSVPHandlerProps) {
   const handleRSVP = (guests?: { firstName: string }[]) => {
-    console.log('EventRSVPHandler - Calling onRSVP with:', { eventId, guestCount: guests?.length });
     onRSVP(eventId, guests);
   };
 

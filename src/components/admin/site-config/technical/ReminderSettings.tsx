@@ -49,6 +49,7 @@ export function ReminderSettings({ eventId, enabled, intervals, onUpdate }: Remi
         title: "Success",
         description: `Reminders ${checked ? 'enabled' : 'disabled'} successfully`,
       });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       console.error('Error updating reminder settings:', error);
       toast({
@@ -79,6 +80,7 @@ export function ReminderSettings({ eventId, enabled, intervals, onUpdate }: Remi
         title: "Success",
         description: "Reminder interval added successfully",
       });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       console.error('Error adding reminder interval:', error);
       toast({
@@ -106,6 +108,7 @@ export function ReminderSettings({ eventId, enabled, intervals, onUpdate }: Remi
         title: "Success",
         description: "Reminder interval removed successfully",
       });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       console.error('Error removing reminder interval:', error);
       toast({

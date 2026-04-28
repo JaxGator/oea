@@ -9,8 +9,8 @@ export function SocialFeed() {
   const { data: feeds = [], isError } = useQuery({
     queryKey: ['social-feeds'],
     queryFn: async () => {
-      console.log('Fetching social feeds...');
       const { data, error } = await supabase
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .from('social_media_feeds' as any)
         .select('*')
         .eq('is_active', true)
@@ -21,7 +21,6 @@ export function SocialFeed() {
         console.error('Error fetching social feeds:', error);
         throw error;
       }
-      console.log('Fetched social feeds:', data);
       return data as unknown as SocialMediaFeed[];
     },
     retry: 1,

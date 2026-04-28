@@ -7,7 +7,6 @@ export function useGalleryPreview(limit: number = 6) {
     queryKey: ['gallery-preview', limit],
     queryFn: async () => {
       try {
-        console.log('Fetching gallery preview images...');
         const { data, error } = await supabase
           .from('gallery_images')
           .select('*')
@@ -19,7 +18,6 @@ export function useGalleryPreview(limit: number = 6) {
           throw error;
         }
 
-        console.log('Fetched gallery data:', data);
 
         if (!data) return [];
 
@@ -28,11 +26,9 @@ export function useGalleryPreview(limit: number = 6) {
             .from('gallery')
             .getPublicUrl(image.file_name);
           
-          console.log('Generated URL for image:', image.file_name, urlData.publicUrl);
           return urlData.publicUrl;
         });
 
-        console.log('Final image URLs:', imageUrls);
         return imageUrls;
       } catch (error) {
         console.error('Gallery preview error:', error);

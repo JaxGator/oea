@@ -9,7 +9,6 @@ export function useUserManagement(refetchMembers: () => void) {
 
   const handleDeleteMember = async (userId: string) => {
     try {
-      console.log('useUserManagement: Deleting user with ID:', userId);
       const { error } = await supabase.functions.invoke('delete-user', {
         body: { userId }
       });
@@ -34,7 +33,6 @@ export function useUserManagement(refetchMembers: () => void) {
   };
 
   const handleEditMember = (member: Member) => {
-    console.log('useUserManagement: Setting editing member:', member);
     if (!member?.id || !member?.username) {
       toast({
         title: "Error",
@@ -47,12 +45,10 @@ export function useUserManagement(refetchMembers: () => void) {
   };
 
   const handleCloseEdit = () => {
-    console.log('useUserManagement: Closing edit dialog');
     setEditingMember(null);
   };
 
   const handleUpdateComplete = () => {
-    console.log('useUserManagement: Member update completed');
     toast({
       title: "Success",
       description: "Member updated successfully",

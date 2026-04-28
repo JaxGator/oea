@@ -69,7 +69,6 @@ export function EventCardInteractions({
   const handleInteraction = (e: React.MouseEvent | React.KeyboardEvent) => {
     e.stopPropagation();
     if (onSelect) {
-      console.log('Card clicked, triggering selection for event:', event.id);
       onSelect();
     }
   };

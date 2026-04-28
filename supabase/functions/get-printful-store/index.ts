@@ -12,7 +12,6 @@ serve(async (req) => {
   }
 
   try {
-    console.log('Starting Printful API request...')
     
     const printfulApiKey = Deno.env.get('PRINTFUL_API_KEY')
     if (!printfulApiKey) {
@@ -20,7 +19,6 @@ serve(async (req) => {
       throw new Error('Printful API key not configured')
     }
 
-    console.log('Making request to Printful API for store products...')
     // First get the store information
     const storeResponse = await fetch('https://api.printful.com/stores', {
       headers: {
@@ -46,7 +44,6 @@ serve(async (req) => {
       throw new Error('No store ID found')
     }
 
-    console.log('Retrieved store ID:', storeId)
 
     // Now get the products using the store ID
     const productsResponse = await fetch(`https://api.printful.com/store/products?store_id=${storeId}`, {
@@ -68,12 +65,9 @@ serve(async (req) => {
     }
 
     const productsData = await productsResponse.json()
-    console.log('Successfully retrieved products:', {
-      count: productsData.result.length,
-      firstProduct: productsData.result[0]
-    })
 
     // Format the response with actual store data
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const formattedProducts = await Promise.all(productsData.result.map(async (product: any) => {
       // Fetch variant details to get accurate pricing
       const variantResponse = await fetch(`https://api.printful.com/store/products/${product.id}?store_id=${storeId}`, {

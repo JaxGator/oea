@@ -47,7 +47,6 @@ export function useEventRSVPData(eventId: string) {
         throw error;
       }
 
-      console.log('Raw RSVP data:', rsvps);
 
       return rsvps as unknown as EventRSVPWithProfile[];
     },

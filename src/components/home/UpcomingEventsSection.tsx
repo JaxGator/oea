@@ -25,7 +25,6 @@ export const UpcomingEventsSection = ({
 }: UpcomingEventsSectionProps) => {
   const navigate = useNavigate();
 
-  console.log('UpcomingEventsSection render:', { events, isLoading, userRSVPs, isAuthenticated });
 
   return (
     <div className="py-1">

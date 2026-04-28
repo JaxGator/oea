@@ -15,6 +15,7 @@ export function TechnicalSettings() {
     const fetchConfigs = async () => {
       try {
         const { data, error } = await supabase
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           .from('site_config' as any)
           .select('key, value');
         
@@ -22,6 +23,7 @@ export function TechnicalSettings() {
           throw error;
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const configObj = (data as any[]).reduce((acc: Record<string, string>, curr: any) => {
           acc[curr.key] = curr.value || "";
           return acc;
@@ -44,11 +46,13 @@ export function TechnicalSettings() {
   const updateConfig = async (key: string, value: string) => {
     try {
       const { error } = await supabase
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .from('site_config' as any)
         .upsert({ 
           key, 
           value,
           updated_at: new Date().toISOString()
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } as any, {
           onConflict: 'key'
         });

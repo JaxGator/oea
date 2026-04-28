@@ -25,8 +25,6 @@ export function EditMemberValidation({
           variant: "destructive",
         });
         onOpenChange(false);
-      } else {
-        console.log('EditMemberDialog opened with member data:', member);
       }
     }
   }, [open, member, onOpenChange, toast]);

@@ -3,6 +3,7 @@ export interface AdminNotification {
   id: string;
   type: string;
   message: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   metadata: any;
   created_at: string;
   is_read: boolean;

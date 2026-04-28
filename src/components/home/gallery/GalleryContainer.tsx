@@ -34,7 +34,6 @@ export const GalleryContainer: React.FC<GalleryContainerProps> = ({ children }) 
     queryKey: ['gallery-images'],
     queryFn: async () => {
       try {
-        console.log('Fetching gallery images...');
         
         // First get the ordered list of images from gallery_images table
         const { data: galleryData, error: dbError } = await supabase
@@ -47,10 +46,8 @@ export const GalleryContainer: React.FC<GalleryContainerProps> = ({ children }) 
           throw dbError;
         }
 
-        console.log('Gallery data fetched:', galleryData);
 
         if (!galleryData || galleryData.length === 0) {
-          console.log('No gallery images found in database');
           return [];
         }
 
@@ -60,11 +57,9 @@ export const GalleryContainer: React.FC<GalleryContainerProps> = ({ children }) 
             .from('gallery')
             .getPublicUrl(image.file_name);
             
-          console.log('Generated URL for image:', image.file_name, urlData.publicUrl);
           return urlData.publicUrl;
         });
 
-        console.log('Final image URLs:', imageUrls);
         return imageUrls;
       } catch (err) {
         console.error('Failed to fetch gallery images:', err);

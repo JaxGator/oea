@@ -51,7 +51,6 @@ export function useMemberForm(member: Member | null, onUpdate: () => void, onClo
   }, [member?.id]); // Only update when the member ID changes
 
   const handleSubmit = async () => {
-    console.log("useMemberForm: handleSubmit called");
     try {
       if (!member?.id) {
         throw new Error('Member ID is required for updates');
@@ -76,7 +75,6 @@ export function useMemberForm(member: Member | null, onUpdate: () => void, onClo
         throw error;
       }
 
-      console.log('Member updated successfully:', data);
       await onUpdate();
       
       toast({

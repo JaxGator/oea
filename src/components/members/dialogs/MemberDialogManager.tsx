@@ -23,7 +23,6 @@ export function MemberDialogManager({
   const { toast } = useToast();
 
   const handleMemberUpdate = () => {
-    console.log('Member updated, refreshing data...');
     toast({
       title: "Success",
       description: "Member details updated successfully.",

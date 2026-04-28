@@ -23,7 +23,6 @@ export const useRSVPMutation = () => {
         return;
       }
 
-      console.log('Starting RSVP process:', { eventId, userId: user.id, guestCount: guests.length });
 
       // Fetch event details to include in the email
       const { data: eventData, error: eventError } = await supabase
@@ -53,7 +52,6 @@ export const useRSVPMutation = () => {
       let rsvpId;
 
       if (existingRSVP) {
-        console.log('Updating existing RSVP:', existingRSVP.id);
         // Update existing RSVP
         const { data: updatedRSVP, error: updateError } = await supabase
           .from('event_rsvps')
@@ -85,7 +83,6 @@ export const useRSVPMutation = () => {
           }
         }
       } else {
-        console.log('Creating new RSVP');
         // Create new RSVP
         const { data: newRSVP, error: rsvpError } = await supabase
           .from('event_rsvps')
@@ -107,7 +104,6 @@ export const useRSVPMutation = () => {
 
       // Add guests if there are any
       if (guests.length > 0 && rsvpId) {
-        console.log('Adding guests:', guests.length);
         const guestRecords = guests.map(guest => ({
           rsvp_id: rsvpId,
           first_name: guest.firstName
@@ -137,14 +133,6 @@ export const useRSVPMutation = () => {
 
       // Send confirmation email
       try {
-        console.log('Sending confirmation email with event details:', {
-          eventId,
-          userId: user.id,
-          eventTitle: eventData?.title,
-          eventDate: eventData?.date,
-          userEmail: profileData?.email,
-          userName: profileData?.full_name
-        });
         
         const { data: emailData, error: emailError } = await supabase.functions.invoke('send-rsvp-email', {
           body: {
@@ -164,7 +152,6 @@ export const useRSVPMutation = () => {
             description: "Your RSVP was recorded but there was an issue sending the confirmation email.",
           });
         } else {
-          console.log('Email sent successfully:', emailData);
           toast({
             title: "Success",
             description: "Your RSVP has been recorded and a confirmation email has been sent",
@@ -183,6 +170,7 @@ export const useRSVPMutation = () => {
       queryClient.invalidateQueries({ queryKey: ['event-rsvps'] });
       queryClient.invalidateQueries({ queryKey: ['events-with-rsvps'] });
       queryClient.invalidateQueries({ queryKey: ['user-rsvps'] });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       console.error('RSVP error:', error);
       toast({

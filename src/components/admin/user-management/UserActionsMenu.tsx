@@ -8,15 +8,12 @@ interface UserActionsMenuProps {
 }
 
 export function UserActionsMenu({ onEdit, onUpdateStatus, isUpdating }: UserActionsMenuProps) {
-  console.log('UserActionsMenu render');
   
   const handleEdit = (e: React.MouseEvent) => {
-    console.log('Edit clicked');
     onEdit();
   };
 
   const handleUpdateStatus = (e: React.MouseEvent) => {
-    console.log('Update status clicked');
     onUpdateStatus();
   };
 

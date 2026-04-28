@@ -37,10 +37,6 @@ export const supabase = createClient<Database>(
 // Enhanced connection test with detailed logging
 export const testSupabaseConnection = async () => {
   try {
-    console.log('Testing Supabase connection...', {
-      url: SUPABASE_URL,
-      timestamp: new Date().toISOString()
-    });
     
     // First test auth session
     const { data: { session }, error: sessionError } = await supabase.auth.getSession();
@@ -74,11 +70,6 @@ export const testSupabaseConnection = async () => {
       return false;
     }
     
-    console.log('Supabase connection test successful:', {
-      hasSession: !!session,
-      url: SUPABASE_URL,
-      timestamp: new Date().toISOString()
-    });
     
     return true;
   } catch (error) {

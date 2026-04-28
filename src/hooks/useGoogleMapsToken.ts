@@ -16,7 +16,6 @@ export const useGoogleMapsToken = (): UseGoogleMapsTokenReturn => {
   useEffect(() => {
     const fetchGoogleMapsKey = async () => {
       try {
-        console.log('Fetching Google Maps token...');
         const { data, error: fetchError } = await supabase.functions.invoke('get-google-maps-token');
         
         if (fetchError) {
@@ -34,7 +33,6 @@ export const useGoogleMapsToken = (): UseGoogleMapsTokenReturn => {
           return;
         }
 
-        console.log('Successfully retrieved Google Maps token');
         setMapKey(data.token);
         setError(null);
       } catch (err) {

@@ -34,7 +34,6 @@ export const useFeaturedEvents = () => {
     queryKey: ['featuredEvents'],
     queryFn: async () => {
       try {
-        console.log('Fetching featured events');
         const today = new Date().toISOString().split('T')[0];
         
         const eventsResult = await supabase
@@ -66,7 +65,6 @@ export const useFeaturedEvents = () => {
         }
 
         const eventsData = eventsResult.data || [];
-        console.log('Fetched events:', eventsData);
 
         const eventsWithRSVPs = (eventsData as EventResponseRow[]).map(event => ({
           ...event,
@@ -94,7 +92,6 @@ export const useFeaturedEvents = () => {
   });
 
   useEffect(() => {
-    console.log('Setting up real-time subscription for events');
     const channel = supabase
       .channel('events-changes')
       .on(
@@ -105,16 +102,13 @@ export const useFeaturedEvents = () => {
           table: 'events'
         },
         (payload) => {
-          console.log('Event change detected:', payload);
           queryClient.invalidateQueries({ queryKey: ['featuredEvents'] });
         }
       )
       .subscribe((status) => {
-        console.log('Subscription status:', status);
       });
 
     return () => {
-      console.log('Cleaning up events subscription');
       supabase.removeChannel(channel);
     };
   }, [queryClient]);

@@ -8,6 +8,7 @@ import type { Profile } from "@/types/auth";
 
 interface FormSubmissionProps {
   onSuccess: () => void;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   initialData?: any;
   user: Profile | null;
   hasPermissionToEdit: boolean;
@@ -32,15 +33,6 @@ export function useEventFormSubmission({
   
   // For debugging purposes
   useEffect(() => {
-    console.log("EventFormSubmission - Admin status:", {
-      forceAdmin,
-      effectiveIsAdmin,
-      userIsAdmin: user?.is_admin,
-      userIsMember: user?.is_member,
-      userIsApproved: user?.is_approved,
-      hasPermissionToEdit,
-      timestamp: new Date().toISOString()
-    });
   }, [forceAdmin, effectiveIsAdmin, user?.is_admin, user?.is_member, user?.is_approved, hasPermissionToEdit]);
   
   const onSubmit = async (data: EventFormValues) => {
@@ -48,11 +40,6 @@ export function useEventFormSubmission({
       const { data: sessionData } = await supabase.auth.getSession();
       const hasValidSession = !!sessionData.session;
       
-      console.log("Form submission - Session check:", {
-        hasValidSession,
-        userId: sessionData.session?.user?.id,
-        timestamp: new Date().toISOString()
-      });
       
       if (!hasValidSession) {
         console.error('Not authenticated while submitting form - direct check');
@@ -75,15 +62,6 @@ export function useEventFormSubmission({
       
       const canManageEvents = isAdmin || isMember || isApproved || forceCanManage;
       
-      console.log("Form submission - Permission check:", {
-        isAdmin,
-        isMember,
-        isApproved,
-        forceAdmin,
-        forceCanManage,
-        canManageEvents,
-        hasPermissionToEdit
-      });
       
       // CRITICAL FIX: Always let admins and members bypass permission checks
       if (initialData?.id && !hasPermissionToEdit && !canManageEvents) {
@@ -92,28 +70,17 @@ export function useEventFormSubmission({
       }
       
       if (localSubmitting || isSubmitting) {
-        console.log('Submission already in progress, ignoring duplicate submit');
         return;
       }
       
       setLocalSubmitting(true);
       
-      console.log('EventForm - Submitting form with data:', { 
-        ...data,
-        userId,
-        isAdmin: effectiveIsAdmin,
-        canManageEvents: effectiveCanManage,
-        isEditing: !!initialData,
-        eventCreator: initialData?.created_by,
-        isCreator: initialData?.created_by === userId
-      });
       
       const eventData = {
         ...data,
         created_by: initialData?.id ? (initialData.created_by || userId) : userId,
       };
       
-      console.log("Final event data:", eventData);
       
       await handleFormSubmit(eventData, initialData);
     } catch (error) {

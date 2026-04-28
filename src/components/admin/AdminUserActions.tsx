@@ -39,19 +39,16 @@ export const AdminUserActions = memo(function AdminUserActions({
 
   const handleUpdateStatus = useCallback(() => {
     if (!validateProfile('status update')) return;
-    console.log('AdminUserActions: Update status clicked for username:', profile.username);
     onUpdateStatus(profile.username);
   }, [validateProfile, profile.username, onUpdateStatus]);
 
   const handleEdit = useCallback(() => {
     if (!validateProfile('edit')) return;
-    console.log('AdminUserActions: Edit clicked for profile:', profile);
     onEdit(profile);
   }, [validateProfile, profile, onEdit]);
 
   const handleDelete = useCallback(() => {
     if (!validateProfile('deletion')) return;
-    console.log('AdminUserActions: Delete confirmed for profile:', profile);
     onDelete(profile.id);
     setShowDeleteDialog(false);
   }, [validateProfile, profile, onDelete]);

@@ -32,7 +32,6 @@ export function useRSVPDetails(eventId: string) {
     queryKey: ['event-rsvps', eventId],
     queryFn: async () => {
       try {
-        console.log('Fetching RSVPs for event:', eventId);
         
         const { data: rsvps, error: rsvpError } = await supabase
           .from('event_rsvps')
@@ -60,14 +59,12 @@ export function useRSVPDetails(eventId: string) {
         }
 
         if (!rsvps) {
-          console.log('No RSVPs found for event:', eventId);
           return {
             rsvpCount: 0,
             attendees: []
           };
         }
 
-        console.log('Fetched RSVPs:', rsvps);
 
         const transformedRsvps = rsvps as unknown as RSVPDetails[];
 

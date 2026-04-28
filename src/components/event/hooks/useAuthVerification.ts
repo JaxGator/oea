@@ -19,12 +19,10 @@ export function useAuthVerification(
 
   const checkAuthAndPermissions = useCallback(async () => {
     try {
-      console.log("Starting auth verification check for event:", initialData?.id);
       setVerifyingAuth(true);
       
       // If force admin or force can manage is true, grant permission immediately
       if (forceAdmin || forceCanManage) {
-        console.log("Override detected: Admin or management status forced to true. Granting permission.");
         setHasValidPermission(true);
         setVerifyingAuth(false);
         return true;
@@ -39,19 +37,10 @@ export function useAuthVerification(
         // All admins, members, and approved users can manage events
         const canManageEvents = isAdmin || isMember || isApproved;
         
-        console.log("Auth verification - User status:", { 
-          userId: user.id, 
-          isAdmin,
-          isMember,
-          isApproved,
-          canManageEvents,
-          eventCreator: initialData?.created_by || 'unknown'
-        });
         
         // If user is admin or can manage events, grant permission immediately
         // CRITICAL FIX: This is the most important condition
         if (isAdmin || canManageEvents) {
-          console.log("Admin or member detected, granting permission IMMEDIATELY");
           setHasValidPermission(true);
           setVerifyingAuth(false);
           return true;
@@ -71,11 +60,6 @@ export function useAuthVerification(
       
       const sessionExists = !!data.session;
       
-      console.log("Auth verification - Direct auth check:", { 
-        sessionExists,
-        userId: data.session?.user?.id,
-        timestamp: new Date().toISOString()
-      });
       
       setCheckedSessionData(true);
       
@@ -110,17 +94,9 @@ export function useAuthVerification(
         // CRITICAL FIX: Any admin or member has permission - this is the real fix
         const canManageEvents = isAdmin || isApproved || isMember;
         
-        console.log("Profile data re-fetched:", {
-          profileData,
-          isAdmin,
-          isApproved,
-          isMember,
-          canManageEvents
-        });
         
         // IMMEDIATELY grant access for admins and members - this is where it was failing
         if (isAdmin || canManageEvents) {
-          console.log("Admin or member detected from profile data, granting permission IMMEDIATELY");
           setHasValidPermission(true);
           setVerifyingAuth(false);
           return true;
@@ -134,15 +110,6 @@ export function useAuthVerification(
           initialData.created_by || ''
         );
         
-        console.log("Final permission check:", { 
-          userId: data.session.user.id,
-          eventCreator: initialData.created_by,
-          isAdmin,
-          isApproved,
-          isMember,
-          canManageEvents,
-          hasPermission: hasEditPermission
-        });
 
         setHasValidPermission(hasEditPermission);
         
@@ -170,7 +137,6 @@ export function useAuthVerification(
   // Run checks when component mounts or when user/initialData changes
   useEffect(() => {
     if (initialData) {
-      console.log("Running auth check due to initialData or user change");
       checkAuthAndPermissions();
     }
   }, [checkAuthAndPermissions, initialData, user?.id, forceAdmin, forceCanManage]);

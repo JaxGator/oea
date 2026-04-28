@@ -27,7 +27,6 @@ export function useMemberManagement(
     queryKey: ['members', searchTerm, filters, page],
     queryFn: async () => {
       try {
-        console.log('Fetching members with params:', { searchTerm, filters, page });
         
         let query = supabase
           .from('profiles')
@@ -70,19 +69,12 @@ export function useMemberManagement(
         }
 
         if (!data) {
-          console.warn('No data returned from query');
           return {
             members: [],
             totalPages: 0
           };
         }
 
-        console.log('Members fetch result:', {
-          count,
-          dataLength: data.length,
-          page,
-          filters: activeFilters
-        });
 
         return {
           members: data as Member[],

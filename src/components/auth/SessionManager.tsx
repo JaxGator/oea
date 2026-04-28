@@ -48,7 +48,6 @@ export function SessionManager({ children, queryClient }: SessionManagerProps) {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         if (!mounted) return;
-        console.log("Auth state changed:", event, session?.user?.id);
 
         switch (event) {
           case "SIGNED_OUT":

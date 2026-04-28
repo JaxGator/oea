@@ -68,6 +68,7 @@ export const joinEventWaitlist = async (eventId: string) => {
 
     // First check if already on waitlist
     const { data: existingEntry, error: checkError } = await supabase
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .from('event_waitlist' as any)
       .select('id')
       .match({ event_id: eventId, user_id: user.id })
@@ -82,6 +83,7 @@ export const joinEventWaitlist = async (eventId: string) => {
 
     // Add to waitlist
     const { error } = await supabase
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .from('event_waitlist' as any)
       .insert({
         event_id: eventId,
@@ -109,6 +111,7 @@ export const leaveEventWaitlist = async (eventId: string) => {
     }
 
     const { error } = await supabase
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .from('event_waitlist' as any)
       .delete()
       .match({ event_id: eventId, user_id: user.id });

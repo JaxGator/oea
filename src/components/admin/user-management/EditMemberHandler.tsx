@@ -36,7 +36,6 @@ export const EditMemberHandler = memo(function EditMemberHandler({
     setIsLoading(true);
     try {
       // Skip actual fetching and just use the member data directly since we're forcing admin access
-      console.log('EditMemberHandler: Using provided member data directly:', member);
       
       const enrichedData: Member = {
         id: member.id,
@@ -87,13 +86,11 @@ export const EditMemberHandler = memo(function EditMemberHandler({
     }
 
     try {
-      console.log('EditMemberHandler: Simulating successful update:', updatedData);
       setIsLoading(true);
       
       // Simulate successful update without actual API call since we're forcing admin access
       await new Promise(resolve => setTimeout(resolve, 500));
 
-      console.log('EditMemberHandler: Update successful');
       await onUpdate();
       
       toast({

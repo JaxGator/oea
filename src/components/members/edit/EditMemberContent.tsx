@@ -16,7 +16,6 @@ export function EditMemberContent({
   onUpdate, 
   onClose 
 }: EditMemberContentProps) {
-  console.log('EditMemberContent render with member ID:', member.id);
   const { isSubmitting, setIsSubmitting } = useEditMember();
   
   const {
@@ -58,7 +57,6 @@ export function EditMemberContent({
         interests: member.interests || [],
         leaderboard_opt_out: member.leaderboard_opt_out || false
       };
-      console.log('Submitting updated member:', updatedMember);
       await onUpdate(updatedMember);
       onClose();
     } finally {

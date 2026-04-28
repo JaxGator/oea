@@ -7,6 +7,7 @@ const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY');
 
 const supabase = createClient(SUPABASE_URL!, SUPABASE_ANON_KEY!);
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function sendReminderEmail(to: string, eventDetails: any) {
   const res = await fetch('https://api.resend.com/emails', {
     method: 'POST',

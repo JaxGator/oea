@@ -33,6 +33,7 @@ export function UserReminderPreferences() {
         title: "Success",
         description: `Event reminders ${checked ? 'enabled' : 'disabled'} successfully`,
       });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       console.error('Error updating reminder preferences:', error);
       toast({

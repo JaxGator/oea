@@ -8,6 +8,7 @@ export function SocialFeedManager() {
     queryKey: ['social-feed-admin'],
     queryFn: async () => {
       const { data, error } = await supabase
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .from('social_media_feeds' as any)
         .select('*')
         .order('created_at', { ascending: false })
@@ -29,6 +30,7 @@ export function SocialFeedManager() {
       </div>
 
       <SocialFeedForm 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         existingFeed={existingFeed as any}
         onSave={refetch}
       />

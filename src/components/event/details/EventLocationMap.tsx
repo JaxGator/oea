@@ -28,7 +28,6 @@ export function EventLocationMap({ location, lat, lng }: EventLocationMapProps) 
       }
 
       try {
-        console.log('Initializing map with coordinates:', { lat, lng });
         mapboxgl.accessToken = mapToken;
         
         const mapInstance = new mapboxgl.Map({
@@ -40,7 +39,6 @@ export function EventLocationMap({ location, lat, lng }: EventLocationMapProps) 
         });
 
         mapInstance.on('load', () => {
-          console.log('Map loaded successfully');
           if (!mapInstance._removed) {
             mapInstance.resize();
             

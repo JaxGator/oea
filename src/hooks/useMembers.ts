@@ -12,7 +12,6 @@ export function useMembers() {
 
   const handleDeleteMember = async (memberId: string) => {
     try {
-      console.log('Attempting to delete member:', memberId);
       
       const { data, error } = await supabase.functions.invoke('delete-user', {
         body: { userId: memberId }
@@ -27,7 +26,6 @@ export function useMembers() {
         throw new Error('No response from delete function');
       }
 
-      console.log('Delete response:', data);
 
       toast({
         title: "Success",

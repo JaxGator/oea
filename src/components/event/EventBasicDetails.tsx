@@ -83,7 +83,6 @@ export function EventBasicDetails({ form }: EventBasicDetailsProps) {
                   formats={formats}
                   value={field.value || ''}
                   onChange={(content) => {
-                    console.log('Quill content updated:', content);
                     // Ensure we're not sending undefined to the form
                     field.onChange(content === '' ? null : content);
                   }}

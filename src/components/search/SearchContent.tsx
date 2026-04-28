@@ -4,6 +4,7 @@ import { SearchResults } from "./SearchResults";
 interface SearchContentProps {
   searchTerm: string;
   onSearchChange: (value: string) => void;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   results: any[] | undefined;
   isLoading: boolean;
   onResultClick: () => void;

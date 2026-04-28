@@ -30,7 +30,6 @@ export function ContactAdminDialog() {
     }
 
     if (isSubmitting) {
-      console.log('Preventing duplicate submission');
       return;
     }
 
@@ -39,13 +38,11 @@ export function ContactAdminDialog() {
 
     const attemptSubmission = async (retry = 0): Promise<boolean> => {
       try {
-        console.log(`Attempting to send message (attempt ${retry + 1}/${MAX_RETRIES + 1})`);
         
         const { data, error } = await supabase.functions.invoke('send-admin-message', {
           body: { message: trimmedMessage }
         });
 
-        console.log('Response:', { data, error });
 
         if (error) {
           throw error;
@@ -58,12 +55,14 @@ export function ContactAdminDialog() {
         // Also create a local auth_notification record for immediate feedback
         try {
           const { error: authNotifError } = await supabase
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             .from('auth_notifications' as any)
             .insert({
               type: 'contact',
               message: 'User contact message', 
               metadata: trimmedMessage,
               is_read: false
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             } as any);
 
           if (authNotifError) {
@@ -88,7 +87,6 @@ export function ContactAdminDialog() {
         
         if (retry < MAX_RETRIES) {
           const backoffDelay = BASE_DELAY * Math.pow(2, retry);
-          console.log(`Retrying in ${backoffDelay}ms...`);
           await new Promise(resolve => setTimeout(resolve, backoffDelay));
           return attemptSubmission(retry + 1);
         }
@@ -103,10 +101,7 @@ export function ContactAdminDialog() {
     };
 
     try {
-      const success = await attemptSubmission();
-      if (!success) {
-        console.log('All submission attempts failed');
-      }
+      await attemptSubmission();
     } finally {
       setIsSubmitting(false);
     }

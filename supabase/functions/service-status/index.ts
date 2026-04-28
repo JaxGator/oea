@@ -67,7 +67,6 @@ serve(async (req) => {
   }
 
   try {
-    console.log('Starting service status checks...');
     
     const startTime = performance.now();
     const [github, netlify, lovable] = await Promise.all([
@@ -95,7 +94,6 @@ serve(async (req) => {
       }
     };
 
-    console.log('Service status checks completed:', response);
 
     return new Response(JSON.stringify(response), {
       headers: { 

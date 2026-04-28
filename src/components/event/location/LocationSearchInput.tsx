@@ -55,7 +55,6 @@ export function LocationSearchInput({
   };
 
   const handleSuggestionSelect = async (suggestion: { place_name: string; mapbox_id: string }) => {
-    console.log('Selected suggestion:', suggestion);
     
     try {
       const coordinates = await retrieveCoordinates(suggestion.mapbox_id);

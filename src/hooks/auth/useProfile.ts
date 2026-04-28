@@ -11,11 +11,9 @@ export function useProfile(userId: string | undefined) {
     queryKey: ['profile', userId],
     queryFn: async () => {
       if (!userId) {
-        console.log('No userId provided to useProfile hook');
         return null;
       }
       
-      console.log('Fetching profile for user:', userId);
       
       try {
         // First check if we have an active session
@@ -26,7 +24,6 @@ export function useProfile(userId: string | undefined) {
         }
         
         if (!session) {
-          console.log('No active session found');
           return null;
         }
 
@@ -76,7 +73,6 @@ export function useProfile(userId: string | undefined) {
           throw error;
         }
         
-        console.log('Profile fetch result:', data);
         return data as Profile;
       } catch (error) {
         console.error('Profile fetch failed:', {

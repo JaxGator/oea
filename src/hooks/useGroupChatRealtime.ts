@@ -4,8 +4,11 @@ import { useToast } from '@/hooks/use-toast';
 
 interface UseGroupChatRealtimeProps {
   chatId: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onParticipantAdded?: (payload: any) => void;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onParticipantRemoved?: (payload: any) => void;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onMessageReceived?: (payload: any) => void;
 }
 

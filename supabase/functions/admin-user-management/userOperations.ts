@@ -46,11 +46,6 @@ export async function updateUserData(
 
   // Update auth user if email or password provided
   if (email || password) {
-    console.log('Updating auth user:', {
-      userId,
-      hasEmail: !!email,
-      hasPassword: !!password
-    })
 
     const authUpdate: { email?: string; password?: string } = {}
     if (email) {
@@ -78,6 +73,7 @@ export async function updateUserData(
   }
 
   // Update profile data
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const updates: any = {}
   if (username !== undefined) updates.username = username
   if (fullName !== undefined) updates.full_name = fullName
@@ -86,7 +82,6 @@ export async function updateUserData(
   if (isMember !== undefined) updates.is_member = isMember
   if (avatarUrl !== undefined) updates.avatar_url = avatarUrl
 
-  console.log('Updating profile:', { userId, updates })
 
   const { error: profileUpdateError } = await supabaseAdmin
     .from('profiles')

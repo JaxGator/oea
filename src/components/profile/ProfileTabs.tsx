@@ -21,7 +21,9 @@ interface ProfileTabsProps {
   onUpdateEmail: () => Promise<void>;
   onUpdatePassword: () => Promise<void>;
   onUpdateInterests: (interests: string[]) => void;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   upcomingEvents: any[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   pastEvents: any[];
   eventsLoading: boolean;
 }

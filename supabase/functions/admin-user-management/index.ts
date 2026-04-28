@@ -23,7 +23,6 @@ serve(async (req) => {
 
     // Handle get_user action
     if (action === 'get_user') {
-      console.log('Fetching user data for:', userId)
       const userData = await getUserData(supabaseAdmin, userId)
       
       return new Response(
@@ -33,17 +32,6 @@ serve(async (req) => {
     }
 
     // Handle update action (default)
-    console.log('Updating user:', { 
-      userId, 
-      username: requestData.username, 
-      fullName: requestData.fullName, 
-      isAdmin: requestData.isAdmin, 
-      isApproved: requestData.isApproved, 
-      isMember: requestData.isMember, 
-      avatarUrl: requestData.avatarUrl, 
-      hasEmail: !!requestData.email, 
-      hasPassword: !!requestData.password 
-    })
 
     await updateUserData(supabaseAdmin, adminUser.id, requestData)
 

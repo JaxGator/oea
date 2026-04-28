@@ -60,10 +60,8 @@ export function EventFormContent({
   useEffect(() => {
     if (user?.id) {
       if (initialData?.id && initialData?.created_by) {
-        console.log("Preserving original event creator:", initialData.created_by);
         form.setValue('created_by', initialData.created_by);
       } else if (!form.getValues('created_by')) {
-        console.log("Setting current user as event creator:", user.id);
         form.setValue('created_by', user.id);
       }
     }

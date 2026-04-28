@@ -14,11 +14,6 @@ serve(async (req) => {
     const STREAM_API_SECRET = Deno.env.get('STREAM_API_SECRET');
 
     // Enhanced environment debugging
-    console.log('Environment variables:', {
-      hasApiKey: !!STREAM_API_KEY,
-      hasSecret: !!STREAM_API_SECRET,
-      timestamp: new Date().toISOString()
-    });
 
     if (!STREAM_API_KEY || !STREAM_API_SECRET) {
       throw new Error('Stream API credentials missing');
@@ -35,11 +30,6 @@ serve(async (req) => {
     const serverClient = StreamChat.getInstance(STREAM_API_KEY);
     serverClient.secret = STREAM_API_SECRET;
 
-    console.log('StreamChat Client validation:', {
-      initialized: !!serverClient,
-      hasSecret: !!serverClient.secret,
-      timestamp: new Date().toISOString()
-    });
 
     // First try to generate token
     const token = serverClient.createUserToken(user.id);
@@ -48,11 +38,6 @@ serve(async (req) => {
       throw new Error('Failed to generate token');
     }
 
-    console.log('Token generated:', {
-      userId: user.id,
-      hasToken: !!token,
-      timestamp: new Date().toISOString()
-    });
 
     // Then try to upsert user
     const userData = {
@@ -63,10 +48,8 @@ serve(async (req) => {
 
     try {
       await serverClient.upsertUsers([userData]);
-      console.log('User upserted successfully');
     } catch (upsertError) {
       // Log but don't fail - token generation is what matters most
-      console.warn('User upsert failed (non-critical):', upsertError);
     }
 
     return new Response(

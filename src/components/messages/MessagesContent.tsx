@@ -89,7 +89,6 @@ export function MessagesContent({ conversations }: MessagesContentProps) {
 
     setIsDeleting(true);
     try {
-      console.log('Deleting conversation between:', { user: user.id, other: selectedConversation });
       
       const { error } = await supabase
         .from('messages')

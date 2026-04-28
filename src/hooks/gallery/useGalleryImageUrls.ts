@@ -31,8 +31,6 @@ export function useGalleryImageUrls(images: Array<{ url: string; id: string }>) 
 
           if (data?.publicUrl) {
             urlMap[image.id] = data.publicUrl;
-          } else {
-            console.warn('No public URL generated for:', fileName);
           }
         } catch (error) {
           console.error('Error processing image:', error);

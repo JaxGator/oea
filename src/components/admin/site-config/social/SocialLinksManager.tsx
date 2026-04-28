@@ -16,11 +16,13 @@ export function SocialLinksManager({ socialLinks, setSocialLinks }: SocialLinksM
   const updateSocialLinks = async () => {
     try {
       const { error } = await supabase
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .from('site_config' as any)
         .upsert({ 
           key: 'social_links',
           value: JSON.stringify(socialLinks),
           updated_at: new Date().toISOString()
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } as any, {
           onConflict: 'key'
         });

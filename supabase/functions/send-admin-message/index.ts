@@ -34,7 +34,6 @@ serve(async (req) => {
       req.headers.get('Authorization')?.replace('Bearer ', '') || ''
     )
 
-    console.log('User info:', user)
 
     // Get the user's profile
     let senderInfo = 'Anonymous user'
@@ -45,7 +44,6 @@ serve(async (req) => {
         .eq('id', user.id)
         .single()
 
-      console.log('Profile info:', profile)
 
       if (profile) {
         senderInfo = profile.full_name || profile.username || user.email || 'Unknown user'

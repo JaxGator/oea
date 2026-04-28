@@ -8,7 +8,6 @@ import { startOfDay } from "date-fns";
 export const fetchFeaturedEvents = async (): Promise<Event[]> => {
   // Get today's date at the start of the day for accurate comparison
   const today = startOfDay(new Date()).toISOString();
-  console.log('Fetching events from:', today);
   
   const { data, error } = await supabase
     .from('events')
@@ -34,7 +33,7 @@ export const fetchFeaturedEvents = async (): Promise<Event[]> => {
     throw error;
   }
 
-  console.log('Fetched events:', data);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return transformEventData((data as any[]) || []);
 };
 

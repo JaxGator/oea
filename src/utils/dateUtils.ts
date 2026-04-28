@@ -28,6 +28,7 @@ export const getUpcomingWeekendDate = (): Date => {
   return startOfDay(friday);
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const filterEventsByDate = (events: any[], selectedDate: Date | undefined): any[] => {
   if (!selectedDate) return events;
 

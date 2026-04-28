@@ -13,9 +13,9 @@ export function LeaderboardSection() {
   const { data: leaderboardData, isLoading, error } = useQuery({
     queryKey: ["leaderboard-preview"],
     queryFn: async () => {
-      console.log('Fetching leaderboard data...');
       try {
         const { data, error } = await supabase
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           .from("leaderboard_metrics" as any)
           .select(`
             *,
@@ -46,8 +46,8 @@ export function LeaderboardSection() {
         }
         
         // Filter out any entries that don't have associated profile data
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const filteredData = (data as any[])?.filter((item: any) => item.profiles && item.profiles.username) || [];
-        console.log('Filtered leaderboard data:', filteredData);
         
         return filteredData;
       } catch (error) {

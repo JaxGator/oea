@@ -18,6 +18,7 @@ export function AdminNotifications() {
     queryKey: ['unapproved-users'],
     queryFn: async () => {
       const { data, error } = await supabase
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .from('profiles' as any)
         .select('id, username, email, full_name')
         .eq('is_approved', false);
@@ -31,6 +32,7 @@ export function AdminNotifications() {
     queryKey: ['unread-notifications'],
     queryFn: async () => {
       const { data, error } = await supabase
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .from('admin_notifications' as any)
         .select('*')
         .eq('is_read', false);
@@ -45,6 +47,7 @@ export function AdminNotifications() {
     queryKey: ['unread-auth-notifications'],
     queryFn: async () => {
       const { data, error } = await supabase
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .from('admin_notifications' as any)
         .select('*')
         .eq('is_read', false)

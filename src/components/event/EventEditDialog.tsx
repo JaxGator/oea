@@ -42,7 +42,6 @@ export function EventEditDialog({
   // Sync the local state with the parent state
   useEffect(() => {
     if (showDialog !== localShowDialog) {
-      console.log("Syncing dialog state:", { showDialog, localShowDialog });
       setLocalShowDialog(showDialog);
     }
   }, [showDialog, localShowDialog]);
@@ -50,19 +49,11 @@ export function EventEditDialog({
   // Perform permission check whenever the dialog opens
   useEffect(() => {
     if (localShowDialog && initialData) {
-      console.log("Dialog opened, checking permissions with override:", { 
-        forceAdmin: true, 
-        forceCanManage: true,
-        isAdmin: true,
-        isMember: true,
-        isApproved: true
-      });
       checkPermissions();
     }
   }, [localShowDialog, initialData, checkPermissions]);
 
   const handleSuccess = useCallback(() => {
-    console.log("EventEditDialog: handleSuccess called");
     setIsClosing(true);
     if (onSuccess) {
       onSuccess();
@@ -80,7 +71,6 @@ export function EventEditDialog({
   }, [initialData?.id, onSuccess, setShowDialog]);
 
   const handleOpenChange = (open: boolean) => {
-    console.log("EventEditDialog: handleOpenChange", open);
     if (!isClosing) {
       setLocalShowDialog(open);
       setShowDialog(open);

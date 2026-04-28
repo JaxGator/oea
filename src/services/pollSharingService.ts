@@ -52,16 +52,19 @@ export async function castPublicVote(pollId: string, optionId: string, userId: s
     // Check if poll is public
     const { data: poll, error: pollError } = await supabase
       .from('polls')
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .select('is_public, closes_at' as any)
       .eq('id', pollId)
       .single();
 
     if (pollError) throw new Error("Poll not found");
     
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     if (!(poll as any).is_public) {
       throw new Error("This poll is not public");
     }
     
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     if ((poll as any).closes_at && new Date((poll as any).closes_at) < new Date()) {
       throw new Error("This poll has closed");
     }
@@ -144,6 +147,7 @@ export async function getPollShareToken(pollId: string): Promise<string | null> 
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function getPollShares(pollId: string): Promise<any[]> {
   try {
     const { data, error } = await supabase
@@ -184,6 +188,7 @@ export async function sharePoll(pollId: string, userIds: string[], shareUrl: str
     
     const { error } = await supabase
       .from('poll_shares')
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .insert(shareData as any);
     
     if (error) throw error;
