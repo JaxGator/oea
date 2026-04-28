@@ -36,14 +36,6 @@ export default function Members() {
   // Pass the admin user ID to ensure access to all member data
   const { profileQuery, membersQuery } = useMemberQueries(user?.id);
 
-  console.log('Members Page - Initial render:', {
-    hasUser: !!user,
-    userId: user?.id,
-    profileQueryData: profileQuery.data,
-    membersQueryData: membersQuery.data,
-    isProfileLoading: profileQuery.isLoading,
-    isMembersLoading: membersQuery.isLoading
-  });
 
   // Global error handler
   useEffect(() => {
@@ -67,8 +59,7 @@ export default function Members() {
     return () => window.removeEventListener('error', handleError);
   }, [toast]);
 
-  // Force admin access to be true in case the profile query has issues
-  const currentUserIsAdmin = true;
+  const currentUserIsAdmin = !!user?.is_admin;
 
   if (membersQuery.error || profileQuery.error) {
     console.error('Query error:', {

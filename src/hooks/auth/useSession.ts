@@ -1,5 +1,5 @@
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { User } from '@supabase/supabase-js';
 import { Profile } from '@/types/auth';
@@ -19,6 +19,20 @@ export function useSession() {
     error: null,
   });
 
+  const fetchProfile = useCallback(async (userId: string) => {
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', userId)
+      .maybeSingle();
+
+    if (profileError) {
+      console.error('Error fetching profile:', profileError);
+      return { profile: null, error: profileError };
+    }
+    return { profile: profile as Profile, error: null };
+  }, []);
+
   useEffect(() => {
     let mounted = true;
 
@@ -35,41 +49,20 @@ export function useSession() {
         }
 
         if (!session) {
-          console.log('No active session');
           if (mounted) {
             setState(prev => ({ ...prev, isLoading: false }));
           }
           return;
         }
 
-        console.log('Session found:', session.user.id);
-
         if (session?.user) {
-          const { data: profile, error: profileError } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', session.user.id)
-            .maybeSingle();
-
-          if (profileError) {
-            console.error('Error fetching profile:', profileError);
-            if (mounted) {
-              setState({
-                user: session.user,
-                profile: null,
-                isLoading: false,
-                error: profileError
-              });
-            }
-            return;
-          }
-
+          const { profile, error } = await fetchProfile(session.user.id);
           if (mounted) {
             setState({
               user: session.user,
-              profile: profile as Profile,
+              profile,
               isLoading: false,
-              error: null
+              error: error as Error | null
             });
           }
         }
@@ -83,13 +76,34 @@ export function useSession() {
 
     initializeSession();
 
-    // No onAuthStateChange here — SessionManager handles all auth state
-    // changes centrally and invalidates queries, which triggers refetches.
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (!mounted) return;
+
+        if (event === 'SIGNED_OUT' || !session) {
+          setState({ user: null, profile: null, isLoading: false, error: null });
+          return;
+        }
+
+        if (session?.user) {
+          const { profile, error } = await fetchProfile(session.user.id);
+          if (mounted) {
+            setState({
+              user: session.user,
+              profile,
+              isLoading: false,
+              error: error as Error | null
+            });
+          }
+        }
+      }
+    );
 
     return () => {
       mounted = false;
+      subscription.unsubscribe();
     };
-  }, []);
+  }, [fetchProfile]);
 
   return state;
 }

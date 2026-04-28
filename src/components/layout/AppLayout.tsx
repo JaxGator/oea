@@ -46,27 +46,22 @@ export function AppLayout() {
   }, [location.pathname]);
 
   useEffect(() => {
-    const initializeGA = async () => {
-      if (gaId && typeof window !== 'undefined') {
-        // Load Google Analytics script
-        const script = document.createElement('script');
-        script.async = true;
-        script.src = `https://www.googletagmanager.com/gtag/js?id=${gaId}`;
-        document.head.appendChild(script);
+    if (!gaId || typeof window === 'undefined') return;
 
-        // Initialize gtag
-        window.dataLayer = window.dataLayer || [];
-        function gtag(...args: any[]) {
-          window.dataLayer.push(args);
-        }
-        gtag('js', new Date());
-        gtag('config', gaId);
+    const existingScript = document.querySelector(`script[src*="googletagmanager.com/gtag/js?id=${gaId}"]`);
+    if (existingScript) return;
 
-        console.log('Google Analytics initialized with ID:', gaId);
-      }
-    };
+    const script = document.createElement('script');
+    script.async = true;
+    script.src = `https://www.googletagmanager.com/gtag/js?id=${gaId}`;
+    document.head.appendChild(script);
 
-    initializeGA();
+    window.dataLayer = window.dataLayer || [];
+    function gtag(...args: unknown[]) {
+      window.dataLayer.push(args);
+    }
+    gtag('js', new Date());
+    gtag('config', gaId);
   }, [gaId]);
 
   useEffect(() => {

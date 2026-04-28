@@ -9,7 +9,7 @@ import { AttendeeList } from "@/components/event/details/AttendeeList";
 import { useEventWithRSVPs } from "@/hooks/events/useEventWithRSVPs";
 
 export default function EventDetails() {
-  const { eventId } = useParams();
+  const { id: eventId } = useParams();
   const navigate = useNavigate();
   const { data: event, isLoading, error } = useEventWithRSVPs(eventId);
 
@@ -56,7 +56,6 @@ export default function EventDetails() {
       ...guests.map(guestName => `${guestName} (Guest of ${name})`)
     ]) || [];
 
-  console.log('Final attendee names:', attendeeNames);
 
   return (
     <div className="min-h-screen bg-[#222222]">
