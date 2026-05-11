@@ -2,6 +2,7 @@
 import { Event } from "@/types/event";
 import { EventCardBasicInfo } from "../EventCardBasicInfo";
 import { EventAdminEdit } from "../EventAdminEdit";
+import { useAuthState } from "@/hooks/useAuthState";
 
 interface EventDetailsSectionProps {
   event: Event;
@@ -38,6 +39,10 @@ export function EventDetailsSection({
   maxGuests,
   attendeeNames = [],
 }: EventDetailsSectionProps) {
+  const { user } = useAuthState();
+  const canEditRSVP = !!user && (!!user.is_admin || !!user.is_member) &&
+    (isAdmin || canManageEvents);
+
   return (
     <>
       <EventCardBasicInfo
@@ -47,14 +52,14 @@ export function EventDetailsSection({
         rsvpCount={rsvpCount}
         maxGuests={event.max_guests}
         isPastEvent={isPastEvent}
-        canViewDetails={isAdmin || canManageEvents}
+        canViewDetails={canEditRSVP}
         waitlistEnabled={waitlistEnabled}
         waitlistCapacity={waitlistCapacity}
         isWixEvent={!!event.imported_rsvp_count}
         importedRsvpCount={event.imported_rsvp_count}
       />
 
-      {(isAdmin || canManageEvents) && isPastEvent && (
+      {canEditRSVP && isPastEvent && (
         <EventAdminEdit
           isAdmin={isAdmin}
           isPastEvent={isPastEvent}
