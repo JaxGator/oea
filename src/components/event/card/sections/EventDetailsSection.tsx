@@ -2,6 +2,7 @@
 import { Event } from "@/types/event";
 import { EventCardBasicInfo } from "../EventCardBasicInfo";
 import { EventAdminEdit } from "../EventAdminEdit";
+import { useAuthState } from "@/hooks/useAuthState";
 
 interface EventDetailsSectionProps {
   event: Event;
