@@ -39,6 +39,10 @@ export function EventDetailsSection({
   maxGuests,
   attendeeNames = [],
 }: EventDetailsSectionProps) {
+  const { user } = useAuthState();
+  const canEditRSVP = !!user && (!!user.is_admin || !!user.is_member) &&
+    (isAdmin || canManageEvents);
+
   return (
     <>
       <EventCardBasicInfo
@@ -48,14 +52,14 @@ export function EventDetailsSection({
         rsvpCount={rsvpCount}
         maxGuests={event.max_guests}
         isPastEvent={isPastEvent}
-        canViewDetails={isAdmin || canManageEvents}
+        canViewDetails={canEditRSVP}
         waitlistEnabled={waitlistEnabled}
         waitlistCapacity={waitlistCapacity}
         isWixEvent={!!event.imported_rsvp_count}
         importedRsvpCount={event.imported_rsvp_count}
       />
 
-      {(isAdmin || canManageEvents) && isPastEvent && (
+      {canEditRSVP && isPastEvent && (
         <EventAdminEdit
           isAdmin={isAdmin}
           isPastEvent={isPastEvent}
