@@ -44,7 +44,7 @@ export function EventCardContainer({
       isSelected={isSelected}
       isAuthChecking={isAuthChecking}
       showDelete={showDelete}
-      isAuthenticated={true} // Force authenticated for admin access
+      isAuthenticated={isAuthenticated}
     />
   );
 }
