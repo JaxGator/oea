@@ -1,0 +1,27 @@
+
+ALTER FUNCTION public.create_event_reminder_notification() SET search_path = public;
+ALTER FUNCTION public.handle_rsvp_overflow() SET search_path = public;
+ALTER FUNCTION public.search_site(text) SET search_path = public;
+ALTER FUNCTION public.update_leaderboard_metrics() SET search_path = public;
+ALTER FUNCTION public.mark_messages_as_read(uuid, uuid) SET search_path = public;
+ALTER FUNCTION public.handle_poll_vote(uuid, uuid, uuid) SET search_path = public;
+ALTER FUNCTION public.can_message_user(uuid) SET search_path = public;
+ALTER FUNCTION public.sync_user_email() SET search_path = public;
+ALTER FUNCTION public.handle_rsvp_cancellation() SET search_path = public;
+ALTER FUNCTION public.handle_group_chat_creator() SET search_path = public;
+ALTER FUNCTION public.check_featured_events_limit() SET search_path = public;
+ALTER FUNCTION public.handle_new_user() SET search_path = public;
+ALTER FUNCTION public.log_content_change() SET search_path = public;
+ALTER FUNCTION public.import_wix_event(text, text, date, time, text, integer, uuid, text, timestamptz) SET search_path = public;
+ALTER FUNCTION public.import_wix_event(text, text, date, time, text, integer, uuid, text, integer, timestamptz) SET search_path = public;
+ALTER FUNCTION public.admin_update_user(uuid, uuid, text, text, text, boolean, boolean, boolean) SET search_path = public;
+ALTER FUNCTION public.has_user_voted(uuid, uuid) SET search_path = public;
+ALTER FUNCTION public.test_email_template(text, text, jsonb) SET search_path = public;
+ALTER FUNCTION public.mark_message_as_read(uuid) SET search_path = public;
+ALTER FUNCTION public.create_message_notification() SET search_path = public;
+ALTER FUNCTION public.handle_message_deletion() SET search_path = public;
+ALTER FUNCTION public.handle_rsvp_status() SET search_path = public;
+ALTER FUNCTION public.update_leaderboard_on_rsvp() SET search_path = public;
+ALTER FUNCTION public.update_updated_at_column() SET search_path = public;
+ALTER FUNCTION public.create_profile(uuid, text, text, text, boolean) SET search_path = public;
+ALTER FUNCTION public.verify_admin_status() SET search_path = public;
