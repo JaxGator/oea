@@ -1,43 +1,27 @@
+## Problem
 
+The Messages page fails to initialize Stream Chat. The `upsert-stream-user` edge function throws:
 
-## Plan: Restore Real Authentication
+```
+TypeError: serverClient.createUserToken is not a function
+```
 
-### Summary
-Remove all hardcoded admin bypasses and restore proper session-based authentication across 4 files.
+In `stream-chat` v8+, the server-side method is `createToken(userId)`, not `createUserToken`. The current code (`supabase/functions/upsert-stream-user/index.ts` line 45) calls a non-existent method, so every chat session fails with a non-2xx response.
 
-### Changes
+## Fix
 
-**1. `src/hooks/useAuthState.tsx`** — Remove mock admin profile, use real session/profile data:
-- Remove the `adminProfile` constant and `useEffect` log
-- Return real data from `useSession()` and `useProfile()`:
-  - `user: profile || null`
-  - `profile: profile || null`
-  - `isLoading: isSessionLoading || isProfileLoading`
-  - `error: sessionError || profileError || null`
-  - `isAuthenticated: !!authUser && !!profile`
+Rewrite `supabase/functions/upsert-stream-user/index.ts` to:
 
-**2. `src/hooks/events/useEventPermissions.ts`** — Restore real permission checking:
-- Import `useAuthState` and `PermissionService`
-- Use `useAuthState()` to get the current user
-- In `checkPermissions`, call `PermissionService.canEditEvent()` with the real user, event's `created_by`, and the `forceAdmin`/`forceCanManage` overrides
-- Default `hasValidPermission` to `false` instead of `true`
+1. Generate the JWT manually via Web Crypto (HMAC-SHA256), matching the pattern already used in `generate-stream-token/index.ts`. This avoids the `stream-chat` SDK's Node-only signing path entirely and is the most reliable approach in Deno.
+2. Upsert the user via Stream's REST API directly (`POST https://chat.stream-io-api.com/users` with the server-side JWT), wrapped in try/catch so a non-critical upsert failure doesn't block token return.
+3. Keep the existing response shape `{ result: { token } }` so `StreamChatProvider.tsx` keeps working unchanged.
+4. Preserve CORS headers and structured logging.
 
-**3. `src/components/auth/RequireAdmin.tsx`** — Restore real admin gate:
-- Use `useAdminCheck()` hook (already imported)
-- Show `LoadingScreen` while loading
-- Redirect to `/` with a toast if not admin
-- Render children only if admin
+No frontend changes needed — `StreamChatProvider` already passes the right payload and reads `result.token`.
 
-**4. `src/components/event/form/EventFormWrapper.tsx`** — Use real auth instead of mock profile:
-- Import `useAuthState` and `useEventPermissions`
-- Get real `user`/`profile` from `useAuthState()`
-- Get `hasValidPermission` from `useEventPermissions(props.initialData)`
-- Pass real `user` and `hasPermissionToEdit` to `EventFormContent`
-- Show loading state while auth is resolving
+## Verification
 
-**5. `src/components/event/card/sections/actions/AdminActions.tsx`** — Remove forced `true` permissions:
-- Replace hardcoded `effectiveIsAdmin = true` etc. with real checks using the `user` profile and utility functions (`isAdministrator`, `canManageEvents`, `canEditEvent`, `canDeleteEvent`)
-
-### Technical Note
-The `useAdminCheck` hook already derives `isAdmin` from the real profile via `useAuthState`, so once `useAuthState` is fixed, `RequireAdmin` and all admin checks will work correctly end-to-end.
-
+After deploy, reload the Messages page and confirm:
+- Edge function logs show successful token generation (no `createUserToken` error).
+- `StreamChatProvider` reaches "Stream Chat initialized successfully".
+- The chat UI renders the channel list and message input.
