@@ -34,12 +34,12 @@ export function AdminActions({
   const { user } = useAuthState();
   const { executeAction, isLoading } = useActionFeedback();
 
-  const effectiveIsAdmin = isAdmin || !!user?.is_admin;
-  const effectiveCanManage = effectiveIsAdmin || propsCanManageEvents || !!user?.is_approved || !!user?.is_member;
-  const canEdit = effectiveCanManage || user?.id === createdBy;
-  const canDelete = effectiveIsAdmin || (!!user?.is_member && user?.id === createdBy);
+  const effectiveIsAdmin = !!user && (isAdmin || !!user?.is_admin);
+  const effectiveCanManage = !!user && (effectiveIsAdmin || propsCanManageEvents || !!user?.is_member);
+  const canEdit = !!user && (effectiveCanManage || user?.id === createdBy);
+  const canDelete = !!user && (effectiveIsAdmin || (!!user?.is_member && user?.id === createdBy));
 
-  if (!canEdit) return null;
+  if (!user || !canEdit) return null;
 
   const handleEdit = () => {
     if (onEdit) onEdit();

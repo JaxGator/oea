@@ -45,8 +45,8 @@ export function EventDetailedActions({
 }: EventDetailedActionsProps) {
   return (
     <EventActionsSection
-      isAdmin={true}
-      canManageEvents={true}
+      isAdmin={isAdmin}
+      canManageEvents={canManageEvents}
       userRSVPStatus={userRSVPStatus}
       isFullyBooked={isFullyBooked}
       canJoinWaitlist={canJoinWaitlist}
@@ -58,16 +58,16 @@ export function EventDetailedActions({
       isPastEvent={isPastEvent}
       isWixEvent={isWixEvent}
       isPublished={event.is_published}
-      showPublishToggle={true}
+      showPublishToggle={isAuthenticated && (isAdmin || canManageEvents)}
       canAddGuests={canAddGuests}
       currentGuests={currentGuests}
-      event={{ 
-        id: event.id, 
+      event={{
+        id: event.id,
         title: event.title,
         created_by: event.created_by
       }}
-      isAuthenticated={true}
-      showDelete={true}
+      isAuthenticated={isAuthenticated}
+      showDelete={isAuthenticated && (isAdmin || canManageEvents)}
     />
   );
 }

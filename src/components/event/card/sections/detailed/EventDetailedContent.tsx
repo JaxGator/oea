@@ -69,13 +69,12 @@ export function EventDetailedContent({
       
       <EventDetailedDescription description={event.description} />
       
-      {/* Always show actions by setting isAuthenticated to true */}
       <EventDetailedActions
-        isAdmin={true}
-        canManageEvents={true}
+        isAdmin={isAdmin}
+        canManageEvents={canManageEvents}
         userRSVPStatus={userRSVPStatus}
         isPastEvent={isPastEvent}
-        canAddGuests={true}
+        canAddGuests={canAddGuests}
         currentGuests={currentGuests}
         onRSVP={onRSVP}
         onCancelRSVP={onCancelRSVP}
@@ -86,7 +85,7 @@ export function EventDetailedContent({
         canJoinWaitlist={canJoinWaitlist}
         isWixEvent={isWixEvent}
         event={event}
-        isAuthenticated={true}
+        isAuthenticated={isAuthenticated}
       />
       
       <EventDetailedWaitlist
